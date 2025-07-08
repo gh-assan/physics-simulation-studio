@@ -1,156 +1,99 @@
-import { World, IComponent } from '@core/ecs';
-import { PositionComponent, RenderableComponent, RotationComponent, SelectableComponent } from '@core/components';
-import { getLocation } from '../helpers/locationHelper';
-
-interface SerializedComponent {
-    type: string;
-    data: any;
-}
-
-interface SerializedEntity {
-    id: number;
-    components: SerializedComponent[];
-}
-
-interface SerializedScene {
-    entities: SerializedEntity[];
-}
+import { World } from '../../core/ecs/World';
+import { IComponent } from '../../core/ecs/IComponent';
 
 export class SceneSerializer {
-    private componentConstructors: Map<string, new (...args: any[]) => IComponent> = new Map();
-
-    constructor() {
-        // Register component constructors for deserialization
-        this.registerComponent(PositionComponent);
-        this.registerComponent(RenderableComponent);
-        this.registerComponent(RotationComponent);
-        this.registerComponent(SelectableComponent);
-        // Add other components as they are created
-    }
-
-    private registerComponent(componentConstructor: new (...args: any[]) => IComponent): void {
-        this.componentConstructors.set(componentConstructor.name, componentConstructor);
-    }
-
     public serialize(world: World): string {
-        const serializedEntities: SerializedEntity[] = [];
+        const serializedEntities: any[] = [];
 
+        // Iterate through all entities and their components
+        // This is a simplified serialization. A more robust solution would handle component types and their specific data structures.
         for (const entityId of world.entityManager.getAllEntities()) {
-            const components: SerializedComponent[] = [];
+            const components: { [key: string]: IComponent } = {};
             const entityComponents = world.componentManager.getAllComponentsForEntity(entityId);
-
             for (const componentName in entityComponents) {
-                const component = entityComponents[componentName];
-                components.push({
-                    type: componentName,
-                    data: { ...component } // Shallow copy for now
-                });
+                if (Object.prototype.hasOwnProperty.call(entityComponents, componentName)) {
+                    components[componentName] = entityComponents[componentName];
+                }
             }
-
-            serializedEntities.push({
-                id: entityId,
-                components: components,
-            });
+            serializedEntities.push({ entityId, components });
         }
 
-        const scene: SerializedScene = { entities: serializedEntities };
-        return JSON.stringify(scene, null, 2);
+        return JSON.stringify({ entities: serializedEntities }, null, 2);
     }
 
-    public deserialize(world: World, jsonString: string): void {
-        const scene: SerializedScene = JSON.parse(jsonString);
+    public deserialize(world: World, serializedScene: string): void {
+        const sceneData = JSON.parse(serializedScene);
 
         // Clear existing entities in the world
-        for (const entityId of world.entityManager.getAllEntities()) {
-            world.entityManager.destroyEntity(entityId);
-        }
+        world.entityManager.clear();
+        world.componentManager.clear();
 
-        for (const serializedEntity of scene.entities) {
-            const entity = world.entityManager.createEntity(serializedEntity.id);
-
-            for (const serializedComponent of serializedEntity.components) {
-                const ComponentConstructor = this.componentConstructors.get(serializedComponent.type);
-                if (ComponentConstructor) {
-                    // Create a new instance of the component and copy data
-                    const componentInstance = new ComponentConstructor();
-                    Object.assign(componentInstance, serializedComponent.data);
-                    world.componentManager.addComponent(entity, serializedComponent.type, componentInstance);
-                } else {
-                    console.warn(`Unknown component type during deserialization: ${serializedComponent.type}`);
+        for (const entityData of sceneData.entities) {
+            const entityId = world.entityManager.createEntity(entityData.entityId);
+            for (const componentName in entityData.components) {
+                if (Object.prototype.hasOwnProperty.call(entityData.components, componentName)) {
+                    const componentConstructor = (world.componentManager as any).componentConstructors.get(componentName);
+                    if (componentConstructor) {
+                        const componentInstance = new componentConstructor();
+                        Object.assign(componentInstance, entityData.components[componentName]);
+                        world.componentManager.addComponent(entityId, componentName, componentInstance);
+                    } else {
+                        console.warn(`Unknown component type during deserialization: ${componentName}`);
+                    }
                 }
             }
         }
     }
 
-    public async saveToFile(world: World, filename: string = 'scene.json'): Promise<void> {
-        try {
-            const json = this.serialize(world);
-            const fileHandle = await window.showSaveFilePicker({
-                suggestedName: filename,
-                types: [{
-                    description: 'Scene JSON',
-                    accept: { 'application/json': ['.json'] },
-                }],
-            });
-            const writable = await fileHandle.createWritable();
-            await writable.write(json);
-            await writable.close();
-            console.log(`Scene saved to ${filename}`);
-        } catch (error) {
-            console.error("Failed to save file:", error);
-            throw error;
-        }
+    public saveToFile(world: World, filename: string = 'scene.json'): void {
+        const serializedData = this.serialize(world);
+        const blob = new Blob([serializedData], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 
-    public loadFromFile(world: World, file: File): Promise<void> {
-        console.log("loadFromFile - file:", file);
+    public loadFromFile(world: World): Promise<void> {
         return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                console.log("loadFromFile - reader.onload triggered");
-                try {
-                    if (event.target && typeof event.target.result === 'string') {
-                        this.deserialize(world, event.target.result);
-                        console.log("Scene loaded from file.");
-                        resolve();
-                    } else {
-                        reject(new Error("Failed to read file as string."));
-                    }
-                } catch (e) {
-                    console.error("Failed to load scene from file:", e);
-                    reject(e);
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'application/json';
+
+            input.onchange = (event: Event) => {
+                const file = (event.target as HTMLInputElement).files?.[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            this.deserialize(world, e.target?.result as string);
+                            resolve();
+                        } catch (error) {
+                            reject(error);
+                        }
+                    };
+                    reader.readAsText(file);
+                } else {
+                    reject(new Error('No file selected'));
                 }
             };
-            reader.onerror = (event) => {
-                console.error("File reader error:", reader.error);
-                reject(new Error(`File could not be read: ${reader.error?.message}`));
-            };
-            reader.readAsText(file);
+
+            input.click();
         });
     }
 
-    public shareViaUrl(world: World): string {
-        const json = this.serialize(world);
-        const encoded = btoa(json);
-        // Always use /index.html for test compatibility
-        const url = `${getLocation().origin}/index.html#scene=${encoded}`;
-        console.log("Share URL:", url);
-        return url;
+    // Simplified URL parameter handling - for demonstration purposes
+    public serializeToUrl(world: World): string {
+        const serializedData = this.serialize(world);
+        return btoa(serializedData); // Base64 encode
     }
 
-    public loadFromUrl(world: World): void {
-        const hash = getLocation().hash;
-        console.log("loadFromUrl - hash:", hash);
-        if (hash.startsWith('#scene=')) {
-            try {
-                const encoded = hash.substring('#scene='.length);
-                console.log("loadFromUrl - encoded:", encoded);
-                const json = atob(encoded);
-                this.deserialize(world, json);
-                console.log("Scene loaded from URL.");
-            } catch (e) {
-                console.error("Failed to load scene from URL:", e);
-            }
-        }
+    public deserializeFromUrl(world: World, encodedData: string): void {
+        const decodedData = atob(encodedData); // Base64 decode
+        this.deserialize(world, decodedData);
     }
 }

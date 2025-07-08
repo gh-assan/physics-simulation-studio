@@ -1,6 +1,11 @@
-import { IComponent } from '@core/ecs/IComponent';
-import * as THREE from 'three';
+import { IComponent } from "../ecs/IComponent";
 
 export class RenderableComponent implements IComponent {
-    constructor(public mesh: THREE.Mesh) {}
+    geometry: 'box' | 'sphere' | 'cylinder' | 'cone' | 'plane';
+    color: string;
+
+    constructor(geometry: 'box' | 'sphere' | 'cylinder' | 'cone' | 'plane' = 'box', color: string = '#ffffff') {
+        this.geometry = geometry;
+        this.color = color;
+    }
 }

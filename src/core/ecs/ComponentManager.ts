@@ -2,9 +2,11 @@ import { IComponent } from './IComponent';
 
 export class ComponentManager {
     private componentStores = new Map<string, IComponent[]>();
+    private componentConstructors = new Map<string, new (...args: any[]) => IComponent>();
 
-    public registerComponent(componentName: string): void {
+    public registerComponent<T extends IComponent>(componentName: string, constructor: new (...args: any[]) => T): void {
         this.componentStores.set(componentName, []);
+        this.componentConstructors.set(componentName, constructor);
     }
 
     public addComponent<T extends IComponent>(entityID: number, componentName: string, component: T): void {
@@ -22,11 +24,13 @@ export class ComponentManager {
         }
     }
 
-    public getEntitiesWithComponents(componentNames: string[]): number[] {
+    public getEntitiesWithComponents(componentConstructors: (new (...args: any[]) => IComponent)[]): number[] {
         const entities: number[] = [];
-        if (componentNames.length === 0) {
+        if (componentConstructors.length === 0) {
             return [];
         }
+
+        const componentNames = componentConstructors.map(c => c.name);
 
         const firstStore = this.componentStores.get(componentNames[0]);
         if (!firstStore) {
@@ -69,5 +73,10 @@ export class ComponentManager {
 
     public hasComponent(entityID: number, componentName: string): boolean {
         return this.componentStores.get(componentName)?.[entityID] !== undefined;
+    }
+
+    public clear(): void {
+        this.componentStores.clear();
+        // Do NOT clear componentConstructors here; keep registrations for deserialization
     }
 }

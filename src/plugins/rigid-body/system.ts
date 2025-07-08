@@ -4,7 +4,7 @@ import { RigidBodyComponent } from './components';
 import { PositionComponent, RotationComponent } from '../../core/components';
 
 export class PhysicsSystem extends System {
-    private componentQuery = ['RigidBodyComponent', 'PositionComponent', 'RotationComponent'];
+    private componentQuery = [RigidBodyComponent, PositionComponent, RotationComponent];
 
     constructor() {
         super();
@@ -16,9 +16,9 @@ export class PhysicsSystem extends System {
         // Synchronize physics state back to ECS components
         const entities = world.componentManager.getEntitiesWithComponents(this.componentQuery);
         for (const entityID of entities) {
-            const rigidBodyComp = world.componentManager.getComponent<RigidBodyComponent>(entityID, 'RigidBodyComponent')!;
-            const posComp = world.componentManager.getComponent<PositionComponent>(entityID, 'PositionComponent')!;
-            const rotComp = world.componentManager.getComponent<RotationComponent>(entityID, 'RotationComponent')!;
+            const rigidBodyComp = world.componentManager.getComponent<RigidBodyComponent>(entityID, RigidBodyComponent.name)!;
+            const posComp = world.componentManager.getComponent<PositionComponent>(entityID, PositionComponent.name)!;
+            const rotComp = world.componentManager.getComponent<RotationComponent>(entityID, RotationComponent.name)!;
 
             const translation = rigidBodyComp.body.translation();
             const rotation = rigidBodyComp.body.rotation();

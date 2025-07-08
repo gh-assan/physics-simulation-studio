@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = __importDefault(require("../index"));
 const ecs_1 = require("@core/ecs");
 const system_1 = require("../system");
+const components_1 = require("../components");
 describe('RigidBodyPlugin', () => {
     let world;
     let plugin;
@@ -25,7 +26,7 @@ describe('RigidBodyPlugin', () => {
     });
     it('should register RigidBodyComponent and PhysicsSystem when activated', () => {
         plugin.register(world);
-        expect(world.componentManager.registerComponent).toHaveBeenCalledWith('RigidBodyComponent');
+        expect(world.componentManager.registerComponent).toHaveBeenCalledWith(components_1.RigidBodyComponent.name, components_1.RigidBodyComponent);
         expect(world.systemManager.registerSystem).toHaveBeenCalledTimes(1);
         expect(world.systemManager.registerSystem).toHaveBeenCalledWith(expect.any(system_1.PhysicsSystem));
     });

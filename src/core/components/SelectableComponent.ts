@@ -1,5 +1,9 @@
-import { IComponent } from '@core/ecs/IComponent';
+import { IComponent } from "../ecs/IComponent";
 
 export class SelectableComponent implements IComponent {
-    constructor(public isSelected: boolean = false) {}
+    isSelected: boolean;
+
+    constructor(isSelected: boolean = false) {
+        this.isSelected = isSelected;
+    }
 }

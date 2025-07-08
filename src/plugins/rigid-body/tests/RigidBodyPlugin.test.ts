@@ -28,7 +28,7 @@ describe('RigidBodyPlugin', () => {
     it('should register RigidBodyComponent and PhysicsSystem when activated', () => {
         plugin.register(world);
 
-        expect(world.componentManager.registerComponent).toHaveBeenCalledWith('RigidBodyComponent');
+        expect(world.componentManager.registerComponent).toHaveBeenCalledWith(RigidBodyComponent.name, RigidBodyComponent);
         expect(world.systemManager.registerSystem).toHaveBeenCalledTimes(1);
         expect(world.systemManager.registerSystem).toHaveBeenCalledWith(expect.any(PhysicsSystem));
     });

@@ -11,14 +11,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PluginManager = void 0;
 class PluginManager {
-    constructor() {
+    constructor(world) {
         this.availablePlugins = new Map();
         this.activePlugins = new Map();
+        this.world = world;
     }
     registerPlugin(plugin) {
         this.availablePlugins.set(plugin.getName(), plugin);
     }
-    activatePlugin(pluginName, world) {
+    activatePlugin(pluginName) {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.activePlugins.has(pluginName)) {
                 return; // Already active
@@ -30,10 +31,10 @@ class PluginManager {
             // Resolve and activate dependencies recursively
             const dependencies = plugin.getDependencies();
             for (const depName of dependencies) {
-                yield this.activatePlugin(depName, world);
+                yield this.activatePlugin(depName);
             }
             // Register the plugin itself
-            plugin.register(world);
+            plugin.register(this.world);
             this.activePlugins.set(pluginName, plugin);
             console.log(`Plugin "${pluginName}" activated.`);
         });

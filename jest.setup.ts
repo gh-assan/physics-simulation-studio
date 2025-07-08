@@ -14,40 +14,81 @@ jest.mock('@dimforge/rapier3d-compat', () => ({
     Quaternion: jest.fn((x, y, z, w) => ({ x, y, z, w })),
 }));
 
-jest.mock('tweakpane', () => ({
-    Pane: jest.fn(() => ({
-        addFolder: jest.fn(() => ({
-            addBinding: jest.fn(),
+jest.mock('tweakpane', () => {
+    const mockChildren: any[] = [];
+    function makeFolder(options: any) {
+        return {
+            addBinding: jest.fn(() => ({ on: jest.fn() })),
             dispose: jest.fn(),
-        })),
-        children: [], // Add children property for clearControls to iterate
+            options: options,
+        };
+    }
+    const mockPane = {
+        addFolder: jest.fn((options) => {
+            const folder = makeFolder(options);
+            mockChildren.push(folder);
+            return folder;
+        }),
         dispose: jest.fn(),
-    })),
-    FolderApi: jest.fn(), // Keep FolderApi mock if it's used for typing
-}));
+        children: mockChildren,
+        remove: jest.fn((child) => {
+            const index = mockChildren.indexOf(child);
+            if (index > -1) {
+                mockChildren.splice(index, 1);
+            }
+        }),
+        addBinding: jest.fn(() => ({ on: jest.fn() })),
+    };
+    mockPane.children.forEach(folder => {
+        folder.addBinding = jest.fn(() => ({ on: jest.fn() }));
+    });
+    return {
+        Pane: jest.fn(() => mockPane),
+    };
+});
 
-jest.mock('three', () => ({
-    Scene: jest.fn(() => ({
+jest.mock('three', () => {
+    const mockScene = {
         add: jest.fn(),
         background: null,
-    })),
-    PerspectiveCamera: jest.fn(() => ({
+    };
+    const mockCamera = {
         position: { z: 0 },
         aspect: 0,
         updateProjectionMatrix: jest.fn(),
-    })),
-    WebGLRenderer: jest.fn(() => ({
-        setSize: jest.fn(),
+    };
+    const mockRenderer = {
+        setSize: jest.fn((width, height) => {
+            // Mock setSize to update internal width/height if needed by tests
+            mockRenderer.domElement.width = width;
+            mockRenderer.domElement.height = height;
+        }),
         domElement: document.createElement('canvas'),
         render: jest.fn(),
-    })),
-    BoxGeometry: jest.fn(),
-    SphereGeometry: jest.fn(),
-    PlaneGeometry: jest.fn(),
-    MeshBasicMaterial: jest.fn(() => ({})),
-    Mesh: jest.fn(() => ({
+    };
+    const mockMesh = {
         position: { set: jest.fn() },
-        quaternion: { set: jest.fn() },
-    })),
-    Color: jest.fn(),
-}));
+        rotation: { setFromQuaternion: jest.fn() },
+    };
+    const mockQuaternion = {
+        x: 0, y: 0, z: 0, w: 1,
+        set: jest.fn(),
+    };
+
+    return {
+        Scene: jest.fn(() => mockScene),
+        PerspectiveCamera: jest.fn(() => mockCamera),
+        WebGLRenderer: jest.fn(() => mockRenderer),
+        BoxGeometry: jest.fn(),
+        SphereGeometry: jest.fn(),
+        PlaneGeometry: jest.fn(),
+        MeshBasicMaterial: jest.fn(() => ({})),
+        Mesh: jest.fn(() => mockMesh),
+        Color: jest.fn(),
+        Quaternion: jest.fn(() => mockQuaternion),
+    };
+});
+
+// Mock window dimensions globally for tests
+Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 768 });

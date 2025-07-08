@@ -1,38 +1,33 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecs_1 = require("@core/ecs");
-const plugin_1 = require("@core/plugin");
-const uiManager_1 = require("./uiManager");
+const World_1 = require("../core/ecs/World");
+const PluginManager_1 = require("../core/plugin/PluginManager");
 const RenderSystem_1 = require("./systems/RenderSystem");
-const components_1 = require("@core/components");
-const components_2 = require("@plugins/rigid-body/components");
-const rigid_body_1 = __importDefault(require("@plugins/rigid-body"));
-// Initialize the ECS World
-const world = new ecs_1.World();
-// Register core components
-world.componentManager.registerComponent(components_1.PositionComponent.name);
-world.componentManager.registerComponent(components_1.RenderableComponent.name);
-world.componentManager.registerComponent(components_1.RotationComponent.name);
-world.componentManager.registerComponent(components_1.SelectableComponent.name);
-world.componentManager.registerComponent(components_2.RigidBodyComponent.name);
-// Initialize the Plugin Manager
-const pluginManager = new plugin_1.PluginManager();
-// Register RigidBodyPlugin
-pluginManager.registerPlugin(new rigid_body_1.default());
-pluginManager.activatePlugin("rigid-body-physics-rapier", world);
-// Initialize Render System
+const PropertyInspectorSystem_1 = require("./systems/PropertyInspectorSystem");
+const uiManager_1 = require("./uiManager");
+const SceneSerializer_1 = require("./systems/SceneSerializer");
+const world = new World_1.World();
+const pluginManager = new PluginManager_1.PluginManager(world);
+const uiManager = new uiManager_1.UIManager();
+const sceneSerializer = new SceneSerializer_1.SceneSerializer();
+// Register core studio systems
 const renderSystem = new RenderSystem_1.RenderSystem();
 world.systemManager.registerSystem(renderSystem);
-// Initialize the UI Manager
-const uiManager = new uiManager_1.UIManager(world, renderSystem);
+const propertyInspectorSystem = new PropertyInspectorSystem_1.PropertyInspectorSystem(uiManager);
+world.systemManager.registerSystem(propertyInspectorSystem);
+// Expose for debugging/console interaction
+window.world = world;
+window.pluginManager = pluginManager;
+window.uiManager = uiManager;
+window.sceneSerializer = sceneSerializer;
+let lastTime = 0;
 // Main application loop
-const animate = () => {
+function animate(currentTime) {
     requestAnimationFrame(animate);
-    // Update the world (ECS systems will run here)
-    world.update(0); // deltaTime will be calculated in a real implementation
-};
-animate();
-console.log("Studio Main Initialized");
+    const deltaTime = (currentTime - lastTime) / 1000; // Convert to seconds
+    lastTime = currentTime;
+    // Update the world
+    world.update(deltaTime);
+}
+animate(0);
+console.log("Physics Simulation Studio Initialized");

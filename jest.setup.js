@@ -13,39 +13,102 @@ jest.mock('@dimforge/rapier3d-compat', () => ({
     Vector3: jest.fn((x, y, z) => ({ x, y, z })),
     Quaternion: jest.fn((x, y, z, w) => ({ x, y, z, w })),
 }));
-jest.mock('tweakpane', () => ({
-    Pane: jest.fn(() => ({
-        addFolder: jest.fn(() => ({
-            addBinding: jest.fn(),
+jest.mock('tweakpane', () => {
+    const mockChildren = [];
+    function makeFolder(options) {
+        return {
+            addBinding: jest.fn(() => ({ on: jest.fn() })),
             dispose: jest.fn(),
-        })),
-        children: [], // Add children property for clearControls to iterate
+            options: options,
+        };
+    }
+    const mockPane = {
+        addFolder: jest.fn((options) => {
+            const folder = makeFolder(options);
+            mockChildren.push(folder);
+            return folder;
+        }),
         dispose: jest.fn(),
-    })),
-    FolderApi: jest.fn(), // Keep FolderApi mock if it's used for typing
-}));
-jest.mock('three', () => ({
-    Scene: jest.fn(() => ({
+        children: mockChildren,
+        remove: jest.fn((child) => {
+            const index = mockChildren.indexOf(child);
+            if (index > -1) {
+                mockChildren.splice(index, 1);
+            }
+        }),
+        addBinding: jest.fn(() => ({ on: jest.fn() })),
+    };
+    mockPane.children.forEach(folder => {
+        folder.addBinding = jest.fn(() => ({ on: jest.fn() }));
+    });
+    return {
+        Pane: jest.fn(() => mockPane),
+    };
+});
+jest.mock('three', () => {
+    const mockScene = {
         add: jest.fn(),
         background: null,
-    })),
-    PerspectiveCamera: jest.fn(() => ({
+    };
+    const mockCamera = {
         position: { z: 0 },
         aspect: 0,
         updateProjectionMatrix: jest.fn(),
-    })),
-    WebGLRenderer: jest.fn(() => ({
+    };
+    const mockRenderer = {
         setSize: jest.fn(),
         domElement: document.createElement('canvas'),
         render: jest.fn(),
-    })),
-    BoxGeometry: jest.fn(),
-    SphereGeometry: jest.fn(),
-    PlaneGeometry: jest.fn(),
-    MeshBasicMaterial: jest.fn(() => ({})),
-    Mesh: jest.fn(() => ({
+    };
+    const mockMesh = {
         position: { set: jest.fn() },
-        quaternion: { set: jest.fn() },
-    })),
-    Color: jest.fn(),
-}));
+        rotation: { setFromQuaternion: jest.fn() },
+    };
+    const mockQuaternion = {
+        x: 0, y: 0, z: 0, w: 1,
+        set: jest.fn(),
+    };
+
+    return {
+        Scene: jest.fn(() => mockScene),
+        PerspectiveCamera: jest.fn(() => mockCamera),
+        WebGLRenderer: jest.fn(() => mockRenderer),
+        BoxGeometry: jest.fn(),
+        SphereGeometry: jest.fn(),
+        PlaneGeometry: jest.fn(),
+        MeshBasicMaterial: jest.fn(() => ({})),
+        Mesh: jest.fn(() => mockMesh),
+        Color: jest.fn(),
+        Quaternion: jest.fn(() => mockQuaternion),
+    };
+});
+
+// Mock window dimensions globally for tests
+Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 768 });
+
+// Mock document.body.appendChild
+const originalAppendChild = document.body.appendChild;
+document.body.appendChild = jest.fn((node) => originalAppendChild.call(document.body, node));
+
+// Mock document.createElement for 'a' and 'input' tags
+const originalCreateElement = document.createElement;
+document.createElement = jest.fn((tagName) => {
+    if (tagName === 'a') {
+        return {
+            href: '',
+            download: '',
+            click: jest.fn(),
+            remove: jest.fn(),
+        };
+    } else if (tagName === 'input') {
+        return {
+            type: '',
+            accept: '',
+            files: [],
+            onchange: null,
+            click: jest.fn(),
+        };
+    }
+    return originalCreateElement(tagName);
+});
