@@ -1,12 +1,12 @@
 import { System, World, IComponent } from '@core/ecs';
-import { StudioUIManager } from '../uiManager';
+import { UIManager } from '../uiManager';
 import { SelectableComponent } from '@core/components';
 
 export class PropertyInspectorSystem extends System {
-    private uiManager: StudioUIManager;
+    private uiManager: UIManager;
     private lastSelectedEntity: number | null = null;
 
-    constructor(uiManager: StudioUIManager) {
+    constructor(uiManager: UIManager) {
         super();
         this.uiManager = uiManager;
     }
@@ -29,11 +29,9 @@ export class PropertyInspectorSystem extends System {
 
             if (selectedEntity !== null) {
                 const components = world.componentManager.getAllComponentsForEntity(selectedEntity);
-                for (const component of components) {
-                    // For now, we'll just register a dummy component. 
-                    // In a real scenario, we'd iterate through component properties
-                    // and register controls based on their types and metadata.
-                    this.uiManager.registerComponentControls(component.constructor.name, component);
+                for (const componentName in components) {
+                    const component = components[componentName];
+                    this.uiManager.registerComponentControls(componentName, component);
                 }
             }
         }

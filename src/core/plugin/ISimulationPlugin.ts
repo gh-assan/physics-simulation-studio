@@ -1,9 +1,5 @@
 import { World } from '../ecs';
 
-// This is a placeholder for the actual UIManager.
-// It will be properly defined in a future UI-related task.
-export interface UIManager {}
-
 export interface ISimulationPlugin {
     /**
      * A unique, machine-readable name for the plugin.
@@ -24,9 +20,8 @@ export interface ISimulationPlugin {
      * This is where the plugin registers its components, systems,
      * and UI elements with the core application.
      * @param world The central ECS World instance.
-     * @param uiManager The manager for the studio's control panel UI.
      */
-    register(world: World, uiManager: UIManager): void;
+    register(world: World): void;
 
     /**
      * Called by the PluginManager when the plugin is being unloaded.

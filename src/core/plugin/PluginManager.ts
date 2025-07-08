@@ -1,17 +1,15 @@
 import { World } from '../ecs';
-import { ISimulationPlugin, UIManager } from './ISimulationPlugin';
+import { ISimulationPlugin } from './ISimulationPlugin';
 
 export class PluginManager {
     private availablePlugins = new Map<string, ISimulationPlugin>();
     private activePlugins = new Map<string, ISimulationPlugin>();
 
-    constructor(private world: World, private uiManager: UIManager) {}
-
     public registerPlugin(plugin: ISimulationPlugin): void {
         this.availablePlugins.set(plugin.getName(), plugin);
     }
 
-    public async activatePlugin(pluginName: string): Promise<void> {
+    public async activatePlugin(pluginName: string, world: World): Promise<void> {
         if (this.activePlugins.has(pluginName)) {
             return; // Already active
         }
@@ -24,11 +22,11 @@ export class PluginManager {
         // Resolve and activate dependencies recursively
         const dependencies = plugin.getDependencies();
         for (const depName of dependencies) {
-            await this.activatePlugin(depName);
+            await this.activatePlugin(depName, world);
         }
 
         // Register the plugin itself
-        plugin.register(this.world, this.uiManager);
+        plugin.register(world);
         this.activePlugins.set(pluginName, plugin);
         console.log(`Plugin "${pluginName}" activated.`);
     }

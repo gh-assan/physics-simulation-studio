@@ -1,10 +1,10 @@
 import { PluginManager } from '../PluginManager';
-import { ISimulationPlugin, UIManager } from '../ISimulationPlugin';
+import { ISimulationPlugin } from '../ISimulationPlugin';
 import { World } from '../../ecs';
 
 // Mocks
 const mockWorld = {} as World;
-const mockUiManager = {} as UIManager;
+
 
 class MockPlugin implements ISimulationPlugin {
     public registered = false;
@@ -20,7 +20,7 @@ class MockPlugin implements ISimulationPlugin {
         return this.dependencies;
     }
 
-    register(world: World, uiManager: UIManager): void {
+    register(world: World): void {
         this.registered = true;
     }
 
@@ -38,7 +38,7 @@ describe('PluginManager', () => {
     beforeAll(() => {
         PluginManager.prototype.activatePlugin = async function (pluginName: string) {
             activationOrder.push(pluginName);
-            await originalActivatePlugin.call(this, pluginName);
+            await originalActivatePlugin.call(this, pluginName, mockWorld);
         };
     });
 
@@ -47,14 +47,14 @@ describe('PluginManager', () => {
     });
 
     beforeEach(() => {
-        pluginManager = new PluginManager(mockWorld, mockUiManager);
+        pluginManager = new PluginManager();
         activationOrder = [];
     });
 
     it('should register and activate a simple plugin', async () => {
         const pluginA = new MockPlugin('A');
         pluginManager.registerPlugin(pluginA);
-        await pluginManager.activatePlugin('A');
+        await pluginManager.activatePlugin('A', mockWorld);
 
         expect(pluginA.registered).toBe(true);
         expect(activationOrder).toEqual(['A']);
@@ -66,7 +66,7 @@ describe('PluginManager', () => {
         pluginManager.registerPlugin(pluginA);
         pluginManager.registerPlugin(pluginB);
 
-        await pluginManager.activatePlugin('B');
+        await pluginManager.activatePlugin('B', mockWorld);
 
         expect(pluginA.registered).toBe(true);
         expect(pluginB.registered).toBe(true);
@@ -84,7 +84,7 @@ describe('PluginManager', () => {
         pluginManager.registerPlugin(pluginC);
         pluginManager.registerPlugin(pluginD);
 
-        await pluginManager.activatePlugin('D');
+        await pluginManager.activatePlugin('D', mockWorld);
 
         expect(pluginA.registered).toBe(true);
         expect(pluginB.registered).toBe(true);
@@ -97,7 +97,7 @@ describe('PluginManager', () => {
         const pluginB = new MockPlugin('B', ['A']);
         pluginManager.registerPlugin(pluginB);
 
-        await expect(pluginManager.activatePlugin('B')).rejects.toThrow(
+        await expect(pluginManager.activatePlugin('B', mockWorld)).rejects.toThrow(
             'Plugin "A" not found. Make sure it is registered.'
         );
     });
@@ -105,7 +105,7 @@ describe('PluginManager', () => {
     it('should deactivate a plugin', async () => {
         const pluginA = new MockPlugin('A');
         pluginManager.registerPlugin(pluginA);
-        await pluginManager.activatePlugin('A');
+        await pluginManager.activatePlugin('A', mockWorld);
         pluginManager.deactivatePlugin('A');
 
         expect(pluginA.unregistered).toBe(true);

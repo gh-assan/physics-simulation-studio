@@ -50,14 +50,21 @@ export class ComponentManager {
         return entities;
     }
 
-    public getAllComponentsForEntity(entityID: number): IComponent[] {
-        const components: IComponent[] = [];
-        for (const store of this.componentStores.values()) {
+    public getAllComponentsForEntity(entityID: number): { [key: string]: IComponent } {
+        const components: { [key: string]: IComponent } = {};
+        for (const [componentName, store] of this.componentStores.entries()) {
             if (store[entityID] !== undefined) {
-                components.push(store[entityID]);
+                components[componentName] = store[entityID];
             }
         }
         return components;
+    }
+
+    public updateComponent<T extends IComponent>(entityID: number, componentName: string, newComponent: T): void {
+        const store = this.componentStores.get(componentName);
+        if (store) {
+            store[entityID] = newComponent;
+        }
     }
 
     public hasComponent(entityID: number, componentName: string): boolean {

@@ -12,6 +12,6 @@
       "@plugins/*": ["src/plugins/*"],
       "@studio/*": ["src/studio/*"]
     },
-    "typeRoots": ["./node_modules/@types", "./src"]
+    "typeRoots": ["./node_modules/@types"]
   }
 }
