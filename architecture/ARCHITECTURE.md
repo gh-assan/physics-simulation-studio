@@ -52,6 +52,19 @@ The project will follow a modular structure to enforce separation of concerns:
 
 ## 5. Testing Strategy
 
+**6. Styling Conventions: BEM**
+
+To ensure maintainable, scalable, and readable CSS, the project will adhere to the BEM (Block-Element-Modifier) methodology for all new and refactored stylesheets. BEM provides a strict naming convention that helps in organizing CSS classes, preventing naming conflicts, and promoting component reusability.
+
+**Naming Convention:**
+*   **Block:** `block-name` (e.g., `studio-panel`, `simulation-button`)
+*   **Element:** `block-name__element-name` (e.g., `studio-panel__header`, `simulation-button__icon`)
+*   **Modifier:** `block-name--modifier-name` or `block-name__element-name--modifier-name` (e.g., `studio-panel--dark-theme`, `simulation-button--active`)
+
+This convention will be applied to all custom CSS classes. For third-party libraries like Tweakpane, existing classes will be used as context selectors where necessary, but custom styling applied to them will follow BEM principles where applicable.
+
+## 7. Testing Strategy
+
 **A rigorous and comprehensive testing strategy is non-negotiable for the success of this project.** All code, from the core framework to individual plugins, must be covered by a suite of automated tests to ensure correctness, prevent regressions, and facilitate confident refactoring.
 
 The testing strategy will be multi-layered:
