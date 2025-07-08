@@ -6,6 +6,7 @@ module.exports = {
       tsconfig: 'tsconfig.json',
     }],
   },
+  testMatch: ['<rootDir>/src/**/*.test.ts'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     '@core/(.*)': '<rootDir>/src/core/$1',

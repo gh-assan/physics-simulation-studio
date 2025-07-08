@@ -41,11 +41,10 @@ describe('RenderSystem', () => {
         // Mock appendChild
         jest.spyOn(document.body, 'appendChild').mockImplementation((node: Node) => node);
         world = new World();
-        renderSystem = new RenderSystem();
-
         world.componentManager.registerComponent(PositionComponent.name, PositionComponent);
         world.componentManager.registerComponent(RotationComponent.name, RotationComponent);
         world.componentManager.registerComponent(RenderableComponent.name, RenderableComponent);
+        renderSystem = new RenderSystem();
     });
 
     it('should initialize Three.js components', () => {

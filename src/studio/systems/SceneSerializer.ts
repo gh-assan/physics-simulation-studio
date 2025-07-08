@@ -36,6 +36,7 @@ export class SceneSerializer {
                     if (componentConstructor) {
                         const componentInstance = new componentConstructor();
                         Object.assign(componentInstance, entityData.components[componentName]);
+                        Object.assign(componentInstance, entityData.components[componentName]);
                         world.componentManager.addComponent(entityId, componentName, componentInstance);
                     } else {
                         console.warn(`Unknown component type during deserialization: ${componentName}`);
