@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Simulation Studio</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: sans-serif;
+        }
+        #app-container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+        }
+        #viewport-container {
+            flex-grow: 1;
+            position: relative;
+        }
+        #ui-panel {
+            width: 300px;
+            background-color: #222;
+            color: #eee;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <div id="viewport-container">
+            <!-- Three.js canvas will be appended here -->
+        </div>
+        <div id="ui-panel">
+            <h2>Properties</h2>
+            <div id="tweakpane-container"></div>
+        </div>
+    </div>
+    <script type="module" src="./src/studio/main.ts"></script>
+</body>
+</html>

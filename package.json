@@ -20,7 +20,14 @@
   "homepage": "https://github.com/gh-assan/physics-simulation-studio#readme",
   "devDependencies": {
     "@types/jest": "^30.0.0",
+    "@types/three": "^0.178.0",
     "jest": "^30.0.4",
+    "jest-environment-jsdom": "^30.0.4",
     "ts-jest": "^29.4.0"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "^0.17.3",
+    "three": "^0.178.0",
+    "tweakpane": "^4.0.5"
   }
 }
