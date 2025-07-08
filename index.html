@@ -9,30 +9,108 @@
             margin: 0;
             overflow: hidden;
             font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        #top-bar {
+            height: 50px;
+            background-color: #333;
+            color: #eee;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+        #top-bar button {
+            background-color: #555;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin-right: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        #top-bar button:hover {
+            background-color: #777;
         }
         #app-container {
             display: flex;
+            flex-grow: 1;
             width: 100vw;
-            height: 100vh;
+        }
+        #left-panel {
+            width: 250px;
+            background-color: #2a2a2a;
+            color: #eee;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+            z-index: 90;
+        }
+        #scene-graph-container {
+            flex-grow: 1;
+            padding: 10px;
+            overflow-y: auto;
+            border-bottom: 1px solid #444;
+        }
+        #scene-graph-container h3 {
+            margin-top: 0;
+            color: #aaa;
+            font-size: 16px;
         }
         #viewport-container {
             flex-grow: 1;
             position: relative;
+            background-color: #1a1a1a;
+        }
+        #right-panel {
+            width: 300px;
+            background-color: #2a2a2a;
+            color: #eee;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+            z-index: 90;
         }
         #tweakpane-container {
-            width: 300px;
-            background-color: #222;
-            color: #eee;
+            flex-grow: 1;
             padding: 10px;
-            box-sizing: border-box;
             overflow-y: auto;
+        }
+        #tweakpane-container h3 {
+            margin-top: 0;
+            color: #aaa;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
+    <div id="top-bar">
+        <button id="play-button">Play</button>
+        <button id="pause-button">Pause</button>
+        <button id="reset-button">Reset</button>
+        <button id="add-box-button">Add Box</button>
+        <button id="add-sphere-button">Add Sphere</button>
+    </div>
     <div id="app-container">
-        <div id="viewport-container"></div>
-        <div id="tweakpane-container"></div>
+        <div id="left-panel">
+            <div id="scene-graph-container">
+                <h3>Scene Graph</h3>
+                <!-- Scene graph content will be populated here by JS -->
+            </div>
+        </div>
+        <div id="viewport-container">
+            <!-- Three.js canvas will be appended here by JS -->
+        </div>
+        <div id="right-panel">
+            <div id="tweakpane-container">
+                <h3>Properties</h3>
+                <!-- Tweakpane UI will be appended here by JS -->
+            </div>
+        </div>
     </div>
     <script type="module" src="./src/studio/main.ts"></script>
 </body>

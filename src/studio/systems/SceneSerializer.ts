@@ -39,9 +39,10 @@ export class SceneSerializer {
             const components: SerializedComponent[] = [];
             const entityComponents = world.componentManager.getAllComponentsForEntity(entityId);
 
-            for (const component of entityComponents) {
+            for (const componentName in entityComponents) {
+                const component = entityComponents[componentName];
                 components.push({
-                    type: component.constructor.name,
+                    type: componentName,
                     data: { ...component } // Shallow copy for now
                 });
             }

@@ -6,6 +6,8 @@ import { SceneSerializer } from '../systems/SceneSerializer';
 import { World } from '@core/ecs';
 import { PositionComponent, RenderableComponent } from '@core/components';
 import { getLocation } from '../helpers/locationHelper';
+import * as THREE from 'three';
+
 
 
 // Mock URL.createObjectURL and revokeObjectURL for JSDOM environment
@@ -58,7 +60,7 @@ describe('SceneSerializer', () => {
 
     beforeEach(() => {
         // Reset hash for each test
-        (getLocation().href as unknown as string) = '';
+        window.location.hash = '';
     });
 
     afterAll(() => {
@@ -68,7 +70,7 @@ describe('SceneSerializer', () => {
     it('should serialize a dummy world state to JSON', () => {
         const entity = world.entityManager.createEntity();
         world.componentManager.addComponent(entity, PositionComponent.name, new PositionComponent(1, 2, 3));
-        world.componentManager.addComponent(entity, RenderableComponent.name, new RenderableComponent('box'));
+        world.componentManager.addComponent(entity, RenderableComponent.name, new RenderableComponent(new THREE.Mesh()));
 
         const json = serializer.serialize(world);
         const parsed = JSON.parse(json);

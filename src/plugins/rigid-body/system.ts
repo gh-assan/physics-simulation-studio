@@ -4,19 +4,16 @@ import { RigidBodyComponent } from './components';
 import { PositionComponent, RotationComponent } from '../../core/components';
 
 export class PhysicsSystem extends System {
-    private physicsWrapper: PhysicsWrapper;
     private componentQuery = ['RigidBodyComponent', 'PositionComponent', 'RotationComponent'];
 
-    constructor(physicsWrapper: PhysicsWrapper) {
+    constructor() {
         super();
-        this.physicsWrapper = physicsWrapper;
     }
 
     public update(world: World, deltaTime: number): void {
-        // 1. Step the physics simulation
-        this.physicsWrapper.step(deltaTime);
+        // Physics world step is handled by RenderSystem
 
-        // 2. Synchronize physics state back to ECS components
+        // Synchronize physics state back to ECS components
         const entities = world.componentManager.getEntitiesWithComponents(this.componentQuery);
         for (const entityID of entities) {
             const rigidBodyComp = world.componentManager.getComponent<RigidBodyComponent>(entityID, 'RigidBodyComponent')!;

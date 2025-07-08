@@ -1,5 +1,4 @@
 import { PhysicsSystem } from '../system';
-import { PhysicsWrapper } from '../physics-wrapper';
 import { World } from '@core/ecs';
 import { PositionComponent, RotationComponent } from '@core/components';
 import { RigidBodyComponent } from '../components';
@@ -7,20 +6,17 @@ import RAPIER from '@dimforge/rapier3d-compat';
 
 describe('PhysicsSystem', () => {
     let world: World;
-    let physicsWrapper: PhysicsWrapper;
     let physicsSystem: PhysicsSystem;
 
     beforeEach(() => {
         world = new World();
-        physicsWrapper = new PhysicsWrapper();
-        physicsSystem = new PhysicsSystem(physicsWrapper);
+        physicsSystem = new PhysicsSystem();
 
         world.componentManager.registerComponent('PositionComponent');
         world.componentManager.registerComponent('RotationComponent');
         world.componentManager.registerComponent('RigidBodyComponent');
 
-        // Mock the physicsWrapper.step to prevent actual physics simulation
-        jest.spyOn(physicsWrapper, 'step').mockImplementation(() => {});
+        
     });
 
     it('should synchronize rigid body translation and rotation to ECS components', () => {

@@ -1,2 +1,2 @@
-export { ISimulationPlugin, UIManager } from './ISimulationPlugin';
+export { ISimulationPlugin } from './ISimulationPlugin';
 export { PluginManager } from './PluginManager';

@@ -1,17 +1,14 @@
 import RigidBodyPlugin from '../index';
 import { World } from '@core/ecs';
-import { UIManager } from '@core/plugin';
 import { PhysicsSystem } from '../system';
 import { RigidBodyComponent } from '../components';
 
 describe('RigidBodyPlugin', () => {
     let world: World;
-    let uiManager: UIManager;
     let plugin: RigidBodyPlugin;
 
     beforeEach(() => {
         world = new World();
-        uiManager = {} as UIManager; // Mock UIManager
         plugin = new RigidBodyPlugin();
 
         // Spy on the registerComponent and registerSystem methods
@@ -29,7 +26,7 @@ describe('RigidBodyPlugin', () => {
     });
 
     it('should register RigidBodyComponent and PhysicsSystem when activated', () => {
-        plugin.register(world, uiManager);
+        plugin.register(world);
 
         expect(world.componentManager.registerComponent).toHaveBeenCalledWith('RigidBodyComponent');
         expect(world.systemManager.registerSystem).toHaveBeenCalledTimes(1);
@@ -39,7 +36,7 @@ describe('RigidBodyPlugin', () => {
     it('should log messages on register and unregister', () => {
         const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
-        plugin.register(world, uiManager);
+        plugin.register(world);
         expect(consoleSpy).toHaveBeenCalledWith('Registering RigidBodyPlugin...');
 
         plugin.unregister();

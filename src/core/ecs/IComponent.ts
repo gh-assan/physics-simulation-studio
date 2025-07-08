@@ -1,1 +1,3 @@
-export interface IComponent {}
+export interface IComponent {
+    [key: string]: any;
+}

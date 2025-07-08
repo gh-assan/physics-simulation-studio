@@ -1,6 +1,5 @@
-import { ISimulationPlugin, UIManager } from '../../core/plugin';
+import { ISimulationPlugin } from '../../core/plugin';
 import { World } from '../../core/ecs';
-import { PhysicsWrapper } from './physics-wrapper';
 import { PhysicsSystem } from './system';
 import { RigidBodyComponent } from './components';
 
@@ -13,21 +12,15 @@ class RigidBodyPlugin implements ISimulationPlugin {
         return [];
     }
 
-    public register(world: World, uiManager: UIManager): void {
+    public register(world: World): void {
         console.log("Registering RigidBodyPlugin...");
 
-        // 1. Initialize the physics engine wrapper
-        const physicsWrapper = new PhysicsWrapper();
+        // 1. Register components with the ECS
+        world.componentManager.registerComponent(RigidBodyComponent.name);
 
-        // 2. Register components with the ECS
-        world.componentManager.registerComponent('RigidBodyComponent');
-
-        // 3. Register the system with the ECS
-        const physicsSystem = new PhysicsSystem(physicsWrapper);
+        // 2. Register the system with the ECS
+        const physicsSystem = new PhysicsSystem();
         world.systemManager.registerSystem(physicsSystem);
-
-        // 4. Register UI controls (details in Section 4)
-        // uiManager.registerComponentControls('RigidBodyComponent',...);
     }
 
     public unregister(): void {

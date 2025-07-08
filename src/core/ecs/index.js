@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.World = exports.SystemManager = exports.ComponentManager = exports.EntityManager = exports.System = void 0;
+var System_1 = require("./System");
+Object.defineProperty(exports, "System", { enumerable: true, get: function () { return System_1.System; } });
+var EntityManager_1 = require("./EntityManager");
+Object.defineProperty(exports, "EntityManager", { enumerable: true, get: function () { return EntityManager_1.EntityManager; } });
+var ComponentManager_1 = require("./ComponentManager");
+Object.defineProperty(exports, "ComponentManager", { enumerable: true, get: function () { return ComponentManager_1.ComponentManager; } });
+var SystemManager_1 = require("./SystemManager");
+Object.defineProperty(exports, "SystemManager", { enumerable: true, get: function () { return SystemManager_1.SystemManager; } });
+var World_1 = require("./World");
+Object.defineProperty(exports, "World", { enumerable: true, get: function () { return World_1.World; } });

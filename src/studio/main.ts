@@ -1,34 +1,34 @@
 import { World } from '@core/ecs';
 import { PluginManager } from '@core/plugin';
-import { StudioUIManager } from './uiManager';
+import { UIManager } from './uiManager';
 import { RenderSystem } from './systems/RenderSystem';
-import { PropertyInspectorSystem } from './systems/PropertyInspectorSystem';
-import { SceneSerializer } from './systems/SceneSerializer';
+import { PositionComponent, RenderableComponent, RotationComponent, SelectableComponent } from '@core/components';
+import { RigidBodyComponent } from '@plugins/rigid-body/components';
+import RigidBodyPlugin from '@plugins/rigid-body';
 
 // Initialize the ECS World
 const world = new World();
 
+// Register core components
+world.componentManager.registerComponent(PositionComponent.name);
+world.componentManager.registerComponent(RenderableComponent.name);
+world.componentManager.registerComponent(RotationComponent.name);
+world.componentManager.registerComponent(SelectableComponent.name);
+world.componentManager.registerComponent(RigidBodyComponent.name);
+
 // Initialize the Plugin Manager
 const pluginManager = new PluginManager();
 
-// Initialize the UI Manager
-const uiManager = new StudioUIManager();
+// Register RigidBodyPlugin
+pluginManager.registerPlugin(new RigidBodyPlugin());
+pluginManager.activatePlugin("rigid-body-physics-rapier", world);
 
 // Initialize Render System
-const viewportContainer = document.getElementById('viewport-container');
-if (!viewportContainer) {
-    throw new Error("Viewport container not found!");
-}
-const renderSystem = new RenderSystem(viewportContainer);
+const renderSystem = new RenderSystem();
 world.systemManager.registerSystem(renderSystem);
 
-// Initialize Property Inspector System
-const propertyInspectorSystem = new PropertyInspectorSystem(uiManager);
-world.systemManager.registerSystem(propertyInspectorSystem);
-
-// Initialize Scene Serializer
-const sceneSerializer = new SceneSerializer();
-sceneSerializer.loadFromUrl(world);
+// Initialize the UI Manager
+const uiManager = new UIManager(world, renderSystem);
 
 // Main application loop
 const animate = () => {
