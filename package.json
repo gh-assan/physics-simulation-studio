@@ -4,7 +4,9 @@
   "description": "Physics Simulation Studio is an open-source project to build a flexible, high-performance, and user-friendly environment where creators can design, simulate, and share a wide array of physical phenomena directly in the browser.",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "tsc",
+    "start": "http-server ."
   },
   "repository": {
     "type": "git",
@@ -23,7 +25,8 @@
     "@types/three": "^0.178.0",
     "jest": "^30.0.4",
     "jest-environment-jsdom": "^30.0.4",
-    "ts-jest": "^29.4.0"
+    "ts-jest": "^29.4.0",
+    "http-server": "^14.1.1"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.17.3",

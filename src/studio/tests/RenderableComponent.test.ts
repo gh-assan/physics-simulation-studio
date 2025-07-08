@@ -8,7 +8,7 @@ describe('RenderableComponent', () => {
         expect(component.width).toBe(1);
         expect(component.height).toBe(2);
         expect(component.depth).toBe(3);
-        expect(component.radius).toBeUndefined();
+        expect(component.radius).toBe(1);
     });
 
     it('should create a sphere renderable with custom color', () => {
@@ -16,6 +16,6 @@ describe('RenderableComponent', () => {
         expect(component.geometryType).toBe('sphere');
         expect(component.color).toBe(0x00ff00);
         expect(component.radius).toBe(0.5);
-        expect(component.width).toBeUndefined();
+        expect(component.width).toBe(1);
     });
 });

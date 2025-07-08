@@ -1,4 +1,5 @@
-import { PropertyInspectorSystem, SelectableComponent } from '../systems/PropertyInspectorSystem';
+import { PropertyInspectorSystem } from '../systems/PropertyInspectorSystem';
+import { SelectableComponent } from '@core/components';
 import { StudioUIManager } from '../uiManager';
 import { World } from '@core/ecs';
 import { PositionComponent } from '@core/components';
@@ -41,7 +42,8 @@ describe('PropertyInspectorSystem', () => {
 
         expect(uiManager.clearControls).toHaveBeenCalledTimes(1);
         // Expect registerComponentControls to be called for the dummy component in PropertyInspectorSystem
-        expect(uiManager.registerComponentControls).toHaveBeenCalledWith('DummyComponent', expect.any(Object));
+        expect(uiManager.registerComponentControls).toHaveBeenCalledWith('SelectableComponent', expect.any(SelectableComponent));
+        expect(uiManager.registerComponentControls).toHaveBeenCalledWith('PositionComponent', expect.any(PositionComponent));
     });
 
     it('should not update the property inspector if no selectable entities exist', () => {

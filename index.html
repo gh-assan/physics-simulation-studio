@@ -19,7 +19,7 @@
             flex-grow: 1;
             position: relative;
         }
-        #ui-panel {
+        #tweakpane-container {
             width: 300px;
             background-color: #222;
             color: #eee;
@@ -31,13 +31,8 @@
 </head>
 <body>
     <div id="app-container">
-        <div id="viewport-container">
-            <!-- Three.js canvas will be appended here -->
-        </div>
-        <div id="ui-panel">
-            <h2>Properties</h2>
-            <div id="tweakpane-container"></div>
-        </div>
+        <div id="viewport-container"></div>
+        <div id="tweakpane-container"></div>
     </div>
     <script type="module" src="./src/studio/main.ts"></script>
 </body>

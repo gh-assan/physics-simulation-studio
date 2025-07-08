@@ -572,6 +572,18 @@ The ideal solution is a lightweight, dependency-free library designed specifical
 
 Tweakpane is perfectly suited for building the "Property Inspector" panel. Its API allows for the programmatic creation of controls, which, as will be discussed in the next section, enables a fully data-driven UI that can adapt to any simulation plugin loaded into the studio.
 
+### 3.4. Development Server: http-server
+
+For local development and testing, a simple, zero-configuration command-line HTTP server is essential. **http-server** is chosen for its ease of use and minimal setup, allowing developers to quickly serve static files from the project directory.
+
+#### http-server Advantages
+
+- **Simplicity**: Provides a straightforward command to start a local server.
+- **Zero Configuration**: Requires no complex setup files, making it ideal for rapid development.
+- **Lightweight**: A small footprint with no unnecessary dependencies.
+
+This tool facilitates easy access to the compiled application in a browser during development, without the need for a more complex build pipeline or server setup.
+
 ## Section 4: The Simulation Studio: UI/UX and Generic Parameters
 
 With the core architecture and technology stack defined, the focus now shifts to the user-facing aspects of the application. A powerful engine is only useful if its capabilities are exposed through an intuitive and effective user interface. This section outlines the design of the studio's UI, defines a structured taxonomy of generic simulation parameters, and details a strategy for data persistence and sharing in a backend-less environment.
@@ -780,31 +792,31 @@ By adhering to these principles, it is possible to build a simulation studio tha
 
 With the foundational architecture in place, development can proceed along a logical, iterative path. A potential roadmap for the studio's evolution could include the following phases:
 
-#### Phase 1: Core Implementation
+#### Phase 1: Core Implementation (Completed/In Progress)
 
-- Build the minimal, type-safe ECS framework (World, EntityManager, ComponentManager, SystemManager)
-- Implement the PluginManager and the ISimulationPlugin contract
-- Develop the first RigidBodyPlugin integrating Rapier.rs for 2D and 3D rigid-body dynamics
+- **Build the minimal, type-safe ECS framework**: *Completed*. The core ECS (World, EntityManager, ComponentManager, SystemManager) is implemented and tested.
+- **Implement the PluginManager and the ISimulationPlugin contract**: *Completed*. The plugin system is in place, allowing for modular extensions.
+- **Develop the first RigidBodyPlugin integrating Rapier.rs for 2D and 3D rigid-body dynamics**: *In Progress*. The basic structure for the rigid-body plugin is defined, and integration with Rapier.rs is underway.
 
-#### Phase 2: Studio UI and Interaction
+#### Phase 2: Studio UI and Interaction (In Progress/Planned)
 
-- Build the core studio UI shell, including the main viewport, toolbar, and timeline controls
-- Integrate a rendering engine (e.g., Three.js) via a decoupled RenderSystem
-- Implement the data-driven PropertyInspectorSystem using Tweakpane
-- Develop the SceneSerializer for saving/loading scenes and enabling sharing via URL parameters
+- **Build the core studio UI shell, including the main viewport, toolbar, and timeline controls**: *In Progress*. Initial UI elements are being developed.
+- **Integrate a rendering engine (e.g., Three.js) via a decoupled RenderSystem**: *In Progress*. Three.js integration is being set up.
+- **Implement the data-driven PropertyInspectorSystem using Tweakpane**: *Planned*. This will be a key feature for real-time parameter tweaking.
+- **Develop the SceneSerializer for saving/loading scenes and enabling sharing via URL parameters**: *Planned*. Essential for persistence and sharing.
 
-#### Phase 3: Expanding Simulation Capabilities
+#### Phase 3: Expanding Simulation Capabilities (Planned)
 
 - Develop a second major simulation plugin, such as one for soft-body physics or fluid dynamics (leveraging the experimental SPH support in engines like Cannon-es as a reference)
 - This step would serve to validate the extensibility of the core architecture
 - Explore more advanced simulation types, such as optics, which was a planned feature for projects like Physion
 
-#### Phase 4: Community and Ecosystem
+#### Phase 4: Community and Ecosystem (Planned)
 
 - Formalize the plugin API and create detailed documentation for third-party developers
 - Build a simple online repository or registry where users can discover and share community-created plugins, similar to the component ecosystems seen in frameworks like A-Frame
 
-#### Phase 5: Beyond the Frontend
+#### Phase 5: Beyond the Frontend (Planned)
 
 - As the studio matures, consider developing an optional backend service
 - This could provide user accounts, cloud-based storage for scenes and assets, and collaborative editing features

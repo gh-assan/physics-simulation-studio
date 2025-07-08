@@ -12,6 +12,7 @@ jest.mock('three', () => ({
     Scene: jest.fn(() => ({
         add: jest.fn(),
         background: null,
+        remove: jest.fn(),
     })),
     PerspectiveCamera: jest.fn(() => ({
         position: { z: 0 },
@@ -26,12 +27,19 @@ jest.mock('three', () => ({
     BoxGeometry: jest.fn(),
     SphereGeometry: jest.fn(),
     PlaneGeometry: jest.fn(),
-    MeshBasicMaterial: jest.fn(() => ({})),
+    MeshStandardMaterial: jest.fn(() => ({})), // Changed from MeshBasicMaterial
     Mesh: jest.fn(() => ({
         position: { set: jest.fn() },
         quaternion: { set: jest.fn() },
     })),
     Color: jest.fn(),
+    AmbientLight: jest.fn(() => ({})),
+    DirectionalLight: jest.fn(() => ({
+        position: {
+            set: jest.fn().mockReturnThis(), // Mock set to return itself for chaining
+            normalize: jest.fn(),
+        },
+    })),
 }));
 
 describe('RenderSystem', () => {
@@ -49,19 +57,26 @@ describe('RenderSystem', () => {
         (THREE.BoxGeometry as any).mockClear();
         (THREE.SphereGeometry as any).mockClear();
         (THREE.PlaneGeometry as any).mockClear();
-        (THREE.MeshBasicMaterial as any).mockClear();
+        (THREE.MeshStandardMaterial as any).mockClear();
         (THREE.Mesh as any).mockClear();
         (THREE.Color as any).mockClear();
 
         // Mock the container element
         document.body.innerHTML = '<div id="viewport-container"></div>';
+        const viewportContainer = document.getElementById('viewport-container') as HTMLElement;
+        // Set dimensions for the mock container
+        Object.defineProperty(viewportContainer, 'clientWidth', { writable: true, value: 1024 });
+        Object.defineProperty(viewportContainer, 'clientHeight', { writable: true, value: 768 });
 
         world = new World();
-        renderSystem = new RenderSystem();
+        renderSystem = new RenderSystem(viewportContainer);
 
         mockScene = (THREE.Scene as any).mock.results[0]?.value;
         mockCamera = (THREE.PerspectiveCamera as any).mock.results[0]?.value;
         mockRenderer = (THREE.WebGLRenderer as jest.Mock).mock.results[0]?.value;
+
+        // Clear mockScene.add calls
+        mockScene.add.mockClear();
 
         world.componentManager.registerComponent('PositionComponent');
         world.componentManager.registerComponent('RotationComponent');
@@ -89,7 +104,7 @@ describe('RenderSystem', () => {
         renderSystem.update(world, 0.16);
 
         expect(THREE.BoxGeometry).toHaveBeenCalledWith(1, 1, 1);
-        expect(THREE.MeshBasicMaterial).toHaveBeenCalledWith({ color: 0xff0000 });
+        expect(THREE.MeshStandardMaterial).toHaveBeenCalledWith({ color: 0xff0000 });
         expect(THREE.Mesh).toHaveBeenCalledTimes(1);
         expect(mockScene.add).toHaveBeenCalledTimes(1);
 

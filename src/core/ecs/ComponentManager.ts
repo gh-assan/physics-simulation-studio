@@ -49,4 +49,18 @@ export class ComponentManager {
         }
         return entities;
     }
+
+    public getAllComponentsForEntity(entityID: number): IComponent[] {
+        const components: IComponent[] = [];
+        for (const store of this.componentStores.values()) {
+            if (store[entityID] !== undefined) {
+                components.push(store[entityID]);
+            }
+        }
+        return components;
+    }
+
+    public hasComponent(entityID: number, componentName: string): boolean {
+        return this.componentStores.get(componentName)?.[entityID] !== undefined;
+    }
 }
