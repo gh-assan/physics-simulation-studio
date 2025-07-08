@@ -18,8 +18,8 @@ const sceneSerializer = new SceneSerializer();
 world.componentManager.registerComponent(PositionComponent.name, PositionComponent);
 world.componentManager.registerComponent(RenderableComponent.name, RenderableComponent);
 world.componentManager.registerComponent(SelectableComponent.name, SelectableComponent);
-
 pluginManager.registerPlugin(new FlagSimulationPlugin());
+await pluginManager.activatePlugin('flag-simulation');
 
 // Example: Create a flag entity
 const flagEntity = world.entityManager.createEntity();
