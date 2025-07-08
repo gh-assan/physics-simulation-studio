@@ -20,7 +20,16 @@ export class RenderSystem extends System {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(this.renderer.domElement);
 
-        this.camera.position.z = 5;
+        this.camera.position.z = 20;
+        this.camera.position.y = 5;
+
+        // Add lights
+        const ambientLight = new THREE.AmbientLight(0x404040); // soft white light
+        this.scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // white light, 0.5 intensity
+        directionalLight.position.set(1, 1, 1).normalize();
+        this.scene.add(directionalLight);
 
         // Handle window resizing
         window.addEventListener('resize', () => {
@@ -82,9 +91,9 @@ export class RenderSystem extends System {
             if (!flagMesh || !(flagMesh.userData && flagMesh.userData.isFlag)) {
                 // If it's not a flag mesh or doesn't exist, create it
                 const geometry = new THREE.BufferGeometry();
-                const material = new THREE.MeshBasicMaterial({ color: renderable.color, side: THREE.DoubleSide });
+                const material = new THREE.MeshStandardMaterial({ color: renderable.color, side: THREE.DoubleSide });
                 flagMesh = new THREE.Mesh(geometry, material);
-                flagMesh.userData.isFlag = true; // Mark this mesh as a flag
+                flagMesh.userData = { isFlag: true }; // Initialize userData
                 this.scene.add(flagMesh);
                 this.meshes.set(entityId, flagMesh);
             }

@@ -22,8 +22,8 @@ interface Spring {
 }
 
 export class FlagSystem extends System {
-    private gravity: { x: number; y: number; z: number; } = { x: 0, y: -9.81, z: 0 }; // m/s^2
-    private wind: { x: number; y: number; z: number; } = { x: 0, y: 0, z: 0 }; // Placeholder for now
+    public gravity: { x: number; y: number; z: number; } = { x: 0, y: -9.81, z: 0 }; // m/s^2
+    public wind: { x: number; y: number; z: number; } = { x: 0, y: 0, z: 0 }; // Placeholder for now
 
     constructor() {
         super();
