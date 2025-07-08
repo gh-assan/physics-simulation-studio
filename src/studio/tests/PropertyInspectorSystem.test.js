@@ -1,56 +1,17 @@
-// Mock the Tweakpane library
-jest.mock('tweakpane', () => {
-    const mockChildren = [];
-    function makeFolder(options) {
-        return {
-            addBinding: jest.fn(() => ({ on: jest.fn() })),
-            dispose: jest.fn(),
-            options: options,
-        };
-    }
-    const mockPane = {
-        addFolder: jest.fn((options) => {
-            const folder = makeFolder(options);
-            mockChildren.push(folder);
-            return folder;
-        }),
-        dispose: jest.fn(),
-        children: mockChildren,
-        remove: jest.fn((child) => {
-            const index = mockChildren.indexOf(child);
-            if (index > -1) {
-                mockChildren.splice(index, 1);
-            }
-        }),
-        addBinding: jest.fn(() => ({ on: jest.fn() })),
-    };
-    mockPane.children.forEach(folder => {
-        folder.addBinding = jest.fn(() => ({ on: jest.fn() }));
-    });
-    return {
-        Pane: jest.fn(() => mockPane),
-    };
-});
-
-require('./testDomSetup');
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-let PropertyInspectorSystem_1;
-let components_1;
-let uiManager_1;
-let ecs_1;
-let components_2;
+require("./testDomSetup");
+const PropertyInspectorSystem_1 = require("../systems/PropertyInspectorSystem");
+const components_1 = require("@core/components");
+const uiManager_1 = require("../uiManager");
+const ecs_1 = require("@core/ecs");
+const components_2 = require("@core/components");
+
 describe('PropertyInspectorSystem', () => {
     let world;
     let uiManager;
     let propertyInspectorSystem;
     beforeEach(() => {
-        jest.resetModules();
-        PropertyInspectorSystem_1 = require("../systems/PropertyInspectorSystem");
-        components_1 = require("@core/components");
-        uiManager_1 = require("../uiManager");
-        ecs_1 = require("@core/ecs");
-        components_2 = require("@core/components");
         // Create required DOM elements
         const ids = [
             'app-container', 'viewport-container', 'tweakpane-container', 'scene-graph-container',
@@ -77,7 +38,6 @@ describe('PropertyInspectorSystem', () => {
         jest.spyOn(uiManager, 'registerComponentControls');
     });
     afterEach(() => {
-        jest.restoreAllMocks();
         // Clean up injected DOM elements
         const ids = [
             'app-container', 'viewport-container', 'tweakpane-container', 'scene-graph-container',
@@ -85,8 +45,10 @@ describe('PropertyInspectorSystem', () => {
         ];
         ids.forEach(id => {
             const el = document.getElementById(id);
-            if (el) el.remove();
+            if (el)
+                el.remove();
         });
+        jest.restoreAllMocks();
     });
     it('should select the first selectable entity and update the property inspector', () => {
         const entity1 = world.entityManager.createEntity();

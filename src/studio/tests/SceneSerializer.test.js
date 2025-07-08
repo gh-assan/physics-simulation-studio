@@ -48,7 +48,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const SceneSerializer_1 = require("../systems/SceneSerializer");
 const ecs_1 = require("@core/ecs");
 const components_1 = require("@core/components");
-const locationHelper_1 = require("../helpers/locationHelper");
 const THREE = __importStar(require("three"));
 // Mock URL.createObjectURL and revokeObjectURL for JSDOM environment
 Object.defineProperty(window, 'URL', {
@@ -93,7 +92,7 @@ describe('SceneSerializer', () => {
     });
     beforeEach(() => {
         // Reset hash for each test
-        (0, locationHelper_1.getLocation)().href = '';
+        window.location.hash = '';
     });
     afterAll(() => {
         // No need to restore locationSpy as window.location is mocked using Object.defineProperty

@@ -14,17 +14,38 @@ jest.mock('@dimforge/rapier3d-compat', () => ({
     Quaternion: jest.fn((x, y, z, w) => ({ x, y, z, w })),
 }));
 
-jest.mock('tweakpane', () => ({
-    Pane: jest.fn(() => ({
-        addFolder: jest.fn(() => ({
-            addBinding: jest.fn(),
+jest.mock('tweakpane', () => {
+    const mockChildren: any[] = [];
+    function makeFolder(options: any) {
+        return {
+            addBinding: jest.fn(() => ({ on: jest.fn() })),
             dispose: jest.fn(),
-        })),
-        children: [], // Add children property for clearControls to iterate
+            options: options,
+        };
+    }
+    const mockPane = {
+        addFolder: jest.fn((options) => {
+            const folder = makeFolder(options);
+            mockChildren.push(folder);
+            return folder;
+        }),
         dispose: jest.fn(),
-    })),
-    FolderApi: jest.fn(), // Keep FolderApi mock if it's used for typing
-}));
+        children: mockChildren,
+        remove: jest.fn((child) => {
+            const index = mockChildren.indexOf(child);
+            if (index > -1) {
+                mockChildren.splice(index, 1);
+            }
+        }),
+        addBinding: jest.fn(() => ({ on: jest.fn() })),
+    };
+    mockPane.children.forEach(folder => {
+        folder.addBinding = jest.fn(() => ({ on: jest.fn() }));
+    });
+    return {
+        Pane: jest.fn(() => mockPane),
+    };
+});
 
 jest.mock('three', () => ({
     Scene: jest.fn(() => ({

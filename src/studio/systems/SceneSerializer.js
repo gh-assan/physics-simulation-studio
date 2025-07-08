@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SceneSerializer = void 0;
 const components_1 = require("@core/components");
+const components_2 = require("@plugins/rigid-body/components");
 const locationHelper_1 = require("../helpers/locationHelper");
 class SceneSerializer {
     constructor() {
@@ -20,6 +21,7 @@ class SceneSerializer {
         this.registerComponent(components_1.RenderableComponent);
         this.registerComponent(components_1.RotationComponent);
         this.registerComponent(components_1.SelectableComponent);
+        this.registerComponent(components_2.RigidBodyComponent);
         // Add other components as they are created
     }
     registerComponent(componentConstructor) {

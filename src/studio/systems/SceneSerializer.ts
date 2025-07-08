@@ -1,5 +1,6 @@
 import { World, IComponent } from '@core/ecs';
 import { PositionComponent, RenderableComponent, RotationComponent, SelectableComponent } from '@core/components';
+import { RigidBodyComponent } from '@plugins/rigid-body/components';
 import { getLocation } from '../helpers/locationHelper';
 
 interface SerializedComponent {
@@ -25,6 +26,7 @@ export class SceneSerializer {
         this.registerComponent(RenderableComponent);
         this.registerComponent(RotationComponent);
         this.registerComponent(SelectableComponent);
+        this.registerComponent(RigidBodyComponent);
         // Add other components as they are created
     }
 
