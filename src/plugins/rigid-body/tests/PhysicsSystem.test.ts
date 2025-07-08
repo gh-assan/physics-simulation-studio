@@ -12,9 +12,9 @@ describe('PhysicsSystem', () => {
         world = new World();
         physicsSystem = new PhysicsSystem();
 
-        world.componentManager.registerComponent('PositionComponent');
-        world.componentManager.registerComponent('RotationComponent');
-        world.componentManager.registerComponent('RigidBodyComponent');
+        world.componentManager.registerComponent(PositionComponent.name, PositionComponent);
+        world.componentManager.registerComponent(RotationComponent.name, RotationComponent);
+        world.componentManager.registerComponent(RigidBodyComponent.name, RigidBodyComponent);
 
         
     });
@@ -34,9 +34,9 @@ describe('PhysicsSystem', () => {
         const posComp = new PositionComponent(0, 0, 0);
         const rotComp = new RotationComponent(0, 0, 0, 0);
 
-        world.componentManager.addComponent(entity, 'RigidBodyComponent', rigidBodyComp);
-        world.componentManager.addComponent(entity, 'PositionComponent', posComp);
-        world.componentManager.addComponent(entity, 'RotationComponent', rotComp);
+        world.componentManager.addComponent(entity, RigidBodyComponent.name, rigidBodyComp);
+        world.componentManager.addComponent(entity, PositionComponent.name, posComp);
+        world.componentManager.addComponent(entity, RotationComponent.name, rotComp);
 
         physicsSystem.update(world, 0.16);
 

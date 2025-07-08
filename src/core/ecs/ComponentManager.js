@@ -4,11 +4,16 @@ exports.ComponentManager = void 0;
 class ComponentManager {
     constructor() {
         this.componentStores = new Map();
+        this.componentConstructors = new Map();
     }
-    registerComponent(componentName) {
+    registerComponent(componentName, constructor) {
         this.componentStores.set(componentName, []);
+        this.componentConstructors.set(componentName, constructor);
     }
     addComponent(entityID, componentName, component) {
+        if (!this.componentStores.has(componentName)) {
+            this.componentStores.set(componentName, []);
+        }
         this.componentStores.get(componentName)[entityID] = component;
     }
     getComponent(entityID, componentName) {
@@ -21,12 +26,13 @@ class ComponentManager {
             delete store[entityID];
         }
     }
-    getEntitiesWithComponents(componentNames) {
+    getEntitiesWithComponents(componentConstructors) {
         var _a;
         const entities = [];
-        if (componentNames.length === 0) {
+        if (componentConstructors.length === 0) {
             return [];
         }
+        const componentNames = componentConstructors.map(c => c.name);
         const firstStore = this.componentStores.get(componentNames[0]);
         if (!firstStore) {
             return [];
@@ -65,6 +71,10 @@ class ComponentManager {
     hasComponent(entityID, componentName) {
         var _a;
         return ((_a = this.componentStores.get(componentName)) === null || _a === void 0 ? void 0 : _a[entityID]) !== undefined;
+    }
+    clear() {
+        this.componentStores.clear();
+        // Do NOT clear componentConstructors here; keep registrations for deserialization
     }
 }
 exports.ComponentManager = ComponentManager;

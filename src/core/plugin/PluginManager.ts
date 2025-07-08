@@ -4,12 +4,17 @@ import { ISimulationPlugin } from './ISimulationPlugin';
 export class PluginManager {
     private availablePlugins = new Map<string, ISimulationPlugin>();
     private activePlugins = new Map<string, ISimulationPlugin>();
+    private world: World;
+
+    constructor(world: World) {
+        this.world = world;
+    }
 
     public registerPlugin(plugin: ISimulationPlugin): void {
         this.availablePlugins.set(plugin.getName(), plugin);
     }
 
-    public async activatePlugin(pluginName: string, world: World): Promise<void> {
+    public async activatePlugin(pluginName: string): Promise<void> {
         if (this.activePlugins.has(pluginName)) {
             return; // Already active
         }
@@ -22,11 +27,11 @@ export class PluginManager {
         // Resolve and activate dependencies recursively
         const dependencies = plugin.getDependencies();
         for (const depName of dependencies) {
-            await this.activatePlugin(depName, world);
+            await this.activatePlugin(depName);
         }
 
         // Register the plugin itself
-        plugin.register(world);
+        plugin.register(this.world);
         this.activePlugins.set(pluginName, plugin);
         console.log(`Plugin "${pluginName}" activated.`);
     }

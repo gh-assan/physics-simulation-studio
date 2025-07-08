@@ -32,86 +32,73 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RenderSystem = void 0;
 const THREE = __importStar(require("three"));
-const ecs_1 = require("@core/ecs");
-const rapier3d_compat_1 = __importDefault(require("@dimforge/rapier3d-compat"));
-class RenderSystem extends ecs_1.System {
+const System_1 = require("../../core/ecs/System");
+const PositionComponent_1 = require("../../core/components/PositionComponent");
+const RotationComponent_1 = require("../../core/components/RotationComponent");
+const RenderableComponent_1 = require("../../core/components/RenderableComponent");
+class RenderSystem extends System_1.System {
     constructor() {
         super();
+        this.meshes = new Map();
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        this.renderer = new THREE.WebGLRenderer({ antialias: true });
-        this.raycaster = new THREE.Raycaster();
-        this.entityMeshMap = new Map();
+        this.renderer = new THREE.WebGLRenderer();
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.setClearColor(0x222222);
-        this.camera.position.set(0, 10, 20);
-        this.camera.lookAt(0, 0, 0);
-        // Add some lighting
-        const ambientLight = new THREE.AmbientLight(0x404040); // soft white light
-        this.scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-        directionalLight.position.set(1, 1, 1).normalize();
-        this.scene.add(directionalLight);
-        // Add a ground plane
-        const groundGeometry = new THREE.PlaneGeometry(100, 100);
-        const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x808080, side: THREE.DoubleSide });
-        const groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
-        groundMesh.rotation.x = Math.PI / 2;
-        this.scene.add(groundMesh);
-        // Initialize Rapier physics world
-        const gravity = new rapier3d_compat_1.default.Vector3(0.0, -9.81, 0.0);
-        this.physicsWorld = new rapier3d_compat_1.default.World(gravity);
-        // Create a static ground collider in Rapier
-        const groundColliderDesc = rapier3d_compat_1.default.ColliderDesc.cuboid(50.0, 0.1, 50.0);
-        this.physicsWorld.createCollider(groundColliderDesc);
+        document.body.appendChild(this.renderer.domElement);
+        this.camera.position.z = 5;
+        // Handle window resizing
+        window.addEventListener('resize', () => {
+            this.camera.aspect = window.innerWidth / window.innerHeight;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+        });
     }
     update(world, deltaTime) {
-        // Step the physics world
-        this.physicsWorld.step();
-        // Synchronize physics bodies with renderable meshes
-        const entities = world.componentManager.getEntitiesWithComponents(['PositionComponent', 'RenderableComponent', 'RigidBodyComponent']);
+        const entities = world.componentManager.getEntitiesWithComponents([
+            PositionComponent_1.PositionComponent,
+            RotationComponent_1.RotationComponent,
+            RenderableComponent_1.RenderableComponent
+        ]);
         for (const entityId of entities) {
-            const positionComp = world.componentManager.getComponent(entityId, 'PositionComponent');
-            const renderableComp = world.componentManager.getComponent(entityId, 'RenderableComponent');
-            const rigidBodyComp = world.componentManager.getComponent(entityId, 'RigidBodyComponent');
-            const rotationComp = world.componentManager.getComponent(entityId, 'RotationComponent');
-            if (positionComp && renderableComp && rigidBodyComp) {
-                const mesh = renderableComp.mesh;
-                const rigidBody = rigidBodyComp.body;
-                const newPosition = rigidBody.translation();
-                mesh.position.set(newPosition.x, newPosition.y, newPosition.z);
-                positionComp.x = newPosition.x;
-                positionComp.y = newPosition.y;
-                positionComp.z = newPosition.z;
-                const newRotation = rigidBody.rotation();
-                mesh.quaternion.set(newRotation.x, newRotation.y, newRotation.z, newRotation.w);
-                if (rotationComp) {
-                    rotationComp.x = newRotation.x;
-                    rotationComp.y = newRotation.y;
-                    rotationComp.z = newRotation.z;
-                    rotationComp.w = newRotation.w;
-                }
+            const position = world.componentManager.getComponent(entityId, PositionComponent_1.PositionComponent.name);
+            const rotation = world.componentManager.getComponent(entityId, RotationComponent_1.RotationComponent.name);
+            const renderable = world.componentManager.getComponent(entityId, RenderableComponent_1.RenderableComponent.name);
+            if (!position || !rotation || !renderable) {
+                continue; // Skip if any required component is missing
             }
+            let mesh = this.meshes.get(entityId);
+            if (!mesh) {
+                // Create new mesh if it doesn't exist
+                const geometry = this.createGeometry(renderable.geometry);
+                const material = new THREE.MeshBasicMaterial({ color: renderable.color });
+                mesh = new THREE.Mesh(geometry, material);
+                this.scene.add(mesh);
+                this.meshes.set(entityId, mesh);
+            }
+            // Update mesh position and rotation
+            mesh.position.set(position.x, position.y, position.z);
+            mesh.rotation.setFromQuaternion(new THREE.Quaternion(rotation.x, rotation.y, rotation.z, rotation.w));
         }
         this.renderer.render(this.scene, this.camera);
     }
-    addMesh(entityId, mesh) {
-        this.scene.add(mesh);
-        this.entityMeshMap.set(entityId, mesh);
-    }
-    getEntityIdFromMesh(mesh) {
-        for (const [entityId, storedMesh] of this.entityMeshMap.entries()) {
-            if (storedMesh === mesh) {
-                return entityId;
-            }
+    createGeometry(geometryType) {
+        switch (geometryType) {
+            case 'box':
+                return new THREE.BoxGeometry();
+            case 'sphere':
+                return new THREE.SphereGeometry();
+            case 'cylinder':
+                return new THREE.CylinderGeometry();
+            case 'cone':
+                return new THREE.ConeGeometry();
+            case 'plane':
+                return new THREE.PlaneGeometry();
+            default:
+                return new THREE.BoxGeometry(); // Default to box
         }
-        return undefined;
     }
 }
 exports.RenderSystem = RenderSystem;

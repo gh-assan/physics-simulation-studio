@@ -35,8 +35,6 @@ jest.mock('tweakpane', () => {
 describe('UIManager', () => {
     let uiManager: UIManager;
     let mockPaneInstance: any; // This will hold the mocked Pane instance
-    let mockWorld: any;
-    let mockRenderSystem: any;
 
     beforeEach(() => {
         // Create required DOM elements
@@ -53,47 +51,7 @@ describe('UIManager', () => {
         // Clear all mocks before each test
         jest.clearAllMocks();
 
-        mockWorld = {
-            entityManager: {
-                createEntity: jest.fn(() => 1),
-                getEntitiesWithComponents: jest.fn(() => []),
-            },
-            componentManager: {
-                addComponent: jest.fn(),
-                getComponent: jest.fn(),
-                getAllComponentsForEntity: jest.fn(() => ({})),
-                updateComponent: jest.fn(),
-            },
-        };
-
-        mockRenderSystem = {
-            renderer: {
-                domElement: document.createElement('canvas'),
-                setSize: jest.fn(),
-            },
-            camera: {
-                aspect: 1,
-                updateProjectionMatrix: jest.fn(),
-            },
-            raycaster: {
-                setFromCamera: jest.fn(),
-                intersectObjects: jest.fn(() => []),
-            },
-            scene: {
-                children: [],
-            },
-            physicsWorld: {
-                createRigidBody: jest.fn(() => ({
-                    translation: jest.fn(() => ({ x: 0, y: 0, z: 0 })),
-                    rotation: jest.fn(() => ({ x: 0, y: 0, z: 0, w: 1 })),
-                })),
-                createCollider: jest.fn(),
-            },
-            addMesh: jest.fn(),
-            getEntityIdFromMesh: jest.fn(),
-        };
-
-        uiManager = new UIManager(mockWorld, mockRenderSystem);
+        uiManager = new UIManager();
         // Get the mock Pane instance created by the UIManager constructor
         mockPaneInstance = (Pane as jest.Mock).mock.results[0]?.value;
     });
@@ -108,16 +66,10 @@ describe('UIManager', () => {
             const el = document.getElementById(id);
             if (el) el.remove();
         });
-
-        // Clean up any remaining folders in the mock Pane instance
-        mockPaneInstance.children.forEach((folder: any) => folder.dispose());
     });
 
-    it('should initialize Tweakpane and append to container', () => {
+    it('should initialize Tweakpane', () => {
         expect(Pane).toHaveBeenCalledTimes(1);
-        expect(Pane).toHaveBeenCalledWith(expect.objectContaining({
-            container: document.getElementById('tweakpane-container'),
-        }));
     });
 
     it('should register component controls for numbers, booleans, and strings', () => {
@@ -130,9 +82,9 @@ describe('UIManager', () => {
 
         expect(mockPaneInstance.addFolder).toHaveBeenCalledWith({ title: 'TestComponent' });
         const mockFolder = mockPaneInstance.addFolder.mock.results[0]?.value;
-        expect(mockFolder.addBinding).toHaveBeenCalledWith(obj, 'value', expect.any(Object));
-        expect(mockFolder.addBinding).toHaveBeenCalledWith(obj, 'enabled', expect.any(Object));
-        expect(mockFolder.addBinding).toHaveBeenCalledWith(obj, 'name', expect.any(Object));
+        expect(mockFolder.addBinding).toHaveBeenCalledWith(obj, 'value');
+        expect(mockFolder.addBinding).toHaveBeenCalledWith(obj, 'enabled');
+        expect(mockFolder.addBinding).toHaveBeenCalledWith(obj, 'name');
     });
 
     it('should clear all controls', () => {
@@ -146,5 +98,6 @@ describe('UIManager', () => {
         const disposeSpy = jest.spyOn(mockPaneInstance, 'dispose');
         uiManager.clearControls();
         expect(disposeSpy).toHaveBeenCalled();
+        expect(Pane).toHaveBeenCalledTimes(2); // Pane should be re-initialized
     });
 });

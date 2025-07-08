@@ -12,10 +12,10 @@ class VelocityComponent implements IComponent {
 
 class MovementSystem extends System {
     public update(world: World, deltaTime: number): void {
-        const entities = world.componentManager.getEntitiesWithComponents(['PositionComponent', 'VelocityComponent']);
+        const entities = world.componentManager.getEntitiesWithComponents([PositionComponent, VelocityComponent]);
         for (const entity of entities) {
-            const position = world.componentManager.getComponent<PositionComponent>(entity, 'PositionComponent')!;
-            const velocity = world.componentManager.getComponent<VelocityComponent>(entity, 'VelocityComponent')!;
+            const position = world.componentManager.getComponent<PositionComponent>(entity, PositionComponent.name)!;
+            const velocity = world.componentManager.getComponent<VelocityComponent>(entity, VelocityComponent.name)!;
             position.x += velocity.vx * deltaTime;
             position.y += velocity.vy * deltaTime;
         }
@@ -27,8 +27,8 @@ describe('World', () => {
 
     beforeEach(() => {
         world = new World();
-        world.componentManager.registerComponent('PositionComponent');
-        world.componentManager.registerComponent('VelocityComponent');
+        world.componentManager.registerComponent(PositionComponent.name, PositionComponent);
+        world.componentManager.registerComponent(VelocityComponent.name, VelocityComponent);
         world.systemManager.registerSystem(new MovementSystem());
     });
 
@@ -37,8 +37,8 @@ describe('World', () => {
         const position = new PositionComponent(0, 0);
         const velocity = new VelocityComponent(10, 5);
 
-        world.componentManager.addComponent(entity, 'PositionComponent', position);
-        world.componentManager.addComponent(entity, 'VelocityComponent', velocity);
+        world.componentManager.addComponent(entity, PositionComponent.name, position);
+        world.componentManager.addComponent(entity, VelocityComponent.name, velocity);
 
         world.update(2);
 

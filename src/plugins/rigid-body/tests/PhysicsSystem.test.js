@@ -14,9 +14,9 @@ describe('PhysicsSystem', () => {
     beforeEach(() => {
         world = new ecs_1.World();
         physicsSystem = new system_1.PhysicsSystem();
-        world.componentManager.registerComponent('PositionComponent');
-        world.componentManager.registerComponent('RotationComponent');
-        world.componentManager.registerComponent('RigidBodyComponent');
+        world.componentManager.registerComponent(components_1.PositionComponent.name, components_1.PositionComponent);
+        world.componentManager.registerComponent(components_1.RotationComponent.name, components_1.RotationComponent);
+        world.componentManager.registerComponent(components_2.RigidBodyComponent.name, components_2.RigidBodyComponent);
     });
     it('should synchronize rigid body translation and rotation to ECS components', () => {
         const entity = world.entityManager.createEntity();
@@ -29,9 +29,9 @@ describe('PhysicsSystem', () => {
         const rigidBodyComp = new components_2.RigidBodyComponent(mockRigidBody);
         const posComp = new components_1.PositionComponent(0, 0, 0);
         const rotComp = new components_1.RotationComponent(0, 0, 0, 0);
-        world.componentManager.addComponent(entity, 'RigidBodyComponent', rigidBodyComp);
-        world.componentManager.addComponent(entity, 'PositionComponent', posComp);
-        world.componentManager.addComponent(entity, 'RotationComponent', rotComp);
+        world.componentManager.addComponent(entity, components_2.RigidBodyComponent.name, rigidBodyComp);
+        world.componentManager.addComponent(entity, components_1.PositionComponent.name, posComp);
+        world.componentManager.addComponent(entity, components_1.RotationComponent.name, rotComp);
         physicsSystem.update(world, 0.16);
         expect(posComp.x).toBe(mockTranslation.x);
         expect(posComp.y).toBe(mockTranslation.y);

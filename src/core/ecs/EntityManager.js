@@ -38,5 +38,10 @@ class EntityManager {
     hasEntity(entityID) {
         return this.activeEntities.has(entityID);
     }
+    clear() {
+        this.nextEntityID = 0;
+        this.availableEntityIDs = [];
+        this.activeEntities.clear();
+    }
 }
 exports.EntityManager = EntityManager;
