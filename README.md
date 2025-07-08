@@ -18,11 +18,33 @@ For a complete overview of the project's design and technical foundation, please
 
 ## Getting Started
 
-*(This section will be updated as the project progresses to include build and run instructions.)*
+To get started with the Physics Simulation Studio, follow these steps:
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/gh-assan/physics-simulation-studio.git
+    cd physics-simulation-studio
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Build the project:**
+    ```bash
+    npm run build
+    ```
+
+4.  **Run the development server:**
+    ```bash
+    npm start
+    ```
+    This will start a local server, and you can access the application in your browser at `http://localhost:8080` (or another port if 8080 is in use).
 
 ## Contributing
 
-*(This section will be updated with contribution guidelines.)*
+We welcome contributions to the Physics Simulation Studio! Please see our [contribution guidelines](CONTRIBUTING.md) for more information on how to get involved.
 
 ## License
 

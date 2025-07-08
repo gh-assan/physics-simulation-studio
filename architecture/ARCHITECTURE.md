@@ -23,8 +23,18 @@ The following technologies have been selected to build the studio:
     *   **Pixi.js** for 2D rendering.
     The rendering logic will be strictly decoupled from the simulation logic via a dedicated `RenderSystem`.
 *   **UI Control Panel:** **Tweakpane**. A lightweight, dependency-free library for creating the dynamic property inspector. Its API allows for the programmatic generation of UI controls, which is essential for our data-driven UI goals.
+*   **Development Server:** **http-server**. A simple, zero-configuration command-line http server for serving static files during development.
 
-## 3. Project Structure
+## 3. Build and Run Commands
+
+To build and run the project, the following `npm` scripts are available:
+
+*   `npm install`: Installs all necessary project dependencies.
+*   `npm run build`: Compiles the TypeScript source code into JavaScript, ready for deployment.
+*   `npm test`: Executes the test suite to ensure code correctness and prevent regressions.
+*   `npm start`: Starts a local development server to serve the application in the browser.
+
+## 4. Project Structure
 
 The project will follow a modular structure to enforce separation of concerns:
 
@@ -39,7 +49,7 @@ The project will follow a modular structure to enforce separation of concerns:
 |-- /assets/        # Static assets (textures, models, etc.)
 ```
 
-## 4. Testing Strategy
+## 5. Testing Strategy
 
 **A rigorous and comprehensive testing strategy is non-negotiable for the success of this project.** All code, from the core framework to individual plugins, must be covered by a suite of automated tests to ensure correctness, prevent regressions, and facilitate confident refactoring.
 
