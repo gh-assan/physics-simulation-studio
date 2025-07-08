@@ -54,6 +54,7 @@ const simulationParams = {
 };
 
 simulationSelectionFolder.addBinding(simulationParams, 'selectedSimulation', {
+    label: '',
     options: studio.getAvailableSimulationNames().map(name => ({ text: name, value: name })),
 }).on('change', (ev) => {
     studio.loadSimulation(ev.value);

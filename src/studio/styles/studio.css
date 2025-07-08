@@ -6,72 +6,26 @@ body {
     color: #e0e0e0; /* Light text */
     margin: 0;
     overflow: hidden; /* Prevent scrollbars due to Three.js canvas */
+    display: flex; /* Use flexbox for layout */
+    height: 100vh; /* Full viewport height */
 }
 
-/* Tweakpane adjustments */
-.tp-dfwv {
-    position: fixed !important;
+canvas {
+    position: absolute;
     top: 0;
-    right: 0;
-    width: 300px;
-    height: 100%;
-    overflow-y: auto;
-    background-color: #2a2a2a; /* Slightly lighter dark for pane */
-    border-left: 1px solid #3a3a3a;
-    box-sizing: border-box;
-    padding: 10px;
-}
-
-.tp-rotv {
-    background-color: #3a3a3a; /* Folder background */
-    border-radius: 5px;
-    margin-bottom: 10px;
-    padding: 5px;
-}
-
-.tp-lblv {
-    color: #ffffff; /* Label color */
-}
-
-.tp-btnv {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.tp-btnv button {
-    background-color: #4a4a4a;
-    color: #e0e0e0;
-    border: none;
-    border-radius: 3px;
-    padding: 8px 12px;
-    cursor: pointer;
-    width: 100%; /* Make button fill its container */
-    text-align: center; /* Center text horizontally */
-    line-height: 1; /* Ensure single line height */
-}
-
-.tp-btnv button:hover {
-    /* Removed hover effect */
-}
-
-.tp-btnv button span {
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
     display: block;
-    text-align: center;
-    width: 100%;
-}
-
-.tp-vdev {
-    border-color: #5a5a5a; /* Input border color */
 }
 
 /* Basic responsiveness */
 @media (max-width: 768px) {
-    .tp-dfwv {
-        width: 100%;
-        height: auto;
-        position: relative !important;
-        border-left: none;
-        border-bottom: 1px solid #3a3a3a;
+    body {
+        flex-direction: column; /* Stack elements vertically on small screens */
+    }
+
+    canvas {
+        height: calc(100vh - 200px) !important; /* Adjust height for mobile, assuming Tweakpane takes 200px */
     }
 }
