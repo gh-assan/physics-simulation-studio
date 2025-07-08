@@ -56,7 +56,11 @@ jest.mock('three', () => {
         updateProjectionMatrix: jest.fn(),
     };
     const mockRenderer = {
-        setSize: jest.fn(),
+        setSize: jest.fn((width, height) => {
+            // Mock setSize to update internal width/height if needed by tests
+            mockRenderer.domElement.width = width;
+            mockRenderer.domElement.height = height;
+        }),
         domElement: document.createElement('canvas'),
         render: jest.fn(),
     };
@@ -68,7 +72,6 @@ jest.mock('three', () => {
         x: 0, y: 0, z: 0, w: 1,
         set: jest.fn(),
     };
-
     return {
         Scene: jest.fn(() => mockScene),
         PerspectiveCamera: jest.fn(() => mockCamera),
@@ -82,33 +85,6 @@ jest.mock('three', () => {
         Quaternion: jest.fn(() => mockQuaternion),
     };
 });
-
 // Mock window dimensions globally for tests
 Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
 Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 768 });
-
-// Mock document.body.appendChild
-const originalAppendChild = document.body.appendChild;
-document.body.appendChild = jest.fn((node) => originalAppendChild.call(document.body, node));
-
-// Mock document.createElement for 'a' and 'input' tags
-const originalCreateElement = document.createElement;
-document.createElement = jest.fn((tagName) => {
-    if (tagName === 'a') {
-        return {
-            href: '',
-            download: '',
-            click: jest.fn(),
-            remove: jest.fn(),
-        };
-    } else if (tagName === 'input') {
-        return {
-            type: '',
-            accept: '',
-            files: [],
-            onchange: null,
-            click: jest.fn(),
-        };
-    }
-    return originalCreateElement(tagName);
-});

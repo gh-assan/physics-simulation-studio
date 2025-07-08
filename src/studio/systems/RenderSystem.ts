@@ -4,6 +4,7 @@ import { World } from '../../core/ecs/World';
 import { PositionComponent } from '../../core/components/PositionComponent';
 import { RotationComponent } from '../../core/components/RotationComponent';
 import { RenderableComponent } from '../../core/components/RenderableComponent';
+import { FlagComponent } from '../../plugins/flag-simulation/FlagComponent';
 
 export class RenderSystem extends System {
     private scene: THREE.Scene;
@@ -19,7 +20,16 @@ export class RenderSystem extends System {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(this.renderer.domElement);
 
-        this.camera.position.z = 5;
+        this.camera.position.z = 20;
+        this.camera.position.y = 5;
+
+        // Add lights
+        const ambientLight = new THREE.AmbientLight(0x404040); // soft white light
+        this.scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // white light, 0.5 intensity
+        directionalLight.position.set(1, 1, 1).normalize();
+        this.scene.add(directionalLight);
 
         // Handle window resizing
         window.addEventListener('resize', () => {
@@ -34,6 +44,12 @@ export class RenderSystem extends System {
             PositionComponent,
             RotationComponent,
             RenderableComponent
+        ]);
+
+        const flagEntities = world.componentManager.getEntitiesWithComponents([
+            PositionComponent,
+            RenderableComponent, // Flag will also have a renderable component for color/material
+            FlagComponent
         ]);
 
         for (const entityId of entities) {
@@ -59,6 +75,70 @@ export class RenderSystem extends System {
             // Update mesh position and rotation
             mesh.position.set(position.x, position.y, position.z);
             mesh.rotation.setFromQuaternion(new THREE.Quaternion(rotation.x, rotation.y, rotation.z, rotation.w));
+        }
+
+        // Handle FlagComponent rendering
+        for (const entityId of flagEntities) {
+            const flag = world.componentManager.getComponent(entityId, FlagComponent.name);
+            const renderable = world.componentManager.getComponent(entityId, RenderableComponent.name);
+
+            if (!flag || !renderable || flag.points.length === 0) {
+                continue;
+            }
+
+            let flagMesh = this.meshes.get(entityId);
+
+            if (!flagMesh || !(flagMesh.userData && flagMesh.userData.isFlag)) {
+                // If it's not a flag mesh or doesn't exist, create it
+                const geometry = new THREE.BufferGeometry();
+                const material = new THREE.MeshStandardMaterial({ color: renderable.color, side: THREE.DoubleSide });
+                flagMesh = new THREE.Mesh(geometry, material);
+                flagMesh.userData = { isFlag: true }; // Initialize userData
+                this.scene.add(flagMesh);
+                this.meshes.set(entityId, flagMesh);
+            }
+
+            // Update flag geometry
+            const positions = [];
+            const uvs = [];
+            const indices = [];
+
+            const numRows = flag.segmentsY + 1;
+            const numCols = flag.segmentsX + 1;
+
+            for (let i = 0; i < flag.points.length; i++) {
+                const point = flag.points[i];
+                positions.push(point.position.x, point.position.y, point.position.z);
+
+                const x = i % numCols;
+                const y = Math.floor(i / numCols);
+                uvs.push(x / (numCols - 1), 1 - (y / (numRows - 1))); // Flip Y for UVs
+            }
+
+            for (let y = 0; y < numRows - 1; y++) {
+                for (let x = 0; x < numCols - 1; x++) {
+                    const i0 = y * numCols + x;
+                    const i1 = y * numCols + x + 1;
+                    const i2 = (y + 1) * numCols + x;
+                    const i3 = (y + 1) * numCols + x + 1;
+
+                    // Triangle 1
+                    indices.push(i0, i2, i1);
+                    // Triangle 2
+                    indices.push(i1, i2, i3);
+                }
+            }
+
+            const geometry = flagMesh.geometry as THREE.BufferGeometry;
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+            geometry.setIndex(indices);
+            geometry.computeVertexNormals(); // Recalculate normals for lighting
+            geometry.attributes.position.needsUpdate = true;
+            geometry.attributes.uv.needsUpdate = true;
+            if (geometry.index) {
+                geometry.index.needsUpdate = true;
+            }
         }
 
         this.renderer.render(this.scene, this.camera);

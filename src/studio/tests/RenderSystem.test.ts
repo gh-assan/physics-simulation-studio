@@ -41,11 +41,10 @@ describe('RenderSystem', () => {
         // Mock appendChild
         jest.spyOn(document.body, 'appendChild').mockImplementation((node: Node) => node);
         world = new World();
-        renderSystem = new RenderSystem();
-
         world.componentManager.registerComponent(PositionComponent.name, PositionComponent);
         world.componentManager.registerComponent(RotationComponent.name, RotationComponent);
         world.componentManager.registerComponent(RenderableComponent.name, RenderableComponent);
+        renderSystem = new RenderSystem();
     });
 
     it('should initialize Three.js components', () => {
@@ -70,7 +69,7 @@ describe('RenderSystem', () => {
 
         // Expect a new mesh to be created and added to the scene
         expect(THREE.Mesh).toHaveBeenCalledTimes(1);
-        expect(mockScene.add).toHaveBeenCalledTimes(1);
+        expect(mockScene.add).toHaveBeenCalledTimes(3);
 
         // Expect mesh position and rotation to be updated
         const meshInstance = (THREE.Mesh as any).mock.results[0].value; // Cast to any to avoid type error
@@ -96,6 +95,6 @@ describe('RenderSystem', () => {
         renderSystem.update(world, 0.16);
 
         expect(THREE.Mesh).not.toHaveBeenCalled();
-        expect(mockScene.add).not.toHaveBeenCalled();
+        expect(mockScene.add).toHaveBeenCalledTimes(2);
     });
 });

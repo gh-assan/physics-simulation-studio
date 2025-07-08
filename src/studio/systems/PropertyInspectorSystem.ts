@@ -3,6 +3,7 @@ import { World } from '../../core/ecs/World';
 import { UIManager } from '../uiManager';
 import { SelectableComponent } from '../../core/components/SelectableComponent';
 import { IComponent } from '../../core/ecs/IComponent';
+import { FlagComponent } from '../../plugins/flag-simulation/FlagComponent';
 
 export class PropertyInspectorSystem extends System {
     private uiManager: UIManager;
@@ -35,7 +36,22 @@ export class PropertyInspectorSystem extends System {
                 const components = world.componentManager.getAllComponentsForEntity(currentSelectedEntity);
                 for (const componentName in components) {
                     if (Object.prototype.hasOwnProperty.call(components, componentName)) {
-                        this.uiManager.registerComponentControls(componentName, components[componentName]);
+                        if (componentName === FlagComponent.name) {
+                            this.uiManager.registerComponentControls(componentName, components[componentName], [
+                                { property: 'width', type: 'number', label: 'Flag Width' },
+                                { property: 'height', type: 'number', label: 'Flag Height' },
+                                { property: 'segmentsX', type: 'number', label: 'Segments X' },
+                                { property: 'segmentsY', type: 'number', label: 'Segments Y' },
+                                { property: 'mass', type: 'number', label: 'Particle Mass' },
+                                { property: 'stiffness', type: 'number', label: 'Stiffness' },
+                                { property: 'damping', type: 'number', label: 'Damping' },
+                                { property: 'textureUrl', type: 'text', label: 'Texture URL' },
+                                { property: 'windStrength', type: 'number', label: 'Wind Strength' },
+                                { property: 'windDirection', type: 'vector3', label: 'Wind Direction' },
+                            ]);
+                        } else {
+                            this.uiManager.registerComponentControls(componentName, components[componentName]);
+                        }
                     }
                 }
             } else {

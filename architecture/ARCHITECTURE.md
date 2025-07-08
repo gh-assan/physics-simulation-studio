@@ -45,6 +45,7 @@ The project will follow a modular structure to enforce separation of concerns:
 |-- /plugins/       # Directory for all self-contained simulation plugins
 |   |-- /rigid-body/
 |   |-- /optics/
+|   |-- /flag-simulation/ # For realistic flag movement simulation
 |-- /lib/           # Third-party library code or type definitions
 |-- /assets/        # Static assets (textures, models, etc.)
 ```
