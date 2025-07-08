@@ -1,3 +1,4 @@
+import { Studio } from "./Studio";
 import { World } from "../core/ecs/World";
 import { PluginManager } from "../core/plugin/PluginManager";
 import { RenderSystem } from "./systems/RenderSystem";
@@ -16,45 +17,64 @@ const pluginManager = new PluginManager(world);
 const uiManager = new UIManager();
 const sceneSerializer = new SceneSerializer();
 
+// Register core components
 world.componentManager.registerComponent(PositionComponent.name, PositionComponent);
 world.componentManager.registerComponent(RenderableComponent.name, RenderableComponent);
 world.componentManager.registerComponent(SelectableComponent.name, SelectableComponent);
-pluginManager.registerPlugin(new FlagSimulationPlugin());
-await pluginManager.activatePlugin('flag-simulation');
 
-// Example: Create a flag entity
-const flagEntity = world.entityManager.createEntity();
-world.componentManager.addComponent(flagEntity, PositionComponent.name, new PositionComponent(0, 0, -10));
-world.componentManager.addComponent(flagEntity, RenderableComponent.name, new RenderableComponent('plane', "#00ff00")); // Green flag
-world.componentManager.addComponent(flagEntity, FlagComponent.name, new FlagComponent(20, 12, 20, 12));
-world.componentManager.addComponent(flagEntity, SelectableComponent.name, new SelectableComponent());
+// Register systems
 const renderSystem = new RenderSystem();
 world.systemManager.registerSystem(renderSystem);
+world.systemManager.registerSystem(new PropertyInspectorSystem(uiManager));
 
-const propertyInspectorSystem = new PropertyInspectorSystem(uiManager);
-world.systemManager.registerSystem(propertyInspectorSystem);
+// Register plugins
+pluginManager.registerPlugin(new FlagSimulationPlugin());
 
-// Tweakpane for controls
-const pane = new Pane();
-
-// Get the FlagSystem instance
-const flagSystem = world.systemManager.getSystem(FlagSystem) as FlagSystem;
-
-if (flagSystem) {
-    const gravityFolder = pane.addFolder({ title: 'Gravity' });
-    gravityFolder.addBinding(flagSystem.gravity, 'y', { min: -20, max: 0, step: 0.1 });
-
-    const windFolder = pane.addFolder({ title: 'Wind' });
-    windFolder.addBinding(flagSystem.wind, 'x', { min: -10, max: 10, step: 0.1 });
-    windFolder.addBinding(flagSystem.wind, 'y', { min: -10, max: 10, step: 0.1 });
-    windFolder.addBinding(flagSystem.wind, 'z', { min: -10, max: 10, step: 0.1 });
-}
+// Initialize Studio
+const studio = new Studio(world, pluginManager, renderSystem);
 
 // Expose for debugging/console interaction
 (window as any).world = world;
 (window as any).pluginManager = pluginManager;
 (window as any).uiManager = uiManager;
 (window as any).sceneSerializer = sceneSerializer;
+(window as any).studio = studio;
+
+// Setup Tweakpane for global controls
+const pane = new Pane();
+
+const globalControlsFolder = pane.addFolder({ title: 'Global Controls' });
+globalControlsFolder.addButton({ title: 'Play' }).on('click', () => studio.play());
+globalControlsFolder.addButton({ title: 'Pause' }).on('click', () => studio.pause());
+globalControlsFolder.addButton({ title: 'Reset' }).on('click', () => studio.reset());
+
+const simulationSelectionFolder = pane.addFolder({ title: 'Simulations' });
+const simulationParams = {
+    selectedSimulation: 'flag-simulation', // Default selected simulation
+};
+
+simulationSelectionFolder.addBinding(simulationParams, 'selectedSimulation', {
+    options: studio.getAvailableSimulationNames().map(name => ({ text: name, value: name })),
+}).on('change', (ev) => {
+    studio.loadSimulation(ev.value);
+});
+
+// Add FlagSystem controls dynamically when FlagSimulation is active
+studio.world.systemManager.onSystemRegistered((system) => {
+    if (system instanceof FlagSystem) {
+        const flagSystem = system as FlagSystem;
+        const gravityFolder = pane.addFolder({ title: 'Gravity' });
+        gravityFolder.addBinding(flagSystem.gravity, 'y', { min: -20, max: 0, step: 0.1 });
+
+        const windFolder = pane.addFolder({ title: 'Wind' });
+        windFolder.addBinding(flagSystem.wind, 'x', { min: -10, max: 10, step: 0.1 });
+        windFolder.addBinding(flagSystem.wind, 'y', { min: -10, max: 10, step: 0.1 });
+        windFolder.addBinding(flagSystem.wind, 'z', { min: -10, max: 10, step: 0.1 });
+    }
+});
+
+// Initial load of the default simulation
+await studio.loadSimulation(simulationParams.selectedSimulation);
 
 let lastTime = 0;
 // Main application loop
@@ -64,10 +84,11 @@ function animate(currentTime: number) {
     const deltaTime = (currentTime - lastTime) / 1000; // Convert to seconds
     lastTime = currentTime;
 
-    // Update the world
-    world.update(deltaTime);
+    // Update the studio (which updates the world if playing)
+    studio.update(deltaTime);
 }
 
 animate(0);
 
 console.log("Physics Simulation Studio Initialized");
+

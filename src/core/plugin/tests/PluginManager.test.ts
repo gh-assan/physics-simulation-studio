@@ -27,6 +27,10 @@ class MockPlugin implements ISimulationPlugin {
     unregister(): void {
         this.unregistered = true;
     }
+
+    initializeEntities(world: World): void {
+        // Mock implementation
+    }
 }
 
 describe('PluginManager', () => {

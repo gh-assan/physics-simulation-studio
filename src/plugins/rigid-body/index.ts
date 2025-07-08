@@ -27,6 +27,10 @@ class RigidBodyPlugin implements ISimulationPlugin {
         // Logic to unregister systems and components
         console.log("Unregistering RigidBodyPlugin...");
     }
+
+    public initializeEntities(world: World): void {
+        // No initial entities for this plugin yet
+    }
 }
 
 export default RigidBodyPlugin;

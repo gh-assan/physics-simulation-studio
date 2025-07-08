@@ -29,4 +29,5 @@ export interface ISimulationPlugin {
      * and remove any UI elements created by the plugin.
      */
     unregister(): void;
+    initializeEntities(world: World): void;
 }

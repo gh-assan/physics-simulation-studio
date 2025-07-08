@@ -33,6 +33,10 @@ export class FlagSystem extends System {
         // No specific initialization needed here yet, will be done per flag entity
     }
 
+    unregister(): void {
+        // No specific unregistration needed for now
+    }
+
     update(world: World, deltaTime: number): void {
         // Get all entities with a FlagComponent
         const flagEntities = world.componentManager.getEntitiesWithComponents([FlagComponent]);
