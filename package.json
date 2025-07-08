@@ -1,0 +1,26 @@
+{
+  "name": "physics-simulation-studio",
+  "version": "1.0.0",
+  "description": "Physics Simulation Studio is an open-source project to build a flexible, high-performance, and user-friendly environment where creators can design, simulate, and share a wide array of physical phenomena directly in the browser.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gh-assan/physics-simulation-studio.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/gh-assan/physics-simulation-studio/issues"
+  },
+  "homepage": "https://github.com/gh-assan/physics-simulation-studio#readme",
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.0.4",
+    "ts-jest": "^29.4.0"
+  }
+}
