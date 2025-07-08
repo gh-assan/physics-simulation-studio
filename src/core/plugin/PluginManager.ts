@@ -36,6 +36,14 @@ export class PluginManager {
         console.log(`Plugin "${pluginName}" activated.`);
     }
 
+    public getPlugin(pluginName: string): ISimulationPlugin | undefined {
+        return this.availablePlugins.get(pluginName);
+    }
+
+    public getAvailablePluginNames(): string[] {
+        return Array.from(this.availablePlugins.keys());
+    }
+
     public deactivatePlugin(pluginName: string): void {
         const plugin = this.activePlugins.get(pluginName);
         if (plugin) {

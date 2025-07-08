@@ -10,4 +10,9 @@ export class World {
     public update(deltaTime: number): void {
         this.systemManager.updateAll(this, deltaTime);
     }
+
+    public clear(): void {
+        this.entityManager.clear();
+        this.componentManager.clear();
+    }
 }

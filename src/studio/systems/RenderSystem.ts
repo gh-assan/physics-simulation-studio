@@ -40,6 +40,7 @@ export class RenderSystem extends System {
     }
 
     public update(world: World, deltaTime: number): void {
+        // console.log("RenderSystem update called.");
         const entities = world.componentManager.getEntitiesWithComponents([
             PositionComponent,
             RotationComponent,
@@ -51,6 +52,8 @@ export class RenderSystem extends System {
             RenderableComponent, // Flag will also have a renderable component for color/material
             FlagComponent
         ]);
+
+        // console.log(`Found ${entities.length} general entities and ${flagEntities.length} flag entities.`);
 
         for (const entityId of entities) {
             const position = world.componentManager.getComponent(entityId, PositionComponent.name);
@@ -64,12 +67,13 @@ export class RenderSystem extends System {
             let mesh = this.meshes.get(entityId);
 
             if (!mesh) {
-                // Create new mesh if it doesn't exist
+                // Create new mesh if it's not a flag mesh or doesn't exist
                 const geometry = this.createGeometry(renderable.geometry);
                 const material = new THREE.MeshBasicMaterial({ color: renderable.color });
                 mesh = new THREE.Mesh(geometry, material);
                 this.scene.add(mesh);
                 this.meshes.set(entityId, mesh);
+                // console.log(`Created new mesh for entity ${entityId}`);
             }
 
             // Update mesh position and rotation
@@ -83,8 +87,14 @@ export class RenderSystem extends System {
             const renderable = world.componentManager.getComponent(entityId, RenderableComponent.name);
 
             if (!flag || !renderable || flag.points.length === 0) {
+                // console.log(`Skipping flag entity ${entityId}: missing components or no points.`, { flag, renderable });
                 continue;
             }
+
+            // console.log(`Processing flag entity ${entityId}. Points length: ${flag.points.length}`);
+            // if (flag.points.length > 0) {
+            //     console.log("First flag point position:", flag.points[0].position);
+            // }
 
             let flagMesh = this.meshes.get(entityId);
 
@@ -96,6 +106,7 @@ export class RenderSystem extends System {
                 flagMesh.userData = { isFlag: true }; // Initialize userData
                 this.scene.add(flagMesh);
                 this.meshes.set(entityId, flagMesh);
+                // console.log(`Created new flag mesh for entity ${entityId}`);
             }
 
             // Update flag geometry
@@ -142,6 +153,19 @@ export class RenderSystem extends System {
         }
 
         this.renderer.render(this.scene, this.camera);
+    }
+
+    public clear(): void {
+        this.meshes.forEach(mesh => {
+            this.scene.remove(mesh);
+            mesh.geometry.dispose();
+            if (mesh.material instanceof THREE.Material) {
+                mesh.material.dispose();
+            } else if (Array.isArray(mesh.material)) {
+                mesh.material.forEach(material => material.dispose());
+            }
+        });
+        this.meshes.clear();
     }
 
     private createGeometry(geometryType: RenderableComponent['geometry']): THREE.BufferGeometry {
