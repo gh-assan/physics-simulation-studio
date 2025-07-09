@@ -9,14 +9,18 @@ import { FlagComponent } from "../plugins/flag-simulation/FlagComponent";
 import { RenderSystem } from "./systems/RenderSystem";
 
 export class Studio {
-    private world: World;
+    private _world: World;
     private pluginManager: PluginManager;
     private renderSystem: RenderSystem;
     private isPlaying: boolean = false;
     private activeSimulationName: string | null = null;
 
+    public get world(): World {
+        return this._world;
+    }
+
     constructor(world: World, pluginManager: PluginManager, renderSystem: RenderSystem) {
-        this.world = world;
+        this._world = world;
         this.pluginManager = pluginManager;
         this.renderSystem = renderSystem;
     }

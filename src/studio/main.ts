@@ -5,7 +5,8 @@ import { RenderSystem } from "./systems/RenderSystem";
 import { PropertyInspectorSystem } from "./systems/PropertyInspectorSystem";
 import { UIManager } from "./uiManager";
 import { SceneSerializer } from "./systems/SceneSerializer";
-import { FlagSimulationPlugin } from "../plugins/flag-simulation";
+import { FlagSimulationPlugin } from "@plugins/flag-simulation";
+import { WaterSimulationPlugin } from "@plugins/water-simulation";
 import { FlagComponent, FlagSystem } from "../plugins/flag-simulation";
 import { PositionComponent } from "../core/components/PositionComponent";
 import { RenderableComponent } from "../core/components/RenderableComponent";
@@ -29,6 +30,7 @@ world.systemManager.registerSystem(new PropertyInspectorSystem(uiManager));
 
 // Register plugins
 pluginManager.registerPlugin(new FlagSimulationPlugin());
+pluginManager.registerPlugin(new WaterSimulationPlugin());
 
 // Initialize Studio
 const studio = new Studio(world, pluginManager, renderSystem);
@@ -43,12 +45,12 @@ const studio = new Studio(world, pluginManager, renderSystem);
 // Setup Tweakpane for global controls
 const pane = new Pane();
 
-const globalControlsFolder = pane.addFolder({ title: 'Global Controls' });
+const globalControlsFolder = (pane as any).addFolder({ title: 'Global Controls' });
 globalControlsFolder.addButton({ title: 'Play' }).on('click', () => studio.play());
 globalControlsFolder.addButton({ title: 'Pause' }).on('click', () => studio.pause());
 globalControlsFolder.addButton({ title: 'Reset' }).on('click', () => studio.reset());
 
-const simulationSelectionFolder = pane.addFolder({ title: 'Simulations' });
+const simulationSelectionFolder = (pane as any).addFolder({ title: 'Simulations' });
 const simulationParams = {
     selectedSimulation: 'flag-simulation', // Default selected simulation
 };
@@ -56,7 +58,7 @@ const simulationParams = {
 simulationSelectionFolder.addBinding(simulationParams, 'selectedSimulation', {
     label: '',
     options: studio.getAvailableSimulationNames().map(name => ({ text: name, value: name })),
-}).on('change', (ev) => {
+}).on('change', (ev: { value: string }) => {
     studio.loadSimulation(ev.value);
 });
 
@@ -64,10 +66,10 @@ simulationSelectionFolder.addBinding(simulationParams, 'selectedSimulation', {
 studio.world.systemManager.onSystemRegistered((system) => {
     if (system instanceof FlagSystem) {
         const flagSystem = system as FlagSystem;
-        const gravityFolder = pane.addFolder({ title: 'Gravity' });
+        const gravityFolder = (pane as any).addFolder({ title: 'Gravity' });
         gravityFolder.addBinding(flagSystem.gravity, 'y', { min: -20, max: 0, step: 0.1 });
 
-        const windFolder = pane.addFolder({ title: 'Wind' });
+        const windFolder = (pane as any).addFolder({ title: 'Wind' });
         windFolder.addBinding(flagSystem.wind, 'x', { min: -10, max: 10, step: 0.1 });
         windFolder.addBinding(flagSystem.wind, 'y', { min: -10, max: 10, step: 0.1 });
         windFolder.addBinding(flagSystem.wind, 'z', { min: -10, max: 10, step: 0.1 });
