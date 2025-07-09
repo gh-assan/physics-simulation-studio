@@ -6,6 +6,7 @@ interface Window {
     options?: OpenFilePickerOptions
   ) => Promise<FileSystemFileHandle[]>;
   addEventListener(type: 'parameter-changed', listener: (this: Window, ev: CustomEvent<{property: string}>) => any, options?: boolean | AddEventListenerOptions): void;
+  addEventListener(type: 'simulation-loaded', listener: (this: Window, ev: CustomEvent<{simulationName: string}>) => any, options?: boolean | AddEventListenerOptions): void;
 }
 
 // Add declaration for OrbitControls

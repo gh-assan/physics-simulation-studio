@@ -98,8 +98,9 @@ describe("UIManager", () => {
     };
     uiManager.registerComponentControls("TestComponent", obj);
 
+    // The title now includes the constructor name if available
     expect(mockPaneInstance.addFolder).toHaveBeenCalledWith({
-      title: "TestComponent"
+      title: "Object (TestComponent)"
     });
     const mockFolder = mockPaneInstance.addFolder.mock.results[0]?.value;
     expect(mockFolder.addBinding).toHaveBeenCalledWith(obj, "value");

@@ -84,6 +84,13 @@ export class Studio {
       if (this.renderSystem) {
         this.renderSystem.update(this.world, 0); // Force an immediate render
       }
+
+      // Dispatch a custom event to trigger UI refresh
+      const event = new CustomEvent('simulation-loaded', {
+        detail: { simulationName: pluginName }
+      });
+      window.dispatchEvent(event);
+      console.log(`Dispatched simulation-loaded event for ${pluginName}`);
     }
   }
 

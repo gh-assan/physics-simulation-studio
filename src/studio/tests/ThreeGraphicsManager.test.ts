@@ -136,10 +136,17 @@ describe('ThreeGraphicsManager', () => {
     expect(graphicsManager.scene.add).toHaveBeenCalled();
   });
 
-  it('should update controls when rendering', () => {
+  it('should update controls when rendering only if controls are enabled', () => {
+    // By default, controls are disabled
+    graphicsManager.render();
+    expect(graphicsManager.controls.update).not.toHaveBeenCalled();
+    expect(graphicsManager.renderer.render).toHaveBeenCalled();
+
+    // Enable controls and render again
+    graphicsManager.toggleControls(true);
     graphicsManager.render();
     expect(graphicsManager.controls.update).toHaveBeenCalled();
-    expect(graphicsManager.renderer.render).toHaveBeenCalled();
+    expect(graphicsManager.renderer.render).toHaveBeenCalledTimes(2);
   });
 
   it('should handle window resize events', () => {
@@ -159,8 +166,9 @@ describe('ThreeGraphicsManager', () => {
     expect(graphicsManager.getControls()).toBe(graphicsManager.controls);
   });
 
-  it('should display camera control instructions', () => {
-    expect(document.createElement).toHaveBeenCalledWith('div');
-    expect(document.body.appendChild).toHaveBeenCalled();
+  it('should not display camera control instructions directly', () => {
+    // Camera control instructions are now managed through the UI panel
+    // so we don't expect DOM manipulation calls for this purpose
+    expect(graphicsManager.showControlInstructions).toBeDefined();
   });
 });

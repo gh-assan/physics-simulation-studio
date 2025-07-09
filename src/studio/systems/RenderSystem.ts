@@ -220,6 +220,14 @@ export class RenderSystem extends System {
     );
   }
 
+  /**
+   * Gets the graphics manager used by this render system
+   * @returns The ThreeGraphicsManager instance
+   */
+  public getGraphicsManager(): ThreeGraphicsManager {
+    return this.graphicsManager;
+  }
+
   public clear(): void {
     this.meshes.forEach((mesh) => {
       this.graphicsManager.getScene().remove(mesh);

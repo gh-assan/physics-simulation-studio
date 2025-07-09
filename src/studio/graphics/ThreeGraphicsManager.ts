@@ -14,6 +14,7 @@ export class ThreeGraphicsManager {
   public camera: THREE.PerspectiveCamera;
   public renderer: THREE.WebGLRenderer;
   public controls: OrbitControls;
+  private controlsEnabled = false;
 
   constructor() {
     this.scene = new THREE.Scene();
@@ -44,14 +45,14 @@ export class ThreeGraphicsManager {
     this.controls.maxDistance = 50; // Maximum zoom distance
     this.controls.maxPolarAngle = Math.PI / 2; // Limit vertical rotation to prevent going below the ground
 
+    // Disable controls by default
+    this.controls.enabled = this.controlsEnabled;
+
     // Add window resize handler
     window.addEventListener('resize', this._handleResize.bind(this));
 
     this._addLights();
     this._addHelpers();
-
-    // Display camera control instructions
-    this._displayControlInstructions();
   }
 
   private _addLights(): void {
@@ -96,11 +97,30 @@ export class ThreeGraphicsManager {
   }
 
   public render(): void {
-    // Update controls (needed for damping)
-    this.controls.update();
+    // Update controls (needed for damping) only if enabled
+    if (this.controlsEnabled) {
+      this.controls.update();
+    }
 
     // Render the scene
     this.renderer.render(this.scene, this.camera);
+  }
+
+  /**
+   * Toggles camera controls on or off
+   * @param enabled Optional boolean to set the enabled state directly
+   * @returns The current enabled state after toggling
+   */
+  public toggleControls(enabled?: boolean): boolean {
+    if (enabled !== undefined) {
+      this.controlsEnabled = enabled;
+    } else {
+      this.controlsEnabled = !this.controlsEnabled;
+    }
+
+    this.controls.enabled = this.controlsEnabled;
+
+    return this.controlsEnabled;
   }
 
   public getScene(): THREE.Scene {
@@ -137,47 +157,18 @@ export class ThreeGraphicsManager {
   }
 
   /**
-   * Displays instructions for using the camera controls
-   * @private
+   * Gets the current state of camera controls
+   * @returns Whether camera controls are currently enabled
    */
-  private _displayControlInstructions(): void {
-    // Create instructions element
-    const instructions = document.createElement('div');
-    instructions.style.position = 'absolute';
-    instructions.style.top = '10px';
-    instructions.style.left = '10px';
-    instructions.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-    instructions.style.color = 'white';
-    instructions.style.padding = '10px';
-    instructions.style.borderRadius = '5px';
-    instructions.style.fontFamily = 'Arial, sans-serif';
-    instructions.style.fontSize = '14px';
-    instructions.style.zIndex = '1000';
-    instructions.style.pointerEvents = 'none'; // Allow clicks to pass through
+  public getControlsEnabled(): boolean {
+    return this.controlsEnabled;
+  }
 
-    // Add instructions text
-    instructions.innerHTML = `
-      <strong>Camera Controls:</strong><br>
-      - Left Click + Drag: Rotate camera<br>
-      - Right Click + Drag: Pan camera<br>
-      - Scroll Wheel: Zoom in/out
-    `;
-
-    // Add instructions to the document
-    document.body.appendChild(instructions);
-
-    // Add a button to toggle instructions visibility
-    const toggleButton = document.createElement('button');
-    toggleButton.textContent = 'Toggle Controls Help';
-    toggleButton.style.position = 'absolute';
-    toggleButton.style.top = '10px';
-    toggleButton.style.right = '10px';
-    toggleButton.style.zIndex = '1000';
-
-    toggleButton.addEventListener('click', () => {
-      instructions.style.display = instructions.style.display === 'none' ? 'block' : 'none';
-    });
-
-    document.body.appendChild(toggleButton);
+  /**
+   * Shows or hides the camera control instructions
+   * @param show Whether to show the instructions
+   */
+  public showControlInstructions(show: boolean): void {
+    // No longer needed as controls will be managed through the UI panel
   }
 }

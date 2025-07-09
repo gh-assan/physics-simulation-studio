@@ -14,14 +14,20 @@ export class UIManager {
     data: any,
     properties?: ComponentControlProperty[]
   ) {
-    const folder = this.pane.addFolder({ title: componentName });
+    // Use the component's constructor name if available, otherwise use the provided name
+    const displayName = data.constructor ? `${data.constructor.name} (${componentName})` : componentName;
+    console.log(`[UIManager] Registering controls for component: ${displayName}`);
+
+    const folder = this.pane.addFolder({ title: displayName });
     this.folders.set(componentName, folder);
 
     if (properties) {
+      console.log(`[UIManager] Adding ${properties.length} properties for ${displayName}`);
       properties.forEach((prop) => {
         this._addBindingForProperty(folder, data, prop);
       });
     } else {
+      console.log(`[UIManager] No properties provided for ${displayName}, using default properties`);
       for (const key in data) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           if (
@@ -46,7 +52,17 @@ export class UIManager {
       min?: number;
       max?: number;
       step?: number;
-    } = { label: prop.label };
+      format?: (v: any) => string;
+    } = {
+      label: prop.label,
+      // Add a formatter to ensure consistent label width
+      format: (v: any) => {
+        if (typeof v === 'number') {
+          return v.toFixed(2);
+        }
+        return String(v);
+      }
+    };
     if (prop.min !== undefined) options.min = prop.min;
     if (prop.max !== undefined) options.max = prop.max;
     if (prop.step !== undefined) options.step = prop.step;
