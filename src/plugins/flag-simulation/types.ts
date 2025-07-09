@@ -1,8 +1,10 @@
+import {Vector3} from './utils/Vector3';
+
 export interface PointMass {
-  position: {x: number; y: number; z: number};
-  previousPosition: {x: number; y: number; z: number};
-  velocity: {x: number; y: number; z: number};
-  forces: {x: number; y: number; z: number};
+  position: Vector3;
+  previousPosition: Vector3;
+  velocity: Vector3;
+  forces: Vector3;
   mass: number;
   isFixed: boolean;
 }

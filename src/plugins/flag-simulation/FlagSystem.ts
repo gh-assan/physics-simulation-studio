@@ -5,9 +5,10 @@ import {FlagPhysicsInitializer} from './FlagPhysicsInitializer';
 import {PositionComponent} from '../../core/components/PositionComponent';
 
 import {PointMass, Spring} from './types';
+import {Vector3} from './utils/Vector3';
 
 export class FlagSystem extends System {
-  public gravity: {x: number; y: number; z: number} = {x: 0, y: -9.81, z: 0}; // m/s^2
+  public gravity: Vector3 = new Vector3(0, -9.81, 0); // m/s^2
 
   constructor() {
     super();
@@ -56,60 +57,48 @@ export class FlagSystem extends System {
   private applyForces(flagComponent: FlagComponent): void {
     for (const point of flagComponent.points) {
       if (point.isFixed) {
-        point.forces = {x: 0, y: 0, z: 0};
+        point.forces = new Vector3(0, 0, 0);
         continue;
       }
 
       // Reset forces
-      point.forces = {x: 0, y: 0, z: 0};
+      point.forces = new Vector3(0, 0, 0);
 
       // Apply gravity
-      point.forces.x += point.mass * this.gravity.x;
-      point.forces.y += point.mass * this.gravity.y;
-      point.forces.z += point.mass * this.gravity.z;
+      point.forces = point.forces.add(this.gravity.scale(point.mass));
 
       // Apply wind from FlagComponent
-      const wind = flagComponent.wind;
-      point.forces.x += wind.x;
-      point.forces.y += wind.y;
-      point.forces.z += wind.z;
+      const wind = new Vector3(
+        flagComponent.wind.x,
+        flagComponent.wind.y,
+        flagComponent.wind.z,
+      );
+      point.forces = point.forces.add(wind);
     }
 
     // Apply spring forces
     for (const spring of flagComponent.springs) {
-      const dx = spring.p2.position.x - spring.p1.position.x;
-      const dy = spring.p2.position.y - spring.p1.position.y;
-      const dz = spring.p2.position.z - spring.p1.position.z;
-      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      const delta = spring.p2.position.subtract(spring.p1.position);
+      const distance = delta.magnitude();
 
       if (distance === 0) continue;
 
       const forceMagnitude = spring.stiffness * (distance - spring.restLength);
-
-      const forceX = forceMagnitude * (dx / distance);
-      const forceY = forceMagnitude * (dy / distance);
-      const forceZ = forceMagnitude * (dz / distance);
+      const force = delta.normalize().scale(forceMagnitude);
 
       // Apply damping
-      const dvx = spring.p2.velocity.x - spring.p1.velocity.x;
-      const dvy = spring.p2.velocity.y - spring.p1.velocity.y;
-      const dvz = spring.p2.velocity.z - spring.p1.velocity.z;
-      const dampingForce =
-        (spring.damping * (dvx * dx + dvy * dy + dvz * dz)) / distance;
-
-      const dampingX = dampingForce * (dx / distance);
-      const dampingY = dampingForce * (dy / distance);
-      const dampingZ = dampingForce * (dz / distance);
+      const dv = spring.p2.velocity.subtract(spring.p1.velocity);
+      const dampingForce = delta
+        .normalize()
+        .scale((spring.damping * dv.dot(delta)) / distance);
 
       if (!spring.p1.isFixed) {
-        spring.p1.forces.x += forceX + dampingX;
-        spring.p1.forces.y += forceY + dampingY;
-        spring.p1.forces.z += forceZ + dampingZ;
+        spring.p1.forces = spring.p1.forces.add(force).add(dampingForce);
       }
       if (!spring.p2.isFixed) {
-        spring.p2.forces.x -= forceX + dampingX;
-        spring.p2.forces.y -= forceY + dampingY;
-        spring.p2.forces.z -= forceZ + dampingZ;
+        spring.p2.forces = spring.p2.forces
+          .subtract(force)
+          .subtract(dampingForce);
       }
     }
   }
@@ -123,36 +112,22 @@ export class FlagSystem extends System {
 
     for (const point of flagComponent.points) {
       if (point.isFixed) {
-        point.velocity = {x: 0, y: 0, z: 0};
+        point.velocity = new Vector3(0, 0, 0);
         continue;
       }
 
-      const accelerationX = point.forces.x / point.mass;
-      const accelerationY = point.forces.y / point.mass;
-      const accelerationZ = point.forces.z / point.mass;
+      const acceleration = point.forces.scale(1 / point.mass);
 
-      const nextPositionX =
-        point.position.x +
-        (point.position.x - point.previousPosition.x) +
-        accelerationX * dtSq;
-      const nextPositionY =
-        point.position.y +
-        (point.position.y - point.previousPosition.y) +
-        accelerationY * dtSq;
-      const nextPositionZ =
-        point.position.z +
-        (point.position.z - point.previousPosition.z) +
-        accelerationZ * dtSq;
+      const nextPosition = point.position
+        .add(point.position.subtract(point.previousPosition))
+        .add(acceleration.scale(dtSq));
 
-      point.velocity.x =
-        (nextPositionX - point.previousPosition.x) / (2 * deltaTime);
-      point.velocity.y =
-        (nextPositionY - point.previousPosition.y) / (2 * deltaTime);
-      point.velocity.z =
-        (nextPositionZ - point.previousPosition.z) / (2 * deltaTime);
+      point.velocity = nextPosition
+        .subtract(point.previousPosition)
+        .scale(1 / (2 * deltaTime));
 
-      point.previousPosition = {...point.position};
-      point.position = {x: nextPositionX, y: nextPositionY, z: nextPositionZ};
+      point.previousPosition = point.position.clone();
+      point.position = nextPosition;
     }
   }
 
@@ -166,10 +141,8 @@ export class FlagSystem extends System {
         const p1 = spring.p1;
         const p2 = spring.p2;
 
-        const dx = p2.position.x - p1.position.x;
-        const dy = p2.position.y - p1.position.y;
-        const dz = p2.position.z - p1.position.z;
-        const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        const delta = p2.position.subtract(p1.position);
+        const distance = delta.magnitude();
 
         if (distance === 0) {
           console.warn(
@@ -178,21 +151,15 @@ export class FlagSystem extends System {
           continue;
         }
 
-        const correction = (distance - spring.restLength) / distance;
-
-        const correctionX = dx * 0.5 * correction;
-        const correctionY = dy * 0.5 * correction;
-        const correctionZ = dz * 0.5 * correction;
+        const correction = delta.scale(
+          (distance - spring.restLength) / distance / 2,
+        );
 
         if (!p1.isFixed) {
-          p1.position.x += correctionX;
-          p1.position.y += correctionY;
-          p1.position.z += correctionZ;
+          p1.position = p1.position.add(correction);
         }
         if (!p2.isFixed) {
-          p2.position.x -= correctionX;
-          p2.position.y -= correctionY;
-          p2.position.z -= correctionZ;
+          p2.position = p2.position.subtract(correction);
         }
       }
     }

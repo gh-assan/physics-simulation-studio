@@ -1,23 +1,6 @@
 import {IComponent} from '../../core/ecs/IComponent';
-
-// PointMass and Spring are defined in FlagSystem, but for type safety and reusability, define them here as well
-export interface PointMass {
-  position: {x: number; y: number; z: number};
-  previousPosition: {x: number; y: number; z: number};
-  velocity: {x: number; y: number; z: number};
-  forces: {x: number; y: number; z: number};
-  mass: number;
-  isFixed: boolean;
-}
-
-export interface Spring {
-  p1: PointMass;
-  p2: PointMass;
-  restLength: number;
-  stiffness: number;
-  damping: number;
-  type: 'structural' | 'shear' | 'bend';
-}
+import {PointMass, Spring} from './types';
+import {Vector3} from './utils/Vector3';
 
 export class FlagComponent implements IComponent<FlagComponent> {
   // Flag dimensions
@@ -42,7 +25,7 @@ export class FlagComponent implements IComponent<FlagComponent> {
 
   // Add wind properties for UI controls
   windStrength: number;
-  windDirection: {x: number; y: number; z: number};
+  windDirection: Vector3;
 
   constructor(
     width = 10,
@@ -54,7 +37,7 @@ export class FlagComponent implements IComponent<FlagComponent> {
     damping = 0.05,
     textureUrl = '',
     windStrength = 0,
-    windDirection?: {x: number; y: number; z: number} | null,
+    windDirection?: Vector3 | {x: number; y: number; z: number} | null,
   ) {
     this.width = width;
     this.height = height;
@@ -68,30 +51,28 @@ export class FlagComponent implements IComponent<FlagComponent> {
     this.points = [];
     this.springs = [];
     this.windStrength = windStrength;
-    // Defensive: always ensure windDirection is an object with x/y/z
-    if (!windDirection || typeof windDirection !== 'object') {
-      this.windDirection = {x: 1, y: 0, z: 0};
+    // Defensive: always ensure windDirection is a Vector3
+    if (windDirection instanceof Vector3) {
+      this.windDirection = windDirection;
+    } else if (windDirection && typeof windDirection === 'object') {
+      this.windDirection = new Vector3(
+        typeof windDirection.x === 'number' ? windDirection.x : 1,
+        typeof windDirection.y === 'number' ? windDirection.y : 0,
+        typeof windDirection.z === 'number' ? windDirection.z : 0,
+      );
     } else {
-      this.windDirection = {
-        x: typeof windDirection.x === 'number' ? windDirection.x : 1,
-        y: typeof windDirection.y === 'number' ? windDirection.y : 0,
-        z: typeof windDirection.z === 'number' ? windDirection.z : 0,
-      };
+      this.windDirection = new Vector3(1, 0, 0);
     }
   }
 
   // Add setters to keep wind vector in sync
-  setWind(strength: number, direction: {x: number; y: number; z: number}) {
+  setWind(strength: number, direction: Vector3) {
     this.windStrength = strength;
-    this.windDirection = {...direction};
+    this.windDirection = direction.clone();
   }
 
-  get wind() {
-    return {
-      x: this.windStrength * this.windDirection.x,
-      y: this.windStrength * this.windDirection.y,
-      z: this.windStrength * this.windDirection.z,
-    };
+  get wind(): Vector3 {
+    return this.windDirection.scale(this.windStrength);
   }
 
   private generateInitialPoints(): {x: number; y: number; z: number}[] {
@@ -122,7 +103,7 @@ export class FlagComponent implements IComponent<FlagComponent> {
       this.damping,
       this.textureUrl,
       this.windStrength,
-      this.windDirection ? {...this.windDirection} : null,
+      this.windDirection.clone(),
     );
   }
 }

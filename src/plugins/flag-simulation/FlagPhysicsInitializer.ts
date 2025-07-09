@@ -1,6 +1,7 @@
 import {FlagComponent} from './FlagComponent';
 import {PositionComponent} from '../../core/components/PositionComponent';
 import {PointMass, Spring} from './types';
+import {Vector3} from './utils/Vector3';
 
 export class FlagPhysicsInitializer {
   public static initializeFlag(
@@ -19,18 +20,18 @@ export class FlagPhysicsInitializer {
         const initialPoint =
           flagComponent.initialPoints[y * (flagComponent.segmentsX + 1) + x];
         const pointMass: PointMass = {
-          position: {
-            x: positionComponent.x + initialPoint.x,
-            y: positionComponent.y + initialPoint.y,
-            z: positionComponent.z + initialPoint.z,
-          },
-          previousPosition: {
-            x: positionComponent.x + initialPoint.x,
-            y: positionComponent.y + initialPoint.y,
-            z: positionComponent.z + initialPoint.z,
-          },
-          velocity: {x: 0, y: 0, z: 0},
-          forces: {x: 0, y: 0, z: 0},
+          position: new Vector3(
+            positionComponent.x + initialPoint.x,
+            positionComponent.y + initialPoint.y,
+            positionComponent.z + initialPoint.z,
+          ),
+          previousPosition: new Vector3(
+            positionComponent.x + initialPoint.x,
+            positionComponent.y + initialPoint.y,
+            positionComponent.z + initialPoint.z,
+          ),
+          velocity: new Vector3(0, 0, 0),
+          forces: new Vector3(0, 0, 0),
           mass: flagComponent.mass,
           isFixed:
             (x === 0 && y === 0) || (x === 0 && y === flagComponent.segmentsY), // Fix top-left and bottom-left corners
