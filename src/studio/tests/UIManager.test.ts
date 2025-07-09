@@ -84,9 +84,19 @@ describe('UIManager', () => {
         uiManager.registerComponentControls('ComponentA', mockObj1);
         uiManager.registerComponentControls('ComponentB', mockObj2);
 
-        // Expect pane.dispose to have been called
-        const disposeSpy = jest.spyOn(mockPaneInstance, 'dispose');
+        // Get references to the mocked folders
+        const mockFolderA = mockPaneInstance.addFolder.mock.results[0]?.value;
+        const mockFolderB = mockPaneInstance.addFolder.mock.results[1]?.value;
+
+        // Spy on the dispose method of the individual folders
+        const disposeSpyA = jest.spyOn(mockFolderA, 'dispose');
+        const disposeSpyB = jest.spyOn(mockFolderB, 'dispose');
+
         uiManager.clearControls();
-        expect(disposeSpy).toHaveBeenCalled();
+
+        // Assert that the dispose method of each folder was called
+        expect(disposeSpyA).toHaveBeenCalledTimes(1);
+        expect(disposeSpyB).toHaveBeenCalledTimes(1);
+        expect(uiManager['folders'].size).toBe(0); // Ensure the folders map is cleared
     });
 });

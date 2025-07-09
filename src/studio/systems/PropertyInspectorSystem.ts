@@ -30,16 +30,12 @@ export class PropertyInspectorSystem extends System {
 
         if (currentSelectedEntity !== this.lastSelectedEntity) {
             this.lastSelectedEntity = currentSelectedEntity;
-            console.log(`PropertyInspectorSystem: Selected entity changed to: ${currentSelectedEntity}`);
             this.uiManager.clearControls(); // Clear previous inspector content
             if (currentSelectedEntity !== null) {
-                console.log(`PropertyInspectorSystem: Processing components for entity: ${currentSelectedEntity}`);
                 const components = world.componentManager.getAllComponentsForEntity(currentSelectedEntity);
-                console.log(`PropertyInspectorSystem: Components found:`, components);
                 for (const componentName in components) {
                     if (Object.prototype.hasOwnProperty.call(components, componentName)) {
                         if (componentName === FlagComponent.name) {
-                            console.log(`PropertyInspectorSystem: Registering FlagComponent controls for entity ${currentSelectedEntity}`);
                             this.uiManager.registerComponentControls(componentName, components[componentName], [
                                 { property: 'width', type: 'number', label: 'Flag Width', min: 0.1, max: 10, step: 0.1 },
                                 { property: 'height', type: 'number', label: 'Flag Height', min: 0.1, max: 10, step: 0.1 },
@@ -55,25 +51,22 @@ export class PropertyInspectorSystem extends System {
                                 { property: 'windDirection.z', type: 'number', label: 'Wind Direction Z', min: -1, max: 1, step: 0.1 },
                             ]);
                         } else if (componentName === WaterBodyComponent.type) {
-                            console.log(`PropertyInspectorSystem: Registering WaterBodyComponent controls for entity ${currentSelectedEntity}`);
                             this.uiManager.registerComponentControls(componentName, components[componentName], [
                                 { property: 'viscosity', type: 'number', label: 'Viscosity', min: 0, max: 1, step: 0.01 },
                                 { property: 'surfaceTension', type: 'number', label: 'Surface Tension', min: 0, max: 1, step: 0.01 },
                             ]);
                         } else if (componentName === WaterDropletComponent.type) {
-                            console.log(`PropertyInspectorSystem: Registering WaterDropletComponent controls for entity ${currentSelectedEntity}`);
                             this.uiManager.registerComponentControls(componentName, components[componentName], [
                                 { property: 'size', type: 'number', label: 'Droplet Size', min: 0.1, max: 5, step: 0.1 },
                                 { property: 'fallHeight', type: 'number', label: 'Fall Height', min: 1, max: 100, step: 1 },
                             ]);
                         } else {
-                            console.log(`PropertyInspectorSystem: Registering generic controls for component: ${componentName} for entity ${currentSelectedEntity}`);
                             this.uiManager.registerComponentControls(componentName, components[componentName]);
                         }
                     }
                 }
             } else {
-                console.log("PropertyInspectorSystem: No entity selected.");
+                // Clear inspector
             }
         }
     }

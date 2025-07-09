@@ -53,21 +53,15 @@ export class RenderSystem extends System {
     }
 
     private onMouseDown(event: MouseEvent): void {
-        console.log(`RenderSystem: Mouse down event at clientX: ${event.clientX}, clientY: ${event.clientY}`);
         // Calculate mouse position in normalized device coordinates (-1 to +1) for both components
         this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-        console.log(`RenderSystem: Normalized mouse coordinates: x=${this.mouse.x}, y=${this.mouse.y}`);
 
         // Update the raycaster with the camera and mouse position
         this.raycaster.setFromCamera(this.mouse, this.camera);
 
         // Calculate objects intersecting the ray
         const intersects = this.raycaster.intersectObjects(this.scene.children);
-        console.log(`RenderSystem: Number of intersected objects: ${intersects.length}`);
-        if (intersects.length > 0) {
-            console.log(`RenderSystem: First intersected object:`, intersects[0].object);
-        }
 
         // Get the current world from the studio
         const world = this.studio.world;
@@ -81,7 +75,6 @@ export class RenderSystem extends System {
         currentlySelected.forEach(entityId => {
             const selectable = world.componentManager.getComponent(entityId, SelectableComponent.name) as SelectableComponent;
             selectable.isSelected = false;
-            console.log(`RenderSystem: Entity ${entityId} deselected.`);
         });
 
         if (intersects.length > 0) {
@@ -101,13 +94,8 @@ export class RenderSystem extends System {
                 const selectable = world.componentManager.getComponent(selectedEntityId, SelectableComponent.name) as SelectableComponent;
                 if (selectable) {
                     selectable.isSelected = true;
-                    console.log(`RenderSystem: Entity ${selectedEntityId} selected.`);
                 }
-            } else {
-                console.log("RenderSystem: Intersected object not found in meshes map.", intersectedMesh);
             }
-        } else {
-            console.log("RenderSystem: No objects intersected.");
         }
     }
 
@@ -145,7 +133,6 @@ export class RenderSystem extends System {
                 mesh = new THREE.Mesh(geometry, material);
                 this.scene.add(mesh);
                 this.meshes.set(entityId, mesh);
-                console.log(`RenderSystem: Created and added mesh for entity ${entityId}. Mesh:`, mesh);
             }
 
             // Update mesh position and rotation
