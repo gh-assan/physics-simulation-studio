@@ -26,10 +26,12 @@ This component will be a core component, similar to `PositionComponent` and `Ren
 ## 3. Technical Requirements & Implementation Plan
 
 1.  **File(s) to be Created/Modified:**
+
     - `src/core/components/SelectableComponent.ts`
     - `src/core/components/index.ts` (Update barrel file)
 
 2.  **Step-by-Step Implementation:**
+
     - **Step 1:** Create `src/core/components/SelectableComponent.ts`.
     - **Step 2:** Define the `SelectableComponent` class with a property like `isSelected: boolean`.
     - **Step 3:** Export `SelectableComponent` from `src/core/components/index.ts`.

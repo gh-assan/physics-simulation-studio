@@ -18,14 +18,15 @@ This task directly implements Section 3.2 (Rendering Engine) and Section 3.3 (UI
 
 - **Relevant Architectural Document:** [ARCHITECTURE.md](./../architecture/ARCHITECTURE.md)
 - **Key Architectural Principles to Uphold:**
-  - [X] **ECS Compliance:** The UI will interact with ECS components and systems.
-  - [X] **Plugin Modularity:** The UI must be able to dynamically adapt to components and systems registered by plugins.
-  - [X] **Decoupling:** Rendering logic must be strictly separated from simulation logic. The UI should be decoupled from specific component implementations.
-  - [X] **Data-Driven Design:** The Property Inspector will be dynamically generated based on component metadata.
+  - [x] **ECS Compliance:** The UI will interact with ECS components and systems.
+  - [x] **Plugin Modularity:** The UI must be able to dynamically adapt to components and systems registered by plugins.
+  - [x] **Decoupling:** Rendering logic must be strictly separated from simulation logic. The UI should be decoupled from specific component implementations.
+  - [x] **Data-Driven Design:** The Property Inspector will be dynamically generated based on component metadata.
 
 ## 3. Technical Requirements & Implementation Plan
 
 1.  **File(s) to be Created/Modified:**
+
     - `src/studio/uiManager.ts` (Actual UIManager implementation)
     - `src/studio/systems/RenderSystem.ts`
     - `src/studio/systems/PropertyInspectorSystem.ts`
@@ -37,22 +38,23 @@ This task directly implements Section 3.2 (Rendering Engine) and Section 3.3 (UI
     - `index.html` (Main HTML file for the application)
 
 2.  **Step-by-Step Implementation:**
+
     - **Step 1: Setup HTML and Entry Point:** Create `index.html` and `src/studio/main.ts` as the application entry point. Initialize the `World` and `PluginManager`.
     - **Step 2: Install Three.js and Tweakpane:** Add `three` and `tweakpane` to `package.json`.
     - **Step 3: Implement `RenderableComponent`:** Define a `RenderableComponent` in `src/core/components/` to hold visual asset information (e.g., geometry type, color).
     - **Step 4: Implement `UIManager`:** Create the concrete `UIManager` class in `src/studio/uiManager.ts`. This will manage the Tweakpane instance and provide methods for registering component controls.
     - **Step 5: Implement `RenderSystem`:** Create `src/studio/systems/RenderSystem.ts`. This system will:
-        - Initialize a Three.js scene, camera, and renderer.
-        - Query for entities with `PositionComponent`, `RotationComponent`, and `RenderableComponent`.
-        - Create/update Three.js meshes based on `RenderableComponent` data and synchronize their transforms with `PositionComponent` and `RotationComponent`.
-        - Render the scene.
+      - Initialize a Three.js scene, camera, and renderer.
+      - Query for entities with `PositionComponent`, `RotationComponent`, and `RenderableComponent`.
+      - Create/update Three.js meshes based on `RenderableComponent` data and synchronize their transforms with `PositionComponent` and `RotationComponent`.
+      - Render the scene.
     - **Step 6: Implement `PropertyInspectorSystem`:** Create `src/studio/systems/PropertyInspectorSystem.ts`. This system will:
-        - Listen for entity selection events.
-        - Dynamically generate Tweakpane controls for the selected entity's components based on component metadata (e.g., `min`, `max`, `label`).
+      - Listen for entity selection events.
+      - Dynamically generate Tweakpane controls for the selected entity's components based on component metadata (e.g., `min`, `max`, `label`).
     - **Step 7: Implement `SceneSerializer`:** Create `src/studio/systems/SceneSerializer.ts`. This system will:
-        - Serialize the ECS `World` state into a JSON object.
-        - Provide methods for saving to and loading from local files (using File System Access API).
-        - Implement URL parameter encoding/decoding for scene sharing.
+      - Serialize the ECS `World` state into a JSON object.
+      - Provide methods for saving to and loading from local files (using File System Access API).
+      - Implement URL parameter encoding/decoding for scene sharing.
     - **Step 8: Integrate into `main.ts`:** Orchestrate the initialization of all systems and managers in `src/studio/main.ts`.
 
 3.  **Dependencies:**

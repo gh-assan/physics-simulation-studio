@@ -18,14 +18,15 @@ This task directly implements the case study described in Section 2.3 of the `te
 
 - **Relevant Architectural Document:** [ARCHITECTURE.md](./../architecture/ARCHITECTURE.md)
 - **Key Architectural Principles to Uphold:**
-  - [X] **ECS Compliance:** Define `RigidBodyComponent` and `PhysicsSystem` that operate within the ECS.
-  - [X] **Plugin Modularity:** The entire plugin must be self-contained within its own directory (`src/plugins/rigid-body/`) and implement `ISimulationPlugin`.
-  - [X] **Decoupling:** Ensure strict separation between the physics engine (wrapped by `PhysicsWrapper`), the ECS, and any future rendering logic.
-  - [X] **Data-Driven Design:** The behavior of rigid bodies will be determined by the data in their components.
+  - [x] **ECS Compliance:** Define `RigidBodyComponent` and `PhysicsSystem` that operate within the ECS.
+  - [x] **Plugin Modularity:** The entire plugin must be self-contained within its own directory (`src/plugins/rigid-body/`) and implement `ISimulationPlugin`.
+  - [x] **Decoupling:** Ensure strict separation between the physics engine (wrapped by `PhysicsWrapper`), the ECS, and any future rendering logic.
+  - [x] **Data-Driven Design:** The behavior of rigid bodies will be determined by the data in their components.
 
 ## 3. Technical Requirements & Implementation Plan
 
 1.  **File(s) to be Created/Modified:**
+
     - `src/plugins/rigid-body/index.ts` (Plugin entry point)
     - `src/plugins/rigid-body/components.ts` (Physics-specific components)
     - `src/plugins/rigid-body/system.ts` (The physics system)
@@ -35,18 +36,19 @@ This task directly implements the case study described in Section 2.3 of the `te
     - `src/core/components/index.ts` (Barrel file for core components)
 
 2.  **Step-by-Step Implementation:**
+
     - **Step 1: Install Rapier.rs:** Add `@dimforge/rapier3d-compat` to `package.json`.
     - **Step 2: Create Core Components:** Define `PositionComponent` (x, y, z) and `RotationComponent` (x, y, z, w for quaternion) in `src/core/components/`.
     - **Step 3: Implement `PhysicsWrapper`:** Create `src/plugins/rigid-body/physics-wrapper.ts` to encapsulate Rapier.rs. It will initialize the physics world and provide a `step()` method.
     - **Step 4: Define `RigidBodyComponent`:** Create `src/plugins/rigid-body/components.ts` to hold the Rapier `RigidBody` instance and other physics-related data.
     - **Step 5: Implement `PhysicsSystem`:** Create `src/plugins/rigid-body/system.ts`. This system will:
-        - Step the `PhysicsWrapper`'s world.
-        - Query for entities with `RigidBodyComponent`, `PositionComponent`, and `RotationComponent`.
-        - Synchronize the `RigidBody`'s position and rotation back to the ECS `PositionComponent` and `RotationComponent`.
+      - Step the `PhysicsWrapper`'s world.
+      - Query for entities with `RigidBodyComponent`, `PositionComponent`, and `RotationComponent`.
+      - Synchronize the `RigidBody`'s position and rotation back to the ECS `PositionComponent` and `RotationComponent`.
     - **Step 6: Implement `RigidBodyPlugin`:** Create `src/plugins/rigid-body/index.ts`. This class will implement `ISimulationPlugin` and:
-        - Register `RigidBodyComponent` with the `World`'s `ComponentManager`.
-        - Register `PhysicsSystem` with the `World`'s `SystemManager`.
-        - Initialize the `PhysicsWrapper`.
+      - Register `RigidBodyComponent` with the `World`'s `ComponentManager`.
+      - Register `PhysicsSystem` with the `World`'s `SystemManager`.
+      - Initialize the `PhysicsWrapper`.
 
 3.  **Dependencies:**
     - This task depends on the successful completion of `001-implement-core-ecs-framework.md` and `002-implement-plugin-system.md`.

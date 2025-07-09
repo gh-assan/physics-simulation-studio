@@ -1,0 +1,37 @@
+{
+  "extends": "./node_modules/gts/",
+  "env": {
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "project": ["./tsconfig.json"],
+    "tsconfigRootDir": "."
+  },
+  "overrides": [
+    {
+      "files": ["jest.setup.js"],
+      "globals": {
+        "jest": "readonly",
+        "expect": "readonly",
+        "document": "readonly",
+        "window": "readonly"
+      }
+    },
+    {
+      "files": ["jest.setup.ts", "vite.config.ts"],
+      "parserOptions": {
+        "project": ["./tsconfig.json"]
+      },
+      "rules": {
+        "n/no-unpublished-import": "off"
+      }
+    },
+    {
+      "files": ["src/studio/systems/SceneSerializer.ts"],
+      "rules": {
+        "n/no-unsupported-features/node-builtins": "off"
+      }
+    }
+  ]
+}

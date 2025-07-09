@@ -97,19 +97,19 @@ Responsible for the lifecycle of entities. It maintains a pool of available enti
 
 ```typescript
 class EntityManager {
-    private nextEntityID = 0;
-    private availableEntityIDs: number[] = [];
+  private nextEntityID = 0;
+  private availableEntityIDs: number[] = [];
 
-    public createEntity(): number {
-        if (this.availableEntityIDs.length > 0) {
-            return this.availableEntityIDs.pop()!;
-        }
-        return this.nextEntityID++;
+  public createEntity(): number {
+    if (this.availableEntityIDs.length > 0) {
+      return this.availableEntityIDs.pop()!;
     }
+    return this.nextEntityID++;
+  }
 
-    public destroyEntity(entityID: number): void {
-        this.availableEntityIDs.push(entityID);
-    }
+  public destroyEntity(entityID: number): void {
+    this.availableEntityIDs.push(entityID);
+  }
 }
 ```
 
@@ -121,43 +121,50 @@ Manages the storage and retrieval of components. For performance, it uses arrays
 interface IComponent {}
 
 class ComponentManager {
-    private componentStores = new Map<string, IComponent[]>();
+  private componentStores = new Map<string, IComponent[]>();
 
-    public registerComponent(componentName: string): void {
-        this.componentStores.set(componentName, []);
-    }
+  public registerComponent(componentName: string): void {
+    this.componentStores.set(componentName, []);
+  }
 
-    public addComponent<T extends IComponent>(entityID: number, componentName: string, component: T): void {
-        this.componentStores.get(componentName)![entityID] = component;
-    }
+  public addComponent<T extends IComponent>(
+    entityID: number,
+    componentName: string,
+    component: T,
+  ): void {
+    this.componentStores.get(componentName)![entityID] = component;
+  }
 
-    public getComponent<T extends IComponent>(entityID: number, componentName: string): T | undefined {
-        return this.componentStores.get(componentName)?.[entityID] as T;
-    }
+  public getComponent<T extends IComponent>(
+    entityID: number,
+    componentName: string,
+  ): T | undefined {
+    return this.componentStores.get(componentName)?.[entityID] as T;
+  }
 
-    public getEntitiesWithComponents(componentNames: string[]): number[] {
-        // Logic to find all entities that have all specified components
-        // This is a simplified example; real implementations use more efficient bitmasking.
-        const entities: number[] = [];
-        const firstStore = this.componentStores.get(componentNames[0]);
-        if (!firstStore) return [];
+  public getEntitiesWithComponents(componentNames: string[]): number[] {
+    // Logic to find all entities that have all specified components
+    // This is a simplified example; real implementations use more efficient bitmasking.
+    const entities: number[] = [];
+    const firstStore = this.componentStores.get(componentNames[0]);
+    if (!firstStore) return [];
 
-        for (let i = 0; i < firstStore.length; i++) {
-            if (firstStore[i] !== undefined) {
-                let hasAllComponents = true;
-                for (let j = 1; j < componentNames.length; j++) {
-                    if (this.componentStores.get(componentNames[j])?.[i] === undefined) {
-                        hasAllComponents = false;
-                        break;
-                    }
-                }
-                if (hasAllComponents) {
-                    entities.push(i);
-                }
-            }
+    for (let i = 0; i < firstStore.length; i++) {
+      if (firstStore[i] !== undefined) {
+        let hasAllComponents = true;
+        for (let j = 1; j < componentNames.length; j++) {
+          if (this.componentStores.get(componentNames[j])?.[i] === undefined) {
+            hasAllComponents = false;
+            break;
+          }
         }
-        return entities;
+        if (hasAllComponents) {
+          entities.push(i);
+        }
+      }
     }
+    return entities;
+  }
 }
 ```
 
@@ -167,21 +174,21 @@ Manages the registration, ordering, and execution of systems.
 
 ```typescript
 abstract class System {
-    public abstract update(world: World, deltaTime: number): void;
+  public abstract update(world: World, deltaTime: number): void;
 }
 
 class SystemManager {
-    private systems: System[] = [];
+  private systems: System[] = [];
 
-    public registerSystem(system: System): void {
-        this.systems.push(system);
-    }
+  public registerSystem(system: System): void {
+    this.systems.push(system);
+  }
 
-    public updateAll(world: World, deltaTime: number): void {
-        for (const system of this.systems) {
-            system.update(world, deltaTime);
-        }
+  public updateAll(world: World, deltaTime: number): void {
+    for (const system of this.systems) {
+      system.update(world, deltaTime);
     }
+  }
 }
 ```
 
@@ -191,13 +198,13 @@ The central orchestrator that ties everything together. It holds instances of th
 
 ```typescript
 class World {
-    public entityManager = new EntityManager();
-    public componentManager = new ComponentManager();
-    public systemManager = new SystemManager();
+  public entityManager = new EntityManager();
+  public componentManager = new ComponentManager();
+  public systemManager = new SystemManager();
 
-    public update(deltaTime: number): void {
-        this.systemManager.updateAll(this, deltaTime);
-    }
+  public update(deltaTime: number): void {
+    this.systemManager.updateAll(this, deltaTime);
+  }
 }
 ```
 
@@ -226,39 +233,39 @@ The contract will specify the essential methods and properties for a simulation 
 ```typescript
 // /src/core/plugin.ts
 
-import { World } from './ecs';
-import { UIManager } from '../studio/uiManager'; // Assumes a UI Manager for control panels
+import {World} from './ecs';
+import {UIManager} from '../studio/uiManager'; // Assumes a UI Manager for control panels
 
 export interface ISimulationPlugin {
-    /**
-     * A unique, machine-readable name for the plugin.
-     * Used for dependency resolution and identification.
-     * Example: "rigid-body-physics-rapier"
-     */
-    getName(): string;
+  /**
+   * A unique, machine-readable name for the plugin.
+   * Used for dependency resolution and identification.
+   * Example: "rigid-body-physics-rapier"
+   */
+  getName(): string;
 
-    /**
-     * An array of plugin names that this plugin depends on.
-     * The PluginManager will ensure these are registered before this plugin.
-     * Example: ["core-math-utils"]
-     */
-    getDependencies(): string[];
+  /**
+   * An array of plugin names that this plugin depends on.
+   * The PluginManager will ensure these are registered before this plugin.
+   * Example: ["core-math-utils"]
+   */
+  getDependencies(): string[];
 
-    /**
-     * Called by the PluginManager to initialize the plugin.
-     * This is where the plugin registers its components, systems,
-     * and UI elements with the core application.
-     * @param world The central ECS World instance.
-     * @param uiManager The manager for the studio's control panel UI.
-     */
-    register(world: World, uiManager: UIManager): void;
+  /**
+   * Called by the PluginManager to initialize the plugin.
+   * This is where the plugin registers its components, systems,
+   * and UI elements with the core application.
+   * @param world The central ECS World instance.
+   * @param uiManager The manager for the studio's control panel UI.
+   */
+  register(world: World, uiManager: UIManager): void;
 
-    /**
-     * Called by the PluginManager when the plugin is being unloaded.
-     * This method should clean up all resources, unregister systems,
-     * and remove any UI elements created by the plugin.
-     */
-    unregister(): void;
+  /**
+   * Called by the PluginManager when the plugin is being unloaded.
+   * This method should clean up all resources, unregister systems,
+   * and remove any UI elements created by the plugin.
+   */
+  unregister(): void;
 }
 ```
 
@@ -336,18 +343,18 @@ First, we select Rapier.rs for its performance and TypeScript support. We create
 import RAPIER from '@dimforge/rapier3d-compat';
 
 export class PhysicsWrapper {
-    public world: RAPIER.World;
+  public world: RAPIER.World;
 
-    constructor() {
-        const gravity = new RAPIER.Vector3(0.0, -9.81, 0.0);
-        this.world = new RAPIER.World(gravity);
-    }
+  constructor() {
+    const gravity = new RAPIER.Vector3(0.0, -9.81, 0.0);
+    this.world = new RAPIER.World(gravity);
+  }
 
-    public step(deltaTime: number): void {
-        // Use a fixed timestep for stability
-        this.world.timestep = 1.0 / 60.0;
-        this.world.step();
-    }
+  public step(deltaTime: number): void {
+    // Use a fixed timestep for stability
+    this.world.timestep = 1.0 / 60.0;
+    this.world.step();
+  }
 }
 ```
 
@@ -358,14 +365,14 @@ These components will live in the ECS and hold the data that links an entity to 
 ```typescript
 // /src/plugins/rigid-body/components.ts
 import RAPIER from '@dimforge/rapier3d-compat';
-import { IComponent } from '../../core/ecs';
+import {IComponent} from '../../core/ecs';
 
 export class RigidBodyComponent implements IComponent {
-    public body: RAPIER.RigidBody;
-    
-    constructor(body: RAPIER.RigidBody) {
-        this.body = body;
-    }
+  public body: RAPIER.RigidBody;
+
+  constructor(body: RAPIER.RigidBody) {
+    this.body = body;
+  }
 }
 
 // Assume other components like PositionComponent, RotationComponent already exist
@@ -377,44 +384,60 @@ This system contains the core logic. It steps the physics world and then synchro
 
 ```typescript
 // /src/plugins/rigid-body/system.ts
-import { System, World } from '../../core/ecs';
-import { PhysicsWrapper } from './physics-wrapper';
-import { RigidBodyComponent } from './components';
-import { PositionComponent, RotationComponent } from '../../core/components'; // Assuming these exist
+import {System, World} from '../../core/ecs';
+import {PhysicsWrapper} from './physics-wrapper';
+import {RigidBodyComponent} from './components';
+import {PositionComponent, RotationComponent} from '../../core/components'; // Assuming these exist
 
 export class PhysicsSystem extends System {
-    private physicsWrapper: PhysicsWrapper;
-    private componentQuery = ['RigidBodyComponent', 'PositionComponent', 'RotationComponent'];
+  private physicsWrapper: PhysicsWrapper;
+  private componentQuery = [
+    'RigidBodyComponent',
+    'PositionComponent',
+    'RotationComponent',
+  ];
 
-    constructor(physicsWrapper: PhysicsWrapper) {
-        super();
-        this.physicsWrapper = physicsWrapper;
+  constructor(physicsWrapper: PhysicsWrapper) {
+    super();
+    this.physicsWrapper = physicsWrapper;
+  }
+
+  public update(world: World, deltaTime: number): void {
+    // 1. Step the physics simulation
+    this.physicsWrapper.step(deltaTime);
+
+    // 2. Synchronize physics state back to ECS components
+    const entities = world.componentManager.getEntitiesWithComponents(
+      this.componentQuery,
+    );
+    for (const entityID of entities) {
+      const rigidBodyComp =
+        world.componentManager.getComponent<RigidBodyComponent>(
+          entityID,
+          'RigidBodyComponent',
+        )!;
+      const posComp = world.componentManager.getComponent<PositionComponent>(
+        entityID,
+        'PositionComponent',
+      )!;
+      const rotComp = world.componentManager.getComponent<RotationComponent>(
+        entityID,
+        'RotationComponent',
+      )!;
+
+      const translation = rigidBodyComp.body.translation();
+      const rotation = rigidBodyComp.body.rotation();
+
+      posComp.x = translation.x;
+      posComp.y = translation.y;
+      posComp.z = translation.z;
+
+      rotComp.x = rotation.x;
+      rotComp.y = rotation.y;
+      rotComp.z = rotation.z;
+      rotComp.w = rotation.w;
     }
-
-    public update(world: World, deltaTime: number): void {
-        // 1. Step the physics simulation
-        this.physicsWrapper.step(deltaTime);
-
-        // 2. Synchronize physics state back to ECS components
-        const entities = world.componentManager.getEntitiesWithComponents(this.componentQuery);
-        for (const entityID of entities) {
-            const rigidBodyComp = world.componentManager.getComponent<RigidBodyComponent>(entityID, 'RigidBodyComponent')!;
-            const posComp = world.componentManager.getComponent<PositionComponent>(entityID, 'PositionComponent')!;
-            const rotComp = world.componentManager.getComponent<RotationComponent>(entityID, 'RotationComponent')!;
-
-            const translation = rigidBodyComp.body.translation();
-            const rotation = rigidBodyComp.body.rotation();
-
-            posComp.x = translation.x;
-            posComp.y = translation.y;
-            posComp.z = translation.z;
-
-            rotComp.x = rotation.x;
-            rotComp.y = rotation.y;
-            rotComp.z = rotation.z;
-            rotComp.w = rotation.w;
-        }
-    }
+  }
 }
 ```
 
@@ -424,43 +447,43 @@ Finally, we tie everything together in a class that implements our plugin interf
 
 ```typescript
 // /src/plugins/rigid-body/index.ts
-import { ISimulationPlugin } from '../../core/plugin';
-import { World } from '../../core/ecs';
-import { UIManager } from '../../studio/uiManager';
-import { PhysicsWrapper } from './physics-wrapper';
-import { PhysicsSystem } from './system';
-import { RigidBodyComponent } from './components';
+import {ISimulationPlugin} from '../../core/plugin';
+import {World} from '../../core/ecs';
+import {UIManager} from '../../studio/uiManager';
+import {PhysicsWrapper} from './physics-wrapper';
+import {PhysicsSystem} from './system';
+import {RigidBodyComponent} from './components';
 
 class RigidBodyPlugin implements ISimulationPlugin {
-    public getName(): string {
-        return "rigid-body-physics-rapier";
-    }
+  public getName(): string {
+    return 'rigid-body-physics-rapier';
+  }
 
-    public getDependencies(): string[] {
-        return [];
-    }
+  public getDependencies(): string[] {
+    return [];
+  }
 
-    public register(world: World, uiManager: UIManager): void {
-        console.log("Registering RigidBodyPlugin...");
+  public register(world: World, uiManager: UIManager): void {
+    console.log('Registering RigidBodyPlugin...');
 
-        // 1. Initialize the physics engine wrapper
-        const physicsWrapper = new PhysicsWrapper();
+    // 1. Initialize the physics engine wrapper
+    const physicsWrapper = new PhysicsWrapper();
 
-        // 2. Register components with the ECS
-        world.componentManager.registerComponent('RigidBodyComponent');
+    // 2. Register components with the ECS
+    world.componentManager.registerComponent('RigidBodyComponent');
 
-        // 3. Register the system with the ECS
-        const physicsSystem = new PhysicsSystem(physicsWrapper);
-        world.systemManager.registerSystem(physicsSystem);
+    // 3. Register the system with the ECS
+    const physicsSystem = new PhysicsSystem(physicsWrapper);
+    world.systemManager.registerSystem(physicsSystem);
 
-        // 4. Register UI controls (details in Section 4)
-        // uiManager.registerComponentControls('RigidBodyComponent',...);
-    }
+    // 4. Register UI controls (details in Section 4)
+    // uiManager.registerComponentControls('RigidBodyComponent',...);
+  }
 
-    public unregister(): void {
-        // Logic to unregister systems and components
-        console.log("Unregistering RigidBodyPlugin...");
-    }
+  public unregister(): void {
+    // Logic to unregister systems and components
+    console.log('Unregistering RigidBodyPlugin...');
+  }
 }
 
 export default RigidBodyPlugin;
@@ -495,13 +518,13 @@ Beyond raw speed, Rapier offers a suite of professional features that are invalu
 
 #### Comparative Analysis of Web Physics Engines
 
-| Engine | Primary Use | Language | Performance | Key Features | API Style | TypeScript Support |
-|--------|-------------|----------|-------------|--------------|-----------|-------------------|
-| **Rapier.rs** | 2D & 3D | Rust + WASM | Very High | Rigid/Soft Bodies, CCD, Determinism, Snapshotting, Joints | Modern, Fluent | Excellent (Official) |
-| **Matter.js** | 2D | JavaScript | Medium | Rigid Bodies, Basic Constraints, Events. No CCD. | Object-based | Good (Community types) |
-| **p2-es** | 2D | TypeScript | Medium | Rigid Bodies, Springs, Motors, Advanced Constraints | Object-based | Excellent (Native) |
-| **Cannon-es** | 3D | TypeScript | Medium-High | Rigid Bodies, Constraints, Body Sleeping. Experimental SPH. | Object-based | Excellent (Native) |
-| **Planck.js** | 2D | TypeScript | Medium | Port of Box2D, robust collision and constraints | Object-based | Excellent (Native) |
+| Engine        | Primary Use | Language    | Performance | Key Features                                                | API Style      | TypeScript Support     |
+| ------------- | ----------- | ----------- | ----------- | ----------------------------------------------------------- | -------------- | ---------------------- |
+| **Rapier.rs** | 2D & 3D     | Rust + WASM | Very High   | Rigid/Soft Bodies, CCD, Determinism, Snapshotting, Joints   | Modern, Fluent | Excellent (Official)   |
+| **Matter.js** | 2D          | JavaScript  | Medium      | Rigid Bodies, Basic Constraints, Events. No CCD.            | Object-based   | Good (Community types) |
+| **p2-es**     | 2D          | TypeScript  | Medium      | Rigid Bodies, Springs, Motors, Advanced Constraints         | Object-based   | Excellent (Native)     |
+| **Cannon-es** | 3D          | TypeScript  | Medium-High | Rigid Bodies, Constraints, Body Sleeping. Experimental SPH. | Object-based   | Excellent (Native)     |
+| **Planck.js** | 2D          | TypeScript  | Medium      | Port of Box2D, robust collision and constraints             | Object-based   | Excellent (Native)     |
 
 As the table illustrates, while engines like Matter.js and p2-es are excellent for 2D physics, and Cannon-es is a capable 3D engine, Rapier.rs provides a more comprehensive, performant, and future-proof foundation for a studio intended to support a wide variety of simulations.
 
@@ -524,33 +547,43 @@ The integration pattern remains the same for both 2D and 3D. The RenderSystem ac
 ```typescript
 // Simplified RenderSystem for Three.js
 class RenderSystem extends System {
-    private scene: THREE.Scene;
-    private visualMap = new Map<number, THREE.Mesh>(); // Maps entityID to Mesh
+  private scene: THREE.Scene;
+  private visualMap = new Map<number, THREE.Mesh>(); // Maps entityID to Mesh
 
-    //... constructor to set up scene, camera, renderer...
+  //... constructor to set up scene, camera, renderer...
 
-    public update(world: World, deltaTime: number): void {
-        const entities = world.componentManager.getEntitiesWithComponents(['RenderableComponent', 'PositionComponent']);
-        
-        for (const entityID of entities) {
-            if (!this.visualMap.has(entityID)) {
-                // Create a new mesh if it doesn't exist
-                const renderable = world.componentManager.getComponent<RenderableComponent>(entityID, 'Renderable');
-                const mesh = createMeshFromRenderable(renderable); // Helper function
-                this.scene.add(mesh);
-                this.visualMap.set(entityID, mesh);
-            }
+  public update(world: World, deltaTime: number): void {
+    const entities = world.componentManager.getEntitiesWithComponents([
+      'RenderableComponent',
+      'PositionComponent',
+    ]);
 
-            const mesh = this.visualMap.get(entityID)!;
-            const pos = world.componentManager.getComponent<PositionComponent>(entityID, 'Position');
-            //... get rotation, etc.
+    for (const entityID of entities) {
+      if (!this.visualMap.has(entityID)) {
+        // Create a new mesh if it doesn't exist
+        const renderable =
+          world.componentManager.getComponent<RenderableComponent>(
+            entityID,
+            'Renderable',
+          );
+        const mesh = createMeshFromRenderable(renderable); // Helper function
+        this.scene.add(mesh);
+        this.visualMap.set(entityID, mesh);
+      }
 
-            mesh.position.set(pos.x, pos.y, pos.z);
-            //... update rotation
-        }
+      const mesh = this.visualMap.get(entityID)!;
+      const pos = world.componentManager.getComponent<PositionComponent>(
+        entityID,
+        'Position',
+      );
+      //... get rotation, etc.
 
-        this.renderer.render(this.scene, this.camera);
+      mesh.position.set(pos.x, pos.y, pos.z);
+      //... update rotation
     }
+
+    this.renderer.render(this.scene, this.camera);
+  }
 }
 ```
 
@@ -618,25 +651,25 @@ To create a truly flexible studio, it is essential to define a comprehensive and
 
 #### Configurable Simulation Parameters
 
-| Category | Parameter | Description | Data Type | UI Control |
-|----------|-----------|-------------|-----------|------------|
-| **World Properties** | Gravity | The global gravitational acceleration vector | Vector (x, y, z) | Vector Input |
-| | Timestep | The fixed time delta for each physics update step. Affects simulation speed and stability | Number | Slider |
-| | Air Resistance | A global damping factor applied to all moving bodies | Number | Slider |
-| | Solver Iterations | Quality setting for the constraint solver; higher values improve stability at a performance cost | Integer | Slider |
-| **Rigid Body Properties** | Mass | The mass of the object. A value of 0 typically denotes a static, immovable object | Number | Number Input |
-| | Friction | The coefficient of friction, affecting how objects slide against each other | Number (0-1) | Slider |
-| | Restitution | The "bounciness" or elasticity of the object's collisions | Number (0-1) | Slider |
-| | Linear Damping | Per-body resistance to linear motion | Number | Slider |
-| | Angular Damping | Per-body resistance to rotational motion | Number | Slider |
-| | Is Static | A boolean flag to make an object immovable | Boolean | Checkbox |
-| **Constraint Properties** | Spring Constant (k) | The stiffness of a spring constraint | Number | Slider |
-| | Spring Damping | The damping ratio of a spring, affecting how quickly it settles | Number | Slider |
-| | Motor Target Velocity | The target angular velocity for a motorized hinge joint | Number | Number Input |
-| | Motor Max Force | The maximum force the motor can apply to reach its target velocity | Number | Number Input |
-| **Material Properties** | Density | Used in conjunction with shape to automatically calculate mass | Number | Number Input |
-| | Color | The visual color of the object in the renderer | Color | Color Picker |
-| | Texture | A path to an image file to be used as the object's texture | String | File Input |
+| Category                  | Parameter             | Description                                                                                      | Data Type        | UI Control   |
+| ------------------------- | --------------------- | ------------------------------------------------------------------------------------------------ | ---------------- | ------------ |
+| **World Properties**      | Gravity               | The global gravitational acceleration vector                                                     | Vector (x, y, z) | Vector Input |
+|                           | Timestep              | The fixed time delta for each physics update step. Affects simulation speed and stability        | Number           | Slider       |
+|                           | Air Resistance        | A global damping factor applied to all moving bodies                                             | Number           | Slider       |
+|                           | Solver Iterations     | Quality setting for the constraint solver; higher values improve stability at a performance cost | Integer          | Slider       |
+| **Rigid Body Properties** | Mass                  | The mass of the object. A value of 0 typically denotes a static, immovable object                | Number           | Number Input |
+|                           | Friction              | The coefficient of friction, affecting how objects slide against each other                      | Number (0-1)     | Slider       |
+|                           | Restitution           | The "bounciness" or elasticity of the object's collisions                                        | Number (0-1)     | Slider       |
+|                           | Linear Damping        | Per-body resistance to linear motion                                                             | Number           | Slider       |
+|                           | Angular Damping       | Per-body resistance to rotational motion                                                         | Number           | Slider       |
+|                           | Is Static             | A boolean flag to make an object immovable                                                       | Boolean          | Checkbox     |
+| **Constraint Properties** | Spring Constant (k)   | The stiffness of a spring constraint                                                             | Number           | Slider       |
+|                           | Spring Damping        | The damping ratio of a spring, affecting how quickly it settles                                  | Number           | Slider       |
+|                           | Motor Target Velocity | The target angular velocity for a motorized hinge joint                                          | Number           | Number Input |
+|                           | Motor Max Force       | The maximum force the motor can apply to reach its target velocity                               | Number           | Number Input |
+| **Material Properties**   | Density               | Used in conjunction with shape to automatically calculate mass                                   | Number           | Number Input |
+|                           | Color                 | The visual color of the object in the renderer                                                   | Color            | Color Picker |
+|                           | Texture               | A path to an image file to be used as the object's texture                                       | String           | File Input   |
 
 This structured list provides a clear schema for what data needs to be stored in the components and how the UI should represent that data.
 
@@ -649,14 +682,15 @@ The proposed solution involves a **SceneSerializer** system. This system's funct
 #### Serialization Process
 
 1. **Serialization**: The SceneSerializer iterates through every entity in the EntityManager. For each entity, it iterates through all of its components in the ComponentManager, converting the component data into a plain JSON representation. The result is a large JSON object that perfectly describes the scene:
+
    ```json
    {
      "entities": [
        {
          "id": 1,
          "components": {
-           "PositionComponent": { "x": 0, "y": 10, "z": 0 },
-           "RigidBodyComponent": { "mass": 1.0, "isStatic": false }
+           "PositionComponent": {"x": 0, "y": 10, "z": 0},
+           "RigidBodyComponent": {"mass": 1.0, "isStatic": false}
          }
        }
      ]
@@ -678,6 +712,7 @@ The UI should not be a monolithic, hardcoded entity. A truly extensible UI must 
 If a new OpticsPlugin is added with a LensComponent, the UI must know to display a "Focal Length" slider without any manual updates to the UI code. This is achieved by embedding metadata within the component definitions themselves.
 
 For example, a LensComponent could be defined with schema information:
+
 ```typescript
 LensComponent {
   focalLength: {
@@ -794,16 +829,16 @@ With the foundational architecture in place, development can proceed along a log
 
 #### Phase 1: Core Implementation (Completed/In Progress)
 
-- **Build the minimal, type-safe ECS framework**: *Completed*. The core ECS (World, EntityManager, ComponentManager, SystemManager) is implemented and tested.
-- **Implement the PluginManager and the ISimulationPlugin contract**: *Completed*. The plugin system is in place, allowing for modular extensions.
-- **Develop the first RigidBodyPlugin integrating Rapier.rs for 2D and 3D rigid-body dynamics**: *In Progress*. The basic structure for the rigid-body plugin is defined, and integration with Rapier.rs is underway.
+- **Build the minimal, type-safe ECS framework**: _Completed_. The core ECS (World, EntityManager, ComponentManager, SystemManager) is implemented and tested.
+- **Implement the PluginManager and the ISimulationPlugin contract**: _Completed_. The plugin system is in place, allowing for modular extensions.
+- **Develop the first RigidBodyPlugin integrating Rapier.rs for 2D and 3D rigid-body dynamics**: _In Progress_. The basic structure for the rigid-body plugin is defined, and integration with Rapier.rs is underway.
 
 #### Phase 2: Studio UI and Interaction (In Progress/Planned)
 
-- **Build the core studio UI shell, including the main viewport, toolbar, and timeline controls**: *In Progress*. Initial UI elements are being developed.
-- **Integrate a rendering engine (e.g., Three.js) via a decoupled RenderSystem**: *In Progress*. Three.js integration is being set up.
-- **Implement the data-driven PropertyInspectorSystem using Tweakpane**: *Planned*. This will be a key feature for real-time parameter tweaking.
-- **Develop the SceneSerializer for saving/loading scenes and enabling sharing via URL parameters**: *Planned*. Essential for persistence and sharing.
+- **Build the core studio UI shell, including the main viewport, toolbar, and timeline controls**: _In Progress_. Initial UI elements are being developed.
+- **Integrate a rendering engine (e.g., Three.js) via a decoupled RenderSystem**: _In Progress_. Three.js integration is being set up.
+- **Implement the data-driven PropertyInspectorSystem using Tweakpane**: _Planned_. This will be a key feature for real-time parameter tweaking.
+- **Develop the SceneSerializer for saving/loading scenes and enabling sharing via URL parameters**: _Planned_. Essential for persistence and sharing.
 
 #### Phase 3: Expanding Simulation Capabilities (Planned)
 

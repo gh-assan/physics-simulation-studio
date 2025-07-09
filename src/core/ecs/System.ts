@@ -1,5 +1,5 @@
-import { World } from './World';
+import {World} from './World';
 
 export abstract class System {
-    public abstract update(world: World, deltaTime: number): void;
+  public abstract update(world: World, deltaTime: number): void;
 }

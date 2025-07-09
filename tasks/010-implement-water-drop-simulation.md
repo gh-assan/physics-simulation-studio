@@ -16,14 +16,15 @@ This task is to create a new simulation of a water drop falling into a body of w
 
 - **Relevant Architectural Document:** [Link to ARCHITECTURE.md](./../architecture/ARCHITECTURE.md)
 - **Key Architectural Principles to Uphold:**
-  - [X] **ECS Compliance:** This task will involve creating new Components (e.g., `WaterBody`, `WaterDroplet`) and Systems (e.g., `WaterSimulationSystem`, `RippleRenderSystem`).
-  - [X] **Plugin Modularity:** The entire water simulation will be encapsulated within a new, self-contained plugin directory (`src/plugins/water-simulation/`).
-  - [X] **Decoupling:** The simulation logic (physics of the drop and ripples) will be decoupled from the rendering logic.
-  - [X] **Data-Driven Design:** The properties of the water and the droplet (e.g., viscosity, drop size, ripple decay) will be defined in components to allow for easy tweaking.
+  - [x] **ECS Compliance:** This task will involve creating new Components (e.g., `WaterBody`, `WaterDroplet`) and Systems (e.g., `WaterSimulationSystem`, `RippleRenderSystem`).
+  - [x] **Plugin Modularity:** The entire water simulation will be encapsulated within a new, self-contained plugin directory (`src/plugins/water-simulation/`).
+  - [x] **Decoupling:** The simulation logic (physics of the drop and ripples) will be decoupled from the rendering logic.
+  - [x] **Data-Driven Design:** The properties of the water and the droplet (e.g., viscosity, drop size, ripple decay) will be defined in components to allow for easy tweaking.
 
 ## 3. Technical Requirements & Implementation Plan
 
 1.  **File(s) to be Created/Modified:**
+
     - `src/plugins/water-simulation/index.ts`
     - `src/plugins/water-simulation/WaterComponents.ts`
     - `src/plugins/water-simulation/WaterSystem.ts`
@@ -31,16 +32,17 @@ This task is to create a new simulation of a water drop falling into a body of w
     - `src/plugins/water-simulation/tests/WaterSystem.test.ts`
 
 2.  **Step-by-Step Implementation:**
+
     - **Step 1: Plugin Scaffolding:** Create the new plugin directory and the main `index.ts` file to register the plugin.
     - **Step 2: Define Components:** In `WaterComponents.ts`, define `WaterBodyComponent` to represent the surface and `WaterDropletComponent` for the falling drop. Properties might include viscosity, surface tension for the body, and size/velocity for the drop.
     - **Step 3: Implement Physics System:** In `WaterSystem.ts`, create a system that:
-        - Manages the motion of the `WaterDropletComponent`.
-        - Detects collision between the droplet and the `WaterBodyComponent`.
-        - On collision, initiates a ripple effect on the water surface. This could be modeled using a 2D wave equation or a simpler sinusoidal function propagating outwards.
+      - Manages the motion of the `WaterDropletComponent`.
+      - Detects collision between the droplet and the `WaterBodyComponent`.
+      - On collision, initiates a ripple effect on the water surface. This could be modeled using a 2D wave equation or a simpler sinusoidal function propagating outwards.
     - **Step 4: Implement Rendering:** In `WaterRenderer.ts`, create a dedicated renderer that:
-        - Draws the water body (e.g., a plane).
-        - Renders the ripples on the surface, possibly using shaders for a more realistic effect.
-        - Renders the water droplet.
+      - Draws the water body (e.g., a plane).
+      - Renders the ripples on the surface, possibly using shaders for a more realistic effect.
+      - Renders the water droplet.
     - **Step 5: Integration:** Register the new components, systems, and renderer in the plugin's registration method.
     - **Step 6:** Add the new simulation to the studio's UI to allow users to select and run it.
 

@@ -1,3 +1,3 @@
-export interface IComponent {
-    [key: string]: any;
+export interface IComponent<T = unknown> {
+  clone(): T;
 }
