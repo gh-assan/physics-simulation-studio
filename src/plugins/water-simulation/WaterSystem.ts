@@ -34,7 +34,7 @@ export class WaterSystem extends System {
     ) as WaterBodyComponent;
     const waterBodyPosition = world.componentManager.getComponent(
       waterBodyEntity,
-      PositionComponent.name
+      PositionComponent.type
     ) as PositionComponent;
 
     // Update existing ripples
@@ -47,7 +47,7 @@ export class WaterSystem extends System {
       ) as WaterDropletComponent;
       const positionComponent = world.componentManager.getComponent(
         droplet,
-        PositionComponent.name
+        PositionComponent.type
       ) as PositionComponent;
 
       // Simple gravity and position update

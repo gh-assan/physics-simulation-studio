@@ -17,6 +17,7 @@ export { FlagParameterPanel } from "./FlagParameterPanel";
 
 export class FlagSimulationPlugin implements ISimulationPlugin {
   private _flagSystem: FlagSystem | null = null;
+  private _parameterPanels: ParameterPanelComponent[] = [];
 
   getName(): string {
     return "flag-simulation";
@@ -24,21 +25,37 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
   getDependencies(): string[] {
     return [];
   }
+  getParameterPanels(): ParameterPanelComponent[] {
+    return this._parameterPanels;
+  }
   register(world: World): void {
     // Register components
     world.componentManager.registerComponent(FlagComponent.type, FlagComponent);
-    world.componentManager.registerComponent(ParameterPanelComponent.type, ParameterPanelComponent);
+    world.componentManager.registerComponent(
+      FlagParameterPanel.type,
+      FlagParameterPanel
+    );
+    world.componentManager.registerComponent(
+      ParameterPanelComponent.type,
+      ParameterPanelComponent
+    );
 
     // Register systems
     this._flagSystem = new FlagSystem();
     world.systemManager.registerSystem(this._flagSystem);
+
+    // Create parameter panel
+    const flagParameterPanel = new FlagParameterPanel();
+
+    // Store it in the parameter panels array
+    this._parameterPanels.push(flagParameterPanel);
 
     // Create and register parameter panel entity
     const panelEntity = world.entityManager.createEntity();
     world.componentManager.addComponent(
       panelEntity,
       ParameterPanelComponent.type,
-      new FlagParameterPanel()
+      flagParameterPanel
     );
 
     console.log("FlagSimulationPlugin registered with parameter panel.");
@@ -48,6 +65,9 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
       this._flagSystem.unregister();
       this._flagSystem = null;
     }
+
+    // Clear parameter panels
+    this._parameterPanels = [];
   }
 
   initializeEntities(world: World): void {

@@ -152,7 +152,11 @@ export class FlagParameterPanel extends ParameterPanelComponent {
       }
     ];
 
-    uiManager.registerComponentControls(this.componentType, component, properties);
+    uiManager.registerComponentControls(
+      this.componentType,
+      component,
+      properties
+    );
   }
 
   /**

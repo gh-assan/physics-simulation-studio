@@ -21,7 +21,7 @@ describe("WaterSystem", () => {
       WaterBodyComponent
     );
     world.componentManager.registerComponent(
-      PositionComponent.name,
+      PositionComponent.type,
       PositionComponent
     );
 
@@ -37,7 +37,7 @@ describe("WaterSystem", () => {
     );
     world.componentManager.addComponent(
       droplet,
-      PositionComponent.name,
+      PositionComponent.type,
       new PositionComponent(0, 10, 0)
     );
 
@@ -56,7 +56,7 @@ describe("WaterSystem", () => {
     const initialPosition = (
       world.componentManager.getComponent(
         droplet,
-        PositionComponent.name
+        PositionComponent.type
       ) as PositionComponent
     ).y;
 
@@ -66,7 +66,7 @@ describe("WaterSystem", () => {
     const finalPosition = (
       world.componentManager.getComponent(
         droplet,
-        PositionComponent.name
+        PositionComponent.type
       ) as PositionComponent
     ).y;
 
@@ -111,16 +111,16 @@ describe("WaterSystem", () => {
 
     // Create a droplet with custom physics parameters
     const customDroplet = new WaterDropletComponent(
-      0.5,                          // size
-      10,                           // fallHeight
-      new Vector3(1, 0, 0),         // initial velocity
-      2.0,                          // mass (heavier)
-      0.2,                          // drag (more drag)
-      new Vector3(0, -5, 0),        // custom gravity (less than default)
-      2.0,                          // splashForce
-      3.0,                          // splashRadius
-      0.3,                          // rippleDecay
-      8.0                           // rippleExpansionRate
+      0.5, // size
+      10, // fallHeight
+      new Vector3(1, 0, 0), // initial velocity
+      2.0, // mass (heavier)
+      0.2, // drag (more drag)
+      new Vector3(0, -5, 0), // custom gravity (less than default)
+      2.0, // splashForce
+      3.0, // splashRadius
+      0.3, // rippleDecay
+      8.0 // rippleExpansionRate
     );
 
     world.componentManager.addComponent(
@@ -154,7 +154,7 @@ describe("WaterSystem", () => {
     // Get the updated position
     const positionComponent = world.componentManager.getComponent(
       droplet,
-      PositionComponent.name
+      PositionComponent.type
     ) as PositionComponent;
 
     // Get the updated droplet component

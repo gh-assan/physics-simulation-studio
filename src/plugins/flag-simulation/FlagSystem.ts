@@ -40,7 +40,7 @@ export class FlagSystem extends System {
       ) as FlagComponent;
       const positionComponent = world.componentManager.getComponent(
         entityId,
-        PositionComponent.name
+        PositionComponent.type
       ) as PositionComponent;
 
       if (!flagComponent || !positionComponent) {

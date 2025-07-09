@@ -8,7 +8,10 @@ import { IComponent } from "../ecs/IComponent";
  * This class implements the IParameterPanel interface and extends the Component base class
  * Plugin-specific parameter panels should extend this class
  */
-export abstract class ParameterPanelComponent extends Component<ParameterPanelComponent> implements IParameterPanel {
+export abstract class ParameterPanelComponent
+  extends Component<ParameterPanelComponent>
+  implements IParameterPanel
+{
   /**
    * The type of the component, used for serialization and deserialization
    */

@@ -33,9 +33,12 @@ export function updateDropletPhysics(
   const dragForceZ = -dropletComponent.drag * dropletComponent.velocity.z * dt;
 
   // Update velocity (a = F/m)
-  dropletComponent.velocity.x += (gravityForce.x + dragForceX) / dropletComponent.mass;
-  dropletComponent.velocity.y += (gravityForce.y + dragForceY) / dropletComponent.mass;
-  dropletComponent.velocity.z += (gravityForce.z + dragForceZ) / dropletComponent.mass;
+  dropletComponent.velocity.x +=
+    (gravityForce.x + dragForceX) / dropletComponent.mass;
+  dropletComponent.velocity.y +=
+    (gravityForce.y + dragForceY) / dropletComponent.mass;
+  dropletComponent.velocity.z +=
+    (gravityForce.z + dragForceZ) / dropletComponent.mass;
 
   // Update position
   positionComponent.x += dropletComponent.velocity.x * dt;
@@ -94,10 +97,12 @@ export function createRipples(
     z: z,
     radius: 0,
     amplitude: splashForce, // Use splash force as initial amplitude
-    decay: rippleDecay,     // Use droplet's ripple decay
+    decay: rippleDecay, // Use droplet's ripple decay
     expansionRate: rippleExpansionRate // Use droplet's ripple expansion rate
   };
 
   waterBody.ripples.push(newRipple);
-  console.log(`Creating ripples at (${x}, ${z}) with amplitude ${splashForce}, decay ${rippleDecay}, expansion rate ${rippleExpansionRate}`);
+  console.log(
+    `Creating ripples at (${x}, ${z}) with amplitude ${splashForce}, decay ${rippleDecay}, expansion rate ${rippleExpansionRate}`
+  );
 }

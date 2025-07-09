@@ -144,6 +144,7 @@ const waterBodyComponentProperties: ComponentControlProperty[] = [
 ];
 
 const waterDropletComponentProperties: ComponentControlProperty[] = [
+  // Basic properties
   {
     property: "size",
     type: "number",
@@ -159,6 +160,112 @@ const waterDropletComponentProperties: ComponentControlProperty[] = [
     min: 1,
     max: 100,
     step: 1
+  },
+
+  // Physics properties
+  {
+    property: "mass",
+    type: "number",
+    label: "Mass",
+    min: 0.1,
+    max: 10,
+    step: 0.1
+  },
+  {
+    property: "drag",
+    type: "number",
+    label: "Drag Coefficient",
+    min: 0,
+    max: 1,
+    step: 0.01
+  },
+
+  // Gravity properties
+  {
+    property: "gravity.x",
+    type: "number",
+    label: "Gravity X",
+    min: -20,
+    max: 20,
+    step: 0.1
+  },
+  {
+    property: "gravity.y",
+    type: "number",
+    label: "Gravity Y",
+    min: -20,
+    max: 20,
+    step: 0.1
+  },
+  {
+    property: "gravity.z",
+    type: "number",
+    label: "Gravity Z",
+    min: -20,
+    max: 20,
+    step: 0.1
+  },
+
+  // Velocity properties
+  {
+    property: "velocity.x",
+    type: "number",
+    label: "Velocity X",
+    min: -10,
+    max: 10,
+    step: 0.1
+  },
+  {
+    property: "velocity.y",
+    type: "number",
+    label: "Velocity Y",
+    min: -10,
+    max: 10,
+    step: 0.1
+  },
+  {
+    property: "velocity.z",
+    type: "number",
+    label: "Velocity Z",
+    min: -10,
+    max: 10,
+    step: 0.1
+  },
+
+  // Splash properties
+  {
+    property: "splashForce",
+    type: "number",
+    label: "Splash Force",
+    min: 0.1,
+    max: 5,
+    step: 0.1
+  },
+  {
+    property: "splashRadius",
+    type: "number",
+    label: "Splash Radius",
+    min: 0.1,
+    max: 10,
+    step: 0.1
+  },
+
+  // Ripple properties
+  {
+    property: "rippleDecay",
+    type: "number",
+    label: "Ripple Decay",
+    min: 0.1,
+    max: 2,
+    step: 0.1
+  },
+  {
+    property: "rippleExpansionRate",
+    type: "number",
+    label: "Ripple Expansion Rate",
+    min: 1,
+    max: 20,
+    step: 0.5
   }
 ];
 
@@ -175,26 +282,28 @@ registerComponentProperties(
 
 // Register core components
 world.componentManager.registerComponent(
-  PositionComponent.name,
+  PositionComponent.type,
   PositionComponent
 );
 world.componentManager.registerComponent(
-  RenderableComponent.name,
+  RenderableComponent.type,
   RenderableComponent
 );
 world.componentManager.registerComponent(
-  SelectableComponent.name,
+  SelectableComponent.type,
   SelectableComponent
 );
 world.componentManager.registerComponent(
-  RotationComponent.name,
+  RotationComponent.type,
   RotationComponent
 );
 
 // Register systems
 const renderSystem = new RenderSystem(studio);
 world.systemManager.registerSystem(renderSystem);
-world.systemManager.registerSystem(new PropertyInspectorSystem(uiManager));
+world.systemManager.registerSystem(
+  new PropertyInspectorSystem(uiManager, world, studio, pluginManager)
+);
 
 // Set renderSystem on studio
 studio.setRenderSystem(renderSystem);

@@ -26,11 +26,25 @@ export class Studio {
   public play(): void {
     this.isPlaying = true;
     console.log("Simulation playing.");
+
+    // Dispatch a custom event to notify systems
+    const event = new CustomEvent("simulation-play", {
+      detail: { simulationName: this.activeSimulationName }
+    });
+    window.dispatchEvent(event);
+    console.log(`Dispatched simulation-play event for ${this.activeSimulationName}`);
   }
 
   public pause(): void {
     this.isPlaying = false;
     console.log("Simulation paused.");
+
+    // Dispatch a custom event to notify systems
+    const event = new CustomEvent("simulation-pause", {
+      detail: { simulationName: this.activeSimulationName }
+    });
+    window.dispatchEvent(event);
+    console.log(`Dispatched simulation-pause event for ${this.activeSimulationName}`);
   }
 
   public reset(): void {

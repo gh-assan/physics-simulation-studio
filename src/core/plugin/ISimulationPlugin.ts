@@ -1,4 +1,5 @@
 import { World } from "../ecs";
+import { ParameterPanelComponent } from "../components/ParameterPanelComponent";
 
 /**
  * Interface for simulation plugins.
@@ -79,4 +80,13 @@ export interface ISimulationPlugin {
    * @returns The plugin author
    */
   getAuthor?(): string;
+
+  /**
+   * Gets the parameter panels for this plugin.
+   * This is used by the PropertyInspectorSystem to display the appropriate
+   * parameter panels for the active simulation.
+   *
+   * @returns An array of parameter panel components
+   */
+  getParameterPanels?(): ParameterPanelComponent[];
 }

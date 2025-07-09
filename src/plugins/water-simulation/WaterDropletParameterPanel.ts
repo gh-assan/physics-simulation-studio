@@ -26,7 +26,9 @@ export class WaterDropletParameterPanel extends ParameterPanelComponent {
    */
   registerControls(uiManager: UIManager, component: IComponent): void {
     if (!(component instanceof WaterDropletComponent)) {
-      console.error("WaterDropletParameterPanel: component is not a WaterDropletComponent");
+      console.error(
+        "WaterDropletParameterPanel: component is not a WaterDropletComponent"
+      );
       return;
     }
 
@@ -156,7 +158,11 @@ export class WaterDropletParameterPanel extends ParameterPanelComponent {
       }
     ];
 
-    uiManager.registerComponentControls(this.componentType, component, properties);
+    uiManager.registerComponentControls(
+      this.componentType,
+      component,
+      properties
+    );
   }
 
   /**
