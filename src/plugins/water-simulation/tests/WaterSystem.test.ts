@@ -2,6 +2,7 @@ import {World} from '@core/ecs/World';
 import {WaterSystem} from '../WaterSystem';
 import {WaterDropletComponent, WaterBodyComponent} from '../WaterComponents';
 import {PositionComponent} from '@core/components/PositionComponent';
+import {Vector3} from '../utils/Vector3';
 
 describe('WaterSystem', () => {
   let world: World;
@@ -32,7 +33,7 @@ describe('WaterSystem', () => {
     world.componentManager.addComponent(
       droplet,
       WaterDropletComponent.type,
-      new WaterDropletComponent(0.5, 10, 0),
+      new WaterDropletComponent(0.5, 10, new Vector3(0, 0, 0)),
     );
     world.componentManager.addComponent(
       droplet,
@@ -77,7 +78,7 @@ describe('WaterSystem', () => {
     world.componentManager.addComponent(
       droplet,
       WaterDropletComponent.type,
-      new WaterDropletComponent(0.5, 1, 0),
+      new WaterDropletComponent(0.5, 1, new Vector3(0, 0, 0)),
     );
     world.componentManager.addComponent(
       droplet,

@@ -48,6 +48,10 @@ The project will follow a modular structure to enforce separation of concerns:
 |   |-- /flag-simulation/ # For realistic flag movement simulation
 |   |   |-- types.ts # Shared type definitions for flag physics
 |   |   |-- utils/PhysicsHelpers.ts # Helper functions for flag physics
+|   |-- /water-simulation/ # For water drop simulation
+|   |   |-- types.ts # Shared type definitions for water physics
+|   |   |-- utils/Vector3.ts # Vector3 utility for water physics
+|   |   |-- utils/WaterPhysicsHelpers.ts # Helper functions for water physics
 |-- /lib/           # Third-party library code or type definitions
 |-- /assets/        # Static assets (textures, models, etc.)
 ```
