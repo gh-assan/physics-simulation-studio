@@ -5,6 +5,7 @@ import { SelectableComponent } from "../../core/components/SelectableComponent";
 import { IComponent } from "../../core/ecs/IComponent";
 import { getComponentProperties } from "../utils/ComponentPropertyRegistry";
 import "../utils/ComponentPropertyDefinitions"; // Import to ensure component properties are registered
+import { ParameterPanelComponent } from "../../core/components/ParameterPanelComponent";
 
 export class PropertyInspectorSystem extends System {
   private uiManager: UIManager;
@@ -61,35 +62,51 @@ export class PropertyInspectorSystem extends System {
    * Registers UI controls for a component
    * @param componentName The name of the component
    * @param componentInstance The component instance
+   * @param parameterPanels Optional array of parameter panel components
    */
   private registerComponentControls(
     componentTypeKey: string,
-    componentInstance: IComponent
+    componentInstance: IComponent,
+    parameterPanels?: ParameterPanelComponent[]
   ): void {
     // The componentTypeKey is already the correct type string (e.g., "FlagComponent")
     // as passed from updateInspectorForEntity.
     const registryKey = componentTypeKey;
     const displayName = componentTypeKey;
 
-    // Get properties using the determined registry key
-    const properties = getComponentProperties(registryKey);
+    // First, try to find a parameter panel component for this component type
+    const parameterPanel = parameterPanels?.find(
+      panel => panel.componentType === componentTypeKey
+    );
 
-    // Log whether properties were found
-    if (properties) {
+    if (parameterPanel) {
+      // If a parameter panel component is found, use it to register UI controls
       console.log(
-        `[PropertyInspectorSystem] Found ${properties.length} properties for component '${displayName}' using key '${registryKey}'`
+        `[PropertyInspectorSystem] Using parameter panel for component '${displayName}'`
       );
+      parameterPanel.registerControls(this.uiManager, componentInstance);
     } else {
-      console.warn(
-        `[PropertyInspectorSystem] No properties found for component '${displayName}' using key '${registryKey}'`
+      // Fall back to the old approach if no parameter panel component is found
+      // Get properties using the determined registry key
+      const properties = getComponentProperties(registryKey);
+
+      // Log whether properties were found
+      if (properties) {
+        console.log(
+          `[PropertyInspectorSystem] Found ${properties.length} properties for component '${displayName}' using key '${registryKey}'`
+        );
+      } else {
+        console.warn(
+          `[PropertyInspectorSystem] No properties found for component '${displayName}' using key '${registryKey}'`
+        );
+      }
+
+      this.uiManager.registerComponentControls(
+        displayName,
+        componentInstance,
+        properties
       );
     }
-
-    this.uiManager.registerComponentControls(
-      displayName,
-      componentInstance,
-      properties
-    );
   }
 
   /**
@@ -127,6 +144,27 @@ export class PropertyInspectorSystem extends System {
       components
     );
 
+    // Find parameter panel components in the world
+    const parameterPanels: ParameterPanelComponent[] = [];
+    const parameterPanelEntities = world.componentManager.getEntitiesWithComponents(
+      [ParameterPanelComponent]
+    );
+
+    for (const panelEntityId of parameterPanelEntities) {
+      const panel = world.componentManager.getComponent(
+        panelEntityId,
+        ParameterPanelComponent.type
+      ) as ParameterPanelComponent;
+
+      if (panel) {
+        parameterPanels.push(panel);
+      }
+    }
+
+    console.log(
+      `[PropertyInspectorSystem] Found ${parameterPanels.length} parameter panel components`
+    );
+
     // Process all components
     for (const componentName in components) {
       if (Object.prototype.hasOwnProperty.call(components, componentName)) {
@@ -143,8 +181,8 @@ export class PropertyInspectorSystem extends System {
           `[PropertyInspectorSystem] Using registry key '${registryKey}' for component '${componentName}' from getAllComponentsForEntity result.`
         );
 
-        // Register the component controls
-        this.registerComponentControls(registryKey, component);
+        // Register the component controls, passing the parameter panels
+        this.registerComponentControls(registryKey, component, parameterPanels);
       }
     }
   }

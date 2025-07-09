@@ -105,4 +105,73 @@ describe("WaterSystem", () => {
       world.componentManager.getEntitiesWithComponents([WaterDropletComponent]);
     expect(world.entityManager.hasEntity(droplet)).toBe(false);
   });
+
+  it("should use custom physics parameters for droplet movement", () => {
+    const droplet = world.entityManager.createEntity();
+
+    // Create a droplet with custom physics parameters
+    const customDroplet = new WaterDropletComponent(
+      0.5,                          // size
+      10,                           // fallHeight
+      new Vector3(1, 0, 0),         // initial velocity
+      2.0,                          // mass (heavier)
+      0.2,                          // drag (more drag)
+      new Vector3(0, -5, 0),        // custom gravity (less than default)
+      2.0,                          // splashForce
+      3.0,                          // splashRadius
+      0.3,                          // rippleDecay
+      8.0                           // rippleExpansionRate
+    );
+
+    world.componentManager.addComponent(
+      droplet,
+      WaterDropletComponent.type,
+      customDroplet
+    );
+
+    const initialPosition = new PositionComponent(0, 10, 0);
+    world.componentManager.addComponent(
+      droplet,
+      PositionComponent.name,
+      initialPosition
+    );
+
+    const waterBody = world.entityManager.createEntity();
+    world.componentManager.addComponent(
+      waterBody,
+      WaterBodyComponent.type,
+      new WaterBodyComponent()
+    );
+    world.componentManager.addComponent(
+      waterBody,
+      PositionComponent.name,
+      new PositionComponent(0, 0, 0)
+    );
+
+    // Simulate one second of time
+    waterSystem.update(world, 1);
+
+    // Get the updated position
+    const positionComponent = world.componentManager.getComponent(
+      droplet,
+      PositionComponent.name
+    ) as PositionComponent;
+
+    // Get the updated droplet component
+    const updatedDroplet = world.componentManager.getComponent(
+      droplet,
+      WaterDropletComponent.type
+    ) as WaterDropletComponent;
+
+    // The droplet should have moved according to its custom physics parameters
+    // With less gravity (y = -5 instead of -9.81), it should fall slower
+    expect(positionComponent.y).toBeLessThan(initialPosition.y);
+    expect(positionComponent.y).toBeGreaterThan(initialPosition.y - 5); // Should fall less than 5 units
+
+    // With initial x velocity and drag, it should have moved in x direction
+    expect(positionComponent.x).toBeGreaterThan(0);
+
+    // Velocity should be affected by drag
+    expect(updatedDroplet.velocity.x).toBeLessThan(1); // Initial velocity was 1, should be reduced by drag
+  });
 });

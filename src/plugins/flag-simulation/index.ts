@@ -7,10 +7,13 @@ import { RenderableComponent } from "../../core/components/RenderableComponent";
 import { SelectableComponent } from "../../core/components/SelectableComponent";
 import { RotationComponent } from "../../core/components/RotationComponent";
 import { FlagPhysicsInitializer } from "./utils/FlagPhysicsInitializer";
+import { FlagParameterPanel } from "./FlagParameterPanel";
+import { ParameterPanelComponent } from "../../core/components/ParameterPanelComponent";
 import * as THREE from "three";
 
 export { FlagComponent } from "./FlagComponent";
 export { FlagSystem } from "./FlagSystem";
+export { FlagParameterPanel } from "./FlagParameterPanel";
 
 export class FlagSimulationPlugin implements ISimulationPlugin {
   private _flagSystem: FlagSystem | null = null;
@@ -22,10 +25,23 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     return [];
   }
   register(world: World): void {
+    // Register components
     world.componentManager.registerComponent(FlagComponent.type, FlagComponent);
+    world.componentManager.registerComponent(ParameterPanelComponent.type, ParameterPanelComponent);
+
+    // Register systems
     this._flagSystem = new FlagSystem();
     world.systemManager.registerSystem(this._flagSystem);
-    console.log("FlagSimulationPlugin registered.");
+
+    // Create and register parameter panel entity
+    const panelEntity = world.entityManager.createEntity();
+    world.componentManager.addComponent(
+      panelEntity,
+      ParameterPanelComponent.type,
+      new FlagParameterPanel()
+    );
+
+    console.log("FlagSimulationPlugin registered with parameter panel.");
   }
   unregister(): void {
     if (this._flagSystem) {

@@ -7,6 +7,13 @@ import { PositionComponent } from "@core/components/PositionComponent";
 import { RenderableComponent } from "@core/components/RenderableComponent";
 import { SelectableComponent } from "@core/components/SelectableComponent";
 import { RotationComponent } from "@core/components/RotationComponent"; // Import RotationComponent
+import { ParameterPanelComponent } from "@core/components/ParameterPanelComponent";
+import { WaterBodyParameterPanel } from "./WaterBodyParameterPanel";
+import { WaterDropletParameterPanel } from "./WaterDropletParameterPanel";
+
+export { WaterBodyComponent, WaterDropletComponent } from "./WaterComponents";
+export { WaterBodyParameterPanel } from "./WaterBodyParameterPanel";
+export { WaterDropletParameterPanel } from "./WaterDropletParameterPanel";
 
 export class WaterSimulationPlugin implements ISimulationPlugin {
   public getName(): string {
@@ -26,6 +33,7 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
   }
 
   register(world: World): void {
+    // Register components
     world.componentManager.registerComponent(
       WaterBodyComponent.type,
       WaterBodyComponent
@@ -34,8 +42,30 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
       WaterDropletComponent.type,
       WaterDropletComponent
     );
+    world.componentManager.registerComponent(
+      ParameterPanelComponent.type,
+      ParameterPanelComponent
+    );
+
+    // Register systems
     world.systemManager.registerSystem(this.waterSystem);
-    console.log("Water Simulation Plugin registered.");
+
+    // Create and register parameter panel entities
+    const waterBodyPanelEntity = world.entityManager.createEntity();
+    world.componentManager.addComponent(
+      waterBodyPanelEntity,
+      ParameterPanelComponent.type,
+      new WaterBodyParameterPanel()
+    );
+
+    const waterDropletPanelEntity = world.entityManager.createEntity();
+    world.componentManager.addComponent(
+      waterDropletPanelEntity,
+      ParameterPanelComponent.type,
+      new WaterDropletParameterPanel()
+    );
+
+    console.log("Water Simulation Plugin registered with parameter panels.");
   }
 
   unregister(): void {

@@ -4,4 +4,5 @@ export interface Ripple {
   radius: number;
   amplitude: number;
   decay: number;
+  expansionRate: number;
 }
