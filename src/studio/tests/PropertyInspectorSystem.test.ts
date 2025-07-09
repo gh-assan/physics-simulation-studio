@@ -1,63 +1,63 @@
-import {PropertyInspectorSystem} from '../systems/PropertyInspectorSystem';
-import {SelectableComponent} from '@core/components';
-import {UIManager} from '../uiManager';
-import {World} from '@core/ecs';
-import {PositionComponent} from '@core/components';
+import { PropertyInspectorSystem } from "../systems/PropertyInspectorSystem";
+import { SelectableComponent } from "@core/components";
+import { UIManager } from "../uiManager";
+import { World } from "@core/ecs";
+import { PositionComponent } from "@core/components";
 
 // Mock the Tweakpane library
-jest.mock('tweakpane', () => {
+jest.mock("tweakpane", () => {
   interface MockFolder {
     addBinding: jest.Mock;
     dispose: jest.Mock;
-    options: {title: string};
+    options: { title: string };
   }
 
-  function makeFolder(options: {title: string}): MockFolder {
+  function makeFolder(options: { title: string }): MockFolder {
     return {
-      addBinding: jest.fn(() => ({on: jest.fn()})),
+      addBinding: jest.fn(() => ({ on: jest.fn() })),
       dispose: jest.fn(),
-      options,
+      options
     };
   }
 
   interface MockPane {
-    addFolder: jest.Mock<MockFolder, [{title: string}]>;
+    addFolder: jest.Mock<MockFolder, [{ title: string }]>;
     dispose: jest.Mock;
     addBinding: jest.Mock;
   }
 
   const mockPane: MockPane = {
-    addFolder: jest.fn((options: {title: string}) => makeFolder(options)),
+    addFolder: jest.fn((options: { title: string }) => makeFolder(options)),
     dispose: jest.fn(),
-    addBinding: jest.fn(() => ({on: jest.fn()})),
+    addBinding: jest.fn(() => ({ on: jest.fn() }))
   };
   return {
-    Pane: jest.fn(() => mockPane),
+    Pane: jest.fn(() => mockPane)
   };
 });
 
-describe('PropertyInspectorSystem', () => {
+describe("PropertyInspectorSystem", () => {
   let world: World;
   let uiManager: UIManager;
   let propertyInspectorSystem: PropertyInspectorSystem;
-  let mockPaneInstance: UIManager['pane']; // Use the correct type for the mockPaneInstance
+  let mockPaneInstance: UIManager["pane"]; // Use the correct type for the mockPaneInstance
 
   beforeEach(() => {
     // Create required DOM elements
     const ids = [
-      'app-container',
-      'viewport-container',
-      'tweakpane-container',
-      'scene-graph-container',
-      'play-button',
-      'pause-button',
-      'reset-button',
-      'add-box-button',
-      'add-sphere-button',
+      "app-container",
+      "viewport-container",
+      "tweakpane-container",
+      "scene-graph-container",
+      "play-button",
+      "pause-button",
+      "reset-button",
+      "add-box-button",
+      "add-sphere-button"
     ];
-    ids.forEach(id => {
+    ids.forEach((id) => {
       const el = document.createElement(
-        id.endsWith('-button') ? 'button' : 'div',
+        id.endsWith("-button") ? "button" : "div"
       );
       el.id = id;
       document.body.appendChild(el);
@@ -66,13 +66,13 @@ describe('PropertyInspectorSystem', () => {
     world = new World();
     mockPaneInstance =
       (
-        jest.requireMock('tweakpane').Pane as jest.MockedFunction<
-          () => UIManager['pane']
+        jest.requireMock("tweakpane").Pane as jest.MockedFunction<
+          () => UIManager["pane"]
         >
       ).mock.results[0]?.value ||
       (
-        jest.requireMock('tweakpane').Pane as jest.MockedFunction<
-          () => UIManager['pane']
+        jest.requireMock("tweakpane").Pane as jest.MockedFunction<
+          () => UIManager["pane"]
         >
       )();
     uiManager = new UIManager(mockPaneInstance);
@@ -81,56 +81,56 @@ describe('PropertyInspectorSystem', () => {
     // Register components used in the test
     world.componentManager.registerComponent(
       SelectableComponent.name,
-      SelectableComponent,
+      SelectableComponent
     );
     world.componentManager.registerComponent(
       PositionComponent.name,
-      PositionComponent,
+      PositionComponent
     );
 
     // Spy on UIManager methods
-    jest.spyOn(uiManager, 'registerComponentControls');
-    jest.spyOn(mockPaneInstance, 'dispose'); // Spy on the dispose method of the mocked Pane instance
+    jest.spyOn(uiManager, "registerComponentControls");
+    jest.spyOn(mockPaneInstance, "dispose"); // Spy on the dispose method of the mocked Pane instance
   });
 
   afterEach(() => {
     // Clean up injected DOM elements
     const ids = [
-      'app-container',
-      'viewport-container',
-      'tweakpane-container',
-      'scene-graph-container',
-      'play-button',
-      'pause-button',
-      'reset-button',
-      'add-box-button',
-      'add-sphere-button',
+      "app-container",
+      "viewport-container",
+      "tweakpane-container",
+      "scene-graph-container",
+      "play-button",
+      "pause-button",
+      "reset-button",
+      "add-box-button",
+      "add-sphere-button"
     ];
-    ids.forEach(id => {
+    ids.forEach((id) => {
       const el = document.getElementById(id);
       if (el) el.remove();
     });
     jest.restoreAllMocks();
   });
 
-  it('should select the first selectable entity and update the property inspector', () => {
+  it("should select the first selectable entity and update the property inspector", () => {
     const entity1 = world.entityManager.createEntity();
     world.componentManager.addComponent(
       entity1,
       SelectableComponent.name,
-      new SelectableComponent(true),
+      new SelectableComponent(true)
     );
     world.componentManager.addComponent(
       entity1,
       PositionComponent.name,
-      new PositionComponent(1, 2, 3),
+      new PositionComponent(1, 2, 3)
     );
 
     const entity2 = world.entityManager.createEntity();
     world.componentManager.addComponent(
       entity2,
       SelectableComponent.name,
-      new SelectableComponent(false),
+      new SelectableComponent(false)
     );
 
     propertyInspectorSystem.update(world, 0);
@@ -138,15 +138,15 @@ describe('PropertyInspectorSystem', () => {
     // Only check the main UIManager effect, not Pane disposal
     expect(uiManager.registerComponentControls).toHaveBeenCalledWith(
       SelectableComponent.name,
-      expect.any(SelectableComponent),
+      expect.any(SelectableComponent)
     );
     expect(uiManager.registerComponentControls).toHaveBeenCalledWith(
       PositionComponent.name,
-      expect.any(PositionComponent),
+      expect.any(PositionComponent)
     );
   });
 
-  it('should not update the property inspector if no selectable entities exist', () => {
+  it("should not update the property inspector if no selectable entities exist", () => {
     propertyInspectorSystem.update(world, 0);
     expect(uiManager.registerComponentControls).not.toHaveBeenCalled();
   });

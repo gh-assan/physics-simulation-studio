@@ -1,6 +1,6 @@
-import {EntityManager} from './EntityManager';
-import {ComponentManager} from './ComponentManager';
-import {SystemManager} from './SystemManager';
+import { EntityManager } from "./EntityManager";
+import { ComponentManager } from "./ComponentManager";
+import { SystemManager } from "./SystemManager";
 
 export class World {
   public entityManager = new EntityManager();

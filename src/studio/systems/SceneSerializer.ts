@@ -1,17 +1,17 @@
-import {World} from '../../core/ecs/World';
-import {IComponent} from '../../core/ecs/IComponent';
+import { World } from "../../core/ecs/World";
+import { IComponent } from "../../core/ecs/IComponent";
 
 export class SceneSerializer {
   public serialize(world: World): string {
     const serializedEntities: {
       entityId: number;
-      components: {[key: string]: IComponent};
+      components: { [key: string]: IComponent };
     }[] = [];
 
     // Iterate through all entities and their components
     // This is a simplified serialization. A more robust solution would handle component types and their specific data structures.
     for (const entityId of world.entityManager.getAllEntities()) {
-      const components: {[key: string]: IComponent} = {};
+      const components: { [key: string]: IComponent } = {};
       const entityComponents =
         world.componentManager.getAllComponentsForEntity(entityId);
       for (const componentName in entityComponents) {
@@ -21,10 +21,10 @@ export class SceneSerializer {
           components[componentName] = entityComponents[componentName];
         }
       }
-      serializedEntities.push({entityId, components});
+      serializedEntities.push({ entityId, components });
     }
 
-    return JSON.stringify({entities: serializedEntities}, null, 2);
+    return JSON.stringify({ entities: serializedEntities }, null, 2);
   }
 
   public deserialize(world: World, serializedScene: string): void {
@@ -40,7 +40,7 @@ export class SceneSerializer {
         if (
           Object.prototype.hasOwnProperty.call(
             entityData.components,
-            componentName,
+            componentName
           )
         ) {
           const componentConstructor = world.componentManager
@@ -50,20 +50,20 @@ export class SceneSerializer {
             const componentInstance = new componentConstructor();
             Object.assign(
               componentInstance,
-              entityData.components[componentName],
+              entityData.components[componentName]
             );
             Object.assign(
               componentInstance,
-              entityData.components[componentName],
+              entityData.components[componentName]
             );
             world.componentManager.addComponent(
               entityId,
               componentName,
-              componentInstance,
+              componentInstance
             );
           } else {
             console.warn(
-              `Unknown component type during deserialization: ${componentName}`,
+              `Unknown component type during deserialization: ${componentName}`
             );
           }
         }
@@ -71,11 +71,11 @@ export class SceneSerializer {
     }
   }
 
-  public saveToFile(world: World, filename = 'scene.json'): void {
+  public saveToFile(world: World, filename = "scene.json"): void {
     const serializedData = this.serialize(world);
-    const blob = new Blob([serializedData], {type: 'application/json'});
+    const blob = new Blob([serializedData], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = filename;
     document.body.appendChild(a);
@@ -86,15 +86,15 @@ export class SceneSerializer {
 
   public loadFromFile(world: World): Promise<void> {
     return new Promise((resolve, reject) => {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'application/json';
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "application/json";
 
       input.onchange = (event: Event) => {
         const file = (event.target as HTMLInputElement).files?.[0];
         if (file) {
           const reader = new FileReader();
-          reader.onload = e => {
+          reader.onload = (e) => {
             try {
               this.deserialize(world, e.target?.result as string);
               resolve();
@@ -104,7 +104,7 @@ export class SceneSerializer {
           };
           reader.readAsText(file);
         } else {
-          reject(new Error('No file selected'));
+          reject(new Error("No file selected"));
         }
       };
 

@@ -4,40 +4,40 @@ jest.mock('@dimforge/rapier3d-compat', () => ({
   World: jest.fn(() => ({
     timestep: 0,
     step: jest.fn(),
-    gravity: {x: 0, y: -9.81, z: 0},
+    gravity: { x: 0, y: -9.81, z: 0 },
     createRigidBody: jest.fn(() => ({
-      translation: jest.fn(() => ({x: 0, y: 0, z: 0})),
-      rotation: jest.fn(() => ({x: 0, y: 0, z: 0, w: 1})),
-    })),
+      translation: jest.fn(() => ({ x: 0, y: 0, z: 0 })),
+      rotation: jest.fn(() => ({ x: 0, y: 0, z: 0, w: 1 }))
+    }))
   })),
-  Vector3: jest.fn((x, y, z) => ({x, y, z})),
-  Quaternion: jest.fn((x, y, z, w) => ({x, y, z, w})),
+  Vector3: jest.fn((x, y, z) => ({ x, y, z })),
+  Quaternion: jest.fn((x, y, z, w) => ({ x, y, z, w }))
 }));
 
 jest.mock('tweakpane', () => {
   const mockChildren: any[] = [];
   function makeFolder(options: any) {
     return {
-      addBinding: jest.fn(() => ({on: jest.fn()})),
+      addBinding: jest.fn(() => ({ on: jest.fn() })),
       dispose: jest.fn(),
-      options: options,
+      options: options
     };
   }
   const mockPane = {
-    addFolder: jest.fn(options => {
+    addFolder: jest.fn((options) => {
       const folder = makeFolder(options);
       mockChildren.push(folder);
       return folder;
     }),
     dispose: jest.fn(),
     children: mockChildren,
-    remove: jest.fn(child => {
+    remove: jest.fn((child) => {
       const index = mockChildren.indexOf(child);
       if (index > -1) {
         mockChildren.splice(index, 1);
       }
     }),
-    addBinding: jest.fn(() => ({on: jest.fn()})),
+    addBinding: jest.fn(() => ({ on: jest.fn() }))
   };
   // This part seems problematic, as it tries to modify the mockPane.children
   // which is a getter. It might be better to mock the addBinding on the folder itself.
@@ -48,19 +48,19 @@ jest.mock('tweakpane', () => {
   });
   */
   return {
-    Pane: jest.fn(() => mockPane),
+    Pane: jest.fn(() => mockPane)
   };
 });
 
 jest.mock('three', () => {
   const mockScene = {
     add: jest.fn(),
-    background: null,
+    background: null
   };
   const mockCamera = {
-    position: {z: 0},
+    position: { z: 0 },
     aspect: 0,
-    updateProjectionMatrix: jest.fn(),
+    updateProjectionMatrix: jest.fn()
   };
   const mockRenderer = {
     setSize: jest.fn((width, height) => {
@@ -69,18 +69,18 @@ jest.mock('three', () => {
       mockRenderer.domElement.height = height;
     }),
     domElement: document.createElement('canvas'),
-    render: jest.fn(),
+    render: jest.fn()
   };
   const mockMesh = {
-    position: {set: jest.fn()},
-    rotation: {setFromQuaternion: jest.fn()},
+    position: { set: jest.fn() },
+    rotation: { setFromQuaternion: jest.fn() }
   };
   const mockQuaternion = {
     x: 0,
     y: 0,
     z: 0,
     w: 1,
-    set: jest.fn(),
+    set: jest.fn()
   };
 
   return {
@@ -93,7 +93,7 @@ jest.mock('three', () => {
     MeshBasicMaterial: jest.fn(() => ({})),
     Mesh: jest.fn(() => mockMesh),
     Color: jest.fn(),
-    Quaternion: jest.fn(() => mockQuaternion),
+    Quaternion: jest.fn(() => mockQuaternion)
   };
 });
 
@@ -101,10 +101,10 @@ jest.mock('three', () => {
 Object.defineProperty(window, 'innerWidth', {
   writable: true,
   configurable: true,
-  value: 1024,
+  value: 1024
 });
 Object.defineProperty(window, 'innerHeight', {
   writable: true,
   configurable: true,
-  value: 768,
+  value: 768
 });

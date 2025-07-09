@@ -1,18 +1,27 @@
 {
+  "parser": "@typescript-eslint/parser",
   "extends": "./node_modules/gts/",
   "env": {
     "node": true
   },
   "parserOptions": {
     "ecmaVersion": 2020,
-    "project": ["./tsconfig.json"],
-    "tsconfigRootDir": "."
+    "project": ["./tsconfig.json", "./tsconfig.eslint.json"]
   },
   "rules": {
     "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/no-unused-vars": "off"
+    "@typescript-eslint/no-unused-vars": "off",
+    "quotes": "off",
+    "prettier/prettier": "off"
   },
   "overrides": [
+    {
+      "files": ["jest.config.js", "jest.setup.js"],
+      "rules": {
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    },
     {
       "files": ["jest.setup.js"],
       "globals": {
@@ -37,5 +46,12 @@
         "n/no-unsupported-features/node-builtins": "off"
       }
     }
-  ]
+  ],
+  "settings": {
+    "import/resolvers": {
+      "typescript": {
+        "project": "./tsconfig.json"
+      }
+    }
+  }
 }

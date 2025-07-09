@@ -1,13 +1,13 @@
-import {System} from '../../core/ecs/System';
-import {World} from '../../core/ecs/World';
-import {UIManager} from '../uiManager';
-import {SelectableComponent} from '@core/components/SelectableComponent';
-import {IComponent} from '../../core/ecs/IComponent';
-import {FlagComponent} from '../../plugins/flag-simulation/FlagComponent';
+import { System } from "../../core/ecs/System";
+import { World } from "../../core/ecs/World";
+import { UIManager } from "../uiManager";
+import { SelectableComponent } from "../../core/components/SelectableComponent";
+import { IComponent } from "../../core/ecs/IComponent";
+import { FlagComponent } from "../../plugins/flag-simulation/FlagComponent";
 import {
   WaterBodyComponent,
-  WaterDropletComponent,
-} from '../../plugins/water-simulation/WaterComponents';
+  WaterDropletComponent
+} from "../../plugins/water-simulation/WaterComponents";
 
 export class PropertyInspectorSystem extends System {
   private uiManager: UIManager;
@@ -20,7 +20,7 @@ export class PropertyInspectorSystem extends System {
 
   public update(world: World, _deltaTime: number): void {
     const selectableEntities = world.componentManager.getEntitiesWithComponents(
-      [SelectableComponent],
+      [SelectableComponent]
     );
 
     let currentSelectedEntity: number | null = null;
@@ -28,9 +28,9 @@ export class PropertyInspectorSystem extends System {
     for (const entityId of selectableEntities) {
       const selectable = world.componentManager.getComponent(
         entityId,
-        SelectableComponent.name,
-      ) as SelectableComponent | undefined;
-      if (selectable && selectable.isSelected) {
+        SelectableComponent.name
+      );
+      if (selectable && (selectable as SelectableComponent).isSelected) {
         currentSelectedEntity = entityId;
         break;
       }
@@ -41,7 +41,7 @@ export class PropertyInspectorSystem extends System {
       this.uiManager.clearControls(); // Clear previous inspector content
       if (currentSelectedEntity !== null) {
         const components = world.componentManager.getAllComponentsForEntity(
-          currentSelectedEntity,
+          currentSelectedEntity
         );
         for (const componentName in components) {
           if (Object.prototype.hasOwnProperty.call(components, componentName)) {
@@ -51,95 +51,99 @@ export class PropertyInspectorSystem extends System {
                 components[componentName],
                 [
                   {
-                    property: 'width',
-                    type: 'number',
-                    label: 'Flag Width',
+                    property: "width",
+                    type: "number",
+                    label: "Flag Width",
                     min: 0.1,
                     max: 10,
-                    step: 0.1,
+                    step: 0.1
                   },
                   {
-                    property: 'height',
-                    type: 'number',
-                    label: 'Flag Height',
+                    property: "height",
+                    type: "number",
+                    label: "Flag Height",
                     min: 0.1,
                     max: 10,
-                    step: 0.1,
+                    step: 0.1
                   },
                   {
-                    property: 'segmentsX',
-                    type: 'number',
-                    label: 'Segments X',
+                    property: "segmentsX",
+                    type: "number",
+                    label: "Segments X",
                     min: 1,
                     max: 50,
-                    step: 1,
+                    step: 1
                   },
                   {
-                    property: 'segmentsY',
-                    type: 'number',
-                    label: 'Segments Y',
+                    property: "segmentsY",
+                    type: "number",
+                    label: "Segments Y",
                     min: 1,
                     max: 50,
-                    step: 1,
+                    step: 1
                   },
                   {
-                    property: 'mass',
-                    type: 'number',
-                    label: 'Particle Mass',
+                    property: "mass",
+                    type: "number",
+                    label: "Particle Mass",
                     min: 0.01,
                     max: 1,
-                    step: 0.01,
+                    step: 0.01
                   },
                   {
-                    property: 'stiffness',
-                    type: 'number',
-                    label: 'Stiffness',
+                    property: "stiffness",
+                    type: "number",
+                    label: "Stiffness",
                     min: 0.1,
                     max: 1,
-                    step: 0.01,
+                    step: 0.01
                   },
                   {
-                    property: 'damping',
-                    type: 'number',
-                    label: 'Damping',
+                    property: "damping",
+                    type: "number",
+                    label: "Damping",
                     min: 0.01,
                     max: 1,
-                    step: 0.01,
+                    step: 0.01
                   },
-                  {property: 'textureUrl', type: 'text', label: 'Texture URL'},
                   {
-                    property: 'windStrength',
-                    type: 'number',
-                    label: 'Wind Strength',
+                    property: "textureUrl",
+                    type: "text",
+                    label: "Texture URL"
+                  },
+                  {
+                    property: "windStrength",
+                    type: "number",
+                    label: "Wind Strength",
                     min: 0,
                     max: 10,
-                    step: 0.1,
+                    step: 0.1
                   },
                   {
-                    property: 'windDirection.x',
-                    type: 'number',
-                    label: 'Wind Direction X',
+                    property: "windDirection.x",
+                    type: "number",
+                    label: "Wind Direction X",
                     min: -1,
                     max: 1,
-                    step: 0.1,
+                    step: 0.1
                   },
                   {
-                    property: 'windDirection.y',
-                    type: 'number',
-                    label: 'Wind Direction Y',
+                    property: "windDirection.y",
+                    type: "number",
+                    label: "Wind Direction Y",
                     min: -1,
                     max: 1,
-                    step: 0.1,
+                    step: 0.1
                   },
                   {
-                    property: 'windDirection.z',
-                    type: 'number',
-                    label: 'Wind Direction Z',
+                    property: "windDirection.z",
+                    type: "number",
+                    label: "Wind Direction Z",
                     min: -1,
                     max: 1,
-                    step: 0.1,
-                  },
-                ],
+                    step: 0.1
+                  }
+                ]
               );
             } else if (componentName === WaterBodyComponent.type) {
               this.uiManager.registerComponentControls(
@@ -147,22 +151,22 @@ export class PropertyInspectorSystem extends System {
                 components[componentName],
                 [
                   {
-                    property: 'viscosity',
-                    type: 'number',
-                    label: 'Viscosity',
+                    property: "viscosity",
+                    type: "number",
+                    label: "Viscosity",
                     min: 0,
                     max: 1,
-                    step: 0.01,
+                    step: 0.01
                   },
                   {
-                    property: 'surfaceTension',
-                    type: 'number',
-                    label: 'Surface Tension',
+                    property: "surfaceTension",
+                    type: "number",
+                    label: "Surface Tension",
                     min: 0,
                     max: 1,
-                    step: 0.01,
-                  },
-                ],
+                    step: 0.01
+                  }
+                ]
               );
             } else if (componentName === WaterDropletComponent.type) {
               this.uiManager.registerComponentControls(
@@ -170,27 +174,27 @@ export class PropertyInspectorSystem extends System {
                 components[componentName],
                 [
                   {
-                    property: 'size',
-                    type: 'number',
-                    label: 'Droplet Size',
+                    property: "size",
+                    type: "number",
+                    label: "Droplet Size",
                     min: 0.1,
                     max: 5,
-                    step: 0.1,
+                    step: 0.1
                   },
                   {
-                    property: 'fallHeight',
-                    type: 'number',
-                    label: 'Fall Height',
+                    property: "fallHeight",
+                    type: "number",
+                    label: "Fall Height",
                     min: 1,
                     max: 100,
-                    step: 1,
-                  },
-                ],
+                    step: 1
+                  }
+                ]
               );
             } else {
               this.uiManager.registerComponentControls(
                 componentName,
-                components[componentName],
+                components[componentName]
               );
             }
           }

@@ -1,16 +1,16 @@
-import {ISimulationPlugin} from '@core/plugin/ISimulationPlugin';
-import {World} from '@core/ecs/World';
-import {WaterBodyComponent, WaterDropletComponent} from './WaterComponents';
-import {WaterSystem} from './WaterSystem';
-import {WaterRenderer} from './WaterRenderer';
-import {PositionComponent} from '@core/components/PositionComponent';
-import {RenderableComponent} from '@core/components/RenderableComponent';
-import {SelectableComponent} from '@core/components/SelectableComponent';
-import {RotationComponent} from '@core/components/RotationComponent'; // Import RotationComponent
+import { ISimulationPlugin } from "@core/plugin/ISimulationPlugin";
+import { World } from "@core/ecs/World";
+import { WaterBodyComponent, WaterDropletComponent } from "./WaterComponents";
+import { WaterSystem } from "./WaterSystem";
+import { WaterRenderer } from "./WaterRenderer";
+import { PositionComponent } from "@core/components/PositionComponent";
+import { RenderableComponent } from "@core/components/RenderableComponent";
+import { SelectableComponent } from "@core/components/SelectableComponent";
+import { RotationComponent } from "@core/components/RotationComponent"; // Import RotationComponent
 
 export class WaterSimulationPlugin implements ISimulationPlugin {
   public getName(): string {
-    return 'water-simulation';
+    return "water-simulation";
   }
 
   public getDependencies(): string[] {
@@ -28,19 +28,19 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
   register(world: World): void {
     world.componentManager.registerComponent(
       WaterBodyComponent.type,
-      WaterBodyComponent,
+      WaterBodyComponent
     );
     world.componentManager.registerComponent(
       WaterDropletComponent.type,
-      WaterDropletComponent,
+      WaterDropletComponent
     );
     world.systemManager.registerSystem(this.waterSystem);
-    console.log('Water Simulation Plugin registered.');
+    console.log("Water Simulation Plugin registered.");
   }
 
   unregister(): void {
     // Systems are removed by the PluginManager when the plugin is deactivated
-    console.log('Water Simulation Plugin unregistered.');
+    console.log("Water Simulation Plugin unregistered.");
   }
 
   initializeEntities(world: World): void {
@@ -49,27 +49,27 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
     world.componentManager.addComponent(
       waterBody,
       PositionComponent.name,
-      new PositionComponent(0, 0, 0),
+      new PositionComponent(0, 0, 0)
     );
     world.componentManager.addComponent(
       waterBody,
       WaterBodyComponent.type,
-      new WaterBodyComponent(),
+      new WaterBodyComponent()
     );
     world.componentManager.addComponent(
       waterBody,
       RenderableComponent.name,
-      new RenderableComponent('plane', 'blue'),
+      new RenderableComponent("plane", "blue")
     );
     world.componentManager.addComponent(
       waterBody,
       SelectableComponent.name,
-      new SelectableComponent(),
+      new SelectableComponent()
     );
     world.componentManager.addComponent(
       waterBody,
       RotationComponent.name,
-      new RotationComponent(0, 0, 0, 1),
+      new RotationComponent(0, 0, 0, 1)
     ); // Add RotationComponent
 
     // Create a water droplet
@@ -77,27 +77,27 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
     world.componentManager.addComponent(
       droplet,
       PositionComponent.name,
-      new PositionComponent(0, 10, 0),
+      new PositionComponent(0, 10, 0)
     );
     world.componentManager.addComponent(
       droplet,
       WaterDropletComponent.type,
-      new WaterDropletComponent(),
+      new WaterDropletComponent()
     );
     world.componentManager.addComponent(
       droplet,
       RenderableComponent.name,
-      new RenderableComponent('sphere', 'lightblue'),
+      new RenderableComponent("sphere", "lightblue")
     );
     world.componentManager.addComponent(
       droplet,
       SelectableComponent.name,
-      new SelectableComponent(),
+      new SelectableComponent()
     );
     world.componentManager.addComponent(
       droplet,
       RotationComponent.name,
-      new RotationComponent(0, 0, 0, 1),
+      new RotationComponent(0, 0, 0, 1)
     ); // Add RotationComponent
   }
 

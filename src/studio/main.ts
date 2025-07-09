@@ -1,18 +1,24 @@
-import {Studio} from './Studio';
-import {World} from '../core/ecs/World';
-import {PluginManager} from '../core/plugin/PluginManager';
-import {RenderSystem} from './systems/RenderSystem';
-import {PropertyInspectorSystem} from './systems/PropertyInspectorSystem';
-import {UIManager} from './uiManager';
-import {SceneSerializer} from './systems/SceneSerializer';
-import {FlagSimulationPlugin} from '@plugins/flag-simulation';
-import {WaterSimulationPlugin} from '@plugins/water-simulation';
-import {FlagComponent, FlagSystem} from '../plugins/flag-simulation';
-import {PositionComponent} from '../core/components/PositionComponent';
-import {RenderableComponent} from '../core/components/RenderableComponent';
-import {SelectableComponent} from '../core/components/SelectableComponent';
-import {RotationComponent} from '../core/components/RotationComponent';
-import {Pane} from 'tweakpane';
+import { Studio } from "./Studio";
+import { World } from "../core/ecs/World";
+import { PluginManager } from "../core/plugin/PluginManager";
+import { RenderSystem } from "./systems/RenderSystem";
+import { PropertyInspectorSystem } from "./systems/PropertyInspectorSystem";
+import { UIManager } from "./uiManager";
+import { SceneSerializer } from "./systems/SceneSerializer";
+import { FlagSimulationPlugin } from "@plugins/flag-simulation";
+import { WaterSimulationPlugin } from "@plugins/water-simulation";
+import { FlagComponent } from "../plugins/flag-simulation/FlagComponent";
+import {
+  WaterBodyComponent,
+  WaterDropletComponent
+} from "../plugins/water-simulation/WaterComponents";
+import { PositionComponent } from "../core/components/PositionComponent";
+import { RenderableComponent } from "../core/components/RenderableComponent";
+import { SelectableComponent } from "../core/components/SelectableComponent";
+import { RotationComponent } from "../core/components/RotationComponent";
+import { Pane } from "tweakpane";
+import { registerComponentProperties } from "./utils/ComponentPropertyRegistry";
+import { ComponentControlProperty } from "./types";
 
 const world = new World();
 const pluginManager = new PluginManager(world);
@@ -25,22 +31,164 @@ const sceneSerializer = new SceneSerializer();
 // Initialize Studio first
 const studio = new Studio(world, pluginManager);
 
+// Define component properties for UI
+const flagComponentProperties: ComponentControlProperty[] = [
+  {
+    property: "width",
+    type: "number",
+    label: "Flag Width",
+    min: 0.1,
+    max: 10,
+    step: 0.1
+  },
+  {
+    property: "height",
+    type: "number",
+    label: "Flag Height",
+    min: 0.1,
+    max: 10,
+    step: 0.1
+  },
+  {
+    property: "segmentsX",
+    type: "number",
+    label: "Segments X",
+    min: 1,
+    max: 50,
+    step: 1
+  },
+  {
+    property: "segmentsY",
+    type: "number",
+    label: "Segments Y",
+    min: 1,
+    max: 50,
+    step: 1
+  },
+  {
+    property: "mass",
+    type: "number",
+    label: "Particle Mass",
+    min: 0.01,
+    max: 1,
+    step: 0.01
+  },
+  {
+    property: "stiffness",
+    type: "number",
+    label: "Stiffness",
+    min: 0.1,
+    max: 1,
+    step: 0.01
+  },
+  {
+    property: "damping",
+    type: "number",
+    label: "Damping",
+    min: 0.01,
+    max: 1,
+    step: 0.01
+  },
+  { property: "textureUrl", type: "text", label: "Texture URL" },
+  {
+    property: "windStrength",
+    type: "number",
+    label: "Wind Strength",
+    min: 0,
+    max: 10,
+    step: 0.1
+  },
+  {
+    property: "windDirection.x",
+    type: "number",
+    label: "Wind Direction X",
+    min: -1,
+    max: 1,
+    step: 0.1
+  },
+  {
+    property: "windDirection.y",
+    type: "number",
+    label: "Wind Direction Y",
+    min: -1,
+    max: 1,
+    step: 0.1
+  },
+  {
+    property: "windDirection.z",
+    type: "number",
+    label: "Wind Direction Z",
+    min: -1,
+    max: 1,
+    step: 0.1
+  }
+];
+
+const waterBodyComponentProperties: ComponentControlProperty[] = [
+  {
+    property: "viscosity",
+    type: "number",
+    label: "Viscosity",
+    min: 0,
+    max: 1,
+    step: 0.01
+  },
+  {
+    property: "surfaceTension",
+    type: "number",
+    label: "Surface Tension",
+    min: 0,
+    max: 1,
+    step: 0.01
+  }
+];
+
+const waterDropletComponentProperties: ComponentControlProperty[] = [
+  {
+    property: "size",
+    type: "number",
+    label: "Droplet Size",
+    min: 0.1,
+    max: 5,
+    step: 0.1
+  },
+  {
+    property: "fallHeight",
+    type: "number",
+    label: "Fall Height",
+    min: 1,
+    max: 100,
+    step: 1
+  }
+];
+
+// Register component properties
+registerComponentProperties(FlagComponent.name, flagComponentProperties);
+registerComponentProperties(
+  WaterBodyComponent.type,
+  waterBodyComponentProperties
+);
+registerComponentProperties(
+  WaterDropletComponent.type,
+  waterDropletComponentProperties
+);
+
 // Register core components
 world.componentManager.registerComponent(
   PositionComponent.name,
-  PositionComponent,
+  PositionComponent
 );
 world.componentManager.registerComponent(
   RenderableComponent.name,
-  RenderableComponent,
+  RenderableComponent
 );
 world.componentManager.registerComponent(
   SelectableComponent.name,
-  SelectableComponent,
+  SelectableComponent
 );
 world.componentManager.registerComponent(
   RotationComponent.name,
-  RotationComponent,
+  RotationComponent
 );
 
 // Register systems
@@ -63,33 +211,33 @@ pluginManager.registerPlugin(new WaterSimulationPlugin());
 (window as any).studio = studio;
 
 const globalControlsFolder = (pane as any).addFolder({
-  title: 'Global Controls',
+  title: "Global Controls"
 });
 globalControlsFolder
-  .addButton({title: 'Play'})
-  .on('click', () => studio.play());
+  .addButton({ title: "Play" })
+  .on("click", () => studio.play());
 globalControlsFolder
-  .addButton({title: 'Pause'})
-  .on('click', () => studio.pause());
+  .addButton({ title: "Pause" })
+  .on("click", () => studio.pause());
 globalControlsFolder
-  .addButton({title: 'Reset'})
-  .on('click', () => studio.reset());
+  .addButton({ title: "Reset" })
+  .on("click", () => studio.reset());
 
 const simulationSelectionFolder = (pane as any).addFolder({
-  title: 'Simulations',
+  title: "Simulations"
 });
 const simulationParams = {
-  selectedSimulation: 'flag-simulation', // Default selected simulation
+  selectedSimulation: "flag-simulation" // Default selected simulation
 };
 
 simulationSelectionFolder
-  .addBinding(simulationParams, 'selectedSimulation', {
-    label: '',
+  .addBinding(simulationParams, "selectedSimulation", {
+    label: "",
     options: studio
       .getAvailableSimulationNames()
-      .map(name => ({text: name, value: name})),
+      .map((name) => ({ text: name, value: name }))
   })
-  .on('change', (ev: {value: string}) => {
+  .on("change", (ev: { value: string }) => {
     void studio.loadSimulation(ev.value);
   });
 
@@ -110,4 +258,4 @@ function animate(currentTime: number) {
 
 animate(0);
 
-console.log('Physics Simulation Studio Initialized');
+console.log("Physics Simulation Studio Initialized");

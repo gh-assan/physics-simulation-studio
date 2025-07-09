@@ -1,8 +1,9 @@
-import {IComponent} from '../../core/ecs/IComponent';
-import {PointMass, Spring} from './types';
-import {Vector3} from './utils/Vector3';
+import { IComponent } from "../../core/ecs/IComponent";
+import { PointMass } from "./utils/PointMass";
+import { Spring } from "./utils/Spring";
+import { Vector3 } from "./utils/Vector3";
 
-export class FlagComponent implements IComponent<FlagComponent> {
+export class FlagComponent implements IComponent {
   // Flag dimensions
   width: number;
   height: number;
@@ -19,13 +20,13 @@ export class FlagComponent implements IComponent<FlagComponent> {
 
   // Initial grid of points (masses)
   // This will be an array of {x, y, z} objects representing the initial position of each point
-  initialPoints: {x: number; y: number; z: number}[];
+  initialPoints: { x: number; y: number; z: number }[];
   points: PointMass[];
   springs: Spring[];
 
   // Add wind properties for UI controls
   windStrength: number;
-  windDirection: Vector3;
+  windDirection: { x: number; y: number; z: number };
 
   constructor(
     width = 10,
@@ -35,9 +36,9 @@ export class FlagComponent implements IComponent<FlagComponent> {
     mass = 0.1,
     stiffness = 0.5,
     damping = 0.05,
-    textureUrl = '',
+    textureUrl = "",
     windStrength = 0,
-    windDirection?: Vector3 | {x: number; y: number; z: number} | null,
+    windDirection?: { x: number; y: number; z: number } | null
   ) {
     this.width = width;
     this.height = height;
@@ -51,32 +52,34 @@ export class FlagComponent implements IComponent<FlagComponent> {
     this.points = [];
     this.springs = [];
     this.windStrength = windStrength;
-    // Defensive: always ensure windDirection is a Vector3
-    if (windDirection instanceof Vector3) {
-      this.windDirection = windDirection;
-    } else if (windDirection && typeof windDirection === 'object') {
-      this.windDirection = new Vector3(
-        typeof windDirection.x === 'number' ? windDirection.x : 1,
-        typeof windDirection.y === 'number' ? windDirection.y : 0,
-        typeof windDirection.z === 'number' ? windDirection.z : 0,
-      );
+    // Defensive: always ensure windDirection is an object with x/y/z
+    if (!windDirection || typeof windDirection !== "object") {
+      this.windDirection = { x: 1, y: 0, z: 0 };
     } else {
-      this.windDirection = new Vector3(1, 0, 0);
+      this.windDirection = {
+        x: typeof windDirection.x === "number" ? windDirection.x : 1,
+        y: typeof windDirection.y === "number" ? windDirection.y : 0,
+        z: typeof windDirection.z === "number" ? windDirection.z : 0
+      };
     }
   }
 
   // Add setters to keep wind vector in sync
-  setWind(strength: number, direction: Vector3) {
+  setWind(strength: number, direction: { x: number; y: number; z: number }) {
     this.windStrength = strength;
-    this.windDirection = direction.clone();
+    this.windDirection = { ...direction };
   }
 
-  get wind(): Vector3 {
-    return this.windDirection.scale(this.windStrength);
+  get wind() {
+    return {
+      x: this.windStrength * this.windDirection.x,
+      y: this.windStrength * this.windDirection.y,
+      z: this.windStrength * this.windDirection.z
+    };
   }
 
-  private generateInitialPoints(): {x: number; y: number; z: number}[] {
-    const points: {x: number; y: number; z: number}[] = [];
+  private generateInitialPoints(): { x: number; y: number; z: number }[] {
+    const points: { x: number; y: number; z: number }[] = [];
     const segmentWidth = this.width / this.segmentsX;
     const segmentHeight = this.height / this.segmentsY;
 
@@ -85,7 +88,7 @@ export class FlagComponent implements IComponent<FlagComponent> {
         points.push({
           x: x * segmentWidth - this.width / 2,
           y: y * segmentHeight,
-          z: 0,
+          z: 0
         });
       }
     }
@@ -103,7 +106,7 @@ export class FlagComponent implements IComponent<FlagComponent> {
       this.damping,
       this.textureUrl,
       this.windStrength,
-      this.windDirection.clone(),
+      { ...this.windDirection }
     );
   }
 }

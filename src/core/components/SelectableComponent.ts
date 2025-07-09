@@ -1,4 +1,4 @@
-import {IComponent} from '../ecs/IComponent';
+import { IComponent } from "../ecs/IComponent";
 
 export class SelectableComponent implements IComponent<SelectableComponent> {
   isSelected: boolean;

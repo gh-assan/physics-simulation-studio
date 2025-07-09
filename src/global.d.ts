@@ -1,9 +1,9 @@
 interface Window {
   showSaveFilePicker: (
-    options?: SaveFilePickerOptions,
+    options?: SaveFilePickerOptions
   ) => Promise<FileSystemFileHandle>;
   showOpenFilePicker: (
-    options?: OpenFilePickerOptions,
+    options?: OpenFilePickerOptions
   ) => Promise<FileSystemFileHandle[]>;
 }
 

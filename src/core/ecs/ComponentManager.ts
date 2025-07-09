@@ -1,4 +1,4 @@
-import {IComponent} from './IComponent';
+import { IComponent } from "./IComponent";
 
 export class ComponentManager {
   private componentStores = new Map<string, Map<number, IComponent>>();
@@ -9,7 +9,7 @@ export class ComponentManager {
 
   public registerComponent<T extends IComponent>(
     componentName: string,
-    constructor: new (...args: any[]) => T,
+    constructor: new (...args: any[]) => T
   ): void {
     this.componentStores.set(componentName, new Map<number, IComponent>());
     this.componentConstructors.set(componentName, constructor);
@@ -18,14 +18,14 @@ export class ComponentManager {
   public addComponent<T extends IComponent>(
     entityID: number,
     componentName: string,
-    component: T,
+    component: T
   ): void {
     this.componentStores.get(componentName)!.set(entityID, component);
   }
 
   public getComponent<T extends IComponent>(
     entityID: number,
-    componentName: string,
+    componentName: string
   ): T | undefined {
     return this.componentStores.get(componentName)?.get(entityID) as T;
   }
@@ -38,7 +38,7 @@ export class ComponentManager {
   }
 
   public getEntitiesWithComponents(
-    componentConstructors: (new (...args: any[]) => IComponent)[],
+    componentConstructors: (new (...args: any[]) => IComponent)[]
   ): number[] {
     const entities: number[] = [];
     if (componentConstructors.length === 0) {
@@ -46,7 +46,7 @@ export class ComponentManager {
     }
 
     const componentNames = componentConstructors.map(
-      c => (c as any).type || c.name,
+      (c) => (c as any).type || c.name
     );
 
     const firstStore = this.componentStores.get(componentNames[0]);
@@ -72,7 +72,7 @@ export class ComponentManager {
   public getAllComponentsForEntity(entityID: number): {
     [key: string]: IComponent;
   } {
-    const components: {[key: string]: IComponent} = {};
+    const components: { [key: string]: IComponent } = {};
     for (const [componentName, store] of this.componentStores.entries()) {
       const component = store.get(entityID);
       if (component !== undefined) {
@@ -85,7 +85,7 @@ export class ComponentManager {
   public updateComponent<T extends IComponent>(
     entityID: number,
     componentName: string,
-    newComponent: T,
+    newComponent: T
   ): void {
     const store = this.componentStores.get(componentName);
     if (store) {
@@ -98,7 +98,7 @@ export class ComponentManager {
   }
 
   public clear(): void {
-    this.componentStores.forEach(store => store.clear());
+    this.componentStores.forEach((store) => store.clear());
     // Do NOT clear componentConstructors here; keep registrations for deserialization
   }
 

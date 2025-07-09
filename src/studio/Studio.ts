@@ -1,7 +1,7 @@
-import {World} from '../core/ecs/World';
-import {PluginManager} from '../core/plugin/PluginManager';
+import { World } from "../core/ecs/World";
+import { PluginManager } from "../core/plugin/PluginManager";
 
-import {RenderSystem} from './systems/RenderSystem';
+import { RenderSystem } from "./systems/RenderSystem";
 
 export class Studio {
   private _world: World;
@@ -25,21 +25,17 @@ export class Studio {
 
   public play(): void {
     this.isPlaying = true;
-    console.log('Simulation playing.');
+    console.log("Simulation playing.");
   }
 
   public pause(): void {
     this.isPlaying = false;
-    console.log('Simulation paused.');
+    console.log("Simulation paused.");
   }
 
   public reset(): void {
-    // Implement reset logic: clear world, re-load active simulation
-    console.log('Simulation reset.');
-    this.world.clear(); // Clear all entities and components
-    if (this.renderSystem) {
-      this.renderSystem.clear(); // Clear rendered meshes
-    }
+    console.log("Simulation reset.");
+    this._clearWorldAndRenderSystem();
     if (this.activeSimulationName) {
       void this.loadSimulation(this.activeSimulationName); // Reload the current simulation
     }
@@ -51,35 +47,43 @@ export class Studio {
       return;
     }
 
-    // Deactivate current plugin if any
-    if (this.activeSimulationName) {
-      this.pluginManager.deactivatePlugin(this.activeSimulationName);
-    }
+    this._deactivateCurrentSimulation();
+    this._clearWorldAndRenderSystem();
 
-    // Clear the world for the new simulation
-    this.world.clear();
-    if (this.renderSystem) {
-      this.renderSystem.clear();
-    }
-
-    // Activate the new plugin
     try {
-      await this.pluginManager.activatePlugin(pluginName);
-      this.activeSimulationName = pluginName;
-      console.log(`Loaded simulation: ${pluginName}`);
-      // Initialize entities for the loaded simulation
-      const activePlugin = this.pluginManager.getPlugin(pluginName);
-      if (activePlugin && activePlugin.initializeEntities) {
-        activePlugin.initializeEntities(this.world);
-        // Ensure all systems (including FlagSystem) run once to initialize points, etc.
-        this.world.systemManager.updateAll(this.world, 0);
-        if (this.renderSystem) {
-          this.renderSystem.update(this.world, 0); // Force an immediate render
-        }
-      }
+      await this._activateAndInitializePlugin(pluginName);
     } catch (error) {
       console.error(`Failed to load simulation "${pluginName}":`, error);
       this.activeSimulationName = null;
+    }
+  }
+
+  private _clearWorldAndRenderSystem(): void {
+    this.world.clear(); // Clear all entities and components
+    if (this.renderSystem) {
+      this.renderSystem.clear(); // Clear rendered meshes
+    }
+  }
+
+  private _deactivateCurrentSimulation(): void {
+    if (this.activeSimulationName) {
+      this.pluginManager.deactivatePlugin(this.activeSimulationName);
+    }
+  }
+
+  private async _activateAndInitializePlugin(
+    pluginName: string
+  ): Promise<void> {
+    await this.pluginManager.activatePlugin(pluginName);
+    this.activeSimulationName = pluginName;
+    console.log(`Loaded simulation: ${pluginName}`);
+    const activePlugin = this.pluginManager.getPlugin(pluginName);
+    if (activePlugin && activePlugin.initializeEntities) {
+      activePlugin.initializeEntities(this.world);
+      this.world.systemManager.updateAll(this.world, 0);
+      if (this.renderSystem) {
+        this.renderSystem.update(this.world, 0); // Force an immediate render
+      }
     }
   }
 
@@ -100,7 +104,7 @@ export class Studio {
   public getRenderer(): any | null {
     if (this.activeSimulationName) {
       const activePlugin = this.pluginManager.getPlugin(
-        this.activeSimulationName,
+        this.activeSimulationName
       );
       // Check if the plugin has a getRenderer method (duck typing for ISimulationPlugin)
       if (activePlugin && activePlugin.getRenderer) {
