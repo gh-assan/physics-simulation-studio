@@ -2,18 +2,28 @@ import {World} from '../World';
 import {IComponent} from '../IComponent';
 import {System} from '../System';
 
-class PositionComponent implements IComponent {
-  constructor(
-    public x: number,
-    public y: number,
-  ) {}
+class PositionComponent implements IComponent<PositionComponent> {
+  x: number;
+  y: number;
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+  clone(): PositionComponent {
+    return new PositionComponent(this.x, this.y);
+  }
 }
 
-class VelocityComponent implements IComponent {
-  constructor(
-    public vx: number,
-    public vy: number,
-  ) {}
+class VelocityComponent implements IComponent<VelocityComponent> {
+  vx: number;
+  vy: number;
+  constructor(vx: number, vy: number) {
+    this.vx = vx;
+    this.vy = vy;
+  }
+  clone(): VelocityComponent {
+    return new VelocityComponent(this.vx, this.vy);
+  }
 }
 
 class MovementSystem extends System {

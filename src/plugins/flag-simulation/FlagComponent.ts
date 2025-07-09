@@ -19,7 +19,7 @@ export interface Spring {
   type: 'structural' | 'shear' | 'bend';
 }
 
-export class FlagComponent implements IComponent {
+export class FlagComponent implements IComponent<FlagComponent> {
   // Flag dimensions
   width: number;
   height: number;
@@ -109,5 +109,20 @@ export class FlagComponent implements IComponent {
       }
     }
     return points;
+  }
+
+  clone(): FlagComponent {
+    return new FlagComponent(
+      this.width,
+      this.height,
+      this.segmentsX,
+      this.segmentsY,
+      this.mass,
+      this.stiffness,
+      this.damping,
+      this.textureUrl,
+      this.windStrength,
+      this.windDirection ? {...this.windDirection} : null,
+    );
   }
 }

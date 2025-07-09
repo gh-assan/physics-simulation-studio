@@ -16,17 +16,19 @@ This task focuses on creating and integrating UI controls into the property insp
 
 - **Relevant Architectural Document:** [Link to ARCHITECTURE.md](./../architecture/ARCHITECTURE.md)
 - **Key Architectural Principles to Uphold:**
-  - [X] **ECS Compliance:** The UI controls will interact with ECS components by reading and writing property data.
-  - [X] **Decoupling:** The UI controls, managed by the `PropertyInspectorSystem`, will remain decoupled from the `WaterSystem`. They will communicate indirectly by modifying shared component data.
-  - [X] **Data-Driven Design:** The UI will be dynamically generated based on the properties of the selected entity's components.
+  - [x] **ECS Compliance:** The UI controls will interact with ECS components by reading and writing property data.
+  - [x] **Decoupling:** The UI controls, managed by the `PropertyInspectorSystem`, will remain decoupled from the `WaterSystem`. They will communicate indirectly by modifying shared component data.
+  - [x] **Data-Driven Design:** The UI will be dynamically generated based on the properties of the selected entity's components.
 
 ## 3. Technical Requirements & Implementation Plan
 
 1.  **File(s) to be Created/Modified:**
+
     - `src/studio/systems/PropertyInspectorSystem.ts`: Modify to recognize and create UI for the new water components.
     - `src/plugins/water-simulation/WaterComponents.ts`: Ensure properties are exposed in a way that the UI can consume them.
 
 2.  **Step-by-Step Implementation:**
+
     - **Step 1: Expose Component Properties:** In `WaterComponents.ts`, ensure the properties of `WaterBodyComponent` and `WaterDropletComponent` (e.g., `viscosity`, `dropletSize`, `fallHeight`) are public and well-defined.
     - **Step 2: Extend Property Inspector:** In `PropertyInspectorSystem.ts`, add logic to detect when the selected entity has a `WaterBodyComponent` or `WaterDropletComponent`.
     - **Step 3: Generate UI Controls:** For each detected component, dynamically generate the appropriate UI controls (e.g., sliders for numerical values) using the Tweakpane library.

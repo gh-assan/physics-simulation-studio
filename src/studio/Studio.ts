@@ -1,10 +1,5 @@
 import {World} from '../core/ecs/World';
 import {PluginManager} from '../core/plugin/PluginManager';
-import {System} from '../core/ecs/System';
-import {PositionComponent} from '../core/components/PositionComponent';
-import {RenderableComponent} from '../core/components/RenderableComponent';
-import {SelectableComponent} from '../core/components/SelectableComponent';
-import {FlagComponent} from '../plugins/flag-simulation/FlagComponent';
 
 import {RenderSystem} from './systems/RenderSystem';
 
@@ -42,7 +37,7 @@ export class Studio {
     // Implement reset logic: clear world, re-load active simulation
     console.log('Simulation reset.');
     this.world.clear(); // Clear all entities and components
-        if (this.renderSystem) {
+    if (this.renderSystem) {
       this.renderSystem.clear(); // Clear rendered meshes
     }
     if (this.activeSimulationName) {
@@ -61,7 +56,7 @@ export class Studio {
       this.pluginManager.deactivatePlugin(this.activeSimulationName);
     }
 
-        // Clear the world for the new simulation
+    // Clear the world for the new simulation
     this.world.clear();
     if (this.renderSystem) {
       this.renderSystem.clear();
@@ -78,7 +73,7 @@ export class Studio {
         activePlugin.initializeEntities(this.world);
         // Ensure all systems (including FlagSystem) run once to initialize points, etc.
         this.world.systemManager.updateAll(this.world, 0);
-                if (this.renderSystem) {
+        if (this.renderSystem) {
           this.renderSystem.update(this.world, 0); // Force an immediate render
         }
       }

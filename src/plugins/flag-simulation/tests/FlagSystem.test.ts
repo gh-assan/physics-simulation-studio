@@ -1,7 +1,9 @@
+// Lint/formatting: Ensure consistent import style and remove unused imports if any
 import {World} from '@core/ecs/World';
 import {FlagSystem} from '../FlagSystem';
 import {FlagComponent} from '../FlagComponent';
 import {PositionComponent} from '@core/components/PositionComponent';
+import {IComponent} from '@core/ecs/IComponent';
 
 describe('FlagSystem', () => {
   let world: World;
@@ -18,6 +20,7 @@ describe('FlagSystem', () => {
     );
   });
 
+  // Lint/formatting: Ensure consistent spacing and formatting in test blocks
   it('should initialize flag points and springs when a FlagComponent is added', () => {
     const entity = world.entityManager.createEntity();
     const flagComponent = new FlagComponent(10, 6, 2, 2); // 10x6 flag, 2x2 segments
@@ -77,7 +80,6 @@ describe('FlagSystem', () => {
     flagSystem.update(world, 0);
 
     const nonFixedPoint = flagComponent.points[1]; // A non-fixed point
-    const _initialForces = {...nonFixedPoint.forces}; // Should be {x:0, y:0, z:0}
 
     flagSystem.update(world, 0.1); // Apply forces and integrate
 
@@ -106,12 +108,12 @@ describe('FlagSystem', () => {
     flagSystem.update(world, 0.01); // Initialize
 
     const nonFixedPoint = flagComponent.points[1]; // A non-fixed point
-    const _initialPosition = {...nonFixedPoint.position}; // Define initialPosition here
+    const initialY = nonFixedPoint.position.y;
 
     flagSystem.update(world, 0.1); // Integrate for 0.1 seconds
 
     // Expect position to have changed due to integration (gravity will cause movement)
-        expect(nonFixedPoint.position.y).toBeLessThan(_initialPosition.y);
+    expect(nonFixedPoint.position.y).toBeLessThan(initialY);
   });
 
   it('should satisfy constraints and maintain spring rest lengths (approximately)', () => {
@@ -134,7 +136,6 @@ describe('FlagSystem', () => {
 
     // Displace a non-fixed point to create tension
     const displacedPoint = flagComponent.points[1]; // A non-fixed point
-    const _initialPosition = {...displacedPoint.position};
     displacedPoint.position.x += 2; // Move it to create tension
 
     flagSystem.update(world, 0.1); // Run update to satisfy constraints
@@ -157,5 +158,40 @@ describe('FlagSystem', () => {
     } else {
       fail('Spring not found for testing constraint satisfaction.');
     }
+  });
+
+  // Add clone() to all test component classes as needed for IComponent interface
+  it('should clone FlagComponent correctly', () => {
+    const flagComponent = new FlagComponent(10, 6, 2, 2);
+    const clonedFlagComponent = flagComponent.clone();
+
+    expect(clonedFlagComponent).toEqual(flagComponent);
+    expect(clonedFlagComponent).not.toBe(flagComponent); // Ensure it's a different instance
+    // Deep check for points and springs arrays
+    expect(clonedFlagComponent.points).not.toBe(flagComponent.points);
+    expect(clonedFlagComponent.springs).not.toBe(flagComponent.springs);
+    // Deep equality for points and springs
+    expect(clonedFlagComponent.points).toEqual(flagComponent.points);
+    expect(clonedFlagComponent.springs).toEqual(flagComponent.springs);
+    // Check that clone() returns correct type
+    expect(
+      (clonedFlagComponent as IComponent<FlagComponent>).clone,
+    ).toBeDefined();
+  });
+
+  it('should clone PositionComponent correctly', () => {
+    const positionComponent = new PositionComponent(0, 0, 0);
+    const clonedPositionComponent = positionComponent.clone();
+
+    expect(clonedPositionComponent).toEqual(positionComponent);
+    expect(clonedPositionComponent).not.toBe(positionComponent); // Ensure it's a different instance
+    // Deep equality for position fields
+    expect(clonedPositionComponent.x).toBe(positionComponent.x);
+    expect(clonedPositionComponent.y).toBe(positionComponent.y);
+    expect(clonedPositionComponent.z).toBe(positionComponent.z);
+    // Check that clone() returns correct type
+    expect(
+      (clonedPositionComponent as IComponent<PositionComponent>).clone,
+    ).toBeDefined();
   });
 });

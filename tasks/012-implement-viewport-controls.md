@@ -16,18 +16,20 @@ This task is to implement intuitive camera controls for the main simulation view
 
 - **Relevant Architectural Document:** [Link to ARCHITECTURE.md](./../architecture/ARCHITECTURE.md)
 - **Key Architectural Principles to Uphold:**
-  - [X] **Decoupling:** The camera control logic should be handled in a dedicated system or manager, separate from the core rendering loop and simulation systems. It will directly manipulate the camera object used by the `RenderSystem`.
+  - [x] **Decoupling:** The camera control logic should be handled in a dedicated system or manager, separate from the core rendering loop and simulation systems. It will directly manipulate the camera object used by the `RenderSystem`.
   - [ ] **ECS Compliance:** While the camera itself might not be a traditional ECS entity, its state (position, rotation) can be managed by a dedicated system that responds to user input events.
 
 ## 3. Technical Requirements & Implementation Plan
 
 1.  **File(s) to be Created/Modified:**
+
     - `src/studio/systems/RenderSystem.ts`: To be modified to incorporate the new camera controls.
     - `src/studio/uiManager.ts`: To add new buttons to the main control panel.
     - `src/studio/styles/studio.css`: To style the new UI buttons.
     - `src/studio/CameraControlSystem.ts` (New File): A new system to handle camera logic based on user input.
 
 2.  **Step-by-Step Implementation:**
+
     - **Step 1: Implement Camera Control Logic:** Create a `CameraControlSystem` or similar handler that listens for mouse events (mousedown, mousemove, mousewheel/scroll) on the main canvas.
     - **Step 2: Implement Rotation:** On left-click and drag, update the camera's orbital rotation around a target point (e.g., the scene origin).
     - **Step 3: Implement Panning:** On right-click and drag, move the camera's position and its target point along the camera's local X and Y axes.

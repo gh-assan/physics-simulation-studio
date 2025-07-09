@@ -18,7 +18,7 @@ This task is the direct implementation of the core ECS pattern described in the 
 
 - **Relevant Architectural Document:** [ARCHITECTURE.md](./../architecture/ARCHITECTURE.md)
 - **Key Architectural Principles to Uphold:**
-  - [X] **ECS Compliance:** This task *defines* the core ECS implementation.
+  - [x] **ECS Compliance:** This task _defines_ the core ECS implementation.
   - [ ] **Plugin Modularity:** Not directly applicable, but this work is the prerequisite for the plugin system.
   - [ ] **Decoupling:** The implementation must ensure strict separation between the `EntityManager`, `ComponentManager`, and `SystemManager`.
   - [ ] **Data-Driven Design:** The framework enables a data-driven approach, which will be leveraged by future tasks.
@@ -26,6 +26,7 @@ This task is the direct implementation of the core ECS pattern described in the 
 ## 3. Technical Requirements & Implementation Plan
 
 1.  **File(s) to be Created/Modified:**
+
     - `src/core/ecs/IComponent.ts` (Base component interface)
     - `src/core/ecs/System.ts` (Abstract base class for systems)
     - `src/core/ecs/EntityManager.ts`
@@ -35,6 +36,7 @@ This task is the direct implementation of the core ECS pattern described in the 
     - `src/core/ecs/index.ts` (To export the public API of the module)
 
 2.  **Step-by-Step Implementation:**
+
     - **Step 1:** Create the `IComponent` interface. It will be an empty interface used for type-checking.
     - **Step 2:** Create the abstract `System` class with an `update(world: World, deltaTime: number): void` method.
     - **Step 3:** Implement the `EntityManager` class to handle the creation and destruction of entity IDs.

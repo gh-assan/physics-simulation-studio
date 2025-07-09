@@ -20,7 +20,7 @@ describe('PhysicsSystem', () => {
   let world: World;
   let physicsSystem: PhysicsSystem;
 
-    beforeEach(async () => {
+  beforeEach(async () => {
     await RAPIER.init();
     world = new World();
     physicsSystem = new PhysicsSystem();
@@ -82,3 +82,16 @@ describe('PhysicsSystem', () => {
     expect(rotComp.w).toBe(mockRotation.w);
   });
 });
+
+// Add clone() to all test component classes as needed for IComponent interface
+PositionComponent.prototype.clone = function () {
+  return new PositionComponent(this.x, this.y, this.z);
+};
+
+RotationComponent.prototype.clone = function () {
+  return new RotationComponent(this.x, this.y, this.z, this.w);
+};
+
+RigidBodyComponent.prototype.clone = function () {
+  return new RigidBodyComponent(this.body);
+};

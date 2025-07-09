@@ -16,7 +16,7 @@ jest.mock('tweakpane', () => {
     return {
       addBinding: jest.fn(() => ({on: jest.fn()})),
       dispose: jest.fn(),
-      options: options,
+      options,
     };
   }
 
@@ -24,16 +24,12 @@ jest.mock('tweakpane', () => {
     addFolder: jest.Mock<MockFolder, [{title: string}]>;
     dispose: jest.Mock;
     addBinding: jest.Mock;
-    children: MockFolder[];
-    remove: jest.Mock;
   }
 
   const mockPane: MockPane = {
     addFolder: jest.fn((options: {title: string}) => makeFolder(options)),
     dispose: jest.fn(),
     addBinding: jest.fn(() => ({on: jest.fn()})),
-    children: [],
-    remove: jest.fn(),
   };
   return {
     Pane: jest.fn(() => mockPane),
@@ -43,8 +39,8 @@ jest.mock('tweakpane', () => {
 describe('PropertyInspectorSystem', () => {
   let world: World;
   let uiManager: UIManager;
-    let propertyInspectorSystem: PropertyInspectorSystem;
-  let mockPaneInstance: any; // To hold the mocked Pane instance
+  let propertyInspectorSystem: PropertyInspectorSystem;
+  let mockPaneInstance: UIManager['pane']; // Use the correct type for the mockPaneInstance
 
   beforeEach(() => {
     // Create required DOM elements
@@ -67,10 +63,18 @@ describe('PropertyInspectorSystem', () => {
       document.body.appendChild(el);
     });
 
-        world = new World();
+    world = new World();
     mockPaneInstance =
-      (jest.requireMock('tweakpane').Pane as jest.MockedFunction<any>).mock.results[0]?.value ||
-      new (jest.requireMock('tweakpane').Pane as jest.MockedFunction<any>)();
+      (
+        jest.requireMock('tweakpane').Pane as jest.MockedFunction<
+          () => UIManager['pane']
+        >
+      ).mock.results[0]?.value ||
+      (
+        jest.requireMock('tweakpane').Pane as jest.MockedFunction<
+          () => UIManager['pane']
+        >
+      )();
     uiManager = new UIManager(mockPaneInstance);
     propertyInspectorSystem = new PropertyInspectorSystem(uiManager);
 
@@ -106,7 +110,6 @@ describe('PropertyInspectorSystem', () => {
       const el = document.getElementById(id);
       if (el) el.remove();
     });
-
     jest.restoreAllMocks();
   });
 

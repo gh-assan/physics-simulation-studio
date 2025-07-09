@@ -23,6 +23,7 @@ This task aims to establish and enforce high code quality standards across the P
 ## 3. Technical Requirements & Implementation Plan
 
 1.  **File(s) to be Created/Modified:**
+
     - `tasks/013-code-quality-control.md` (this file)
     - `.eslintrc.js` (or `.json`)
     - `.prettierrc.js` (or `.json`)
@@ -31,6 +32,7 @@ This task aims to establish and enforce high code quality standards across the P
     - `.github/workflows/ci.yml` (for CI/CD integration)
 
 2.  **Step-by-Step Implementation:**
+
     - **Step 1: Research & Tool Selection:** Identified and selected ESLint (via `gts`), Prettier (via `gts`), and Stylelint.
     - **Step 2: ESLint Configuration:** Configured ESLint using `gts init`, added globals for `jest.setup.js`, and included `jest.setup.ts` and `vite.config.ts` in `tsconfig.json` and `tsconfig.eslint.json`. Disabled problematic rules for specific files.
     - **Step 3: Prettier Configuration:** Configured Prettier via `gts init`.
@@ -46,8 +48,8 @@ This task aims to establish and enforce high code quality standards across the P
 
 ## 4. Acceptance Criteria
 
-- [X] `.eslintrc.js` and `.prettierrc.js` are configured and integrated.
-- [X] `package.json` contains scripts for linting and formatting.
+- [x] `.eslintrc.js` and `.prettierrc.js` are configured and integrated.
+- [x] `package.json` contains scripts for linting and formatting.
 - [ ] All existing TypeScript/JavaScript and CSS files pass linting and formatting checks without errors. (Currently, there are 0 errors, but 57 warnings remain).
 - [ ] The codebase demonstrates improved consistency, readability, and maintainability.
 - [ ] This task document clearly outlines the adopted code quality rules and best practices.

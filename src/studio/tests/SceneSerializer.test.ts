@@ -10,7 +10,6 @@ import {
   RotationComponent,
   SelectableComponent,
 } from '@core/components';
-import * as _THREE from 'three';
 
 // Mock URL.createObjectURL and revokeObjectURL for JSDOM environment
 Object.defineProperty(window, 'URL', {
@@ -199,7 +198,7 @@ describe('SceneSerializer', () => {
 
     const entity = world.entityManager.getAllEntities().values().next().value;
     if (entity === undefined) {
-            fail('Entity was not created during deserialization.');
+      fail('Entity was not created during deserialization.');
     }
     const position = world.componentManager.getComponent<PositionComponent>(
       entity,
@@ -214,5 +213,38 @@ describe('SceneSerializer', () => {
     expect(position?.x).toBe(10);
     expect(position?.y).toBe(20);
     expect(position?.z).toBe(30);
+  });
+
+  // Add clone() to all test component classes as needed for IComponent interface
+  it('should clone PositionComponent correctly', () => {
+    const original = new PositionComponent(1, 2, 3);
+    const clone = original.clone();
+
+    expect(clone).toEqual(original);
+    expect(clone).not.toBe(original); // Ensure it's a different instance
+  });
+
+  it('should clone RenderableComponent correctly', () => {
+    const original = new RenderableComponent('box', '#ffffff');
+    const clone = original.clone();
+
+    expect(clone).toEqual(original);
+    expect(clone).not.toBe(original); // Ensure it's a different instance
+  });
+
+  it('should clone RotationComponent correctly', () => {
+    const original = new RotationComponent(0, 0, 0, 1);
+    const clone = original.clone();
+
+    expect(clone).toEqual(original);
+    expect(clone).not.toBe(original); // Ensure it's a different instance
+  });
+
+  it('should clone SelectableComponent correctly', () => {
+    const original = new SelectableComponent(true);
+    const clone = original.clone();
+
+    expect(clone).toEqual(original);
+    expect(clone).not.toBe(original); // Ensure it's a different instance
   });
 });

@@ -33,8 +33,12 @@ jest.mock('tweakpane', () => {
 });
 
 describe('UIManager', () => {
-    let uiManager: UIManager;
-  let mockPaneInstance: any; // This will hold the mocked Pane instance
+  let uiManager: UIManager;
+  let mockPaneInstance: {
+    addFolder: jest.Mock;
+    dispose: jest.Mock;
+    addBinding: jest.Mock;
+  };
 
   beforeEach(() => {
     // Create required DOM elements
@@ -60,10 +64,26 @@ describe('UIManager', () => {
     // Clear all mocks before each test
     jest.clearAllMocks();
 
-        mockPaneInstance =
-      (jest.requireMock('tweakpane').Pane as jest.MockedFunction<any>).mock.results[0]?.value ||
-      new (jest.requireMock('tweakpane').Pane as jest.MockedFunction<any>)();
-    uiManager = new UIManager(mockPaneInstance);
+    mockPaneInstance =
+      (
+        jest.requireMock('tweakpane').Pane as jest.MockedFunction<
+          () => {
+            addFolder: jest.Mock;
+            dispose: jest.Mock;
+            addBinding: jest.Mock;
+          }
+        >
+      ).mock.results[0]?.value ||
+      (
+        jest.requireMock('tweakpane').Pane as jest.MockedFunction<
+          () => {
+            addFolder: jest.Mock;
+            dispose: jest.Mock;
+            addBinding: jest.Mock;
+          }
+        >
+      )();
+    uiManager = new UIManager(mockPaneInstance as unknown as any);
   });
 
   afterEach(() => {
@@ -86,7 +106,7 @@ describe('UIManager', () => {
   });
 
   it('should initialize Tweakpane', () => {
-        expect(jest.requireMock('tweakpane').Pane).toHaveBeenCalledTimes(1);
+    expect(jest.requireMock('tweakpane').Pane).toHaveBeenCalledTimes(1);
   });
 
   it('should register component controls for numbers, booleans, and strings', () => {

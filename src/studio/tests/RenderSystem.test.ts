@@ -43,7 +43,7 @@ jest.mock('three', () => {
 
 describe('RenderSystem', () => {
   let world: World;
-    let renderSystem: RenderSystem;
+  let renderSystem: RenderSystem;
   let mockStudio: any;
 
   beforeEach(() => {
@@ -76,7 +76,7 @@ describe('RenderSystem', () => {
       RenderableComponent.name,
       RenderableComponent,
     );
-        mockStudio = {
+    mockStudio = {
       _world: world,
       world: world,
       pluginManager: {},
@@ -139,7 +139,8 @@ describe('RenderSystem', () => {
     expect(mockScene.add).toHaveBeenCalledTimes(3);
 
     // Expect mesh position and rotation to be updated
-            const meshInstance = (THREE.Mesh as unknown as jest.Mock).mock.results[0].value;
+    const meshInstance = (THREE.Mesh as unknown as jest.Mock).mock.results[0]
+      .value;
     expect(meshInstance.position.set).toHaveBeenCalledWith(
       position.x,
       position.y,
@@ -182,3 +183,16 @@ describe('RenderSystem', () => {
     expect(mockScene.add).toHaveBeenCalledTimes(2);
   });
 });
+
+// Add clone() to all test component classes as needed for IComponent interface
+PositionComponent.prototype.clone = function () {
+  return new PositionComponent(this.x, this.y, this.z);
+};
+
+RotationComponent.prototype.clone = function () {
+  return new RotationComponent(this.x, this.y, this.z, this.w);
+};
+
+RenderableComponent.prototype.clone = function () {
+  return new RenderableComponent(this.geometry, this.color);
+};

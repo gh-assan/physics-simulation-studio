@@ -21,17 +21,20 @@ For a complete overview of the project's design and technical foundation, please
 To get started with the Physics Simulation Studio, follow these steps:
 
 1.  **Clone the repository:**
+
     ```bash
     git clone https://github.com/gh-assan/physics-simulation-studio.git
     cd physics-simulation-studio
     ```
 
 2.  **Install dependencies:**
+
     ```bash
     npm install
     ```
 
 3.  **Build the project:**
+
     ```bash
     npm run build
     ```

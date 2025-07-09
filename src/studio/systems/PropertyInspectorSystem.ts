@@ -1,7 +1,7 @@
 import {System} from '../../core/ecs/System';
 import {World} from '../../core/ecs/World';
 import {UIManager} from '../uiManager';
-import {SelectableComponent} from '../../core/components/SelectableComponent';
+import {SelectableComponent} from '@core/components/SelectableComponent';
 import {IComponent} from '../../core/ecs/IComponent';
 import {FlagComponent} from '../../plugins/flag-simulation/FlagComponent';
 import {
@@ -29,7 +29,7 @@ export class PropertyInspectorSystem extends System {
       const selectable = world.componentManager.getComponent(
         entityId,
         SelectableComponent.name,
-      );
+      ) as SelectableComponent | undefined;
       if (selectable && selectable.isSelected) {
         currentSelectedEntity = entityId;
         break;

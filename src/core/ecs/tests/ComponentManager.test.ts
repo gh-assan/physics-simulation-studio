@@ -1,12 +1,24 @@
 import {ComponentManager} from '../ComponentManager';
 import {IComponent} from '../IComponent';
 
-class TestComponent implements IComponent {
-  constructor(public value: number) {}
+class TestComponent implements IComponent<TestComponent> {
+  value: number;
+  constructor(value: number) {
+    this.value = value;
+  }
+  clone(): TestComponent {
+    return new TestComponent(this.value);
+  }
 }
 
-class AnotherComponent implements IComponent {
-  constructor(public name: string) {}
+class AnotherComponent implements IComponent<AnotherComponent> {
+  name: string;
+  constructor(name: string) {
+    this.name = name;
+  }
+  clone(): AnotherComponent {
+    return new AnotherComponent(this.name);
+  }
 }
 
 describe('ComponentManager', () => {

@@ -1,6 +1,6 @@
 import {IComponent} from '../ecs/IComponent';
 
-export class RenderableComponent implements IComponent {
+export class RenderableComponent implements IComponent<RenderableComponent> {
   geometry: 'box' | 'sphere' | 'cylinder' | 'cone' | 'plane';
   color: string;
 
@@ -10,5 +10,9 @@ export class RenderableComponent implements IComponent {
   ) {
     this.geometry = geometry;
     this.color = color;
+  }
+
+  clone(): RenderableComponent {
+    return new RenderableComponent(this.geometry, this.color);
   }
 }

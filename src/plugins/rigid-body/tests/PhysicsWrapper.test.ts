@@ -22,7 +22,7 @@ describe('PhysicsWrapper', () => {
   let physicsWrapper: PhysicsWrapper;
   let mockRapierWorldInstance: {step: jest.Mock; timestep: number}; // Use a more specific type for the mocked world instance
 
-    beforeEach(async () => {
+  beforeEach(async () => {
     // Clear mocks before each test
     MockedWorld.mockClear();
     MockedVector3.mockClear();

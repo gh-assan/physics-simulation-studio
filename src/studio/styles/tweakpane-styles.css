@@ -2,82 +2,82 @@
 
 /* Tweakpane adjustments */
 .tp-dfwv {
-    position: relative !important; /* Position relative to flex container */
-    width: 300px;
-    height: 100%;
-    overflow-y: auto;
-    background-color: #2a2a2a; /* Slightly lighter dark for pane */
-    border-left: 1px solid #3a3a3a;
-    box-sizing: border-box;
-    padding: 10px;
-    z-index: 1000; /* Ensure it's above the canvas */
-    flex-shrink: 0; /* Prevent shrinking */
+  position: relative !important; /* Position relative to flex container */
+  width: 300px;
+  height: 100%;
+  overflow-y: auto;
+  background-color: #2a2a2a; /* Slightly lighter dark for pane */
+  border-left: 1px solid #3a3a3a;
+  box-sizing: border-box;
+  padding: 10px;
+  z-index: 1000; /* Ensure it's above the canvas */
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 .tp-rotv {
-    background-color: #3a3a3a; /* Folder background */
-    border-radius: 5px;
-    margin-bottom: 10px;
-    padding: 8px;
-    border: 1px solid #4a4a4a;
+  background-color: #3a3a3a; /* Folder background */
+  border-radius: 5px;
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px solid #4a4a4a;
 }
 
 .tp-lblv {
-    color: #ffffff; /* Label color */
-    font-weight: bold;
-    margin-bottom: 5px;
+  color: #ffffff; /* Label color */
+  font-weight: bold;
+  margin-bottom: 5px;
 }
 
 .tp-btnv {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 5px; /* Spacing between buttons */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 5px; /* Spacing between buttons */
 }
 
 .tp-btnv button {
-    background-color: #4a4a4a;
-    color: #e0e0e0;
-    border: none;
-    border-radius: 3px;
-    padding: 6px 12px 10px 12px;
-    cursor: pointer;
-    width: 100%; /* Make button fill its container */
-    text-align: center; /* Center text horizontally */
-    line-height: 1; /* Ensure single line height */
+  background-color: #4a4a4a;
+  color: #e0e0e0;
+  border: none;
+  border-radius: 3px;
+  padding: 6px 12px 10px 12px;
+  cursor: pointer;
+  width: 100%; /* Make button fill its container */
+  text-align: center; /* Center text horizontally */
+  line-height: 1; /* Ensure single line height */
 }
 
 .tp-btnv button span {
-    display: block;
-    text-align: center;
-    width: 100%;
+  display: block;
+  text-align: center;
+  width: 100%;
 }
 
 .tp-vdev {
-    border-color: #5a5a5a; /* Input border color */
-    background-color: #3a3a3a; /* Input background */
-    color: #e0e0e0; /* Input text color */
-    border-radius: 3px;
+  border-color: #5a5a5a; /* Input border color */
+  background-color: #3a3a3a; /* Input background */
+  color: #e0e0e0; /* Input text color */
+  border-radius: 3px;
 }
 
 .tp-optv {
-    background-color: #3a3a3a; /* Dropdown background */
-    color: #e0e0e0; /* Dropdown text color */
-    border-radius: 3px;
+  background-color: #3a3a3a; /* Dropdown background */
+  color: #e0e0e0; /* Dropdown text color */
+  border-radius: 3px;
 }
 
 .tp-optv:focus {
-    outline: none;
-    border-color: #6a6a6a;
+  outline: none;
+  border-color: #6a6a6a;
 }
 
 /* Basic responsiveness */
 @media (max-width: 768px) {
-    .tp-dfwv {
-        width: 100%;
-        height: auto;
-        position: relative !important;
-        border-left: none;
-        border-bottom: 1px solid #3a3a3a;
-    }
+  .tp-dfwv {
+    width: 100%;
+    height: auto;
+    position: relative !important;
+    border-left: none;
+    border-bottom: 1px solid #3a3a3a;
+  }
 }

@@ -24,30 +24,32 @@ Implement a realistic, visually compelling flag movement simulation using a mass
 ## 3. Technical Requirements & Implementation Plan
 
 1. **File(s) to be Created/Modified:**
-    - `src/plugins/flag-simulation/FlagComponent.ts`
-    - `src/plugins/flag-simulation/FlagSystem.ts`
-    - `src/plugins/flag-simulation/FlagRenderer.ts`
-    - `src/plugins/flag-simulation/index.ts`
-    - (Optional) `src/plugins/flag-simulation/FlagFEMSystem.ts`
-    - UI: `src/studio/systems/PropertyInspectorSystem.ts` (for flag controls)
+
+   - `src/plugins/flag-simulation/FlagComponent.ts`
+   - `src/plugins/flag-simulation/FlagSystem.ts`
+   - `src/plugins/flag-simulation/FlagRenderer.ts`
+   - `src/plugins/flag-simulation/index.ts`
+   - (Optional) `src/plugins/flag-simulation/FlagFEMSystem.ts`
+   - UI: `src/studio/systems/PropertyInspectorSystem.ts` (for flag controls)
 
 2. **Step-by-Step Implementation:**
-    - Step 1: Define `FlagComponent` to store grid, spring, and material parameters.
-    - Step 2: Implement `FlagSystem` to:
-        - Initialize a 2D grid of point masses.
-        - Connect them with structural, shear, and bend springs.
-        - Apply forces: gravity, wind (constant, procedural, or aerodynamic), and spring forces.
-        - Integrate motion using Verlet (preferred) or Euler.
-    - Step 3: (Optional) Implement FEM-based system for advanced users.
-    - Step 4: Implement `FlagRenderer` to convert the grid to a mesh and render it with realistic shading and texture.
-    - Step 5: Add UI controls for wind, stiffness, and flag parameters in the property inspector.
-    - Step 6: Bake simulation for real-time playback if needed.
-    - Step 7: Register all components and systems in the plugin entry point.
+
+   - Step 1: Define `FlagComponent` to store grid, spring, and material parameters.
+   - Step 2: Implement `FlagSystem` to:
+     - Initialize a 2D grid of point masses.
+     - Connect them with structural, shear, and bend springs.
+     - Apply forces: gravity, wind (constant, procedural, or aerodynamic), and spring forces.
+     - Integrate motion using Verlet (preferred) or Euler.
+   - Step 3: (Optional) Implement FEM-based system for advanced users.
+   - Step 4: Implement `FlagRenderer` to convert the grid to a mesh and render it with realistic shading and texture.
+   - Step 5: Add UI controls for wind, stiffness, and flag parameters in the property inspector.
+   - Step 6: Bake simulation for real-time playback if needed.
+   - Step 7: Register all components and systems in the plugin entry point.
 
 3. **Dependencies:**
-    - May depend on core ECS and rendering systems.
-    - May introduce a noise library (e.g., Perlin/Simplex noise) for procedural wind.
-    - No new third-party physics engines unless approved.
+   - May depend on core ECS and rendering systems.
+   - May introduce a noise library (e.g., Perlin/Simplex noise) for procedural wind.
+   - No new third-party physics engines unless approved.
 
 ## 4. Acceptance Criteria
 
@@ -90,15 +92,15 @@ Implement a realistic, visually compelling flag movement simulation using a mass
 ### Reference: Physical & Numerical Details
 
 - **Mass-Spring System:**
-    - 2D grid of point masses, connected by structural, shear, and bend springs.
-    - Each spring: rest length, stiffness constant.
+  - 2D grid of point masses, connected by structural, shear, and bend springs.
+  - Each spring: rest length, stiffness constant.
 - **Forces:**
-    - Gravity: F = m * g
-    - Wind: constant, procedural (Perlin/Simplex), or aerodynamic (based on triangle normals, wind direction, area, and air density).
-    - (Optional) Vortex shedding for high realism (advanced, expensive).
+  - Gravity: F = m \* g
+  - Wind: constant, procedural (Perlin/Simplex), or aerodynamic (based on triangle normals, wind direction, area, and air density).
+  - (Optional) Vortex shedding for high realism (advanced, expensive).
 - **Integration:**
-    - Verlet (preferred): x_{t+Δt} = 2x_t - x_{t-Δt} + (F_t/m)Δt^2
-    - Euler (simple, less stable): v_{t+Δt} = v_t + (F_t/m)Δt; x_{t+Δt} = x_t + v_{t+Δt}Δt
+  - Verlet (preferred): x*{t+Δt} = 2x_t - x*{t-Δt} + (F_t/m)Δt^2
+  - Euler (simple, less stable): v*{t+Δt} = v_t + (F_t/m)Δt; x*{t+Δt} = x*t + v*{t+Δt}Δt
 - **Rendering:**
-    - Mesh from grid, realistic shading, texture, lighting, optional motion blur.
-    - Baking for real-time playback if needed.
+  - Mesh from grid, realistic shading, texture, lighting, optional motion blur.
+  - Baking for real-time playback if needed.

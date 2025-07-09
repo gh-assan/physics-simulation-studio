@@ -27,5 +27,3 @@ interface FilePickerAcceptType {
   description?: string;
   accept: Record<string, string | string[]>;
 }
-
-

@@ -10,11 +10,11 @@
 
 ## 1. Overview & Goal
 
-*[Provide a clear, concise summary of the task. What is the primary objective? What user story or technical requirement does this task fulfill?]
+\*[Provide a clear, concise summary of the task. What is the primary objective? What user story or technical requirement does this task fulfill?]
 
 ## 2. Architectural Context
 
-*[This section connects the task to the project's established architecture. Refer to the main architectural documents.]*
+_[This section connects the task to the project's established architecture. Refer to the main architectural documents.]_
 
 - **Relevant Architectural Document:** [Link to ARCHITECTURE.md](./../architecture/ARCHITECTURE.md)
 - **Key Architectural Principles to Uphold:**
@@ -25,13 +25,15 @@
 
 ## 3. Technical Requirements & Implementation Plan
 
-*[Provide a detailed, step-by-step plan for implementation. Break down the problem into smaller, manageable steps.]*
+_[Provide a detailed, step-by-step plan for implementation. Break down the problem into smaller, manageable steps.]_
 
 1.  **File(s) to be Created/Modified:**
+
     - `src/core/new-file.ts`
     - `src/plugins/my-plugin/system.ts`
 
 2.  **Step-by-Step Implementation:**
+
     - Step 1: Define the new `MyComponent` data structure in `components.ts`.
     - Step 2: Implement the `MySystem` logic to operate on entities with `MyComponent`.
     - Step 3: Register the new component and system within the plugin's `register` method.
@@ -43,7 +45,7 @@
 
 ## 4. Acceptance Criteria
 
-*[Define a clear, verifiable checklist of conditions that must be met for the task to be considered complete. These should be testable.]*
+_[Define a clear, verifiable checklist of conditions that must be met for the task to be considered complete. These should be testable.]_
 
 - [ ] The new `MyComponent` can be added to an entity.
 - [ ] The `MySystem` correctly updates the state of `MyComponent` each frame.
@@ -53,7 +55,7 @@
 
 ## 5. Testing Plan
 
-*[A testing plan is mandatory. All code must be tested. Refer to the testing strategy in the architecture document.]*
+_[A testing plan is mandatory. All code must be tested. Refer to the testing strategy in the architecture document.]_
 
 - **Unit Tests:**
   - [ ] Test the internal logic of `MySystem` in isolation.
@@ -66,14 +68,14 @@
 
 ## 6. UI/UX Considerations (If Applicable)
 
-*[Describe any changes or additions to the user interface. Include mockups or descriptions of new controls.]*
+_[Describe any changes or additions to the user interface. Include mockups or descriptions of new controls.]_
 
 - A new slider labeled "Intensity" will be added to the property inspector for `MyComponent`.
 - The slider should have a range of 0 to 100.
 
 ## 7. Notes & Open Questions
 
-*[Use this section for any additional comments, potential risks, or questions that need clarification before or during development.]*
+_[Use this section for any additional comments, potential risks, or questions that need clarification before or during development.]_
 
 - Is the proposed data structure for `MyComponent` optimal for performance?
 - ...

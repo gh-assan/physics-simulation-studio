@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import {System} from '../../core/ecs/System';
 import {World} from '../../core/ecs/World';
-import {PositionComponent} from '../../core/components/PositionComponent';
-import {RotationComponent} from '../../core/components/RotationComponent';
-import {RenderableComponent} from '../../core/components/RenderableComponent';
-import {FlagComponent} from '../../plugins/flag-simulation/FlagComponent';
+import {RenderableComponent} from '@core/components/RenderableComponent';
+import {PositionComponent} from '@core/components/PositionComponent';
+import {RotationComponent} from '@core/components/RotationComponent';
+import {FlagComponent} from '@plugins/flag-simulation/FlagComponent';
 import {Studio} from '../Studio'; // Import Studio
 import {WaterRenderer} from '../../plugins/water-simulation/WaterRenderer'; // Import WaterRenderer
 import {SelectableComponent} from '../../core/components/SelectableComponent'; // Import SelectableComponent
@@ -136,15 +136,15 @@ export class RenderSystem extends System {
       const position = world.componentManager.getComponent(
         entityId,
         PositionComponent.name,
-      );
+      ) as PositionComponent | undefined;
       const rotation = world.componentManager.getComponent(
         entityId,
         RotationComponent.name,
-      );
+      ) as RotationComponent | undefined;
       const renderable = world.componentManager.getComponent(
         entityId,
         RenderableComponent.name,
-      );
+      ) as RenderableComponent | undefined;
 
       if (!position || !rotation || !renderable) {
         continue; // Skip if any required component is missing
@@ -187,11 +187,11 @@ export class RenderSystem extends System {
       const flag = world.componentManager.getComponent(
         entityId,
         FlagComponent.name,
-      );
+      ) as FlagComponent | undefined;
       const renderable = world.componentManager.getComponent(
         entityId,
         RenderableComponent.name,
-      );
+      ) as RenderableComponent | undefined;
 
       if (!flag || !renderable || flag.points.length === 0) {
         // console.log(`Skipping flag entity ${entityId}: missing components or no points.`, { flag, renderable });
