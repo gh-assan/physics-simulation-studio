@@ -4,7 +4,7 @@ import {World} from '../World';
 
 class TestSystem extends System {
   public updated = false;
-  public update(_world: World, _deltaTime: number): void {
+  public update(world: World, deltaTime: number): void {
     this.updated = true;
   }
 }

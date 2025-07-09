@@ -46,6 +46,8 @@ The project will follow a modular structure to enforce separation of concerns:
 |   |-- /rigid-body/
 |   |-- /optics/
 |   |-- /flag-simulation/ # For realistic flag movement simulation
+|   |   |-- types.ts # Shared type definitions for flag physics
+|   |   |-- utils/PhysicsHelpers.ts # Helper functions for flag physics
 |-- /lib/           # Third-party library code or type definitions
 |-- /assets/        # Static assets (textures, models, etc.)
 ```
