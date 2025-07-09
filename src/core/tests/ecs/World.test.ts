@@ -1,8 +1,10 @@
-import { World } from "../World";
-import { IComponent } from "../IComponent";
-import { System } from "../System";
+import { World } from "../../ecs/World";
+import { IComponent } from "../../ecs/IComponent";
+import { System } from "../../ecs/System";
 
 class PositionComponent implements IComponent {
+  static readonly type = "PositionComponent";
+
   constructor(
     public x: number,
     public y: number
@@ -14,6 +16,8 @@ class PositionComponent implements IComponent {
 }
 
 class VelocityComponent implements IComponent {
+  static readonly type = "VelocityComponent";
+
   constructor(
     public vx: number,
     public vy: number
@@ -33,11 +37,11 @@ class MovementSystem extends System {
     for (const entity of entities) {
       const position = world.componentManager.getComponent<PositionComponent>(
         entity,
-        PositionComponent.name
+        PositionComponent.type
       )!;
       const velocity = world.componentManager.getComponent<VelocityComponent>(
         entity,
-        VelocityComponent.name
+        VelocityComponent.type
       )!;
       position.x += velocity.vx * deltaTime;
       position.y += velocity.vy * deltaTime;
@@ -50,14 +54,8 @@ describe("World", () => {
 
   beforeEach(() => {
     world = new World();
-    world.componentManager.registerComponent(
-      PositionComponent.name,
-      PositionComponent
-    );
-    world.componentManager.registerComponent(
-      VelocityComponent.name,
-      VelocityComponent
-    );
+    world.componentManager.registerComponent(PositionComponent);
+    world.componentManager.registerComponent(VelocityComponent);
     world.systemManager.registerSystem(new MovementSystem());
   });
 
@@ -68,12 +66,12 @@ describe("World", () => {
 
     world.componentManager.addComponent(
       entity,
-      PositionComponent.name,
+      PositionComponent.type,
       position
     );
     world.componentManager.addComponent(
       entity,
-      VelocityComponent.name,
+      VelocityComponent.type,
       velocity
     );
 

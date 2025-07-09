@@ -1,4 +1,4 @@
-import { EntityManager } from "../EntityManager";
+import { EntityManager } from "../../ecs/EntityManager";
 
 describe("EntityManager", () => {
   let entityManager: EntityManager;

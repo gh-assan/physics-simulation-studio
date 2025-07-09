@@ -1,4 +1,4 @@
-import { SelectableComponent } from "./SelectableComponent";
+import { SelectableComponent } from "../../components/SelectableComponent";
 
 // Helper to simulate ECS-style deserialization
 function deserializeSelectableComponent(json: string) {

@@ -1,6 +1,6 @@
-import { SystemManager } from "../SystemManager";
-import { System } from "../System";
-import { World } from "../World";
+import { SystemManager } from "../../ecs/SystemManager";
+import { System } from "../../ecs/System";
+import { World } from "../../ecs/World";
 
 class TestSystem extends System {
   public updated = false;
