@@ -23,7 +23,6 @@ interface Spring {
 
 export class FlagSystem extends System {
     public gravity: { x: number; y: number; z: number; } = { x: 0, y: -9.81, z: 0 }; // m/s^2
-    public wind: { x: number; y: number; z: number; } = { x: 0, y: 0, z: 0 }; // Placeholder for now
 
     constructor() {
         super();
@@ -151,10 +150,11 @@ export class FlagSystem extends System {
             point.forces.y += point.mass * this.gravity.y;
             point.forces.z += point.mass * this.gravity.z;
 
-            // Apply wind (simple constant wind for now)
-            point.forces.x += this.wind.x;
-            point.forces.y += this.wind.y;
-            point.forces.z += this.wind.z;
+            // Apply wind from FlagComponent
+            const wind = flagComponent.wind;
+            point.forces.x += wind.x;
+            point.forces.y += wind.y;
+            point.forces.z += wind.z;
         }
 
         // Apply spring forces

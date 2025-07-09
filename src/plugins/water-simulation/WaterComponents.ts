@@ -1,8 +1,18 @@
 import { IComponent } from '@core/ecs/IComponent';
 
+export interface Ripple {
+    x: number;
+    z: number;
+    radius: number;
+    amplitude: number;
+    decay: number;
+}
+
 export class WaterBodyComponent implements IComponent {
     public static readonly type = 'WaterBodyComponent';
     readonly type = WaterBodyComponent.type;
+
+    public ripples: Ripple[] = [];
 
     constructor(public viscosity: number = 0.1, public surfaceTension: number = 0.5) {}
 }

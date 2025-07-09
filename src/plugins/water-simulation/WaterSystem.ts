@@ -1,6 +1,6 @@
 import { System } from '@core/ecs/System';
 import { World } from '@core/ecs/World';
-import { WaterDropletComponent, WaterBodyComponent } from './WaterComponents';
+import { WaterDropletComponent, WaterBodyComponent, Ripple } from './WaterComponents';
 import { PositionComponent } from '@core/components/PositionComponent';
 
 export class WaterSystem extends System {
@@ -9,44 +9,48 @@ export class WaterSystem extends System {
     }
 
     update(world: World, dt: number): void {
-        console.log('WaterSystem update called');
+        // console.log('WaterSystem update called');
         const droplets = world.componentManager.getEntitiesWithComponents([WaterDropletComponent, PositionComponent]);
-        console.log('Droplets found:', droplets);
         const waterBodies = world.componentManager.getEntitiesWithComponents([WaterBodyComponent, PositionComponent]);
-        console.log('Water bodies found:', waterBodies);
 
         if (waterBodies.length === 0) return;
-        const waterBody = waterBodies[0]; // Assume one water body for now
-        const waterBodyPosition = world.componentManager.getComponent(waterBody, PositionComponent.name) as PositionComponent;
-        console.log('Water body position:', waterBodyPosition);
+        const waterBodyEntity = waterBodies[0]; // Assume one water body for now
+        const waterBodyComponent = world.componentManager.getComponent(waterBodyEntity, WaterBodyComponent.type) as WaterBodyComponent;
+        const waterBodyPosition = world.componentManager.getComponent(waterBodyEntity, PositionComponent.name) as PositionComponent;
+
+        // Update existing ripples
+        waterBodyComponent.ripples = waterBodyComponent.ripples.filter(ripple => {
+            ripple.radius += dt * 5; // Ripple expands
+            ripple.amplitude *= (1 - ripple.decay * dt); // Ripple decays
+            return ripple.amplitude > 0.01; // Remove if amplitude is too small
+        });
 
         for (const droplet of droplets) {
             const dropletComponent = world.componentManager.getComponent(droplet, WaterDropletComponent.type) as WaterDropletComponent;
             const positionComponent = world.componentManager.getComponent(droplet, PositionComponent.name) as PositionComponent;
-            console.log(`Droplet ${droplet} initial position:`, positionComponent.y);
-            console.log(`Droplet ${droplet} initial velocity:`, dropletComponent.velocity);
 
             // Simple gravity
             dropletComponent.velocity -= 9.81 * dt;
             positionComponent.y += dropletComponent.velocity * dt;
 
-            console.log(`Droplet ${droplet} final position:`, positionComponent.y);
-            console.log(`Droplet ${droplet} final velocity:`, dropletComponent.velocity);
-
             // Check for collision with water
             if (positionComponent.y <= waterBodyPosition.y) {
                 console.log('Splash!');
-                this.createRipples(world, positionComponent.x, positionComponent.z);
+                this.createRipples(world, waterBodyComponent, positionComponent.x, positionComponent.z);
                 world.entityManager.destroyEntity(droplet);
-                console.log(`Droplet ${droplet} destroyed.`);
             }
         }
     }
 
-    createRipples(world: World, x: number, z: number): void {
-        // Ripple creation logic will go here
-        // This would likely involve creating new entities for the ripples
-        // or manipulating a mesh on the water body.
+    createRipples(world: World, waterBody: WaterBodyComponent, x: number, z: number): void {
+        const newRipple: Ripple = {
+            x: x,
+            z: z,
+            radius: 0,
+            amplitude: 1,
+            decay: 0.5 // Adjust decay rate as needed
+        };
+        waterBody.ripples.push(newRipple);
         console.log(`Creating ripples at (${x}, ${z})`);
     }
 }

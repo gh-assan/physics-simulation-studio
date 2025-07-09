@@ -11,7 +11,7 @@ import { RenderSystem } from "./systems/RenderSystem";
 export class Studio {
     private _world: World;
     private pluginManager: PluginManager;
-    private renderSystem: RenderSystem;
+    private renderSystem: RenderSystem | null = null;
     private isPlaying: boolean = false;
     private activeSimulationName: string | null = null;
 
@@ -19,9 +19,12 @@ export class Studio {
         return this._world;
     }
 
-    constructor(world: World, pluginManager: PluginManager, renderSystem: RenderSystem) {
+    constructor(world: World, pluginManager: PluginManager) {
         this._world = world;
         this.pluginManager = pluginManager;
+    }
+
+    public setRenderSystem(renderSystem: RenderSystem): void {
         this.renderSystem = renderSystem;
     }
 
@@ -69,6 +72,8 @@ export class Studio {
             const activePlugin = this.pluginManager.getPlugin(pluginName);
             if (activePlugin && activePlugin.initializeEntities) {
                 activePlugin.initializeEntities(this.world);
+                // Ensure all systems (including FlagSystem) run once to initialize points, etc.
+                this.world.systemManager.updateAll(this.world, 0);
                 this.renderSystem.update(this.world, 0); // Force an immediate render
             }
         } catch (error) {
@@ -89,6 +94,17 @@ export class Studio {
 
     public getActiveSimulationName(): string | null {
         return this.activeSimulationName;
+    }
+
+    public getRenderer(): any | null {
+        if (this.activeSimulationName) {
+            const activePlugin = this.pluginManager.getPlugin(this.activeSimulationName);
+            // Check if the plugin has a getRenderer method (duck typing for ISimulationPlugin)
+            if (activePlugin && typeof (activePlugin as any).getRenderer === 'function') {
+                return (activePlugin as any).getRenderer();
+            }
+        }
+        return null;
     }
 
     public getAvailableSimulationNames(): string[] {

@@ -34,9 +34,13 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     initializeEntities(world: World): void {
         // Create flag entity
         const flagEntity = world.entityManager.createEntity();
+        console.log('[FlagSimulationPlugin] Created flag entity:', flagEntity);
         world.componentManager.addComponent(flagEntity, PositionComponent.name, new PositionComponent(0, 0, -10));
         world.componentManager.addComponent(flagEntity, RenderableComponent.name, new RenderableComponent('plane', "#00ff00")); // Green flag
         world.componentManager.addComponent(flagEntity, FlagComponent.name, new FlagComponent(20, 12, 20, 12));
         world.componentManager.addComponent(flagEntity, SelectableComponent.name, new SelectableComponent());
+        // Log all components for this entity
+        const comps = world.componentManager.getAllComponentsForEntity(flagEntity);
+        console.log('[FlagSimulationPlugin] Components for flag entity:', comps);
     }
 }

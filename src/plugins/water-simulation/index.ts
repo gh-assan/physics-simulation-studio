@@ -5,6 +5,8 @@ import { WaterSystem } from './WaterSystem';
 import { WaterRenderer } from './WaterRenderer';
 import { PositionComponent } from '@core/components/PositionComponent';
 import { RenderableComponent } from '@core/components/RenderableComponent';
+import { SelectableComponent } from '@core/components/SelectableComponent';
+import { RotationComponent } from '@core/components/RotationComponent'; // Import RotationComponent
 
 export class WaterSimulationPlugin implements ISimulationPlugin {
     public getName(): string {
@@ -41,12 +43,16 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
         world.componentManager.addComponent(waterBody, PositionComponent.name, new PositionComponent(0, 0, 0));
         world.componentManager.addComponent(waterBody, WaterBodyComponent.type, new WaterBodyComponent());
         world.componentManager.addComponent(waterBody, RenderableComponent.name, new RenderableComponent('plane', 'blue'));
+        world.componentManager.addComponent(waterBody, SelectableComponent.name, new SelectableComponent());
+        world.componentManager.addComponent(waterBody, RotationComponent.name, new RotationComponent()); // Add RotationComponent
 
         // Create a water droplet
         const droplet = world.entityManager.createEntity();
         world.componentManager.addComponent(droplet, PositionComponent.name, new PositionComponent(0, 10, 0));
         world.componentManager.addComponent(droplet, WaterDropletComponent.type, new WaterDropletComponent());
         world.componentManager.addComponent(droplet, RenderableComponent.name, new RenderableComponent('sphere', 'lightblue'));
+        world.componentManager.addComponent(droplet, SelectableComponent.name, new SelectableComponent());
+        world.componentManager.addComponent(droplet, RotationComponent.name, new RotationComponent()); // Add RotationComponent
     }
 
     getRenderer(): WaterRenderer {
