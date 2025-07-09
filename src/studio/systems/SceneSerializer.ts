@@ -1,12 +1,22 @@
 import { World } from "../../core/ecs/World";
 import { IComponent } from "../../core/ecs/IComponent";
+import { SerializedScene, StudioEntity } from "../types";
+import {
+  saveToFile,
+  loadFromFile,
+  encodeBase64,
+  decodeBase64,
+  hasOwnProperty
+} from "../utils/StudioUtils";
 
 export class SceneSerializer {
+  /**
+   * Serializes the world to a JSON string
+   * @param world The world to serialize
+   * @returns A JSON string representing the serialized world
+   */
   public serialize(world: World): string {
-    const serializedEntities: {
-      entityId: number;
-      components: { [key: string]: IComponent };
-    }[] = [];
+    const serializedEntities: StudioEntity[] = [];
 
     // Iterate through all entities and their components
     // This is a simplified serialization. A more robust solution would handle component types and their specific data structures.
@@ -15,9 +25,7 @@ export class SceneSerializer {
       const entityComponents =
         world.componentManager.getAllComponentsForEntity(entityId);
       for (const componentName in entityComponents) {
-        if (
-          Object.prototype.hasOwnProperty.call(entityComponents, componentName)
-        ) {
+        if (hasOwnProperty(entityComponents, componentName)) {
           components[componentName] = entityComponents[componentName];
         }
       }
@@ -27,8 +35,13 @@ export class SceneSerializer {
     return JSON.stringify({ entities: serializedEntities }, null, 2);
   }
 
+  /**
+   * Deserializes a JSON string into the world
+   * @param world The world to deserialize into
+   * @param serializedScene A JSON string representing the serialized world
+   */
   public deserialize(world: World, serializedScene: string): void {
-    const sceneData = JSON.parse(serializedScene);
+    const sceneData = JSON.parse(serializedScene) as SerializedScene;
 
     // Clear existing entities in the world
     world.entityManager.clear();
@@ -37,21 +50,13 @@ export class SceneSerializer {
     for (const entityData of sceneData.entities) {
       const entityId = world.entityManager.createEntity(entityData.entityId);
       for (const componentName in entityData.components) {
-        if (
-          Object.prototype.hasOwnProperty.call(
-            entityData.components,
-            componentName
-          )
-        ) {
+        if (hasOwnProperty(entityData.components, componentName)) {
           const componentConstructor = world.componentManager
             .getComponentConstructors()
             .get(componentName);
           if (componentConstructor) {
             const componentInstance = new componentConstructor();
-            Object.assign(
-              componentInstance,
-              entityData.components[componentName]
-            );
+            // Fix: Only assign once
             Object.assign(
               componentInstance,
               entityData.components[componentName]
@@ -71,55 +76,45 @@ export class SceneSerializer {
     }
   }
 
+  /**
+   * Saves the world to a file
+   * @param world The world to save
+   * @param filename The name of the file
+   */
   public saveToFile(world: World, filename = "scene.json"): void {
     const serializedData = this.serialize(world);
-    const blob = new Blob([serializedData], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    saveToFile(serializedData, filename);
   }
 
+  /**
+   * Loads the world from a file
+   * @param world The world to load into
+   * @returns A promise that resolves when the world is loaded
+   */
   public loadFromFile(world: World): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "application/json";
-
-      input.onchange = (event: Event) => {
-        const file = (event.target as HTMLInputElement).files?.[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            try {
-              this.deserialize(world, e.target?.result as string);
-              resolve();
-            } catch (error) {
-              reject(error);
-            }
-          };
-          reader.readAsText(file);
-        } else {
-          reject(new Error("No file selected"));
-        }
-      };
-
-      input.click();
-    });
+    return loadFromFile()
+      .then((data) => {
+        this.deserialize(world, data);
+      });
   }
 
-  // Simplified URL parameter handling - for demonstration purposes
+  /**
+   * Serializes the world to a URL-safe string
+   * @param world The world to serialize
+   * @returns A URL-safe string representing the serialized world
+   */
   public serializeToUrl(world: World): string {
     const serializedData = this.serialize(world);
-    return btoa(serializedData); // Base64 encode
+    return encodeBase64(serializedData);
   }
 
+  /**
+   * Deserializes a URL-safe string into the world
+   * @param world The world to deserialize into
+   * @param encodedData A URL-safe string representing the serialized world
+   */
   public deserializeFromUrl(world: World, encodedData: string): void {
-    const decodedData = atob(encodedData); // Base64 decode
+    const decodedData = decodeBase64(encodedData);
     this.deserialize(world, decodedData);
   }
 }

@@ -138,11 +138,13 @@ describe("PropertyInspectorSystem", () => {
     // Only check the main UIManager effect, not Pane disposal
     expect(uiManager.registerComponentControls).toHaveBeenCalledWith(
       SelectableComponent.name,
-      expect.any(SelectableComponent)
+      expect.any(SelectableComponent),
+      undefined
     );
     expect(uiManager.registerComponentControls).toHaveBeenCalledWith(
       PositionComponent.name,
-      expect.any(PositionComponent)
+      expect.any(PositionComponent),
+      undefined
     );
   });
 

@@ -1,10 +1,6 @@
 // src/studio/utils/ComponentPropertyRegistry.ts
 
-import { ComponentControlProperty } from "../types";
-
-interface ComponentPropertyMap {
-  [componentName: string]: ComponentControlProperty[];
-}
+import { ComponentControlProperty, ComponentPropertyMap } from "../types";
 
 const componentPropertyRegistry: ComponentPropertyMap = {};
 
