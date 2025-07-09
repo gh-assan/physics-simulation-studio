@@ -35,7 +35,9 @@ export class ComponentRegistry {
   public register<T>(componentClass: new (...args: any[]) => T): void {
     const type = (componentClass as any).type;
     if (!type) {
-      throw new Error(`Component class ${componentClass.name} must have a static 'type' property`);
+      throw new Error(
+        `Component class ${componentClass.name} must have a static 'type' property`
+      );
     }
 
     this.componentConstructors.set(type, componentClass);
@@ -47,8 +49,12 @@ export class ComponentRegistry {
    * @param type The type of the component
    * @returns The component constructor or undefined if not found
    */
-  public getConstructor<T>(type: string): (new (...args: any[]) => T) | undefined {
-    return this.componentConstructors.get(type) as (new (...args: any[]) => T) | undefined;
+  public getConstructor<T>(
+    type: string
+  ): (new (...args: any[]) => T) | undefined {
+    return this.componentConstructors.get(type) as
+      | (new (...args: any[]) => T)
+      | undefined;
   }
 
   /**

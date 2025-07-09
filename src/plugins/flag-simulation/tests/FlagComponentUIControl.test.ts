@@ -75,7 +75,15 @@ describe("FlagComponent Gravity Controls", () => {
   it("should allow setting custom gravity values", () => {
     const customGravity = { x: 1, y: -5, z: 2 };
     const flag = new FlagComponent(
-      10, 6, 10, 6, 0.1, 0.5, 0.05, "", 0,
+      10,
+      6,
+      10,
+      6,
+      0.1,
+      0.5,
+      0.05,
+      "",
+      0,
       { x: 1, y: 0, z: 0 }, // windDirection
       customGravity
     );
@@ -85,7 +93,15 @@ describe("FlagComponent Gravity Controls", () => {
   it("should handle invalid gravity values", () => {
     // Test with undefined gravity
     const flag1 = new FlagComponent(
-      10, 6, 10, 6, 0.1, 0.5, 0.05, "", 0,
+      10,
+      6,
+      10,
+      6,
+      0.1,
+      0.5,
+      0.05,
+      "",
+      0,
       { x: 1, y: 0, z: 0 }, // windDirection
       undefined as any
     );
@@ -93,7 +109,15 @@ describe("FlagComponent Gravity Controls", () => {
 
     // Test with null gravity
     const flag2 = new FlagComponent(
-      10, 6, 10, 6, 0.1, 0.5, 0.05, "", 0,
+      10,
+      6,
+      10,
+      6,
+      0.1,
+      0.5,
+      0.05,
+      "",
+      0,
       { x: 1, y: 0, z: 0 }, // windDirection
       null as any
     );
@@ -101,7 +125,15 @@ describe("FlagComponent Gravity Controls", () => {
 
     // Test with partial gravity object
     const flag3 = new FlagComponent(
-      10, 6, 10, 6, 0.1, 0.5, 0.05, "", 0,
+      10,
+      6,
+      10,
+      6,
+      0.1,
+      0.5,
+      0.05,
+      "",
+      0,
       { x: 1, y: 0, z: 0 }, // windDirection
       { y: -5 } as any
     );

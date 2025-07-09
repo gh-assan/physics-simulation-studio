@@ -83,9 +83,7 @@ export class EntityManager {
    */
   private handleSpecificIdCreation(id: number): number {
     if (this.activeEntities.has(id)) {
-      console.warn(
-        `Entity with ID ${id} already exists. Creating a new one.`
-      );
+      console.warn(`Entity with ID ${id} already exists. Creating a new one.`);
       return this.getNextAvailableId();
     }
 

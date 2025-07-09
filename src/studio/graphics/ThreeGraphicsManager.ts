@@ -49,7 +49,7 @@ export class ThreeGraphicsManager {
     this.controls.enabled = this.controlsEnabled;
 
     // Add window resize handler
-    window.addEventListener('resize', this._handleResize.bind(this));
+    window.addEventListener("resize", this._handleResize.bind(this));
 
     this._addLights();
     this._addHelpers();

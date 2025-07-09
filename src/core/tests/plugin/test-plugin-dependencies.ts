@@ -60,6 +60,6 @@ async function testPluginDependencies() {
 }
 
 // Run the test
-testPluginDependencies().catch(error => {
+testPluginDependencies().catch((error) => {
   console.error("Unhandled error:", error);
 });

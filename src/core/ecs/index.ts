@@ -5,13 +5,13 @@
  */
 
 // Interfaces
-export { IComponent } from './IComponent';
+export { IComponent } from "./IComponent";
 
 // Core ECS classes
-export { Component } from './Component';
-export { ComponentManager } from './ComponentManager';
-export { ComponentRegistry } from './ComponentRegistry';
-export { EntityManager } from './EntityManager';
-export { System } from './System';
-export { SystemManager } from './SystemManager';
-export { World } from './World';
+export { Component } from "./Component";
+export { ComponentManager } from "./ComponentManager";
+export { ComponentRegistry } from "./ComponentRegistry";
+export { EntityManager } from "./EntityManager";
+export { System } from "./System";
+export { SystemManager } from "./SystemManager";
+export { World } from "./World";

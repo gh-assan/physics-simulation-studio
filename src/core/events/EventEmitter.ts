@@ -105,7 +105,7 @@ export class EventEmitter {
   private notifyListeners(event: string, args: any[]): void {
     // Create a copy of the listeners array to avoid issues if listeners are added or removed during iteration
     const listeners = [...this.listeners[event]];
-    listeners.forEach(listener => {
+    listeners.forEach((listener) => {
       try {
         listener(...args);
       } catch (error) {
@@ -122,7 +122,7 @@ export class EventEmitter {
    * @private
    */
   private removeListener(event: string, listener: Function): void {
-    this.listeners[event] = this.listeners[event].filter(l => l !== listener);
+    this.listeners[event] = this.listeners[event].filter((l) => l !== listener);
 
     // Clean up empty listener arrays
     if (this.listeners[event].length === 0) {

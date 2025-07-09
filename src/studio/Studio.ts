@@ -86,7 +86,7 @@ export class Studio {
       }
 
       // Dispatch a custom event to trigger UI refresh
-      const event = new CustomEvent('simulation-loaded', {
+      const event = new CustomEvent("simulation-loaded", {
         detail: { simulationName: pluginName }
       });
       window.dispatchEvent(event);

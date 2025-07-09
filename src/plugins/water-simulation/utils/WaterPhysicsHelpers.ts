@@ -21,8 +21,13 @@ export function updateDropletPhysics(
   gravity: Vector3,
   dt: number
 ): void {
-  // Simple gravity
-  dropletComponent.velocity = dropletComponent.velocity.add(gravity.scale(dt));
+  // Simple gravity - update velocity components directly instead of replacing the Vector3 instance
+  // This ensures UI bindings to velocity.x, velocity.y, velocity.z remain valid
+  const gravityEffect = gravity.scale(dt);
+  dropletComponent.velocity.x += gravityEffect.x;
+  dropletComponent.velocity.y += gravityEffect.y;
+  dropletComponent.velocity.z += gravityEffect.z;
+
   positionComponent.y += dropletComponent.velocity.y * dt;
 }
 
