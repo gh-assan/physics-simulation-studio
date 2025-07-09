@@ -13,7 +13,7 @@
       "@app/*": ["src/studio/*"]
     },
     "types": ["jest", "node", "@types/three"],
-    "lib": ["es2020", "dom", "esnext", "esnext.disposable"]
+    "lib": ["es2020", "dom", "esnext"]
   },
   "include": ["src/**/*.ts", "test/**/*.ts", "jest.setup.ts", "vite.config.ts"]
 }
