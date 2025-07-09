@@ -1,4 +1,4 @@
-import {getLocation} from './locationHelper';
+import {getLocation} from '../utils/StudioUtils';
 
 describe('getLocation', () => {
   it('should return window.location', () => {

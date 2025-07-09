@@ -139,10 +139,16 @@ describe('PropertyInspectorSystem', () => {
     expect(uiManager.registerComponentControls).toHaveBeenCalledWith(
       SelectableComponent.name,
       expect.any(SelectableComponent),
+      [{label: 'isSelected', property: 'isSelected', type: 'boolean'}],
     );
     expect(uiManager.registerComponentControls).toHaveBeenCalledWith(
       PositionComponent.name,
       expect.any(PositionComponent),
+      [
+        {label: 'x', property: 'x', type: 'number', min: 0, max: 100, step: 1},
+        {label: 'y', property: 'y', type: 'number', min: 0, max: 100, step: 1},
+        {label: 'z', property: 'z', type: 'number', min: 0, max: 100, step: 1},
+      ],
     );
   });
 

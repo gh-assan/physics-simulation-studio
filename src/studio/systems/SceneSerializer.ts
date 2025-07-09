@@ -3,26 +3,16 @@ import {IComponent} from '../../core/ecs/IComponent';
 
 export class SceneSerializer {
   public serialize(world: World): string {
-    const serializedEntities: {
-      entityId: number;
-      components: {[key: string]: IComponent};
-    }[] = [];
-
-    // Iterate through all entities and their components
-    // This is a simplified serialization. A more robust solution would handle component types and their specific data structures.
-    for (const entityId of world.entityManager.getAllEntities()) {
-      const components: {[key: string]: IComponent} = {};
-      const entityComponents =
+    const serializedEntities = Array.from(
+      world.entityManager.getAllEntities(),
+    ).map((entityId: number) => {
+      const components =
         world.componentManager.getAllComponentsForEntity(entityId);
-      for (const componentName in entityComponents) {
-        if (
-          Object.prototype.hasOwnProperty.call(entityComponents, componentName)
-        ) {
-          components[componentName] = entityComponents[componentName];
-        }
-      }
-      serializedEntities.push({entityId, components});
-    }
+      return {
+        entityId,
+        components,
+      };
+    });
 
     return JSON.stringify({entities: serializedEntities}, null, 2);
   }
@@ -30,45 +20,19 @@ export class SceneSerializer {
   public deserialize(world: World, serializedScene: string): void {
     const sceneData = JSON.parse(serializedScene);
 
-    // Clear existing entities in the world
     world.entityManager.clear();
     world.componentManager.clear();
 
-    for (const entityData of sceneData.entities) {
+    sceneData.entities.forEach((entityData: any) => {
       const entityId = world.entityManager.createEntity(entityData.entityId);
-      for (const componentName in entityData.components) {
-        if (
-          Object.prototype.hasOwnProperty.call(
-            entityData.components,
-            componentName,
-          )
-        ) {
-          const componentConstructor = world.componentManager
-            .getComponentConstructors()
-            .get(componentName);
-          if (componentConstructor) {
-            const componentInstance = new componentConstructor();
-            Object.assign(
-              componentInstance,
-              entityData.components[componentName],
-            );
-            Object.assign(
-              componentInstance,
-              entityData.components[componentName],
-            );
-            world.componentManager.addComponent(
-              entityId,
-              componentName,
-              componentInstance,
-            );
-          } else {
-            console.warn(
-              `Unknown component type during deserialization: ${componentName}`,
-            );
-          }
-        }
-      }
-    }
+      Object.entries(entityData.components).forEach(([name, component]) => {
+        world.componentManager.addComponent(
+          entityId,
+          name,
+          component as IComponent<unknown>,
+        );
+      });
+    });
   }
 
   public saveToFile(world: World, filename = 'scene.json'): void {

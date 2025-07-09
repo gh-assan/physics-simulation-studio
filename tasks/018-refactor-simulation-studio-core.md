@@ -46,6 +46,8 @@ The goal of this task is to refactor the core of the Simulation Studio to improv
     - Step 8: Add comprehensive unit tests for all refactored files and new utilities.
     - Step 9: Update existing integration tests to reflect the refactored structure and ensure they continue to pass.
     - Step 10: Add comments and documentation to the refactored code for better maintainability.
+    - Step 11: Review and optimize ECS query patterns within systems.
+    - Step 12: Evaluate and improve the `EventEmitter` implementation for performance and type safety.
 
 3.  **Dependencies:**
     - None directly, but this task should be completed before adding new features to the Simulation Studio core.
@@ -62,4 +64,6 @@ The goal of this task is to refactor the core of the Simulation Studio to improv
 - [ ] The core passes all existing and new tests.
 - [ ] Code quality checks (e.g., linting, formatting) pass without errors.
 - [ ] No performance regressions are introduced.
+- [ ] ECS query patterns are optimized for performance.
+- [ ] The `EventEmitter` is improved for performance and type safety.
 - [ ] The refactored code is reviewed and approved by a peer.
