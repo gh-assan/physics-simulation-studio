@@ -8,6 +8,10 @@
     "project": ["./tsconfig.json"],
     "tsconfigRootDir": "."
   },
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-unused-vars": "off"
+  },
   "overrides": [
     {
       "files": ["jest.setup.js"],

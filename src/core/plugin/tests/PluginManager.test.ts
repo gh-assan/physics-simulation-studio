@@ -22,7 +22,7 @@ class MockPlugin implements ISimulationPlugin {
     return this.dependencies;
   }
 
-  register(_world: World): void {
+  register(world: World): void {
     this.registered = true;
   }
 
@@ -30,7 +30,7 @@ class MockPlugin implements ISimulationPlugin {
     this.unregistered = true;
   }
 
-  initializeEntities(_world: World): void {
+  initializeEntities(world: World): void {
     // Mock implementation
   }
 }
