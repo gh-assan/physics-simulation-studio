@@ -4,12 +4,13 @@ import { World } from '../../core/ecs/World';
 import { PositionComponent } from '../../core/components/PositionComponent';
 import { RotationComponent } from '../../core/components/RotationComponent';
 import { RenderableComponent } from '../../core/components/RenderableComponent';
-import { FlagComponent } from '../../plugins/flag-simulation/FlagComponent';
 import { Studio } from '../Studio'; // Import Studio
 import { WaterRenderer } from '../../plugins/water-simulation/WaterRenderer'; // Import WaterRenderer
 import { SelectableComponent } from '../../core/components/SelectableComponent'; // Import SelectableComponent
 import { createGeometry, disposeThreeJsObject } from '../utils/ThreeJsUtils';
 import { ThreeGraphicsManager } from '../graphics/ThreeGraphicsManager';
+import { FlagRenderer } from './FlagRenderer'; // Import FlagRenderer
+import { FlagComponent } from '../../plugins/flag-simulation/FlagComponent'; // Import FlagComponent
 
 export class RenderSystem extends System {
   private graphicsManager: ThreeGraphicsManager;
@@ -17,18 +18,36 @@ export class RenderSystem extends System {
   private studio: Studio; // Add studio reference
   private raycaster: THREE.Raycaster;
   private mouse: THREE.Vector2;
+  private flagRenderer: FlagRenderer | null = null; // Add FlagRenderer, initialize as null
 
   constructor(studio: Studio) {
     super();
     this.studio = studio;
 
     this.graphicsManager = new ThreeGraphicsManager();
+    // FlagRenderer will be initialized when needed
 
     // Setup raycaster for object selection
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
 
     window.addEventListener('mousedown', this.onMouseDown.bind(this), false);
+
+    // Listen for parameter changes to update rendering without starting simulation
+    window.addEventListener('parameter-changed', this.onParameterChanged.bind(this), false);
+  }
+
+  private onParameterChanged(event: CustomEvent): void {
+    // Force a render update without starting the simulation
+    if (!this.studio.getIsPlaying()) {
+      // Only update rendering if simulation is not already playing
+      const world = this.studio.world;
+      this.update(world, 0); // Update with zero deltaTime to avoid physics simulation
+      if (this.flagRenderer) {
+        this.flagRenderer.update(world, 0);
+      }
+      this.graphicsManager.render();
+    }
   }
 
   private onMouseDown(event: MouseEvent): void {
@@ -99,13 +118,7 @@ export class RenderSystem extends System {
       RenderableComponent
     ]);
 
-    const flagEntities = world.componentManager.getEntitiesWithComponents([
-      PositionComponent,
-      RenderableComponent, // Flag will also have a renderable component for color/material
-      FlagComponent
-    ]);
-
-    // console.log(`Found ${entities.length} general entities and ${flagEntities.length} flag entities.`);
+    // console.log(`Found ${entities.length} general entities.`);
 
     for (const entityId of entities) {
       const position = world.componentManager.getComponent(
@@ -125,10 +138,21 @@ export class RenderSystem extends System {
         continue; // Skip if any required component is missing
       }
 
+      // Skip flag entities - they will be handled by the FlagRenderer
+      // Check if FlagComponent is defined before trying to use it
+      try {
+        if (FlagComponent && world.componentManager.hasComponent(entityId, FlagComponent.type)) {
+          continue;
+        }
+      } catch (e) {
+        // FlagComponent might not be available if flag-simulation plugin is not loaded
+        // Just continue with normal rendering
+      }
+
       let mesh = this.meshes.get(entityId);
 
       if (!mesh) {
-        // Create new mesh if it's not a flag mesh or doesn't exist
+        // Create new mesh if it doesn't exist
         const geometry = createGeometry(renderable.geometry);
         const material = new THREE.MeshBasicMaterial({
           color: renderable.color
@@ -159,90 +183,24 @@ export class RenderSystem extends System {
       }
     }
 
-    // Handle FlagComponent rendering
-    for (const entityId of flagEntities) {
-      const flag = world.componentManager.getComponent(
-        entityId,
-        FlagComponent.name
-      ) as FlagComponent;
-      const renderable = world.componentManager.getComponent(
-        entityId,
-        RenderableComponent.name
-      ) as RenderableComponent;
-
-      if (!flag || !renderable || flag.points.length === 0) {
-        // console.log(`Skipping flag entity ${entityId}: missing components or no points.`, { flag, renderable });
-        continue;
-      }
-
-      // console.log(`Processing flag entity ${entityId}. Points length: ${flag.points.length}`);
-      // if (flag.points.length > 0) {
-      //     console.log("First flag point position:", flag.points[0].position);
-      // }
-
-      let flagMesh = this.meshes.get(entityId);
-
-      if (!flagMesh || !(flagMesh.userData && flagMesh.userData.isFlag)) {
-        // If it's not a flag mesh or doesn't exist, create it
-        const geometry = new THREE.BufferGeometry();
-        const material = new THREE.MeshStandardMaterial({
-          color: renderable.color,
-          side: THREE.DoubleSide
-        });
-        flagMesh = new THREE.Mesh(geometry, material);
-        flagMesh.userData = { isFlag: true }; // Initialize userData
-        this.graphicsManager.getScene().add(flagMesh);
-        this.meshes.set(entityId, flagMesh);
-        console.log(
-          `RenderSystem: Created and added flag mesh for entity ${entityId}. Mesh:`,
-          flagMesh
-        );
-      }
-
-      // Update flag geometry
-      const positions = [];
-      const uvs = [];
-      const indices = [];
-
-      const numRows = flag.segmentsY + 1;
-      const numCols = flag.segmentsX + 1;
-
-      for (let i = 0; i < flag.points.length; i++) {
-        const point = flag.points[i];
-        positions.push(point.position.x, point.position.y, point.position.z);
-
-        const x = i % numCols;
-        const y = Math.floor(i / numCols);
-        uvs.push(x / (numCols - 1), 1 - y / (numRows - 1)); // Flip Y for UVs
-      }
-
-      for (let y = 0; y < numRows - 1; y++) {
-        for (let x = 0; x < numCols - 1; x++) {
-          const i0 = y * numCols + x;
-          const i1 = y * numCols + x + 1;
-          const i2 = (y + 1) * numCols + x;
-          const i3 = (y + 1) * numCols + x + 1;
-
-          // Triangle 1
-          indices.push(i0, i2, i1);
-          // Triangle 2
-          indices.push(i1, i2, i3);
+    // Update the FlagRenderer to handle flag entities if available
+    // Initialize FlagRenderer if needed and if FlagComponent is available
+    try {
+      if (FlagComponent) {
+        console.log("[RenderSystem] FlagComponent is available");
+        if (!this.flagRenderer) {
+          console.log("[RenderSystem] Creating new FlagRenderer");
+          this.flagRenderer = new FlagRenderer(this.graphicsManager);
         }
+        console.log("[RenderSystem] Updating FlagRenderer");
+        this.flagRenderer.update(world, _deltaTime);
+      } else {
+        console.log("[RenderSystem] FlagComponent is not available");
       }
-
-      const geometry = flagMesh.geometry as THREE.BufferGeometry;
-      geometry.setAttribute(
-        'position',
-        new THREE.Float32BufferAttribute(positions, 3)
-      );
-      geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-      geometry.setIndex(indices);
-      geometry.computeVertexNormals(); // Recalculate normals for lighting
-      geometry.attributes.position.needsUpdate = true;
-      geometry.attributes.uv.needsUpdate = true;
-      if (geometry.index) {
-        geometry.index.needsUpdate = true;
-      }
+    } catch (e) {
+      console.error("[RenderSystem] Error updating FlagRenderer:", e);
+      // FlagComponent might not be available if flag-simulation plugin is not loaded
+      // Skip flag rendering
     }
 
     // Call plugin-specific renderer if available
@@ -273,6 +231,12 @@ export class RenderSystem extends System {
       }
     });
     this.meshes.clear();
+
+    // Clear the FlagRenderer if it exists
+    if (this.flagRenderer) {
+      this.flagRenderer.unregister();
+      this.flagRenderer = null;
+    }
 
     // Dispose of water mesh if it exists
     const activeRenderer = this.studio.getRenderer();

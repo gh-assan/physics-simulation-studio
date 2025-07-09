@@ -15,8 +15,6 @@ import {
 } from "./utils/PhysicsHelpers";
 
 export class FlagSystem extends System {
-  public gravity: Vector3 = new Vector3(0, -9.81, 0); // m/s^2
-
   constructor() {
     super();
   }
@@ -38,7 +36,7 @@ export class FlagSystem extends System {
     for (const entityId of flagEntities) {
       const flagComponent = world.componentManager.getComponent(
         entityId,
-        FlagComponent.name
+        FlagComponent.type
       ) as FlagComponent;
       const positionComponent = world.componentManager.getComponent(
         entityId,
@@ -71,8 +69,13 @@ export class FlagSystem extends System {
       // Reset forces
       point.forces = new Vector3(0, 0, 0);
 
-      // Apply gravity
-      point.forces = point.forces.add(this.gravity.scale(point.mass));
+      // Apply gravity from FlagComponent
+      const gravity = new Vector3(
+        flagComponent.gravity.x,
+        flagComponent.gravity.y,
+        flagComponent.gravity.z
+      );
+      point.forces = point.forces.add(gravity.scale(point.mass));
 
       // Apply wind from FlagComponent
       const wind = new Vector3(

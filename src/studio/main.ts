@@ -163,7 +163,7 @@ const waterDropletComponentProperties: ComponentControlProperty[] = [
 ];
 
 // Register component properties
-registerComponentProperties(FlagComponent.name, flagComponentProperties);
+registerComponentProperties(FlagComponent.type, flagComponentProperties);
 registerComponentProperties(
   WaterBodyComponent.type,
   waterBodyComponentProperties

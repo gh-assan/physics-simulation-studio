@@ -5,7 +5,7 @@ import { FlagComponent } from "../../plugins/flag-simulation/FlagComponent";
 import { WaterBodyComponent, WaterDropletComponent } from "../../plugins/water-simulation/WaterComponents";
 
 // Register properties for FlagComponent
-registerComponentProperties(FlagComponent.name, [
+registerComponentProperties(FlagComponent.type, [
   {
     property: "width",
     type: "number",
@@ -67,6 +67,32 @@ registerComponentProperties(FlagComponent.name, [
     type: "text",
     label: "Texture URL"
   },
+  // Gravity properties
+  {
+    property: "gravity.x",
+    type: "number",
+    label: "Gravity X",
+    min: -20,
+    max: 20,
+    step: 0.1
+  },
+  {
+    property: "gravity.y",
+    type: "number",
+    label: "Gravity Y",
+    min: -20,
+    max: 20,
+    step: 0.1
+  },
+  {
+    property: "gravity.z",
+    type: "number",
+    label: "Gravity Z",
+    min: -20,
+    max: 20,
+    step: 0.1
+  },
+  // Wind properties
   {
     property: "windStrength",
     type: "number",

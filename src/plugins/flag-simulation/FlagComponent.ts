@@ -4,6 +4,7 @@ import { Spring } from "./utils/Spring";
 import { Vector3 } from "./utils/Vector3";
 
 export class FlagComponent implements IComponent {
+  public static readonly type = "FlagComponent";
   // Flag dimensions
   width: number;
   height: number;
@@ -24,6 +25,9 @@ export class FlagComponent implements IComponent {
   points: PointMass[];
   springs: Spring[];
 
+  // Physics properties
+  gravity: { x: number; y: number; z: number }; // Moved from FlagSystem
+
   // Add wind properties for UI controls
   windStrength: number;
   windDirection: { x: number; y: number; z: number };
@@ -38,7 +42,8 @@ export class FlagComponent implements IComponent {
     damping = 0.05,
     textureUrl = "",
     windStrength = 0,
-    windDirection?: { x: number; y: number; z: number } | null
+    windDirection?: { x: number; y: number; z: number } | null,
+    gravity?: { x: number; y: number; z: number } | null
   ) {
     this.width = width;
     this.height = height;
@@ -52,6 +57,7 @@ export class FlagComponent implements IComponent {
     this.points = [];
     this.springs = [];
     this.windStrength = windStrength;
+
     // Defensive: always ensure windDirection is an object with x/y/z
     if (!windDirection || typeof windDirection !== "object") {
       this.windDirection = { x: 1, y: 0, z: 0 };
@@ -60,6 +66,17 @@ export class FlagComponent implements IComponent {
         x: typeof windDirection.x === "number" ? windDirection.x : 1,
         y: typeof windDirection.y === "number" ? windDirection.y : 0,
         z: typeof windDirection.z === "number" ? windDirection.z : 0
+      };
+    }
+
+    // Set default gravity (same as previously in FlagSystem)
+    if (!gravity || typeof gravity !== "object") {
+      this.gravity = { x: 0, y: -9.81, z: 0 };
+    } else {
+      this.gravity = {
+        x: typeof gravity.x === "number" ? gravity.x : 0,
+        y: typeof gravity.y === "number" ? gravity.y : -9.81,
+        z: typeof gravity.z === "number" ? gravity.z : 0
       };
     }
   }
@@ -106,7 +123,8 @@ export class FlagComponent implements IComponent {
       this.damping,
       this.textureUrl,
       this.windStrength,
-      { ...this.windDirection }
+      { ...this.windDirection },
+      { ...this.gravity }
     );
   }
 }

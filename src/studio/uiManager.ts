@@ -51,14 +51,27 @@ export class UIManager {
     if (prop.max !== undefined) options.max = prop.max;
     if (prop.step !== undefined) options.step = prop.step;
 
+    let binding;
     if (prop.property.includes(".")) {
       const [parentKey, childKey] = prop.property.split(".");
       const parentData = this._getNestedProperty(data, parentKey);
       if (parentData) {
-        folder.addBinding(parentData, childKey, options);
+        binding = folder.addBinding(parentData, childKey, options);
       }
     } else {
-      folder.addBinding(data, prop.property, options);
+      binding = folder.addBinding(data, prop.property, options);
+    }
+
+    // Prevent parameter changes from triggering simulation to play
+    // This ensures that only the play button can start the simulation
+    if (binding) {
+      binding.on('change', () => {
+        // Force a render update without starting the simulation
+        // This allows users to see the effect of parameter changes in the UI
+        // without triggering the simulation to play
+        const event = new CustomEvent('parameter-changed', { detail: { property: prop.property } });
+        window.dispatchEvent(event);
+      });
     }
   }
 
