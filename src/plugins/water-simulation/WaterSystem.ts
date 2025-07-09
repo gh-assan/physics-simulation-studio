@@ -1,13 +1,13 @@
-import {System} from '@core/ecs/System';
-import {World} from '@core/ecs/World';
-import {WaterDropletComponent, WaterBodyComponent} from './WaterComponents';
-import {PositionComponent} from '@core/components/PositionComponent';
+import { System } from "@core/ecs/System";
+import { World } from "@core/ecs/World";
+import { WaterDropletComponent, WaterBodyComponent } from "./WaterComponents";
+import { PositionComponent } from "@core/components/PositionComponent";
 import {
   updateRipples,
   updateDropletPhysics,
-  handleDropletCollision,
-} from './utils/WaterPhysicsHelpers';
-import {Vector3} from './utils/Vector3';
+  handleDropletCollision
+} from "./utils/WaterPhysicsHelpers";
+import { Vector3 } from "./utils/Vector3";
 
 export class WaterSystem extends System {
   public gravity: Vector3 = new Vector3(0, -9.81, 0); // m/s^2
@@ -19,22 +19,22 @@ export class WaterSystem extends System {
   update(world: World, dt: number): void {
     const droplets = world.componentManager.getEntitiesWithComponents([
       WaterDropletComponent,
-      PositionComponent,
+      PositionComponent
     ]);
     const waterBodies = world.componentManager.getEntitiesWithComponents([
       WaterBodyComponent,
-      PositionComponent,
+      PositionComponent
     ]);
 
     if (waterBodies.length === 0) return;
     const waterBodyEntity = waterBodies[0]; // Assume one water body for now
     const waterBodyComponent = world.componentManager.getComponent(
       waterBodyEntity,
-      WaterBodyComponent.type,
+      WaterBodyComponent.type
     ) as WaterBodyComponent;
     const waterBodyPosition = world.componentManager.getComponent(
       waterBodyEntity,
-      PositionComponent.name,
+      PositionComponent.name
     ) as PositionComponent;
 
     // Update existing ripples
@@ -43,11 +43,11 @@ export class WaterSystem extends System {
     for (const droplet of droplets) {
       const dropletComponent = world.componentManager.getComponent(
         droplet,
-        WaterDropletComponent.type,
+        WaterDropletComponent.type
       ) as WaterDropletComponent;
       const positionComponent = world.componentManager.getComponent(
         droplet,
-        PositionComponent.name,
+        PositionComponent.name
       ) as PositionComponent;
 
       // Simple gravity and position update
@@ -55,7 +55,7 @@ export class WaterSystem extends System {
         dropletComponent,
         positionComponent,
         this.gravity,
-        dt,
+        dt
       );
 
       // Check for collision with water
@@ -64,7 +64,7 @@ export class WaterSystem extends System {
         droplet,
         positionComponent,
         waterBodyComponent,
-        waterBodyPosition,
+        waterBodyPosition
       );
     }
   }

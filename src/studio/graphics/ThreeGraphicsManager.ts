@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 
 export class ThreeGraphicsManager {
   public scene: THREE.Scene;
@@ -11,7 +11,7 @@ export class ThreeGraphicsManager {
       75,
       window.innerWidth / window.innerHeight,
       0.1,
-      1000,
+      1000
     );
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setSize(window.innerWidth, window.innerHeight);

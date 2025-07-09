@@ -1,12 +1,12 @@
-import {IComponent} from '../ecs/IComponent';
+import { IComponent } from "../ecs/IComponent";
 
-export class RenderableComponent implements IComponent<RenderableComponent> {
-  geometry: 'box' | 'sphere' | 'cylinder' | 'cone' | 'plane';
+export class RenderableComponent implements IComponent {
+  geometry: "box" | "sphere" | "cylinder" | "cone" | "plane";
   color: string;
 
   constructor(
-    geometry: 'box' | 'sphere' | 'cylinder' | 'cone' | 'plane' = 'box',
-    color = '#ffffff',
+    geometry: "box" | "sphere" | "cylinder" | "cone" | "plane" = "box",
+    color = "#ffffff"
   ) {
     this.geometry = geometry;
     this.color = color;

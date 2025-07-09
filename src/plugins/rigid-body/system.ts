@@ -1,12 +1,12 @@
-import {System, World} from '../../core/ecs';
-import {RigidBodyComponent} from './components';
-import {PositionComponent, RotationComponent} from '../../core/components';
+import { System, World } from "../../core/ecs";
+import { RigidBodyComponent } from "./components";
+import { PositionComponent, RotationComponent } from "../../core/components";
 
 export class PhysicsSystem extends System {
   private componentQuery = [
     RigidBodyComponent,
     PositionComponent,
-    RotationComponent,
+    RotationComponent
   ];
 
   constructor() {
@@ -18,21 +18,21 @@ export class PhysicsSystem extends System {
 
     // Synchronize physics state back to ECS components
     const entities = world.componentManager.getEntitiesWithComponents(
-      this.componentQuery,
+      this.componentQuery
     );
     for (const entityID of entities) {
       const rigidBodyComp =
         world.componentManager.getComponent<RigidBodyComponent>(
           entityID,
-          RigidBodyComponent.name,
+          RigidBodyComponent.name
         )!;
       const posComp = world.componentManager.getComponent<PositionComponent>(
         entityID,
-        PositionComponent.name,
+        PositionComponent.name
       )!;
       const rotComp = world.componentManager.getComponent<RotationComponent>(
         entityID,
-        RotationComponent.name,
+        RotationComponent.name
       )!;
 
       const translation = rigidBodyComp.body.translation();

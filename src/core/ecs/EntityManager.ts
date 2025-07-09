@@ -9,7 +9,7 @@ export class EntityManager {
       entityId = id;
       if (this.activeEntities.has(entityId)) {
         console.warn(
-          `Entity with ID ${entityId} already exists. Creating a new one.`,
+          `Entity with ID ${entityId} already exists. Creating a new one.`
         );
         entityId = this.nextEntityID++;
       } else if (entityId >= this.nextEntityID) {

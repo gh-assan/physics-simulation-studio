@@ -1,26 +1,24 @@
-import {World} from '../World';
-import {IComponent} from '../IComponent';
-import {System} from '../System';
+import { World } from "../World";
+import { IComponent } from "../IComponent";
+import { System } from "../System";
 
-class PositionComponent implements IComponent<PositionComponent> {
-  x: number;
-  y: number;
-  constructor(x: number, y: number) {
-    this.x = x;
-    this.y = y;
-  }
+class PositionComponent implements IComponent {
+  constructor(
+    public x: number,
+    public y: number
+  ) {}
+
   clone(): PositionComponent {
     return new PositionComponent(this.x, this.y);
   }
 }
 
-class VelocityComponent implements IComponent<VelocityComponent> {
-  vx: number;
-  vy: number;
-  constructor(vx: number, vy: number) {
-    this.vx = vx;
-    this.vy = vy;
-  }
+class VelocityComponent implements IComponent {
+  constructor(
+    public vx: number,
+    public vy: number
+  ) {}
+
   clone(): VelocityComponent {
     return new VelocityComponent(this.vx, this.vy);
   }
@@ -30,16 +28,16 @@ class MovementSystem extends System {
   public update(world: World, deltaTime: number): void {
     const entities = world.componentManager.getEntitiesWithComponents([
       PositionComponent,
-      VelocityComponent,
+      VelocityComponent
     ]);
     for (const entity of entities) {
       const position = world.componentManager.getComponent<PositionComponent>(
         entity,
-        PositionComponent.name,
+        PositionComponent.name
       )!;
       const velocity = world.componentManager.getComponent<VelocityComponent>(
         entity,
-        VelocityComponent.name,
+        VelocityComponent.name
       )!;
       position.x += velocity.vx * deltaTime;
       position.y += velocity.vy * deltaTime;
@@ -47,23 +45,23 @@ class MovementSystem extends System {
   }
 }
 
-describe('World', () => {
+describe("World", () => {
   let world: World;
 
   beforeEach(() => {
     world = new World();
     world.componentManager.registerComponent(
       PositionComponent.name,
-      PositionComponent,
+      PositionComponent
     );
     world.componentManager.registerComponent(
       VelocityComponent.name,
-      VelocityComponent,
+      VelocityComponent
     );
     world.systemManager.registerSystem(new MovementSystem());
   });
 
-  it('should update systems and modify components', () => {
+  it("should update systems and modify components", () => {
     const entity = world.entityManager.createEntity();
     const position = new PositionComponent(0, 0);
     const velocity = new VelocityComponent(10, 5);
@@ -71,12 +69,12 @@ describe('World', () => {
     world.componentManager.addComponent(
       entity,
       PositionComponent.name,
-      position,
+      position
     );
     world.componentManager.addComponent(
       entity,
       VelocityComponent.name,
-      velocity,
+      velocity
     );
 
     world.update(2);

@@ -1,22 +1,22 @@
-import {PhysicsSystem} from '../system';
-import {World} from '@core/ecs';
-import {PositionComponent, RotationComponent} from '@core/components';
-import {RigidBodyComponent} from '../components';
-import RAPIER from '@dimforge/rapier3d-compat';
-jest.mock('@dimforge/rapier3d-compat', () => ({
+import { PhysicsSystem } from "../system";
+import { World } from "@core/ecs";
+import { PositionComponent, RotationComponent } from "@core/components";
+import { RigidBodyComponent } from "../components";
+import RAPIER from "@dimforge/rapier3d-compat";
+jest.mock("@dimforge/rapier3d-compat", () => ({
   __esModule: true,
   default: {
     init: jest.fn(() => Promise.resolve()),
     World: jest.fn().mockImplementation(() => ({
       step: jest.fn(),
-      timestep: 0,
+      timestep: 0
     })),
-    Vector3: jest.fn().mockImplementation((x, y, z) => ({x, y, z})),
-    Quaternion: jest.fn().mockImplementation((x, y, z, w) => ({x, y, z, w})),
-  },
+    Vector3: jest.fn().mockImplementation((x, y, z) => ({ x, y, z })),
+    Quaternion: jest.fn().mockImplementation((x, y, z, w) => ({ x, y, z, w }))
+  }
 }));
 
-describe('PhysicsSystem', () => {
+describe("PhysicsSystem", () => {
   let world: World;
   let physicsSystem: PhysicsSystem;
 
@@ -27,19 +27,19 @@ describe('PhysicsSystem', () => {
 
     world.componentManager.registerComponent(
       PositionComponent.name,
-      PositionComponent,
+      PositionComponent
     );
     world.componentManager.registerComponent(
       RotationComponent.name,
-      RotationComponent,
+      RotationComponent
     );
     world.componentManager.registerComponent(
       RigidBodyComponent.name,
-      RigidBodyComponent,
+      RigidBodyComponent
     );
   });
 
-  it('should synchronize rigid body translation and rotation to ECS components', () => {
+  it("should synchronize rigid body translation and rotation to ECS components", () => {
     const entity = world.entityManager.createEntity();
 
     const mockTranslation = new RAPIER.Vector3(10, 20, 30);
@@ -47,7 +47,7 @@ describe('PhysicsSystem', () => {
 
     const mockRigidBody = {
       translation: () => mockTranslation,
-      rotation: () => mockRotation,
+      rotation: () => mockRotation
     } as RAPIER.RigidBody;
 
     const rigidBodyComp = new RigidBodyComponent(mockRigidBody);
@@ -57,17 +57,17 @@ describe('PhysicsSystem', () => {
     world.componentManager.addComponent(
       entity,
       RigidBodyComponent.name,
-      rigidBodyComp,
+      rigidBodyComp
     );
     world.componentManager.addComponent(
       entity,
       PositionComponent.name,
-      posComp,
+      posComp
     );
     world.componentManager.addComponent(
       entity,
       RotationComponent.name,
-      rotComp,
+      rotComp
     );
 
     physicsSystem.update(world, 0.16);
@@ -82,16 +82,3 @@ describe('PhysicsSystem', () => {
     expect(rotComp.w).toBe(mockRotation.w);
   });
 });
-
-// Add clone() to all test component classes as needed for IComponent interface
-PositionComponent.prototype.clone = function () {
-  return new PositionComponent(this.x, this.y, this.z);
-};
-
-RotationComponent.prototype.clone = function () {
-  return new RotationComponent(this.x, this.y, this.z, this.w);
-};
-
-RigidBodyComponent.prototype.clone = function () {
-  return new RigidBodyComponent(this.body);
-};

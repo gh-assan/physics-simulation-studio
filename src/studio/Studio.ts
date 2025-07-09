@@ -1,8 +1,7 @@
-import {World} from '../core/ecs/World';
-import {PluginManager} from '../core/plugin/PluginManager';
+import { World } from "../core/ecs/World";
+import { PluginManager } from "../core/plugin/PluginManager";
 
-import {RenderSystem} from './systems/RenderSystem';
-import {clearElement, logWithTimestamp} from './utils/StudioUtils';
+import { RenderSystem } from "./systems/RenderSystem";
 
 export class Studio {
   private _world: World;
@@ -26,16 +25,16 @@ export class Studio {
 
   public play(): void {
     this.isPlaying = true;
-    console.log('Simulation playing.');
+    console.log("Simulation playing.");
   }
 
   public pause(): void {
     this.isPlaying = false;
-    console.log('Simulation paused.');
+    console.log("Simulation paused.");
   }
 
   public reset(): void {
-    console.log('Simulation reset.');
+    console.log("Simulation reset.");
     this._clearWorldAndRenderSystem();
     if (this.activeSimulationName) {
       void this.loadSimulation(this.activeSimulationName); // Reload the current simulation
@@ -73,7 +72,7 @@ export class Studio {
   }
 
   private async _activateAndInitializePlugin(
-    pluginName: string,
+    pluginName: string
   ): Promise<void> {
     await this.pluginManager.activatePlugin(pluginName);
     this.activeSimulationName = pluginName;
@@ -105,7 +104,7 @@ export class Studio {
   public getRenderer(): any | null {
     if (this.activeSimulationName) {
       const activePlugin = this.pluginManager.getPlugin(
-        this.activeSimulationName,
+        this.activeSimulationName
       );
       // Check if the plugin has a getRenderer method (duck typing for ISimulationPlugin)
       if (activePlugin && activePlugin.getRenderer) {
@@ -117,27 +116,5 @@ export class Studio {
 
   public getAvailableSimulationNames(): string[] {
     return Array.from(this.pluginManager.getAvailablePluginNames());
-  }
-
-  public initialize(): void {
-    logWithTimestamp('Initializing Studio...');
-    this._setupWorld();
-    this._setupRenderSystem();
-  }
-
-  private _setupWorld(): void {
-    // Logic to initialize the ECS world
-    console.log('World setup complete.');
-  }
-
-  private _setupRenderSystem(): void {
-    if (this.renderSystem) {
-      console.log('Render system setup complete.');
-    }
-  }
-
-  public clearUI(element: HTMLElement): void {
-    clearElement(element);
-    console.log('UI cleared.');
   }
 }

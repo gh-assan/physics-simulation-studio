@@ -1,10 +1,10 @@
-import {World} from '@core/ecs/World';
-import {WaterSystem} from '../WaterSystem';
-import {WaterDropletComponent, WaterBodyComponent} from '../WaterComponents';
-import {PositionComponent} from '@core/components/PositionComponent';
-import {Vector3} from '../utils/Vector3';
+import { World } from "@core/ecs/World";
+import { WaterSystem } from "../WaterSystem";
+import { WaterDropletComponent, WaterBodyComponent } from "../WaterComponents";
+import { PositionComponent } from "@core/components/PositionComponent";
+import { Vector3 } from "../utils/Vector3";
 
-describe('WaterSystem', () => {
+describe("WaterSystem", () => {
   let world: World;
   let waterSystem: WaterSystem;
 
@@ -14,49 +14,49 @@ describe('WaterSystem', () => {
 
     world.componentManager.registerComponent(
       WaterDropletComponent.type,
-      WaterDropletComponent,
+      WaterDropletComponent
     );
     world.componentManager.registerComponent(
       WaterBodyComponent.type,
-      WaterBodyComponent,
+      WaterBodyComponent
     );
     world.componentManager.registerComponent(
       PositionComponent.name,
-      PositionComponent,
+      PositionComponent
     );
 
     world.systemManager.registerSystem(waterSystem);
   });
 
-  it('should make a droplet fall over time', () => {
+  it("should make a droplet fall over time", () => {
     const droplet = world.entityManager.createEntity();
     world.componentManager.addComponent(
       droplet,
       WaterDropletComponent.type,
-      new WaterDropletComponent(0.5, 10, new Vector3(0, 0, 0)),
+      new WaterDropletComponent(0.5, 10, new Vector3(0, 0, 0))
     );
     world.componentManager.addComponent(
       droplet,
       PositionComponent.name,
-      new PositionComponent(0, 10, 0),
+      new PositionComponent(0, 10, 0)
     );
 
     const waterBody = world.entityManager.createEntity();
     world.componentManager.addComponent(
       waterBody,
       WaterBodyComponent.type,
-      new WaterBodyComponent(),
+      new WaterBodyComponent()
     );
     world.componentManager.addComponent(
       waterBody,
       PositionComponent.name,
-      new PositionComponent(0, 0, 0),
+      new PositionComponent(0, 0, 0)
     );
 
     const initialPosition = (
       world.componentManager.getComponent(
         droplet,
-        PositionComponent.name,
+        PositionComponent.name
       ) as PositionComponent
     ).y;
 
@@ -66,36 +66,36 @@ describe('WaterSystem', () => {
     const finalPosition = (
       world.componentManager.getComponent(
         droplet,
-        PositionComponent.name,
+        PositionComponent.name
       ) as PositionComponent
     ).y;
 
     expect(finalPosition).toBeLessThan(initialPosition);
   });
 
-  it('should remove the droplet when it hits the water', () => {
+  it("should remove the droplet when it hits the water", () => {
     const droplet = world.entityManager.createEntity();
     world.componentManager.addComponent(
       droplet,
       WaterDropletComponent.type,
-      new WaterDropletComponent(0.5, 1, new Vector3(0, 0, 0)),
+      new WaterDropletComponent(0.5, 1, new Vector3(0, 0, 0))
     );
     world.componentManager.addComponent(
       droplet,
       PositionComponent.name,
-      new PositionComponent(0, 0.1, 0),
+      new PositionComponent(0, 0.1, 0)
     );
 
     const waterBody = world.entityManager.createEntity();
     world.componentManager.addComponent(
       waterBody,
       WaterBodyComponent.type,
-      new WaterBodyComponent(),
+      new WaterBodyComponent()
     );
     world.componentManager.addComponent(
       waterBody,
       PositionComponent.name,
-      new PositionComponent(0, 0, 0),
+      new PositionComponent(0, 0, 0)
     );
 
     // Simulate a short time step to ensure collision

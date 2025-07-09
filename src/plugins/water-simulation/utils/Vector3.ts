@@ -2,7 +2,7 @@ export class Vector3 {
   constructor(
     public x: number,
     public y: number,
-    public z: number,
+    public z: number
   ) {}
 
   add(other: Vector3): Vector3 {

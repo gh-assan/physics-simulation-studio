@@ -1,6 +1,5 @@
-import {Pane, FolderApi} from 'tweakpane';
-import {ComponentControlProperty} from './types';
-import {clearElement} from './utils/StudioUtils';
+import { Pane, FolderApi } from "tweakpane";
+import { ComponentControlProperty } from "./types";
 
 export class UIManager {
   private pane: Pane;
@@ -13,22 +12,22 @@ export class UIManager {
   public registerComponentControls(
     componentName: string,
     data: any,
-    properties?: ComponentControlProperty[],
+    properties?: ComponentControlProperty[]
   ) {
-    const folder = this.pane.addFolder({title: componentName});
+    const folder = this.pane.addFolder({ title: componentName });
     this.folders.set(componentName, folder);
 
     if (properties) {
-      properties.forEach(prop => {
+      properties.forEach((prop) => {
         this._addBindingForProperty(folder, data, prop);
       });
     } else {
       for (const key in data) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           if (
-            key !== 'particles' &&
-            key !== 'springs' &&
-            key !== 'fixedParticles'
+            key !== "particles" &&
+            key !== "springs" &&
+            key !== "fixedParticles"
           ) {
             folder.addBinding(data, key);
           }
@@ -40,20 +39,20 @@ export class UIManager {
   private _addBindingForProperty(
     folder: FolderApi,
     data: any,
-    prop: ComponentControlProperty,
+    prop: ComponentControlProperty
   ): void {
     const options: {
       label: string;
       min?: number;
       max?: number;
       step?: number;
-    } = {label: prop.label};
+    } = { label: prop.label };
     if (prop.min !== undefined) options.min = prop.min;
     if (prop.max !== undefined) options.max = prop.max;
     if (prop.step !== undefined) options.step = prop.step;
 
-    if (prop.property.includes('.')) {
-      const [parentKey, childKey] = prop.property.split('.');
+    if (prop.property.includes(".")) {
+      const [parentKey, childKey] = prop.property.split(".");
       const parentData = this._getNestedProperty(data, parentKey);
       if (parentData) {
         folder.addBinding(parentData, childKey, options);
@@ -65,18 +64,17 @@ export class UIManager {
 
   private _getNestedProperty(data: any, path: string): any {
     return path
-      .split('.')
+      .split(".")
       .reduce(
         (obj, key) => (obj && obj[key] !== undefined ? obj[key] : undefined),
-        data,
+        data
       );
   }
 
   public clearControls(): void {
-    this.folders.forEach((folder, key) => {
-      folder.dispose(); // Properly dispose of the folder using Tweakpane's API
-      this.folders.delete(key);
+    this.folders.forEach((folder) => {
+      folder.dispose();
     });
-    console.log('All controls cleared.');
+    this.folders.clear();
   }
 }

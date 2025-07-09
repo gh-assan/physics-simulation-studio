@@ -1,4 +1,4 @@
-tasks/*
-architecture/*
 build/
 dist/
+jest.config.js
+jest.setup.js

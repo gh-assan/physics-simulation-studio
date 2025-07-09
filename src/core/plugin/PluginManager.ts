@@ -1,5 +1,5 @@
-import {World} from '../ecs';
-import {ISimulationPlugin} from './ISimulationPlugin';
+import { World } from "../ecs";
+import { ISimulationPlugin } from "./ISimulationPlugin";
 
 export class PluginManager {
   private availablePlugins = new Map<string, ISimulationPlugin>();
@@ -22,7 +22,7 @@ export class PluginManager {
     const plugin = this.availablePlugins.get(pluginName);
     if (!plugin) {
       throw new Error(
-        `Plugin "${pluginName}" not found. Make sure it is registered.`,
+        `Plugin "${pluginName}" not found. Make sure it is registered.`
       );
     }
 

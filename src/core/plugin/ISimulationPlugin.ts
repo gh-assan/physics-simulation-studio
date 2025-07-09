@@ -1,4 +1,4 @@
-import {World} from '../ecs';
+import { World } from "../ecs";
 
 export interface ISimulationPlugin {
   /**

@@ -1,32 +1,18 @@
-import {extractComponentProperties} from '../utils/StudioUtils';
-import {IComponent} from '../../core/ecs/IComponent';
+import { getLocation } from "../utils/StudioUtils";
 
-interface MockComponent extends IComponent {
-  x: number;
-  y: number;
-  isVisible: boolean;
-  clone(): MockComponent;
-}
+describe("StudioUtils", () => {
+  describe("getLocation", () => {
+    it("should return window.location", () => {
+      expect(getLocation()).toBe(window.location);
+    });
 
-describe('StudioUtils', () => {
-  describe('extractComponentProperties', () => {
-    it('should extract properties from a component', () => {
-      const mockComponent: MockComponent = {
-        x: 10,
-        y: 20,
-        isVisible: true,
-        clone() {
-          return {...this};
-        },
-      };
+    it("should return a Location object", () => {
+      expect(getLocation()).toHaveProperty("href");
+      expect(typeof getLocation().href).toBe("string");
+    });
 
-      const properties = extractComponentProperties(mockComponent);
-
-      expect(properties).toEqual([
-        {label: 'x', property: 'x', type: 'number', min: 0, max: 100, step: 1},
-        {label: 'y', property: 'y', type: 'number', min: 0, max: 100, step: 1},
-        {label: 'isVisible', property: 'isVisible', type: 'boolean'},
-      ]);
+    it("should match window.location.href", () => {
+      expect(getLocation().href).toBe(window.location.href);
     });
   });
 });

@@ -1,10 +1,10 @@
-import {IComponent} from '../ecs/IComponent';
+import { IComponent } from "../ecs/IComponent";
 
 export class PositionComponent implements IComponent<PositionComponent> {
   constructor(
     public x: number,
     public y: number,
-    public z: number,
+    public z: number
   ) {}
 
   clone(): PositionComponent {

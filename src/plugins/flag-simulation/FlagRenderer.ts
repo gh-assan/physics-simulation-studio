@@ -1,5 +1,5 @@
-import {FlagComponent} from './FlagComponent';
-import * as THREE from 'three';
+import { FlagComponent } from "./FlagComponent";
+import * as THREE from "three";
 
 export function createFlagMesh(flag: FlagComponent): THREE.Mesh {
   const geometry = new THREE.BufferGeometry();
@@ -27,14 +27,14 @@ export function createFlagMesh(flag: FlagComponent): THREE.Mesh {
     }
   }
   geometry.setAttribute(
-    'position',
-    new THREE.Float32BufferAttribute(vertices, 3),
+    "position",
+    new THREE.Float32BufferAttribute(vertices, 3)
   );
   geometry.setIndex(indices);
   geometry.computeVertexNormals();
   const material = new THREE.MeshStandardMaterial({
     color: 0xffffff,
-    side: THREE.DoubleSide,
+    side: THREE.DoubleSide
   });
   return new THREE.Mesh(geometry, material);
 }

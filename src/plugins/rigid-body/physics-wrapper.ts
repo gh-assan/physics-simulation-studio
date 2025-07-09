@@ -1,4 +1,4 @@
-import RAPIER from '@dimforge/rapier3d-compat';
+import RAPIER from "@dimforge/rapier3d-compat";
 
 export class PhysicsWrapper {
   public world: RAPIER.World;

@@ -8,18 +8,3 @@ export interface ComponentControlProperty {
   max?: number;
   step?: number;
 }
-
-export interface IEntity {
-  id: number;
-  components: Record<string, any>;
-}
-
-export interface ISystem {
-  update(deltaTime: number): void;
-}
-
-export interface IComponent {
-  name: string;
-}
-
-export type ComponentMap = Record<string, IComponent>;

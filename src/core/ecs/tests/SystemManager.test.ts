@@ -1,6 +1,6 @@
-import {SystemManager} from '../SystemManager';
-import {System} from '../System';
-import {World} from '../World';
+import { SystemManager } from "../SystemManager";
+import { System } from "../System";
+import { World } from "../World";
 
 class TestSystem extends System {
   public updated = false;
@@ -9,7 +9,7 @@ class TestSystem extends System {
   }
 }
 
-describe('SystemManager', () => {
+describe("SystemManager", () => {
   let systemManager: SystemManager;
   let world: World;
 
@@ -18,7 +18,7 @@ describe('SystemManager', () => {
     world = new World();
   });
 
-  it('should register and update a system', () => {
+  it("should register and update a system", () => {
     const system = new TestSystem();
     systemManager.registerSystem(system);
     systemManager.updateAll(world, 0.16);
