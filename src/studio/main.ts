@@ -163,7 +163,7 @@ const waterDropletComponentProperties: ComponentControlProperty[] = [
 ];
 
 // Register component properties
-registerComponentProperties(FlagComponent.name, flagComponentProperties);
+registerComponentProperties(FlagComponent.type, flagComponentProperties);
 registerComponentProperties(
   WaterBodyComponent.type,
   waterBodyComponentProperties
@@ -223,6 +223,30 @@ globalControlsFolder
   .addButton({ title: "Reset" })
   .on("click", () => studio.reset());
 
+// Add camera controls to the global controls folder
+const cameraControlsFolder = (pane as any).addFolder({
+  title: "Camera Controls"
+});
+
+const cameraControlsParams = {
+  enabled: false
+};
+
+cameraControlsFolder
+  .addBinding(cameraControlsParams, "enabled", { label: "Enable Controls" })
+  .on("change", (ev: { value: boolean }) => {
+    const graphicsManager = renderSystem.getGraphicsManager();
+    graphicsManager.toggleControls(ev.value);
+  });
+
+// Add help text directly in the UI
+const helpTextParams = {
+  'Controls Help': 'Left Click + Drag: Rotate\nRight Click + Drag: Pan\nScroll Wheel: Zoom'
+};
+cameraControlsFolder.addBinding(helpTextParams, 'Controls Help', {
+  readonly: true
+});
+
 const simulationSelectionFolder = (pane as any).addFolder({
   title: "Simulations"
 });
@@ -232,7 +256,7 @@ const simulationParams = {
 
 simulationSelectionFolder
   .addBinding(simulationParams, "selectedSimulation", {
-    label: "",
+    label: "Select Simulation",
     options: studio
       .getAvailableSimulationNames()
       .map((name) => ({ text: name, value: name }))

@@ -12,7 +12,7 @@ describe("FlagSystem", () => {
     world = new World();
     flagSystem = new FlagSystem();
     world.systemManager.registerSystem(flagSystem);
-    world.componentManager.registerComponent(FlagComponent.name, FlagComponent);
+    world.componentManager.registerComponent(FlagComponent.type, FlagComponent);
     world.componentManager.registerComponent(
       PositionComponent.name,
       PositionComponent
@@ -26,7 +26,7 @@ describe("FlagSystem", () => {
 
     world.componentManager.addComponent(
       entity,
-      FlagComponent.name,
+      FlagComponent.type,
       flagComponent
     );
     world.componentManager.addComponent(
@@ -65,7 +65,7 @@ describe("FlagSystem", () => {
 
     world.componentManager.addComponent(
       entity,
-      FlagComponent.name,
+      FlagComponent.type,
       flagComponent
     );
     world.componentManager.addComponent(
@@ -83,7 +83,7 @@ describe("FlagSystem", () => {
 
     // Expect forces to have changed due to gravity and wind
     expect(nonFixedPoint.forces.y).toBeCloseTo(
-      flagSystem["gravity"].y * nonFixedPoint.mass
+      flagComponent.gravity.y * nonFixedPoint.mass
     ); // Gravity should pull down
   });
 
@@ -94,7 +94,7 @@ describe("FlagSystem", () => {
 
     world.componentManager.addComponent(
       entity,
-      FlagComponent.name,
+      FlagComponent.type,
       flagComponent
     );
     world.componentManager.addComponent(
@@ -129,7 +129,7 @@ describe("FlagSystem", () => {
 
     world.componentManager.addComponent(
       entity,
-      FlagComponent.name,
+      FlagComponent.type,
       flagComponent
     );
     world.componentManager.addComponent(

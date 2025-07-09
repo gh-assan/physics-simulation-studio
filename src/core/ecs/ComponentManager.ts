@@ -1,4 +1,5 @@
 import { IComponent } from "./IComponent";
+// @ts-ignore
 import { ComponentRegistry } from "./ComponentRegistry";
 
 /**
@@ -203,7 +204,7 @@ export class ComponentManager {
   > {
     const constructors = new Map<string, new (...args: any[]) => IComponent>();
 
-    this.registry.getRegisteredTypes().forEach(type => {
+    this.registry.getRegisteredTypes().forEach((type: string) => {
       const constructor = this.registry.getConstructor(type);
       if (constructor) {
         // @ts-ignore
