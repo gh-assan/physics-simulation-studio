@@ -92,10 +92,9 @@ export class SceneSerializer {
    * @returns A promise that resolves when the world is loaded
    */
   public loadFromFile(world: World): Promise<void> {
-    return loadFromFile()
-      .then((data) => {
-        this.deserialize(world, data);
-      });
+    return loadFromFile().then((data) => {
+      this.deserialize(world, data);
+    });
   }
 
   /**

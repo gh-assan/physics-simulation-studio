@@ -241,9 +241,10 @@ cameraControlsFolder
 
 // Add help text directly in the UI
 const helpTextParams = {
-  'Controls Help': 'Left Click + Drag: Rotate\nRight Click + Drag: Pan\nScroll Wheel: Zoom'
+  "Controls Help":
+    "Left Click + Drag: Rotate\nRight Click + Drag: Pan\nScroll Wheel: Zoom"
 };
-cameraControlsFolder.addBinding(helpTextParams, 'Controls Help', {
+cameraControlsFolder.addBinding(helpTextParams, "Controls Help", {
   readonly: true
 });
 

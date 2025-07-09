@@ -40,13 +40,13 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     console.log("[FlagSimulationPlugin] Created flag entity:", flagEntity);
     world.componentManager.addComponent(
       flagEntity,
-      PositionComponent.name,
+      PositionComponent.type,
       new PositionComponent(0, 0, -5)
     );
     // Use a bright red color for better visibility against the default background
     world.componentManager.addComponent(
       flagEntity,
-      RenderableComponent.name,
+      RenderableComponent.type,
       new RenderableComponent("plane", "#ff0000")
     );
     // Create a larger flag with more segments for better visibility
@@ -57,8 +57,8 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     );
     world.componentManager.addComponent(
       flagEntity,
-      SelectableComponent.name,
-      new SelectableComponent()
+      SelectableComponent.type,
+      new SelectableComponent(true)
     );
     // Rotate the flag 90 degrees around the X axis to make it face the camera
     const rotationQuat = new THREE.Quaternion().setFromAxisAngle(
@@ -67,8 +67,13 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     );
     world.componentManager.addComponent(
       flagEntity,
-      RotationComponent.name,
-      new RotationComponent(rotationQuat.x, rotationQuat.y, rotationQuat.z, rotationQuat.w)
+      RotationComponent.type,
+      new RotationComponent(
+        rotationQuat.x,
+        rotationQuat.y,
+        rotationQuat.z,
+        rotationQuat.w
+      )
     );
     // Log all components for this entity
     const comps = world.componentManager.getAllComponentsForEntity(flagEntity);
@@ -81,14 +86,18 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     ) as FlagComponent;
     const positionComponent = world.componentManager.getComponent(
       flagEntity,
-      PositionComponent.name
+      PositionComponent.type
     ) as PositionComponent;
 
     if (flagComponent && positionComponent) {
       FlagPhysicsInitializer.initializeFlag(flagComponent, positionComponent);
-      console.log("[FlagSimulationPlugin] Flag physics initialized with",
-        flagComponent.points.length, "points and",
-        flagComponent.springs.length, "springs");
+      console.log(
+        "[FlagSimulationPlugin] Flag physics initialized with",
+        flagComponent.points.length,
+        "points and",
+        flagComponent.springs.length,
+        "springs"
+      );
     }
   }
 }

@@ -15,19 +15,27 @@ export class UIManager {
     properties?: ComponentControlProperty[]
   ) {
     // Use the component's constructor name if available, otherwise use the provided name
-    const displayName = data.constructor ? `${data.constructor.name} (${componentName})` : componentName;
-    console.log(`[UIManager] Registering controls for component: ${displayName}`);
+    const displayName = data.constructor
+      ? `${data.constructor.name} (${componentName})`
+      : componentName;
+    console.log(
+      `[UIManager] Registering controls for component: ${displayName}`
+    );
 
     const folder = this.pane.addFolder({ title: displayName });
     this.folders.set(componentName, folder);
 
     if (properties) {
-      console.log(`[UIManager] Adding ${properties.length} properties for ${displayName}`);
+      console.log(
+        `[UIManager] Adding ${properties.length} properties for ${displayName}`
+      );
       properties.forEach((prop) => {
         this._addBindingForProperty(folder, data, prop);
       });
     } else {
-      console.log(`[UIManager] No properties provided for ${displayName}, using default properties`);
+      console.log(
+        `[UIManager] No properties provided for ${displayName}, using default properties`
+      );
       for (const key in data) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           if (
@@ -57,7 +65,7 @@ export class UIManager {
       label: prop.label,
       // Add a formatter to ensure consistent label width
       format: (v: any) => {
-        if (typeof v === 'number') {
+        if (typeof v === "number") {
           return v.toFixed(2);
         }
         return String(v);
@@ -69,10 +77,21 @@ export class UIManager {
 
     let binding;
     if (prop.property.includes(".")) {
-      const [parentKey, childKey] = prop.property.split(".");
-      const parentData = this._getNestedProperty(data, parentKey);
+      // Handle nested properties of any depth
+      const parts = prop.property.split(".");
+      const lastKey = parts.pop()!; // Get the last part of the path
+      const parentPath = parts.join("."); // Join the rest of the path
+      const parentData = this._getNestedProperty(data, parentPath);
+
       if (parentData) {
-        binding = folder.addBinding(parentData, childKey, options);
+        console.log(
+          `[UIManager] Adding binding for nested property: ${prop.property}, parent: ${parentPath}, child: ${lastKey}`
+        );
+        binding = folder.addBinding(parentData, lastKey, options);
+      } else {
+        console.warn(
+          `[UIManager] Could not find parent object for property: ${prop.property}`
+        );
       }
     } else {
       binding = folder.addBinding(data, prop.property, options);
@@ -81,13 +100,19 @@ export class UIManager {
     // Prevent parameter changes from triggering simulation to play
     // This ensures that only the play button can start the simulation
     if (binding) {
-      binding.on('change', () => {
+      binding.on("change", () => {
         // Force a render update without starting the simulation
         // This allows users to see the effect of parameter changes in the UI
         // without triggering the simulation to play
-        const event = new CustomEvent('parameter-changed', { detail: { property: prop.property } });
+        const event = new CustomEvent("parameter-changed", {
+          detail: { property: prop.property }
+        });
         window.dispatchEvent(event);
       });
+    } else {
+      console.warn(
+        `[UIManager] Failed to create binding for property: ${prop.property}`
+      );
     }
   }
 

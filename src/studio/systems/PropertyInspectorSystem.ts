@@ -15,7 +15,10 @@ export class PropertyInspectorSystem extends System {
     this.uiManager = uiManager;
 
     // Listen for simulation-loaded events to refresh the UI
-    window.addEventListener('simulation-loaded', this.onSimulationLoaded.bind(this));
+    window.addEventListener(
+      "simulation-loaded",
+      this.onSimulationLoaded.bind(this)
+    );
   }
 
   /**
@@ -23,7 +26,9 @@ export class PropertyInspectorSystem extends System {
    * @param event The simulation-loaded event
    */
   private onSimulationLoaded(event: CustomEvent): void {
-    console.log(`[PropertyInspectorSystem] Received simulation-loaded event for ${event.detail.simulationName}`);
+    console.log(
+      `[PropertyInspectorSystem] Received simulation-loaded event for ${event.detail.simulationName}`
+    );
     // Force a UI refresh by setting lastSelectedEntity to null
     this.lastSelectedEntity = null;
   }
@@ -39,9 +44,10 @@ export class PropertyInspectorSystem extends System {
     );
 
     for (const entityId of selectableEntities) {
+      // Use SelectableComponent.type instead of SelectableComponent.name for consistency
       const selectable = world.componentManager.getComponent(
         entityId,
-        SelectableComponent.name
+        SelectableComponent.type || SelectableComponent.name
       );
       if (selectable && (selectable as SelectableComponent).isSelected) {
         return entityId;
@@ -57,35 +63,26 @@ export class PropertyInspectorSystem extends System {
    * @param componentInstance The component instance
    */
   private registerComponentControls(
-    componentName: string,
+    componentTypeKey: string,
     componentInstance: IComponent
   ): void {
-    // Try to get properties using the component name first
-    let properties = getComponentProperties(componentName);
-    let displayName = componentName;
+    // The componentTypeKey is already the correct type string (e.g., "FlagComponent")
+    // as passed from updateInspectorForEntity.
+    const registryKey = componentTypeKey;
+    const displayName = componentTypeKey;
 
-    // If no properties found, try using the instance's type property
-    if (!properties && (componentInstance as any).type) {
-      const instanceType = (componentInstance as any).type;
-      properties = getComponentProperties(instanceType);
-      displayName = instanceType;
-      console.log(`[PropertyInspectorSystem] Using instance type '${instanceType}' instead of name '${componentName}'`);
-    }
-
-    // If still no properties found and the component has a constructor with a type property,
-    // try to get properties using the constructor type
-    if (!properties && componentInstance.constructor && (componentInstance.constructor as any).type) {
-      const constructorType = (componentInstance.constructor as any).type;
-      properties = getComponentProperties(constructorType);
-      displayName = constructorType;
-      console.log(`[PropertyInspectorSystem] Using constructor type '${constructorType}' instead of name '${componentName}'`);
-    }
+    // Get properties using the determined registry key
+    const properties = getComponentProperties(registryKey);
 
     // Log whether properties were found
     if (properties) {
-      console.log(`[PropertyInspectorSystem] Found ${properties.length} properties for component '${displayName}'`);
+      console.log(
+        `[PropertyInspectorSystem] Found ${properties.length} properties for component '${displayName}' using key '${registryKey}'`
+      );
     } else {
-      console.log(`[PropertyInspectorSystem] No properties found for component '${displayName}'`);
+      console.warn(
+        `[PropertyInspectorSystem] No properties found for component '${displayName}' using key '${registryKey}'`
+      );
     }
 
     this.uiManager.registerComponentControls(
@@ -119,47 +116,35 @@ export class PropertyInspectorSystem extends System {
    * @param entityId The ID of the entity to inspect
    */
   private updateInspectorForEntity(world: World, entityId: number): void {
-    const components = world.componentManager.getAllComponentsForEntity(
-      entityId
-    );
+    const components =
+      world.componentManager.getAllComponentsForEntity(entityId);
 
     // Log the components for debugging
-    console.log("[PropertyInspectorSystem] Components for entity", entityId, ":", components);
+    console.log(
+      "[PropertyInspectorSystem] Components for entity",
+      entityId,
+      ":",
+      components
+    );
 
-    // First, register components with type property to ensure they appear first
+    // Process all components
     for (const componentName in components) {
       if (Object.prototype.hasOwnProperty.call(components, componentName)) {
         const component = components[componentName];
-
-        // Check if component has a type property (either directly or via constructor)
-        if ((component as any).type || (component.constructor && (component.constructor as any).type)) {
-          const registryKey = (component as any).type || (component.constructor as any).type;
-          console.log(`[PropertyInspectorSystem] First pass: Using type '${registryKey}' for component '${componentName}'`);
-
-          this.registerComponentControls(
-            registryKey,
-            component
-          );
-        }
-      }
-    }
-
-    // Then register remaining components
-    for (const componentName in components) {
-      if (Object.prototype.hasOwnProperty.call(components, componentName)) {
-        const component = components[componentName];
-
-        // Skip components that were already registered in the first pass
-        if ((component as any).type || (component.constructor && (component.constructor as any).type)) {
-          continue;
-        }
-
-        console.log(`[PropertyInspectorSystem] Second pass: Using name '${componentName}' for component`);
-
-        this.registerComponentControls(
-          componentName,
-          component
+        console.log(
+          `[PropertyInspectorSystem] Processing component: '${componentName}' for entity ${entityId}`
         );
+
+        // The componentName here is already the correct type string (e.g., "FlagComponent")
+        // as returned by ComponentManager.getAllComponentsForEntity.
+        // We can directly use it as the registryKey.
+        const registryKey = componentName;
+        console.log(
+          `[PropertyInspectorSystem] Using registry key '${registryKey}' for component '${componentName}' from getAllComponentsForEntity result.`
+        );
+
+        // Register the component controls
+        this.registerComponentControls(registryKey, component);
       }
     }
   }

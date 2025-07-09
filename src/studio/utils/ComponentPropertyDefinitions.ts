@@ -2,7 +2,10 @@
 
 import { registerComponentProperties } from "./ComponentPropertyRegistry";
 import { FlagComponent } from "../../plugins/flag-simulation/FlagComponent";
-import { WaterBodyComponent, WaterDropletComponent } from "../../plugins/water-simulation/WaterComponents";
+import {
+  WaterBodyComponent,
+  WaterDropletComponent
+} from "../../plugins/water-simulation/WaterComponents";
 
 // Register properties for FlagComponent
 registerComponentProperties(FlagComponent.type, [
@@ -164,6 +167,30 @@ registerComponentProperties(WaterDropletComponent.type, [
     min: 1,
     max: 100,
     step: 1
+  },
+  {
+    property: "velocity.x",
+    type: "number",
+    label: "Velocity X",
+    min: -10,
+    max: 10,
+    step: 0.1
+  },
+  {
+    property: "velocity.y",
+    type: "number",
+    label: "Velocity Y",
+    min: -10,
+    max: 10,
+    step: 0.1
+  },
+  {
+    property: "velocity.z",
+    type: "number",
+    label: "Velocity Z",
+    min: -10,
+    max: 10,
+    step: 0.1
   }
 ]);
 

@@ -5,13 +5,24 @@ interface Window {
   showOpenFilePicker: (
     options?: OpenFilePickerOptions
   ) => Promise<FileSystemFileHandle[]>;
-  addEventListener(type: 'parameter-changed', listener: (this: Window, ev: CustomEvent<{property: string}>) => any, options?: boolean | AddEventListenerOptions): void;
-  addEventListener(type: 'simulation-loaded', listener: (this: Window, ev: CustomEvent<{simulationName: string}>) => any, options?: boolean | AddEventListenerOptions): void;
+  addEventListener(
+    type: "parameter-changed",
+    listener: (this: Window, ev: CustomEvent<{ property: string }>) => any,
+    options?: boolean | AddEventListenerOptions
+  ): void;
+  addEventListener(
+    type: "simulation-loaded",
+    listener: (
+      this: Window,
+      ev: CustomEvent<{ simulationName: string }>
+    ) => any,
+    options?: boolean | AddEventListenerOptions
+  ): void;
 }
 
 // Add declaration for OrbitControls
-declare module 'three/examples/jsm/controls/OrbitControls' {
-  import { Camera, EventDispatcher } from 'three';
+declare module "three/examples/jsm/controls/OrbitControls" {
+  import { Camera, EventDispatcher } from "three";
 
   export class OrbitControls extends EventDispatcher {
     constructor(camera: Camera, domElement?: HTMLElement);

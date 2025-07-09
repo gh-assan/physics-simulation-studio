@@ -1,11 +1,11 @@
-import * as THREE from 'three';
-import { System } from '../../core/ecs/System';
-import { World } from '../../core/ecs/World';
-import { FlagComponent } from '../../plugins/flag-simulation/FlagComponent';
-import { PositionComponent } from '../../core/components/PositionComponent';
-import { RenderableComponent } from '../../core/components/RenderableComponent';
-import { RotationComponent } from '../../core/components/RotationComponent';
-import { ThreeGraphicsManager } from '../graphics/ThreeGraphicsManager';
+import * as THREE from "three";
+import { System } from "../../core/ecs/System";
+import { World } from "../../core/ecs/World";
+import { FlagComponent } from "../../plugins/flag-simulation/FlagComponent";
+import { PositionComponent } from "../../core/components/PositionComponent";
+import { RenderableComponent } from "../../core/components/RenderableComponent";
+import { RotationComponent } from "../../core/components/RotationComponent";
+import { ThreeGraphicsManager } from "../graphics/ThreeGraphicsManager";
 
 export class FlagRenderer extends System {
   private graphicsManager: ThreeGraphicsManager;
@@ -38,8 +38,9 @@ export class FlagRenderer extends System {
     console.log("[FlagRenderer] Update called");
 
     // Log the scene children before updating
-    console.log("[FlagRenderer] Scene children before update:",
-      this.graphicsManager.getScene().children.map(child => ({
+    console.log(
+      "[FlagRenderer] Scene children before update:",
+      this.graphicsManager.getScene().children.map((child) => ({
         type: child.type,
         position: child.position,
         visible: child.visible,
@@ -83,7 +84,10 @@ export class FlagRenderer extends System {
       ) as RenderableComponent;
 
       if (!flag || !renderable) {
-        console.log(`[FlagRenderer] Missing components for entity ${entityId}:`, { flag: !!flag, renderable: !!renderable });
+        console.log(
+          `[FlagRenderer] Missing components for entity ${entityId}:`,
+          { flag: !!flag, renderable: !!renderable }
+        );
         continue;
       }
 
@@ -92,16 +96,23 @@ export class FlagRenderer extends System {
         continue;
       }
 
-      console.log(`[FlagRenderer] Flag entity ${entityId} has ${flag.points.length} points`);
+      console.log(
+        `[FlagRenderer] Flag entity ${entityId} has ${flag.points.length} points`
+      );
       if (flag.points.length > 0) {
-        console.log(`[FlagRenderer] First point position:`, flag.points[0].position);
+        console.log(
+          `[FlagRenderer] First point position:`,
+          flag.points[0].position
+        );
       }
 
       let flagMesh = this.flagMeshes.get(entityId);
 
       if (!flagMesh) {
         // Create a new mesh for this flag entity
-        console.log(`[FlagRenderer] Creating new mesh for flag entity ${entityId}`);
+        console.log(
+          `[FlagRenderer] Creating new mesh for flag entity ${entityId}`
+        );
         const geometry = new THREE.BufferGeometry();
         // Use a brighter material with emissive properties to make the flag more visible
         const material = new THREE.MeshStandardMaterial({
@@ -113,10 +124,15 @@ export class FlagRenderer extends System {
           roughness: 0.5
         });
         flagMesh = new THREE.Mesh(geometry, material);
-        console.log(`[FlagRenderer] Adding flag mesh to scene for entity ${entityId}`);
+        console.log(
+          `[FlagRenderer] Adding flag mesh to scene for entity ${entityId}`
+        );
         this.graphicsManager.getScene().add(flagMesh);
         this.flagMeshes.set(entityId, flagMesh);
-        console.log(`[FlagRenderer] Created flag mesh for entity ${entityId}. Scene children:`, this.graphicsManager.getScene().children.length);
+        console.log(
+          `[FlagRenderer] Created flag mesh for entity ${entityId}. Scene children:`,
+          this.graphicsManager.getScene().children.length
+        );
 
         // Log detailed information about the flag mesh
         console.log(`[FlagRenderer] Flag mesh details:`, {
@@ -129,12 +145,15 @@ export class FlagRenderer extends System {
             type: (flagMesh.material as THREE.MeshStandardMaterial).type,
             color: (flagMesh.material as THREE.MeshStandardMaterial).color,
             side: (flagMesh.material as THREE.MeshStandardMaterial).side,
-            transparent: (flagMesh.material as THREE.MeshStandardMaterial).transparent,
+            transparent: (flagMesh.material as THREE.MeshStandardMaterial)
+              .transparent,
             opacity: (flagMesh.material as THREE.MeshStandardMaterial).opacity
           }
         });
       } else {
-        console.log(`[FlagRenderer] Using existing mesh for flag entity ${entityId}`);
+        console.log(
+          `[FlagRenderer] Using existing mesh for flag entity ${entityId}`
+        );
       }
 
       // Update flag geometry
@@ -163,8 +182,9 @@ export class FlagRenderer extends System {
     }
 
     // Log the scene children after updating
-    console.log("[FlagRenderer] Scene children after update:",
-      this.graphicsManager.getScene().children.map(child => ({
+    console.log(
+      "[FlagRenderer] Scene children after update:",
+      this.graphicsManager.getScene().children.map((child) => ({
         type: child.type,
         position: child.position,
         visible: child.visible,
@@ -178,7 +198,9 @@ export class FlagRenderer extends System {
   }
 
   private updateFlagGeometry(flag: FlagComponent, mesh: THREE.Mesh): void {
-    console.log(`[FlagRenderer] Updating flag geometry with ${flag.points.length} points`);
+    console.log(
+      `[FlagRenderer] Updating flag geometry with ${flag.points.length} points`
+    );
     const positions: number[] = [];
     const uvs: number[] = [];
     const indices: number[] = [];
@@ -213,10 +235,10 @@ export class FlagRenderer extends System {
 
     const geometry = mesh.geometry as THREE.BufferGeometry;
     geometry.setAttribute(
-      'position',
+      "position",
       new THREE.Float32BufferAttribute(positions, 3)
     );
-    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
     geometry.setIndex(indices);
     geometry.computeVertexNormals(); // Recalculate normals for lighting
     geometry.attributes.position.needsUpdate = true;
@@ -224,7 +246,9 @@ export class FlagRenderer extends System {
     if (geometry.index) {
       geometry.index.needsUpdate = true;
     }
-    console.log(`[FlagRenderer] Flag geometry updated with ${positions.length / 3} vertices and ${indices.length / 3} triangles`);
+    console.log(
+      `[FlagRenderer] Flag geometry updated with ${positions.length / 3} vertices and ${indices.length / 3} triangles`
+    );
   }
 
   // Method to get a flag mesh for a specific entity

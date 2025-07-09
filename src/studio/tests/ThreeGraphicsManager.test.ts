@@ -1,16 +1,16 @@
-import * as THREE from 'three';
-import { ThreeGraphicsManager } from '../graphics/ThreeGraphicsManager';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import * as THREE from "three";
+import { ThreeGraphicsManager } from "../graphics/ThreeGraphicsManager";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 // Mock the DOM elements and methods that ThreeGraphicsManager uses
-jest.mock('three', () => {
-  const originalModule = jest.requireActual('three');
+jest.mock("three", () => {
+  const originalModule = jest.requireActual("three");
   return {
     ...originalModule,
     WebGLRenderer: jest.fn().mockImplementation(() => ({
       setSize: jest.fn(),
       render: jest.fn(),
-      domElement: document.createElement('canvas')
+      domElement: document.createElement("canvas")
     })),
     Scene: jest.fn().mockImplementation(() => ({
       add: jest.fn(),
@@ -45,7 +45,7 @@ jest.mock('three', () => {
 });
 
 // Mock OrbitControls
-jest.mock('three/examples/jsm/controls/OrbitControls', () => ({
+jest.mock("three/examples/jsm/controls/OrbitControls", () => ({
   OrbitControls: jest.fn().mockImplementation(() => ({
     enableDamping: false,
     dampingFactor: 0,
@@ -60,30 +60,30 @@ jest.mock('three/examples/jsm/controls/OrbitControls', () => ({
 
 // Mock document methods
 document.createElement = jest.fn().mockImplementation((tag) => {
-  if (tag === 'div' || tag === 'button') {
+  if (tag === "div" || tag === "button") {
     return {
       style: {
-        position: '',
-        top: '',
-        left: '',
-        right: '',
-        backgroundColor: '',
-        color: '',
-        padding: '',
-        borderRadius: '',
-        fontFamily: '',
-        fontSize: '',
-        zIndex: '',
-        pointerEvents: '',
-        display: ''
+        position: "",
+        top: "",
+        left: "",
+        right: "",
+        backgroundColor: "",
+        color: "",
+        padding: "",
+        borderRadius: "",
+        fontFamily: "",
+        fontSize: "",
+        zIndex: "",
+        pointerEvents: "",
+        display: ""
       },
-      innerHTML: '',
-      textContent: '',
+      innerHTML: "",
+      textContent: "",
       addEventListener: jest.fn(),
       appendChild: jest.fn()
     };
   }
-  if (tag === 'canvas') {
+  if (tag === "canvas") {
     return {
       style: {},
       getContext: jest.fn(() => ({
@@ -95,7 +95,7 @@ document.createElement = jest.fn().mockImplementation((tag) => {
 });
 document.body.appendChild = jest.fn();
 
-describe('ThreeGraphicsManager', () => {
+describe("ThreeGraphicsManager", () => {
   let graphicsManager: ThreeGraphicsManager;
 
   beforeEach(() => {
@@ -103,7 +103,7 @@ describe('ThreeGraphicsManager', () => {
     graphicsManager = new ThreeGraphicsManager();
   });
 
-  it('should initialize with a scene, camera, renderer, and controls', () => {
+  it("should initialize with a scene, camera, renderer, and controls", () => {
     expect(graphicsManager.scene).toBeDefined();
     expect(graphicsManager.camera).toBeDefined();
     expect(graphicsManager.renderer).toBeDefined();
@@ -111,7 +111,7 @@ describe('ThreeGraphicsManager', () => {
     expect(OrbitControls).toHaveBeenCalled();
   });
 
-  it('should configure OrbitControls with appropriate settings', () => {
+  it("should configure OrbitControls with appropriate settings", () => {
     expect(graphicsManager.controls.enableDamping).toBe(true);
     expect(graphicsManager.controls.dampingFactor).toBe(0.25);
     expect(graphicsManager.controls.screenSpacePanning).toBe(false);
@@ -120,14 +120,14 @@ describe('ThreeGraphicsManager', () => {
     expect(graphicsManager.controls.maxPolarAngle).toBe(Math.PI / 2);
   });
 
-  it('should add lights to the scene', () => {
+  it("should add lights to the scene", () => {
     expect(THREE.PointLight).toHaveBeenCalled();
     expect(THREE.AmbientLight).toHaveBeenCalled();
     expect(THREE.DirectionalLight).toHaveBeenCalled();
     expect(graphicsManager.scene.add).toHaveBeenCalled();
   });
 
-  it('should add helper objects to the scene', () => {
+  it("should add helper objects to the scene", () => {
     expect(THREE.GridHelper).toHaveBeenCalled();
     expect(THREE.AxesHelper).toHaveBeenCalled();
     expect(THREE.SphereGeometry).toHaveBeenCalled();
@@ -136,7 +136,7 @@ describe('ThreeGraphicsManager', () => {
     expect(graphicsManager.scene.add).toHaveBeenCalled();
   });
 
-  it('should update controls when rendering only if controls are enabled', () => {
+  it("should update controls when rendering only if controls are enabled", () => {
     // By default, controls are disabled
     graphicsManager.render();
     expect(graphicsManager.controls.update).not.toHaveBeenCalled();
@@ -149,9 +149,9 @@ describe('ThreeGraphicsManager', () => {
     expect(graphicsManager.renderer.render).toHaveBeenCalledTimes(2);
   });
 
-  it('should handle window resize events', () => {
+  it("should handle window resize events", () => {
     // Simulate a resize event
-    const resizeEvent = new Event('resize');
+    const resizeEvent = new Event("resize");
     window.dispatchEvent(resizeEvent);
 
     // Check if camera and renderer were updated
@@ -159,14 +159,14 @@ describe('ThreeGraphicsManager', () => {
     expect(graphicsManager.renderer.setSize).toHaveBeenCalled();
   });
 
-  it('should provide getter methods for scene, camera, renderer, and controls', () => {
+  it("should provide getter methods for scene, camera, renderer, and controls", () => {
     expect(graphicsManager.getScene()).toBe(graphicsManager.scene);
     expect(graphicsManager.getCamera()).toBe(graphicsManager.camera);
     expect(graphicsManager.getRenderer()).toBe(graphicsManager.renderer);
     expect(graphicsManager.getControls()).toBe(graphicsManager.controls);
   });
 
-  it('should not display camera control instructions directly', () => {
+  it("should not display camera control instructions directly", () => {
     // Camera control instructions are now managed through the UI panel
     // so we don't expect DOM manipulation calls for this purpose
     expect(graphicsManager.showControlInstructions).toBeDefined();

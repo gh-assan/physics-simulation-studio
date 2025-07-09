@@ -51,7 +51,7 @@ export class SystemManager {
    * @param deltaTime The time elapsed since the last update
    */
   public updateAll(world: World, deltaTime: number): void {
-    this.systems.forEach(system => {
+    this.systems.forEach((system) => {
       system.update(world, deltaTime);
     });
   }
@@ -99,7 +99,7 @@ export class SystemManager {
   public clear(world?: World): void {
     if (world) {
       // Call onRemove for each system
-      this.systems.forEach(system => {
+      this.systems.forEach((system) => {
         system.onRemove(world);
       });
     }

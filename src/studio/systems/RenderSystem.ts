@@ -1,16 +1,16 @@
-import * as THREE from 'three';
-import { System } from '../../core/ecs/System';
-import { World } from '../../core/ecs/World';
-import { PositionComponent } from '../../core/components/PositionComponent';
-import { RotationComponent } from '../../core/components/RotationComponent';
-import { RenderableComponent } from '../../core/components/RenderableComponent';
-import { Studio } from '../Studio'; // Import Studio
-import { WaterRenderer } from '../../plugins/water-simulation/WaterRenderer'; // Import WaterRenderer
-import { SelectableComponent } from '../../core/components/SelectableComponent'; // Import SelectableComponent
-import { createGeometry, disposeThreeJsObject } from '../utils/ThreeJsUtils';
-import { ThreeGraphicsManager } from '../graphics/ThreeGraphicsManager';
-import { FlagRenderer } from './FlagRenderer'; // Import FlagRenderer
-import { FlagComponent } from '../../plugins/flag-simulation/FlagComponent'; // Import FlagComponent
+import * as THREE from "three";
+import { System } from "../../core/ecs/System";
+import { World } from "../../core/ecs/World";
+import { PositionComponent } from "../../core/components/PositionComponent";
+import { RotationComponent } from "../../core/components/RotationComponent";
+import { RenderableComponent } from "../../core/components/RenderableComponent";
+import { Studio } from "../Studio"; // Import Studio
+import { WaterRenderer } from "../../plugins/water-simulation/WaterRenderer"; // Import WaterRenderer
+import { SelectableComponent } from "../../core/components/SelectableComponent"; // Import SelectableComponent
+import { createGeometry, disposeThreeJsObject } from "../utils/ThreeJsUtils";
+import { ThreeGraphicsManager } from "../graphics/ThreeGraphicsManager";
+import { FlagRenderer } from "./FlagRenderer"; // Import FlagRenderer
+import { FlagComponent } from "../../plugins/flag-simulation/FlagComponent"; // Import FlagComponent
 
 export class RenderSystem extends System {
   private graphicsManager: ThreeGraphicsManager;
@@ -31,10 +31,14 @@ export class RenderSystem extends System {
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
 
-    window.addEventListener('mousedown', this.onMouseDown.bind(this), false);
+    window.addEventListener("mousedown", this.onMouseDown.bind(this), false);
 
     // Listen for parameter changes to update rendering without starting simulation
-    window.addEventListener('parameter-changed', this.onParameterChanged.bind(this), false);
+    window.addEventListener(
+      "parameter-changed",
+      this.onParameterChanged.bind(this),
+      false
+    );
   }
 
   private onParameterChanged(event: CustomEvent): void {
@@ -141,7 +145,10 @@ export class RenderSystem extends System {
       // Skip flag entities - they will be handled by the FlagRenderer
       // Check if FlagComponent is defined before trying to use it
       try {
-        if (FlagComponent && world.componentManager.hasComponent(entityId, FlagComponent.type)) {
+        if (
+          FlagComponent &&
+          world.componentManager.hasComponent(entityId, FlagComponent.type)
+        ) {
           continue;
         }
       } catch (e) {
@@ -215,7 +222,7 @@ export class RenderSystem extends System {
 
     this.graphicsManager.render();
     console.log(
-      'RenderSystem: Scene children after rendering:',
+      "RenderSystem: Scene children after rendering:",
       this.graphicsManager.getScene().children
     );
   }
@@ -265,7 +272,7 @@ export class RenderSystem extends System {
     this.graphicsManager.getScene().children = this.graphicsManager
       .getScene()
       .children.filter(
-        (child: THREE.Object3D) => !child.name.startsWith('ripple_')
+        (child: THREE.Object3D) => !child.name.startsWith("ripple_")
       );
   }
 }
