@@ -1,12 +1,6 @@
 import {IComponent} from '@core/ecs/IComponent';
-
-export interface Ripple {
-  x: number;
-  z: number;
-  radius: number;
-  amplitude: number;
-  decay: number;
-}
+import {Ripple} from './types';
+import {Vector3} from './utils/Vector3';
 
 export class WaterBodyComponent implements IComponent<WaterBodyComponent> {
   public static readonly type = 'WaterBodyComponent';
@@ -33,10 +27,14 @@ export class WaterDropletComponent
   constructor(
     public size: number = 0.5,
     public fallHeight: number = 10,
-    public velocity: number = 0,
+    public velocity: Vector3 = new Vector3(0, 0, 0),
   ) {}
 
   clone(): WaterDropletComponent {
-    return new WaterDropletComponent(this.size, this.fallHeight, this.velocity);
+    return new WaterDropletComponent(
+      this.size,
+      this.fallHeight,
+      this.velocity.clone(),
+    );
   }
 }
