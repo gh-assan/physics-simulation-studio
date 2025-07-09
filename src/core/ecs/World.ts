@@ -1,18 +1,18 @@
-import { EntityManager } from './EntityManager';
-import { ComponentManager } from './ComponentManager';
-import { SystemManager } from './SystemManager';
+import {EntityManager} from './EntityManager';
+import {ComponentManager} from './ComponentManager';
+import {SystemManager} from './SystemManager';
 
 export class World {
-    public entityManager = new EntityManager();
-    public componentManager = new ComponentManager();
-    public systemManager = new SystemManager();
+  public entityManager = new EntityManager();
+  public componentManager = new ComponentManager();
+  public systemManager = new SystemManager();
 
-    public update(deltaTime: number): void {
-        this.systemManager.updateAll(this, deltaTime);
-    }
+  public update(deltaTime: number): void {
+    this.systemManager.updateAll(this, deltaTime);
+  }
 
-    public clear(): void {
-        this.entityManager.clear();
-        this.componentManager.clear();
-    }
+  public clear(): void {
+    this.entityManager.clear();
+    this.componentManager.clear();
+  }
 }

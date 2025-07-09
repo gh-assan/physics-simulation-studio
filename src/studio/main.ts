@@ -1,18 +1,18 @@
-import { Studio } from "./Studio";
-import { World } from "../core/ecs/World";
-import { PluginManager } from "../core/plugin/PluginManager";
-import { RenderSystem } from "./systems/RenderSystem";
-import { PropertyInspectorSystem } from "./systems/PropertyInspectorSystem";
-import { UIManager } from "./uiManager";
-import { SceneSerializer } from "./systems/SceneSerializer";
-import { FlagSimulationPlugin } from "@plugins/flag-simulation";
-import { WaterSimulationPlugin } from "@plugins/water-simulation";
-import { FlagComponent, FlagSystem } from "../plugins/flag-simulation";
-import { PositionComponent } from "../core/components/PositionComponent";
-import { RenderableComponent } from "../core/components/RenderableComponent";
-import { SelectableComponent } from "../core/components/SelectableComponent";
-import { RotationComponent } from "../core/components/RotationComponent";
-import { Pane } from 'tweakpane';
+import {Studio} from './Studio';
+import {World} from '../core/ecs/World';
+import {PluginManager} from '../core/plugin/PluginManager';
+import {RenderSystem} from './systems/RenderSystem';
+import {PropertyInspectorSystem} from './systems/PropertyInspectorSystem';
+import {UIManager} from './uiManager';
+import {SceneSerializer} from './systems/SceneSerializer';
+import {FlagSimulationPlugin} from '@plugins/flag-simulation';
+import {WaterSimulationPlugin} from '@plugins/water-simulation';
+import {FlagComponent, FlagSystem} from '../plugins/flag-simulation';
+import {PositionComponent} from '../core/components/PositionComponent';
+import {RenderableComponent} from '../core/components/RenderableComponent';
+import {SelectableComponent} from '../core/components/SelectableComponent';
+import {RotationComponent} from '../core/components/RotationComponent';
+import {Pane} from 'tweakpane';
 
 const world = new World();
 const pluginManager = new PluginManager(world);
@@ -26,10 +26,22 @@ const sceneSerializer = new SceneSerializer();
 const studio = new Studio(world, pluginManager);
 
 // Register core components
-world.componentManager.registerComponent(PositionComponent.name, PositionComponent);
-world.componentManager.registerComponent(RenderableComponent.name, RenderableComponent);
-world.componentManager.registerComponent(SelectableComponent.name, SelectableComponent);
-world.componentManager.registerComponent(RotationComponent.name, RotationComponent);
+world.componentManager.registerComponent(
+  PositionComponent.name,
+  PositionComponent,
+);
+world.componentManager.registerComponent(
+  RenderableComponent.name,
+  RenderableComponent,
+);
+world.componentManager.registerComponent(
+  SelectableComponent.name,
+  SelectableComponent,
+);
+world.componentManager.registerComponent(
+  RotationComponent.name,
+  RotationComponent,
+);
 
 // Register systems
 const renderSystem = new RenderSystem(studio);
@@ -50,22 +62,36 @@ pluginManager.registerPlugin(new WaterSimulationPlugin());
 (window as any).sceneSerializer = sceneSerializer;
 (window as any).studio = studio;
 
-const globalControlsFolder = (pane as any).addFolder({ title: 'Global Controls' });
-globalControlsFolder.addButton({ title: 'Play' }).on('click', () => studio.play());
-globalControlsFolder.addButton({ title: 'Pause' }).on('click', () => studio.pause());
-globalControlsFolder.addButton({ title: 'Reset' }).on('click', () => studio.reset());
+const globalControlsFolder = (pane as any).addFolder({
+  title: 'Global Controls',
+});
+globalControlsFolder
+  .addButton({title: 'Play'})
+  .on('click', () => studio.play());
+globalControlsFolder
+  .addButton({title: 'Pause'})
+  .on('click', () => studio.pause());
+globalControlsFolder
+  .addButton({title: 'Reset'})
+  .on('click', () => studio.reset());
 
-const simulationSelectionFolder = (pane as any).addFolder({ title: 'Simulations' });
+const simulationSelectionFolder = (pane as any).addFolder({
+  title: 'Simulations',
+});
 const simulationParams = {
-    selectedSimulation: 'flag-simulation', // Default selected simulation
+  selectedSimulation: 'flag-simulation', // Default selected simulation
 };
 
-simulationSelectionFolder.addBinding(simulationParams, 'selectedSimulation', {
+simulationSelectionFolder
+  .addBinding(simulationParams, 'selectedSimulation', {
     label: '',
-    options: studio.getAvailableSimulationNames().map(name => ({ text: name, value: name })),
-}).on('change', (ev: { value: string }) => {
-    studio.loadSimulation(ev.value);
-});
+    options: studio
+      .getAvailableSimulationNames()
+      .map(name => ({text: name, value: name})),
+  })
+  .on('change', (ev: {value: string}) => {
+    void studio.loadSimulation(ev.value);
+  });
 
 // Initial load of the default simulation
 await studio.loadSimulation(simulationParams.selectedSimulation);
@@ -73,16 +99,15 @@ await studio.loadSimulation(simulationParams.selectedSimulation);
 let lastTime = 0;
 // Main application loop
 function animate(currentTime: number) {
-    requestAnimationFrame(animate);
+  requestAnimationFrame(animate);
 
-    const deltaTime = (currentTime - lastTime) / 1000; // Convert to seconds
-    lastTime = currentTime;
+  const deltaTime = (currentTime - lastTime) / 1000; // Convert to seconds
+  lastTime = currentTime;
 
-    // Update the studio (which updates the world if playing)
-    studio.update(deltaTime);
+  // Update the studio (which updates the world if playing)
+  studio.update(deltaTime);
 }
 
 animate(0);
 
-console.log("Physics Simulation Studio Initialized");
-
+console.log('Physics Simulation Studio Initialized');

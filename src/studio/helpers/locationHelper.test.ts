@@ -1,4 +1,4 @@
-import { getLocation } from './locationHelper';
+import {getLocation} from './locationHelper';
 
 describe('getLocation', () => {
   it('should return window.location', () => {

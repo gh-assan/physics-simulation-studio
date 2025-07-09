@@ -8,7 +8,13 @@
     "build": "tsc",
     "start": "http-server .",
     "dev": "vite",
-    "lint:css": "stylelint \"src/studio/styles/studio.css\""
+    "lint:css": "stylelint \"src/studio/styles/studio.css\"",
+    "lint": "gts lint && npm run lint:css",
+    "clean": "gts clean",
+    "format": "gts fix",
+    "prepare": "npm run build",
+    "pretest": "npm run build",
+    "posttest": "npm run lint"
   },
   "repository": {
     "type": "git",
@@ -23,14 +29,18 @@
   },
   "homepage": "https://github.com/gh-assan/physics-simulation-studio#readme",
   "devDependencies": {
+    "@tweakpane/core": "^2.0.5",
     "@types/jest": "^30.0.0",
+    "@types/node": "^22.7.5",
     "@types/three": "^0.178.0",
+    "gts": "^6.0.2",
     "http-server": "^14.1.1",
     "jest": "^30.0.4",
     "jest-environment-jsdom": "^30.0.4",
     "stylelint": "^16.21.1",
     "stylelint-selector-bem-pattern": "^4.0.1",
     "ts-jest": "^29.4.0",
+    "typescript": "^5.6.3",
     "vite": "^7.0.3"
   },
   "dependencies": {
