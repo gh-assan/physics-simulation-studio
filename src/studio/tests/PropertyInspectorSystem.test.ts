@@ -9,9 +9,7 @@ import { Pane } from 'tweakpane';
 
 // Mock the Tweakpane library (same as in UIManager.test.ts)
 jest.mock('tweakpane', () => {
-    const mockChildren: any[] = [];
     function makeFolder(options: any) {
-        // Each folder gets its own addBinding mock that always returns { on: jest.fn() }
         return {
             addBinding: jest.fn(() => ({ on: jest.fn() })),
             dispose: jest.fn(),
@@ -19,26 +17,10 @@ jest.mock('tweakpane', () => {
         };
     }
     const mockPane = {
-        addFolder: jest.fn((options: any) => {
-            const folder = makeFolder(options);
-            mockChildren.push(folder);
-            return folder;
-        }),
+        addFolder: jest.fn((options: any) => makeFolder(options)),
         dispose: jest.fn(),
-        children: mockChildren,
-        remove: jest.fn((child: any) => {
-            const index = mockChildren.indexOf(child);
-            if (index > -1) {
-                mockChildren.splice(index, 1);
-            }
-        }),
-        // Ensure addBinding always returns { on: jest.fn() } for the pane itself
         addBinding: jest.fn(() => ({ on: jest.fn() })),
     };
-    // Defensive: ensure all folders in children always have addBinding returning { on: jest.fn() }
-    mockPane.children.forEach(folder => {
-        folder.addBinding = jest.fn(() => ({ on: jest.fn() }));
-    });
     return {
         Pane: jest.fn(() => mockPane),
     };
@@ -63,9 +45,8 @@ describe('PropertyInspectorSystem', () => {
         });
 
         world = new World();
-        uiManager = new UIManager();
-        // Get the mock Pane instance created by the UIManager constructor
-        mockPaneInstance = (Pane as jest.Mock).mock.results[0]?.value;
+        mockPaneInstance = (Pane as jest.Mock).mock.results[0]?.value || new (Pane as any)();
+        uiManager = new UIManager(mockPaneInstance);
         propertyInspectorSystem = new PropertyInspectorSystem(uiManager);
 
         // Register components used in the test

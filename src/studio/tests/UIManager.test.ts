@@ -5,27 +5,18 @@ import { Pane, FolderApi } from 'tweakpane';
 
 // Mock the Tweakpane library
 jest.mock('tweakpane', () => {
-    const mockChildren: any[] = [];
     const mockPane = {
         addFolder: jest.fn((options: any) => {
-            const folder = {
+            return {
                 addBinding: jest.fn(() => ({
                     on: jest.fn(),
                 })),
                 dispose: jest.fn(),
                 options: options,
             };
-            mockChildren.push(folder);
-            return folder;
         }),
         dispose: jest.fn(),
-        children: mockChildren,
-        remove: jest.fn((child: any) => {
-            const index = mockChildren.indexOf(child);
-            if (index > -1) {
-                mockChildren.splice(index, 1);
-            }
-        }),
+        addBinding: jest.fn(() => ({ on: jest.fn() })),
     };
     return {
         Pane: jest.fn(() => mockPane),
@@ -51,9 +42,8 @@ describe('UIManager', () => {
         // Clear all mocks before each test
         jest.clearAllMocks();
 
-        uiManager = new UIManager();
-        // Get the mock Pane instance created by the UIManager constructor
-        mockPaneInstance = (Pane as jest.Mock).mock.results[0]?.value;
+        mockPaneInstance = (Pane as jest.Mock).mock.results[0]?.value || new (Pane as any)();
+        uiManager = new UIManager(mockPaneInstance);
     });
 
     afterEach(() => {
@@ -94,10 +84,19 @@ describe('UIManager', () => {
         uiManager.registerComponentControls('ComponentA', mockObj1);
         uiManager.registerComponentControls('ComponentB', mockObj2);
 
-        // Expect pane.dispose to have been called
-        const disposeSpy = jest.spyOn(mockPaneInstance, 'dispose');
+        // Get references to the mocked folders
+        const mockFolderA = mockPaneInstance.addFolder.mock.results[0]?.value;
+        const mockFolderB = mockPaneInstance.addFolder.mock.results[1]?.value;
+
+        // Spy on the dispose method of the individual folders
+        const disposeSpyA = jest.spyOn(mockFolderA, 'dispose');
+        const disposeSpyB = jest.spyOn(mockFolderB, 'dispose');
+
         uiManager.clearControls();
-        expect(disposeSpy).toHaveBeenCalled();
-        expect(Pane).toHaveBeenCalledTimes(2); // Pane should be re-initialized
+
+        // Assert that the dispose method of each folder was called
+        expect(disposeSpyA).toHaveBeenCalledTimes(1);
+        expect(disposeSpyB).toHaveBeenCalledTimes(1);
+        expect(uiManager['folders'].size).toBe(0); // Ensure the folders map is cleared
     });
 });

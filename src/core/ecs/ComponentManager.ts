@@ -30,7 +30,7 @@ export class ComponentManager {
             return [];
         }
 
-        const componentNames = componentConstructors.map(c => c.name);
+        const componentNames = componentConstructors.map(c => (c as any).type || c.name);
 
         const firstStore = this.componentStores.get(componentNames[0]);
         if (!firstStore) {

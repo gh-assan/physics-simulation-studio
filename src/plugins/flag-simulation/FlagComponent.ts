@@ -40,6 +40,10 @@ export class FlagComponent implements IComponent {
     points: PointMass[];
     springs: Spring[];
 
+    // Add wind properties for UI controls
+    windStrength: number;
+    windDirection: { x: number; y: number; z: number };
+
     constructor(
         width: number = 10,
         height: number = 6,
@@ -48,7 +52,9 @@ export class FlagComponent implements IComponent {
         mass: number = 0.1,
         stiffness: number = 0.5,
         damping: number = 0.05,
-        textureUrl: string = ''
+        textureUrl: string = '',
+        windStrength: number = 0,
+        windDirection: { x: number; y: number; z: number } = { x: 1, y: 0, z: 0 }
     ) {
         this.width = width;
         this.height = height;
@@ -61,6 +67,31 @@ export class FlagComponent implements IComponent {
         this.initialPoints = this.generateInitialPoints();
         this.points = [];
         this.springs = [];
+        this.windStrength = windStrength;
+        // Defensive: always ensure windDirection is an object with x/y/z
+        if (!windDirection || typeof windDirection !== 'object') {
+            this.windDirection = { x: 1, y: 0, z: 0 };
+        } else {
+            this.windDirection = {
+                x: typeof windDirection.x === 'number' ? windDirection.x : 1,
+                y: typeof windDirection.y === 'number' ? windDirection.y : 0,
+                z: typeof windDirection.z === 'number' ? windDirection.z : 0
+            };
+        }
+    }
+
+    // Add setters to keep wind vector in sync
+    setWind(strength: number, direction: { x: number; y: number; z: number }) {
+        this.windStrength = strength;
+        this.windDirection = { ...direction };
+    }
+
+    get wind() {
+        return {
+            x: this.windStrength * this.windDirection.x,
+            y: this.windStrength * this.windDirection.y,
+            z: this.windStrength * this.windDirection.z
+        };
     }
 
     private generateInitialPoints(): { x: number, y: number, z: number }[] {

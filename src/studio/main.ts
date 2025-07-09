@@ -5,33 +5,43 @@ import { RenderSystem } from "./systems/RenderSystem";
 import { PropertyInspectorSystem } from "./systems/PropertyInspectorSystem";
 import { UIManager } from "./uiManager";
 import { SceneSerializer } from "./systems/SceneSerializer";
-import { FlagSimulationPlugin } from "../plugins/flag-simulation";
+import { FlagSimulationPlugin } from "@plugins/flag-simulation";
+import { WaterSimulationPlugin } from "@plugins/water-simulation";
 import { FlagComponent, FlagSystem } from "../plugins/flag-simulation";
 import { PositionComponent } from "../core/components/PositionComponent";
 import { RenderableComponent } from "../core/components/RenderableComponent";
 import { SelectableComponent } from "../core/components/SelectableComponent";
+import { RotationComponent } from "../core/components/RotationComponent";
 import { Pane } from 'tweakpane';
 
 const world = new World();
 const pluginManager = new PluginManager(world);
-const uiManager = new UIManager();
+
+// Setup Tweakpane for global controls
+const pane = new Pane();
+const uiManager = new UIManager(pane);
 const sceneSerializer = new SceneSerializer();
+
+// Initialize Studio first
+const studio = new Studio(world, pluginManager);
 
 // Register core components
 world.componentManager.registerComponent(PositionComponent.name, PositionComponent);
 world.componentManager.registerComponent(RenderableComponent.name, RenderableComponent);
 world.componentManager.registerComponent(SelectableComponent.name, SelectableComponent);
+world.componentManager.registerComponent(RotationComponent.name, RotationComponent);
 
 // Register systems
-const renderSystem = new RenderSystem();
+const renderSystem = new RenderSystem(studio);
 world.systemManager.registerSystem(renderSystem);
 world.systemManager.registerSystem(new PropertyInspectorSystem(uiManager));
 
+// Set renderSystem on studio
+studio.setRenderSystem(renderSystem);
+
 // Register plugins
 pluginManager.registerPlugin(new FlagSimulationPlugin());
-
-// Initialize Studio
-const studio = new Studio(world, pluginManager, renderSystem);
+pluginManager.registerPlugin(new WaterSimulationPlugin());
 
 // Expose for debugging/console interaction
 (window as any).world = world;
@@ -40,15 +50,12 @@ const studio = new Studio(world, pluginManager, renderSystem);
 (window as any).sceneSerializer = sceneSerializer;
 (window as any).studio = studio;
 
-// Setup Tweakpane for global controls
-const pane = new Pane();
-
-const globalControlsFolder = pane.addFolder({ title: 'Global Controls' });
+const globalControlsFolder = (pane as any).addFolder({ title: 'Global Controls' });
 globalControlsFolder.addButton({ title: 'Play' }).on('click', () => studio.play());
 globalControlsFolder.addButton({ title: 'Pause' }).on('click', () => studio.pause());
 globalControlsFolder.addButton({ title: 'Reset' }).on('click', () => studio.reset());
 
-const simulationSelectionFolder = pane.addFolder({ title: 'Simulations' });
+const simulationSelectionFolder = (pane as any).addFolder({ title: 'Simulations' });
 const simulationParams = {
     selectedSimulation: 'flag-simulation', // Default selected simulation
 };
@@ -56,22 +63,8 @@ const simulationParams = {
 simulationSelectionFolder.addBinding(simulationParams, 'selectedSimulation', {
     label: '',
     options: studio.getAvailableSimulationNames().map(name => ({ text: name, value: name })),
-}).on('change', (ev) => {
+}).on('change', (ev: { value: string }) => {
     studio.loadSimulation(ev.value);
-});
-
-// Add FlagSystem controls dynamically when FlagSimulation is active
-studio.world.systemManager.onSystemRegistered((system) => {
-    if (system instanceof FlagSystem) {
-        const flagSystem = system as FlagSystem;
-        const gravityFolder = pane.addFolder({ title: 'Gravity' });
-        gravityFolder.addBinding(flagSystem.gravity, 'y', { min: -20, max: 0, step: 0.1 });
-
-        const windFolder = pane.addFolder({ title: 'Wind' });
-        windFolder.addBinding(flagSystem.wind, 'x', { min: -10, max: 10, step: 0.1 });
-        windFolder.addBinding(flagSystem.wind, 'y', { min: -10, max: 10, step: 0.1 });
-        windFolder.addBinding(flagSystem.wind, 'z', { min: -10, max: 10, step: 0.1 });
-    }
 });
 
 // Initial load of the default simulation

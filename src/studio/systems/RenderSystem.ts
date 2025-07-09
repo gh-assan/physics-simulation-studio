@@ -5,15 +5,22 @@ import { PositionComponent } from '../../core/components/PositionComponent';
 import { RotationComponent } from '../../core/components/RotationComponent';
 import { RenderableComponent } from '../../core/components/RenderableComponent';
 import { FlagComponent } from '../../plugins/flag-simulation/FlagComponent';
+import { Studio } from '../Studio'; // Import Studio
+import { WaterRenderer } from '../../plugins/water-simulation/WaterRenderer'; // Import WaterRenderer
+import { SelectableComponent } from '../../core/components/SelectableComponent'; // Import SelectableComponent
 
 export class RenderSystem extends System {
     private scene: THREE.Scene;
     private camera: THREE.PerspectiveCamera;
     private renderer: THREE.WebGLRenderer;
     private meshes: Map<number, THREE.Mesh> = new Map();
+    private studio: Studio; // Add studio reference
+    private raycaster: THREE.Raycaster;
+    private mouse: THREE.Vector2;
 
-    constructor() {
+    constructor(studio: Studio) { // Add studio to constructor
         super();
+        this.studio = studio; // Store studio reference
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.renderer = new THREE.WebGLRenderer();
@@ -37,6 +44,59 @@ export class RenderSystem extends System {
             this.camera.updateProjectionMatrix();
             this.renderer.setSize(window.innerWidth, window.innerHeight);
         });
+
+        // Setup raycaster for object selection
+        this.raycaster = new THREE.Raycaster();
+        this.mouse = new THREE.Vector2();
+
+        window.addEventListener('mousedown', this.onMouseDown.bind(this), false);
+    }
+
+    private onMouseDown(event: MouseEvent): void {
+        // Calculate mouse position in normalized device coordinates (-1 to +1) for both components
+        this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        // Update the raycaster with the camera and mouse position
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+
+        // Calculate objects intersecting the ray
+        const intersects = this.raycaster.intersectObjects(this.scene.children);
+
+        // Get the current world from the studio
+        const world = this.studio.world;
+
+        // Deselect all currently selected entities
+        const currentlySelected = world.componentManager.getEntitiesWithComponents([SelectableComponent]).filter(entityId => {
+            const selectable = world.componentManager.getComponent(entityId, SelectableComponent.name) as SelectableComponent;
+            return selectable.isSelected;
+        });
+
+        currentlySelected.forEach(entityId => {
+            const selectable = world.componentManager.getComponent(entityId, SelectableComponent.name) as SelectableComponent;
+            selectable.isSelected = false;
+        });
+
+        if (intersects.length > 0) {
+            // Find the first intersected object that corresponds to an entity
+            const intersectedMesh = intersects[0].object as THREE.Mesh;
+            let selectedEntityId: number | null = null;
+
+            // Find the entity ID associated with the intersected mesh
+            for (const [entityId, mesh] of this.meshes.entries()) {
+                if (mesh === intersectedMesh) {
+                    selectedEntityId = entityId;
+                    break;
+                }
+            }
+
+            if (selectedEntityId !== null) {
+                const selectable = world.componentManager.getComponent(selectedEntityId, SelectableComponent.name) as SelectableComponent;
+                if (selectable) {
+                    selectable.isSelected = true;
+                }
+            }
+        }
     }
 
     public update(world: World, deltaTime: number): void {
@@ -73,12 +133,22 @@ export class RenderSystem extends System {
                 mesh = new THREE.Mesh(geometry, material);
                 this.scene.add(mesh);
                 this.meshes.set(entityId, mesh);
-                // console.log(`Created new mesh for entity ${entityId}`);
             }
 
             // Update mesh position and rotation
             mesh.position.set(position.x, position.y, position.z);
             mesh.rotation.setFromQuaternion(new THREE.Quaternion(rotation.x, rotation.y, rotation.z, rotation.w));
+
+            // Handle selection highlight
+            const selectable = world.componentManager.getComponent(entityId, SelectableComponent.name) as SelectableComponent;
+            if (selectable) {
+                const material = mesh.material as THREE.MeshBasicMaterial;
+                if (selectable.isSelected) {
+                    material.color.set(0xffff00); // Highlight color (yellow)
+                } else {
+                    material.color.set(renderable.color); // Original color
+                }
+            }
         }
 
         // Handle FlagComponent rendering
@@ -106,7 +176,7 @@ export class RenderSystem extends System {
                 flagMesh.userData = { isFlag: true }; // Initialize userData
                 this.scene.add(flagMesh);
                 this.meshes.set(entityId, flagMesh);
-                // console.log(`Created new flag mesh for entity ${entityId}`);
+                console.log(`RenderSystem: Created and added flag mesh for entity ${entityId}. Mesh:`, flagMesh);
             }
 
             // Update flag geometry
@@ -152,7 +222,14 @@ export class RenderSystem extends System {
             }
         }
 
+        // Call plugin-specific renderer if available
+        const activeRenderer = this.studio.getRenderer();
+        if (activeRenderer instanceof WaterRenderer) {
+            activeRenderer.render(world, this.scene, this.camera);
+        }
+
         this.renderer.render(this.scene, this.camera);
+        console.log("RenderSystem: Scene children after rendering:", this.scene.children);
     }
 
     public clear(): void {
@@ -166,6 +243,22 @@ export class RenderSystem extends System {
             }
         });
         this.meshes.clear();
+
+        // Dispose of water mesh if it exists
+        const activeRenderer = this.studio.getRenderer();
+        if (activeRenderer instanceof WaterRenderer && activeRenderer.waterMesh) {
+            this.scene.remove(activeRenderer.waterMesh);
+            activeRenderer.waterMesh.geometry.dispose();
+            if (activeRenderer.waterMesh.material instanceof THREE.Material) {
+                activeRenderer.waterMesh.material.dispose();
+            } else if (Array.isArray(activeRenderer.waterMesh.material)) {
+                activeRenderer.waterMesh.material.forEach(material => material.dispose());
+            }
+            activeRenderer.waterMesh = null; // Reset the reference
+        }
+
+        // Remove all ripple meshes from the scene
+        this.scene.children = this.scene.children.filter(child => !child.name.startsWith('ripple_'));
     }
 
     private createGeometry(geometryType: RenderableComponent['geometry']): THREE.BufferGeometry {

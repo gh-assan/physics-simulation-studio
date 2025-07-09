@@ -32,6 +32,7 @@ jest.mock('three', () => {
 describe('RenderSystem', () => {
     let world: World;
     let renderSystem: RenderSystem;
+    let mockStudio: any;
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -44,7 +45,11 @@ describe('RenderSystem', () => {
         world.componentManager.registerComponent(PositionComponent.name, PositionComponent);
         world.componentManager.registerComponent(RotationComponent.name, RotationComponent);
         world.componentManager.registerComponent(RenderableComponent.name, RenderableComponent);
-        renderSystem = new RenderSystem();
+        mockStudio = { 
+            world,
+            getRenderer: jest.fn(() => null) // Add getRenderer method returning null
+        };
+        renderSystem = new RenderSystem(mockStudio);
     });
 
     it('should initialize Three.js components', () => {
