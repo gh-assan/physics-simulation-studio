@@ -1,2 +1,4 @@
+tasks/*
+architecture/*
 build/
 dist/
