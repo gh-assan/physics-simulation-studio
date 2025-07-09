@@ -8,3 +8,16 @@ export interface ComponentControlProperty {
   max?: number;
   step?: number;
 }
+
+export interface ComponentPropertyMap {
+  [componentName: string]: ComponentControlProperty[];
+}
+
+export interface StudioEntity {
+  entityId: number;
+  components: { [key: string]: any };
+}
+
+export interface SerializedScene {
+  entities: StudioEntity[];
+}

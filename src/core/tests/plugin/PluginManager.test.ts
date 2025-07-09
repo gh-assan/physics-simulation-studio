@@ -1,5 +1,5 @@
-import { PluginManager } from "../PluginManager";
-import { ISimulationPlugin } from "../ISimulationPlugin";
+import { PluginManager } from "../../plugin/PluginManager";
+import { ISimulationPlugin } from "../../plugin/ISimulationPlugin";
 import { World } from "../../ecs";
 
 // Mocks
