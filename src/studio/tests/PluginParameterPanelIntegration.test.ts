@@ -5,6 +5,17 @@ import { UIManager } from "../uiManager";
 import { PropertyInspectorSystem } from "../systems/PropertyInspectorSystem";
 import { FlagSimulationPlugin } from "../../plugins/flag-simulation";
 import { WaterSimulationPlugin } from "../../plugins/water-simulation";
+
+jest.mock("../../plugins/water-simulation/WaterRenderer", () => {
+  return {
+    WaterRenderer: jest.fn().mockImplementation(() => {
+      return {
+        render: jest.fn(),
+        unregister: jest.fn()
+      };
+    })
+  };
+});
 import { SelectableComponent } from "../../core/components/SelectableComponent";
 import { FlagComponent } from "../../plugins/flag-simulation/FlagComponent";
 import { WaterDropletComponent } from "../../plugins/water-simulation/WaterComponents";
@@ -38,13 +49,27 @@ describe("Plugin Parameter Panel Integration", () => {
     pluginManager = new PluginManager(world);
     studio = new Studio(world, pluginManager);
     uiManager = new UIManager(null as any);
-    propertyInspectorSystem = new PropertyInspectorSystem(uiManager, world, studio, pluginManager);
+    propertyInspectorSystem = new PropertyInspectorSystem(
+      uiManager,
+      world,
+      studio,
+      pluginManager
+    );
 
     // Register components
-    world.componentManager.registerComponent(SelectableComponent.type, SelectableComponent);
+    world.componentManager.registerComponent(
+      SelectableComponent.type,
+      SelectableComponent
+    );
     world.componentManager.registerComponent(FlagComponent.type, FlagComponent);
-    world.componentManager.registerComponent(WaterDropletComponent.type, WaterDropletComponent);
-    world.componentManager.registerComponent(ParameterPanelComponent.type, MockParameterPanelComponent);
+    world.componentManager.registerComponent(
+      WaterDropletComponent.type,
+      WaterDropletComponent
+    );
+    world.componentManager.registerComponent(
+      ParameterPanelComponent.type,
+      MockParameterPanelComponent
+    );
 
     // Create and register plugins
     flagPlugin = new FlagSimulationPlugin();
@@ -62,7 +87,9 @@ describe("Plugin Parameter Panel Integration", () => {
 
   it("should get parameter panels from the flag simulation plugin", async () => {
     // Mock the studio.getActiveSimulationName method
-    jest.spyOn(studio, "getActiveSimulationName").mockReturnValue("flag-simulation");
+    jest
+      .spyOn(studio, "getActiveSimulationName")
+      .mockReturnValue("flag-simulation");
 
     // Mock the pluginManager.getPlugin method
     jest.spyOn(pluginManager, "getPlugin").mockReturnValue(flagPlugin);
@@ -71,7 +98,9 @@ describe("Plugin Parameter Panel Integration", () => {
     await pluginManager.activatePlugin("flag-simulation");
 
     // Get parameter panels from the active plugin
-    const panels = (propertyInspectorSystem as any).getParameterPanelsFromActivePlugin();
+    const panels = (
+      propertyInspectorSystem as any
+    ).getParameterPanelsFromActivePlugin();
 
     // There should be at least one panel
     expect(panels.length).toBeGreaterThan(0);
@@ -80,7 +109,9 @@ describe("Plugin Parameter Panel Integration", () => {
 
   it("should get parameter panels from the water simulation plugin", async () => {
     // Mock the studio.getActiveSimulationName method
-    jest.spyOn(studio, "getActiveSimulationName").mockReturnValue("water-simulation");
+    jest
+      .spyOn(studio, "getActiveSimulationName")
+      .mockReturnValue("water-simulation");
 
     // Mock the pluginManager.getPlugin method
     jest.spyOn(pluginManager, "getPlugin").mockReturnValue(waterPlugin);
@@ -89,11 +120,18 @@ describe("Plugin Parameter Panel Integration", () => {
     await pluginManager.activatePlugin("water-simulation");
 
     // Get parameter panels from the active plugin
-    const panels = (propertyInspectorSystem as any).getParameterPanelsFromActivePlugin();
+    const panels = (
+      propertyInspectorSystem as any
+    ).getParameterPanelsFromActivePlugin();
 
     // There should be at least one panel
     expect(panels.length).toBeGreaterThan(0);
-    expect(panels.some((panel: ParameterPanelComponent) => panel.componentType === WaterDropletComponent.type)).toBe(true);
+    expect(
+      panels.some(
+        (panel: ParameterPanelComponent) =>
+          panel.componentType === WaterDropletComponent.type
+      )
+    ).toBe(true);
   });
 
   it.skip("should update the UI when switching between simulations", async () => {
@@ -129,7 +167,9 @@ describe("Plugin Parameter Panel Integration", () => {
     );
 
     // Activate the flag simulation plugin
-    jest.spyOn(studio, "getActiveSimulationName").mockReturnValue("flag-simulation");
+    jest
+      .spyOn(studio, "getActiveSimulationName")
+      .mockReturnValue("flag-simulation");
     jest.spyOn(pluginManager, "getPlugin").mockReturnValue(flagPlugin);
     await pluginManager.activatePlugin("flag-simulation");
 
@@ -149,35 +189,43 @@ describe("Plugin Parameter Panel Integration", () => {
     updateInspectorSpy.mockClear();
 
     // Activate the water simulation plugin
-    jest.spyOn(studio, "getActiveSimulationName").mockReturnValue("water-simulation");
+    jest
+      .spyOn(studio, "getActiveSimulationName")
+      .mockReturnValue("water-simulation");
     jest.spyOn(pluginManager, "getPlugin").mockReturnValue(waterPlugin);
     // Deselect the flag entity before activating the water simulation
     // Ensure the flag entity is deselected before switching simulations
-    const flagSelectable = world.componentManager.getComponent(flagEntity, SelectableComponent.type) as SelectableComponent | undefined;
+    const flagSelectable = world.componentManager.getComponent(
+      flagEntity,
+      SelectableComponent.type
+    ) as SelectableComponent | undefined;
     if (flagSelectable) {
       console.log("Deselecting flag entity before switching simulations");
       flagSelectable.isSelected = false;
     } else {
-      console.warn("Flag entity does not have a SelectableComponent");
+      // Do nothing
     }
 
     // Add a log to confirm the state of the flag entity
-    console.log("Flag entity state after deselection:", world.componentManager.getAllComponentsForEntity(flagEntity));
 
     // Add a log to confirm the state of the water droplet entity
-    console.log("Water droplet entity state before activation:", world.componentManager.getAllComponentsForEntity(waterDropletEntity));
 
     // Activate the water simulation plugin
-    jest.spyOn(studio, "getActiveSimulationName").mockReturnValue("water-simulation");
+    jest
+      .spyOn(studio, "getActiveSimulationName")
+      .mockReturnValue("water-simulation");
     jest.spyOn(pluginManager, "getPlugin").mockReturnValue(waterPlugin);
     await pluginManager.activatePlugin("water-simulation");
 
     // Select the water droplet entity
-    const waterDropletSelectable = world.componentManager.getComponent(waterDropletEntity, SelectableComponent.type) as SelectableComponent | undefined;
+    const waterDropletSelectable = world.componentManager.getComponent(
+      waterDropletEntity,
+      SelectableComponent.type
+    ) as SelectableComponent | undefined;
     if (waterDropletSelectable) {
       waterDropletSelectable.isSelected = true;
     } else {
-      console.warn("Water droplet entity does not have a SelectableComponent");
+      // Do nothing
     }
 
     // Dispatch a simulation-loaded event
@@ -190,7 +238,6 @@ describe("Plugin Parameter Panel Integration", () => {
     propertyInspectorSystem.update(world, 0);
 
     // Add a log to confirm the state of the water droplet entity after activation
-    console.log("Water droplet entity state after activation:", world.componentManager.getAllComponentsForEntity(waterDropletEntity));
 
     // Clear the mock before the second call
     updateInspectorSpy.mockClear();
@@ -220,7 +267,9 @@ describe("Plugin Parameter Panel Integration", () => {
     );
 
     // Activate the flag simulation plugin
-    jest.spyOn(studio, "getActiveSimulationName").mockReturnValue("flag-simulation");
+    jest
+      .spyOn(studio, "getActiveSimulationName")
+      .mockReturnValue("flag-simulation");
     jest.spyOn(pluginManager, "getPlugin").mockReturnValue(flagPlugin);
     await pluginManager.activatePlugin("flag-simulation");
 
@@ -255,7 +304,9 @@ describe("Plugin Parameter Panel Integration", () => {
     );
 
     // Activate the flag simulation plugin
-    jest.spyOn(studio, "getActiveSimulationName").mockReturnValue("flag-simulation");
+    jest
+      .spyOn(studio, "getActiveSimulationName")
+      .mockReturnValue("flag-simulation");
     jest.spyOn(pluginManager, "getPlugin").mockReturnValue(flagPlugin);
     await pluginManager.activatePlugin("flag-simulation");
 

@@ -11,6 +11,7 @@ import { FlagParameterPanel } from "../../../plugins/flag-simulation/FlagParamet
 import { WaterDropletParameterPanel } from "../../../plugins/water-simulation/WaterDropletParameterPanel";
 import { ParameterPanelComponent } from "../../../core/components/ParameterPanelComponent";
 import { MockParameterPanelComponent } from "../../tests/MockParameterPanelComponent";
+import { Vector3 } from "../../../plugins/water-simulation/utils/Vector3";
 
 // Mock UIManager
 jest.mock("../../uiManager", () => {
@@ -45,7 +46,10 @@ jest.mock("../../../core/plugin/PluginManager", () => {
         getPlugin: jest.fn().mockReturnValue({
           getParameterPanels: jest.fn().mockReturnValue([
             { componentType: "FlagComponent", registerControls: jest.fn() },
-            { componentType: "WaterDropletComponent", registerControls: jest.fn() }
+            {
+              componentType: "WaterDropletComponent",
+              registerControls: jest.fn()
+            }
           ])
         })
       };
@@ -68,14 +72,31 @@ describe("PropertyInspectorSystem", () => {
     uiManager = new UIManager(null as any);
     studio = new Studio(null as any, null as any);
     pluginManager = new PluginManager(null as any);
-    propertyInspectorSystem = new PropertyInspectorSystem(uiManager, world, studio, pluginManager);
+    propertyInspectorSystem = new PropertyInspectorSystem(
+      uiManager,
+      world,
+      studio,
+      pluginManager
+    );
 
     // Register components
-    world.componentManager.registerComponent(SelectableComponent.type, SelectableComponent);
-    world.componentManager.registerComponent(PositionComponent.type, PositionComponent);
+    world.componentManager.registerComponent(
+      SelectableComponent.type,
+      SelectableComponent
+    );
+    world.componentManager.registerComponent(
+      PositionComponent.type,
+      PositionComponent
+    );
     world.componentManager.registerComponent(FlagComponent.type, FlagComponent);
-    world.componentManager.registerComponent(WaterDropletComponent.type, WaterDropletComponent);
-    world.componentManager.registerComponent(ParameterPanelComponent.type, MockParameterPanelComponent);
+    world.componentManager.registerComponent(
+      WaterDropletComponent.type,
+      WaterDropletComponent
+    );
+    world.componentManager.registerComponent(
+      ParameterPanelComponent.type,
+      MockParameterPanelComponent
+    );
 
     // Create entities
     flagEntity = world.entityManager.createEntity();
@@ -99,7 +120,7 @@ describe("PropertyInspectorSystem", () => {
     world.componentManager.addComponent(
       waterDropletEntity,
       WaterDropletComponent.type,
-      new WaterDropletComponent()
+      new WaterDropletComponent(new Vector3(0, 0, 0))
     );
   });
 
@@ -164,7 +185,9 @@ describe("PropertyInspectorSystem", () => {
 
   it("should find the selected entity", () => {
     // Call the findSelectedEntity method
-    const selectedEntity = (propertyInspectorSystem as any).findSelectedEntity(world);
+    const selectedEntity = (propertyInspectorSystem as any).findSelectedEntity(
+      world
+    );
 
     // The selected entity should be the flag entity
     expect(selectedEntity).toBe(flagEntity);
@@ -172,7 +195,9 @@ describe("PropertyInspectorSystem", () => {
 
   it.skip("should get parameter panels from the active plugin", () => {
     // Call the getParameterPanelsFromActivePlugin method
-    const panels = (propertyInspectorSystem as any).getParameterPanelsFromActivePlugin();
+    const panels = (
+      propertyInspectorSystem as any
+    ).getParameterPanelsFromActivePlugin();
 
     // There should be two panels
     expect(panels.length).toBe(2);
@@ -182,7 +207,9 @@ describe("PropertyInspectorSystem", () => {
 
   it("should register component controls using parameter panels", () => {
     // Get parameter panels
-    const panels = (propertyInspectorSystem as any).getParameterPanelsFromActivePlugin();
+    const panels = (
+      propertyInspectorSystem as any
+    ).getParameterPanelsFromActivePlugin();
 
     // Call the registerComponentControls method
     (propertyInspectorSystem as any).registerComponentControls(
@@ -203,7 +230,10 @@ describe("PropertyInspectorSystem", () => {
     );
 
     // Call the updateInspectorForEntity method
-    (propertyInspectorSystem as any).updateInspectorForEntity(world, flagEntity);
+    (propertyInspectorSystem as any).updateInspectorForEntity(
+      world,
+      flagEntity
+    );
 
     // The registerComponentControls method should be called for the FlagComponent
     expect(registerControlsSpy).toHaveBeenCalledWith(

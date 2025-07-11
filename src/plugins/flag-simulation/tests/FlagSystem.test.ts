@@ -24,10 +24,32 @@ describe("FlagSystem", () => {
   it("should initialize flag points and springs when a FlagComponent is added", () => {
     const entity = world.entityManager.createEntity();
     const poleEntity = world.entityManager.createEntity(); // Create a pole entity
-    const poleComponent = new PoleComponent({ position: new Vector3(0, 0, 0), height: 10, radius: 0.1 });
-    world.componentManager.addComponent(poleEntity, PoleComponent.type, poleComponent);
+    const poleComponent = new PoleComponent({
+      position: new Vector3(0, 0, 0),
+      height: 10,
+      radius: 0.1
+    });
+    world.componentManager.addComponent(
+      poleEntity,
+      PoleComponent.type,
+      poleComponent
+    );
 
-    const flagComponent = new FlagComponent(10, 6, 2, 2, 0.1, 0.5, 0.05, "", 0, null, null, poleEntity, 'left'); // Link flag to pole
+    const flagComponent = new FlagComponent(
+      10,
+      6,
+      2,
+      2,
+      0.1,
+      0.5,
+      0.05,
+      "",
+      0,
+      null,
+      null,
+      poleEntity,
+      "left"
+    ); // Link flag to pole
     const positionComponent = new PositionComponent(0, 0, 0);
 
     world.componentManager.addComponent(

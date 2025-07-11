@@ -42,9 +42,18 @@ export function createFlagMesh(flag: FlagComponent): THREE.Mesh {
 }
 
 export function createPoleMesh(pole: PoleComponent): THREE.Mesh {
-  const geometry = new THREE.CylinderGeometry(pole.radius, pole.radius, pole.height, 32);
+  const geometry = new THREE.CylinderGeometry(
+    pole.radius,
+    pole.radius,
+    pole.height,
+    32
+  );
   const material = new THREE.MeshStandardMaterial({ color: 0x0000ff }); // Bright blue color
   const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.set(pole.position.x, pole.position.y + pole.height / 2, pole.position.z);
+  mesh.position.set(
+    pole.position.x,
+    pole.position.y + pole.height / 2,
+    pole.position.z
+  );
   return mesh;
 }

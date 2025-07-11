@@ -7,7 +7,7 @@ export class Studio {
   private _world: World;
   private pluginManager: PluginManager;
   private renderSystem: RenderSystem | null = null;
-  private isPlaying = false;
+  private isPlaying = true; // Set to true by default
   private activeSimulationName: string | null = null;
 
   public get world(): World {
@@ -32,7 +32,9 @@ export class Studio {
       detail: { simulationName: this.activeSimulationName }
     });
     window.dispatchEvent(event);
-    console.log(`Dispatched simulation-play event for ${this.activeSimulationName}`);
+    console.log(
+      `Dispatched simulation-play event for ${this.activeSimulationName}`
+    );
   }
 
   public pause(): void {
@@ -44,7 +46,9 @@ export class Studio {
       detail: { simulationName: this.activeSimulationName }
     });
     window.dispatchEvent(event);
-    console.log(`Dispatched simulation-pause event for ${this.activeSimulationName}`);
+    console.log(
+      `Dispatched simulation-pause event for ${this.activeSimulationName}`
+    );
   }
 
   public reset(): void {
@@ -109,7 +113,6 @@ export class Studio {
   }
 
   public update(deltaTime: number): void {
-    console.log(`[Studio] update called. isPlaying: ${this.isPlaying}, deltaTime: ${deltaTime}`);
     if (this.isPlaying) {
       this.world.update(deltaTime);
     }

@@ -4,6 +4,8 @@ import { IComponent } from "../../core/ecs/IComponent";
 import { WaterBodyComponent } from "./WaterComponents";
 import { ComponentControlProperty } from "../../studio/types";
 
+import { WATER_PHYSICS_CONSTANTS } from "./constants";
+
 /**
  * Parameter panel for the WaterBodyComponent
  * This class defines the UI controls for the WaterBodyComponent
@@ -34,20 +36,20 @@ export class WaterBodyParameterPanel extends ParameterPanelComponent {
 
     const properties: ComponentControlProperty[] = [
       {
-        property: "viscosity",
+        property: "viscosity.value",
         type: "number",
         label: "Viscosity",
-        min: 0,
-        max: 1,
-        step: 0.01
+        min: WATER_PHYSICS_CONSTANTS.VISCOSITY_COEFFICIENT.min,
+        max: WATER_PHYSICS_CONSTANTS.VISCOSITY_COEFFICIENT.max,
+        step: WATER_PHYSICS_CONSTANTS.VISCOSITY_COEFFICIENT.step
       },
       {
-        property: "surfaceTension",
+        property: "surfaceTension.value",
         type: "number",
         label: "Surface Tension",
-        min: 0,
-        max: 1,
-        step: 0.01
+        min: WATER_PHYSICS_CONSTANTS.SURFACE_TENSION_COEFFICIENT.min,
+        max: WATER_PHYSICS_CONSTANTS.SURFACE_TENSION_COEFFICIENT.max,
+        step: WATER_PHYSICS_CONSTANTS.SURFACE_TENSION_COEFFICIENT.step
       }
     ];
 

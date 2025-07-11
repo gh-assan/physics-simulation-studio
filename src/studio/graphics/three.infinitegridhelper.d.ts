@@ -1,1 +1,1 @@
-declare module '@plackyfantacky/three.infinitegridhelper';
+declare module "@plackyfantacky/three.infinitegridhelper";

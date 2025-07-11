@@ -50,12 +50,18 @@ export class FlagSystem extends System {
 
       // Initialize point masses and springs if not already done for this flag
       if (!flagComponent.points || flagComponent.points.length === 0) {
-        FlagPhysicsInitializer.initializeFlag(flagComponent, positionComponent, world);
+        FlagPhysicsInitializer.initializeFlag(
+          flagComponent,
+          positionComponent,
+          world
+        );
       }
 
       // If attached to a pole, ensure fixed points are constrained to the pole's position
       if (flagComponent.poleEntityId) {
-        const poleEntity = world.entityManager.getEntityById(flagComponent.poleEntityId);
+        const poleEntity = world.entityManager.getEntityById(
+          flagComponent.poleEntityId
+        );
         if (poleEntity) {
           const poleComp = world.componentManager.getComponent(
             poleEntity,
@@ -66,7 +72,8 @@ export class FlagSystem extends System {
             const numRows = flagComponent.segmentsY + 1;
             const numCols = flagComponent.segmentsX + 1;
             const segmentWidth = flagComponent.width / flagComponent.segmentsX;
-            const segmentHeight = flagComponent.height / flagComponent.segmentsY;
+            const segmentHeight =
+              flagComponent.height / flagComponent.segmentsY;
 
             for (let y = 0; y < numRows; y++) {
               for (let x = 0; x < numCols; x++) {
@@ -85,7 +92,7 @@ export class FlagSystem extends System {
                   const isLeftCol = x === 0;
                   const isRightCol = x === numCols - 1;
 
-                  if (flagComponent.attachedEdge === 'left') {
+                  if (flagComponent.attachedEdge === "left") {
                     if (isLeftCol && isBottomRow) {
                       pointX = poleComp.position.x;
                       pointY = poleComp.position.y;
@@ -95,7 +102,7 @@ export class FlagSystem extends System {
                       pointY = poleComp.position.y + poleComp.height;
                       pointZ = poleComp.position.z;
                     }
-                  } else if (flagComponent.attachedEdge === 'right') {
+                  } else if (flagComponent.attachedEdge === "right") {
                     if (isRightCol && isBottomRow) {
                       pointX = poleComp.position.x;
                       pointY = poleComp.position.y;
@@ -105,7 +112,7 @@ export class FlagSystem extends System {
                       pointY = poleComp.position.y + poleComp.height;
                       pointZ = poleComp.position.z;
                     }
-                  } else if (flagComponent.attachedEdge === 'top') {
+                  } else if (flagComponent.attachedEdge === "top") {
                     if (isTopRow && isLeftCol) {
                       pointX = poleComp.position.x - flagComponent.width / 2;
                       pointY = poleComp.position.y;
@@ -115,7 +122,7 @@ export class FlagSystem extends System {
                       pointY = poleComp.position.y;
                       pointZ = poleComp.position.z;
                     }
-                  } else if (flagComponent.attachedEdge === 'bottom') {
+                  } else if (flagComponent.attachedEdge === "bottom") {
                     if (isBottomRow && isLeftCol) {
                       pointX = poleComp.position.x - flagComponent.width / 2;
                       pointY = poleComp.position.y;

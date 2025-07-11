@@ -1,102 +1,83 @@
 import { World } from "@core/ecs/World";
 import * as THREE from "three";
-import { WaterBodyComponent } from "./WaterComponents";
+import { WaterDropletComponent } from "./WaterComponents";
 import { PositionComponent } from "@core/components/PositionComponent";
-import { RenderableComponent } from "@core/components/RenderableComponent";
 
 export class WaterRenderer {
-  public waterMesh: THREE.Mesh | null = null;
+  private instancedMesh: THREE.InstancedMesh | null = null;
+  private dummy = new THREE.Object3D();
+
   constructor() {
     console.log("WaterRenderer initialized.");
   }
 
   render(world: World, scene: THREE.Scene, _camera: THREE.Camera): void {
-    const waterBodies = world.componentManager.getEntitiesWithComponents([
-      WaterBodyComponent,
-      PositionComponent,
-      RenderableComponent
+    console.log("[WaterRenderer] render called.");
+    const droplets = world.componentManager.getEntitiesWithComponents([
+      WaterDropletComponent,
+      PositionComponent
     ]);
+    console.log(
+      `[WaterRenderer] Found ${droplets.length} droplets for rendering.`
+    );
 
-    if (waterBodies.length === 0) return;
-
-    const waterBodyEntity = waterBodies[0];
-    const waterBodyComponent = world.componentManager.getComponent(
-      waterBodyEntity,
-      WaterBodyComponent.type
-    ) as WaterBodyComponent;
-    const waterBodyPosition = world.componentManager.getComponent(
-      waterBodyEntity,
-      PositionComponent.name
-    ) as PositionComponent;
-    const waterBodyRenderable = world.componentManager.getComponent(
-      waterBodyEntity,
-      RenderableComponent.name
-    ) as RenderableComponent;
-
-    // Find the water mesh created by RenderSystem
-    const waterMesh = scene.children.find((child) => {
-      // Assuming RenderSystem adds meshes with a specific name or userData
-      // For now, we'll try to find a plane with the water body's color
-      return (
-        child instanceof THREE.Mesh &&
-        child.geometry instanceof THREE.PlaneGeometry &&
-        (child.material as THREE.MeshBasicMaterial).color.getHex() ===
-          new THREE.Color(waterBodyRenderable.color).getHex()
-      );
-    }) as THREE.Mesh;
-
-    if (!waterMesh) {
-      console.warn(
-        "WaterRenderer: Could not find water body mesh in scene. Attempting to create a temporary one for debugging."
-      );
-      // Fallback for debugging: create a temporary water mesh if not found
-      const geometry = new THREE.PlaneGeometry(200, 200, 10, 10); // Increased size
-      const material = new THREE.MeshBasicMaterial({
-        color: 0x0066ff,
-        transparent: true,
-        opacity: 0.8,
-        side: THREE.DoubleSide
-      });
-      const tempWaterMesh = new THREE.Mesh(geometry, material);
-      tempWaterMesh.rotation.x = -Math.PI / 2;
-      tempWaterMesh.position.set(
-        waterBodyPosition.x,
-        waterBodyPosition.y,
-        waterBodyPosition.z
-      );
-      scene.add(tempWaterMesh);
-      this.waterMesh = tempWaterMesh;
-      // Note: This temporary mesh won't be in RenderSystem's meshes map, so selection won't work on it directly.
-      // This is purely for visual confirmation that a plane is being rendered.
-      // The actual fix is to ensure RenderSystem creates the mesh.
+    if (droplets.length === 0) {
+      if (this.instancedMesh) {
+        scene.remove(this.instancedMesh);
+        this.instancedMesh.dispose();
+        this.instancedMesh = null;
+      }
       return;
     }
 
-    this.waterMesh = waterMesh;
-
-    // Render ripples
-    // Remove old ripple meshes (these are temporary and not managed by RenderSystem's meshes map)
-    scene.children = scene.children.filter(
-      (child) => !child.name.startsWith("ripple_")
-    );
-
-    waterBodyComponent.ripples.forEach((ripple, index) => {
-      const rippleGeometry = new THREE.RingGeometry(
-        ripple.radius * 0.8,
-        ripple.radius,
-        32
+    if (!this.instancedMesh || this.instancedMesh.count !== droplets.length) {
+      if (this.instancedMesh) {
+        scene.remove(this.instancedMesh);
+        this.instancedMesh.dispose();
+      }
+      const geometry = new THREE.SphereGeometry(1, 8, 8); // Basic sphere for droplets
+      const material = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Bright red color for debugging
+      this.instancedMesh = new THREE.InstancedMesh(
+        geometry,
+        material,
+        droplets.length
       );
-      const rippleMaterial = new THREE.MeshBasicMaterial({
-        color: 0xffffff,
-        transparent: true,
-        opacity: ripple.amplitude,
-        side: THREE.DoubleSide
-      });
-      const rippleMesh = new THREE.Mesh(rippleGeometry, rippleMaterial);
-      rippleMesh.rotation.x = -Math.PI / 2;
-      rippleMesh.position.set(ripple.x, waterBodyPosition.y + 0.01, ripple.z); // Slightly above water surface
-      rippleMesh.name = `ripple_${index}`;
-      scene.add(rippleMesh);
-    });
+      scene.add(this.instancedMesh);
+    }
+
+    let i = 0;
+    for (const entityId of droplets) {
+      const dropletComponent = world.componentManager.getComponent(
+        entityId,
+        WaterDropletComponent.type
+      ) as WaterDropletComponent;
+      const positionComponent = world.componentManager.getComponent(
+        entityId,
+        PositionComponent.type
+      ) as PositionComponent;
+
+      if (dropletComponent && positionComponent) {
+        this.dummy.position.set(
+          positionComponent.x,
+          positionComponent.y,
+          positionComponent.z
+        );
+        this.dummy.scale.setScalar(dropletComponent.radius.get()); // Scale by droplet radius
+        this.dummy.updateMatrix();
+        this.instancedMesh.setMatrixAt(i++, this.dummy.matrix);
+      }
+    }
+    this.instancedMesh.instanceMatrix.needsUpdate = true;
+  }
+
+  // No unregister needed for now, as the mesh is disposed in render if no droplets
+  unregister(): void {
+    // This method is called when the plugin is unregistered
+    // Ensure the instanced mesh is removed from the scene and disposed
+    if (this.instancedMesh && this.instancedMesh.parent) {
+      this.instancedMesh.parent.remove(this.instancedMesh);
+      this.instancedMesh.dispose();
+      this.instancedMesh = null;
+    }
   }
 }

@@ -50,13 +50,13 @@ export class ViewportToolbar {
     this.cameraControls = new CameraControls(this.graphicsManager);
 
     // Create toolbar element
-    this.element = document.createElement('div');
-    this.element.className = 'viewport-toolbar';
+    this.element = document.createElement("div");
+    this.element.className = "viewport-toolbar";
 
     // Create drag handle
-    this.dragHandle = document.createElement('div');
-    this.dragHandle.className = 'toolbar-drag-handle';
-    this.dragHandle.title = 'Drag to move toolbar';
+    this.dragHandle = document.createElement("div");
+    this.dragHandle.className = "toolbar-drag-handle";
+    this.dragHandle.title = "Drag to move toolbar";
 
     // Create toolbar sections
     const toolsSection = this.createToolsSection();
@@ -89,8 +89,8 @@ export class ViewportToolbar {
    * Creates a section divider
    */
   private createDivider(): HTMLElement {
-    const divider = document.createElement('div');
-    divider.className = 'toolbar-divider';
+    const divider = document.createElement("div");
+    divider.className = "toolbar-divider";
     return divider;
   }
 
@@ -98,38 +98,38 @@ export class ViewportToolbar {
    * Creates the tools section of the toolbar
    */
   private createToolsSection(): HTMLElement {
-    const section = document.createElement('div');
-    section.className = 'toolbar-section';
+    const section = document.createElement("div");
+    section.className = "toolbar-section";
 
     // Create tool buttons
     const selectButton = new ToolbarButton({
       icon: this.getToolIcon(ToolType.SELECT),
-      tooltip: 'Select',
-      shortcut: 'Q',
+      tooltip: "Select",
+      shortcut: "Q",
       active: this.activeTool === ToolType.SELECT,
       onClick: () => this.setActiveTool(ToolType.SELECT)
     });
 
     const moveButton = new ToolbarButton({
       icon: this.getToolIcon(ToolType.MOVE),
-      tooltip: 'Move',
-      shortcut: 'W',
+      tooltip: "Move",
+      shortcut: "W",
       active: this.activeTool === ToolType.MOVE,
       onClick: () => this.setActiveTool(ToolType.MOVE)
     });
 
     const rotateButton = new ToolbarButton({
       icon: this.getToolIcon(ToolType.ROTATE),
-      tooltip: 'Rotate',
-      shortcut: 'E',
+      tooltip: "Rotate",
+      shortcut: "E",
       active: this.activeTool === ToolType.ROTATE,
       onClick: () => this.setActiveTool(ToolType.ROTATE)
     });
 
     const scaleButton = new ToolbarButton({
       icon: this.getToolIcon(ToolType.SCALE),
-      tooltip: 'Scale',
-      shortcut: 'R',
+      tooltip: "Scale",
+      shortcut: "R",
       active: this.activeTool === ToolType.SCALE,
       onClick: () => this.setActiveTool(ToolType.SCALE)
     });
@@ -153,68 +153,68 @@ export class ViewportToolbar {
    * Creates the camera section of the toolbar
    */
   private createCameraSection(): HTMLElement {
-    const section = document.createElement('div');
-    section.className = 'toolbar-section';
+    const section = document.createElement("div");
+    section.className = "toolbar-section";
 
     // Create camera buttons
     const resetButton = new ToolbarButton({
-      icon: this.getCameraIcon('reset'),
-      tooltip: 'Reset Camera',
-      shortcut: 'Shift+R',
+      icon: this.getCameraIcon("reset"),
+      tooltip: "Reset Camera",
+      shortcut: "Shift+R",
       onClick: () => this.cameraControls.resetCamera()
     });
 
     const zoomInButton = new ToolbarButton({
-      icon: this.getCameraIcon('zoomIn'),
-      tooltip: 'Zoom In',
-      shortcut: '+',
+      icon: this.getCameraIcon("zoomIn"),
+      tooltip: "Zoom In",
+      shortcut: "+",
       onClick: () => this.cameraControls.zoom(0.5)
     });
 
     const zoomOutButton = new ToolbarButton({
-      icon: this.getCameraIcon('zoomOut'),
-      tooltip: 'Zoom Out',
-      shortcut: '-',
+      icon: this.getCameraIcon("zoomOut"),
+      tooltip: "Zoom Out",
+      shortcut: "-",
       onClick: () => this.cameraControls.zoom(-0.5)
     });
 
     const perspectiveButton = new ToolbarButton({
-      icon: this.getCameraIcon('perspective'),
-      tooltip: 'Perspective View',
-      shortcut: 'P',
+      icon: this.getCameraIcon("perspective"),
+      tooltip: "Perspective View",
+      shortcut: "P",
       active: this.cameraControls.getCameraMode() === CameraMode.PERSPECTIVE,
       onClick: () => this.toggleCameraMode()
     });
 
     const topButton = new ToolbarButton({
-      icon: this.getCameraIcon('top'),
-      tooltip: 'Top View',
-      shortcut: '0',
+      icon: this.getCameraIcon("top"),
+      tooltip: "Top View",
+      shortcut: "0",
       onClick: () => this.cameraControls.setTopView()
     });
 
     const frontButton = new ToolbarButton({
-      icon: this.getCameraIcon('front'),
-      tooltip: 'Front View',
-      shortcut: '1',
+      icon: this.getCameraIcon("front"),
+      tooltip: "Front View",
+      shortcut: "1",
       onClick: () => this.cameraControls.setFrontView()
     });
 
     const sideButton = new ToolbarButton({
-      icon: this.getCameraIcon('side'),
-      tooltip: 'Side View',
-      shortcut: '2',
+      icon: this.getCameraIcon("side"),
+      tooltip: "Side View",
+      shortcut: "2",
       onClick: () => this.cameraControls.setSideView()
     });
 
     // Store buttons for later reference
-    this.cameraButtons.set('reset', resetButton);
-    this.cameraButtons.set('zoomIn', zoomInButton);
-    this.cameraButtons.set('zoomOut', zoomOutButton);
-    this.cameraButtons.set('perspective', perspectiveButton);
-    this.cameraButtons.set('top', topButton);
-    this.cameraButtons.set('front', frontButton);
-    this.cameraButtons.set('side', sideButton);
+    this.cameraButtons.set("reset", resetButton);
+    this.cameraButtons.set("zoomIn", zoomInButton);
+    this.cameraButtons.set("zoomOut", zoomOutButton);
+    this.cameraButtons.set("perspective", perspectiveButton);
+    this.cameraButtons.set("top", topButton);
+    this.cameraButtons.set("front", frontButton);
+    this.cameraButtons.set("side", sideButton);
 
     // Add buttons to section
     section.appendChild(resetButton.getElement());
@@ -232,29 +232,29 @@ export class ViewportToolbar {
    * Creates the settings section of the toolbar
    */
   private createSettingsSection(): HTMLElement {
-    const section = document.createElement('div');
-    section.className = 'toolbar-section';
+    const section = document.createElement("div");
+    section.className = "toolbar-section";
 
     // Create settings buttons
     const gridButton = new ToolbarButton({
-      icon: this.getSettingsIcon('grid'),
-      tooltip: 'Toggle Grid',
-      shortcut: 'G',
+      icon: this.getSettingsIcon("grid"),
+      tooltip: "Toggle Grid",
+      shortcut: "G",
       active: this.showGrid,
       onClick: () => this.toggleGrid()
     });
 
     const snapButton = new ToolbarButton({
-      icon: this.getSettingsIcon('snap'),
-      tooltip: 'Toggle Snap to Grid',
-      shortcut: 'Shift+S',
+      icon: this.getSettingsIcon("snap"),
+      tooltip: "Toggle Snap to Grid",
+      shortcut: "Shift+S",
       active: this.snapToGrid,
       onClick: () => this.toggleSnap()
     });
 
     // Store buttons for later reference
-    this.settingsButtons.set('grid', gridButton);
-    this.settingsButtons.set('snap', snapButton);
+    this.settingsButtons.set("grid", gridButton);
+    this.settingsButtons.set("snap", snapButton);
 
     // Add buttons to section
     section.appendChild(gridButton.getElement());
@@ -267,7 +267,7 @@ export class ViewportToolbar {
    * Sets up keyboard shortcuts for toolbar actions
    */
   private setupKeyboardShortcuts(): void {
-    window.addEventListener('keydown', (event) => {
+    window.addEventListener("keydown", (event) => {
       // Ignore if modifier keys are pressed (except for Shift)
       if (event.ctrlKey || event.altKey || event.metaKey) {
         return;
@@ -275,29 +275,29 @@ export class ViewportToolbar {
 
       // Handle tool shortcuts
       switch (event.key.toLowerCase()) {
-        case 'q':
+        case "q":
           this.setActiveTool(ToolType.SELECT);
           event.preventDefault();
           break;
-        case 'w':
+        case "w":
           this.setActiveTool(ToolType.MOVE);
           event.preventDefault();
           break;
-        case 'e':
+        case "e":
           this.setActiveTool(ToolType.ROTATE);
           event.preventDefault();
           break;
-        case 'r':
+        case "r":
           if (!event.shiftKey) {
             this.setActiveTool(ToolType.SCALE);
             event.preventDefault();
           }
           break;
-        case 'g':
+        case "g":
           this.toggleGrid();
           event.preventDefault();
           break;
-        case 's':
+        case "s":
           if (event.shiftKey) {
             this.toggleSnap();
             event.preventDefault();
@@ -326,7 +326,7 @@ export class ViewportToolbar {
     }
 
     // Dispatch event for tool change
-    const event = new CustomEvent('tool-changed', {
+    const event = new CustomEvent("tool-changed", {
       detail: { tool }
     });
     window.dispatchEvent(event);
@@ -341,7 +341,7 @@ export class ViewportToolbar {
     this.cameraControls.toggleCameraMode();
 
     // Update button state
-    const perspectiveButton = this.cameraButtons.get('perspective');
+    const perspectiveButton = this.cameraButtons.get("perspective");
     if (perspectiveButton) {
       perspectiveButton.setActive(
         this.cameraControls.getCameraMode() === CameraMode.PERSPECTIVE
@@ -356,7 +356,7 @@ export class ViewportToolbar {
     this.showGrid = !this.showGrid;
 
     // Update button state
-    const gridButton = this.settingsButtons.get('grid');
+    const gridButton = this.settingsButtons.get("grid");
     if (gridButton) {
       gridButton.setActive(this.showGrid);
     }
@@ -364,13 +364,13 @@ export class ViewportToolbar {
     // Toggle grid visibility in the scene
     const scene = this.graphicsManager.getScene();
     scene.traverse((object) => {
-      if (object.name === 'grid') {
+      if (object.name === "grid") {
         object.visible = this.showGrid;
       }
     });
 
     // Dispatch event for grid visibility change
-    const event = new CustomEvent('grid-changed', {
+    const event = new CustomEvent("grid-changed", {
       detail: { visible: this.showGrid }
     });
     window.dispatchEvent(event);
@@ -385,13 +385,13 @@ export class ViewportToolbar {
     this.snapToGrid = !this.snapToGrid;
 
     // Update button state
-    const snapButton = this.settingsButtons.get('snap');
+    const snapButton = this.settingsButtons.get("snap");
     if (snapButton) {
       snapButton.setActive(this.snapToGrid);
     }
 
     // Dispatch event for snap change
-    const event = new CustomEvent('snap-changed', {
+    const event = new CustomEvent("snap-changed", {
       detail: { snapToGrid: this.snapToGrid }
     });
     window.dispatchEvent(event);
@@ -415,7 +415,7 @@ export class ViewportToolbar {
       case ToolType.SCALE:
         return '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M9,1v2h6V1H9z M9,5v2h6V5H9z M16,9h-2v6h2V9z M20,9h-2v6h2V9z M4,9H2v6h2V9z M8,9H6v6h2V9z M9,16v2h6v-2H9z M9,20v2h6v-2H9z"/></svg>';
       default:
-        return '';
+        return "";
     }
   }
 
@@ -426,22 +426,22 @@ export class ViewportToolbar {
   private getCameraIcon(control: string): string {
     // Simple SVG icons for camera controls
     switch (control) {
-      case 'reset':
+      case "reset":
         return '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12,5V1L7,6l5,5V7c3.31,0,6,2.69,6,6s-2.69,6-6,6s-6-2.69-6-6H4c0,4.42,3.58,8,8,8s8-3.58,8-8S16.42,5,12,5z"/></svg>';
-      case 'perspective':
+      case "perspective":
         return '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M13.05,9.79L10,7.5v9l3.05-2.29L16,12L13.05,9.79z M13.05,9.79L10,7.5v9l3.05-2.29L16,12L13.05,9.79z"/></svg>';
-      case 'top':
+      case "top":
         return '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12,8l-6,6h12L12,8z"/></svg>';
-      case 'front':
+      case "front":
         return '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M4,10h16v4H4V10z"/></svg>';
-      case 'side':
+      case "side":
         return '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M10,4v16h4V4H10z"/></svg>';
-      case 'zoomIn':
+      case "zoomIn":
         return '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M15.5,14h-.79l-.28-.27a6.51,6.51,0,1,0-.7.7l.27.28v.79l5,4.99L20.49,19Zm-6,0A4.5,4.5,0,1,1,14,9.5,4.5,4.5,0,0,1,9.5,14Zm2.5-4h-2v2h-1v-2h-2v-1h2v-2h1v2h2Z"/></svg>';
-      case 'zoomOut':
+      case "zoomOut":
         return '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M15.5,14h-.79l-.28-.27a6.51,6.51,0,1,0-.7.7l.27.28v.79l5,4.99L20.49,19Zm-6,0A4.5,4.5,0,1,1,14,9.5,4.5,4.5,0,0,1,9.5,14Zm-2-5h5v1h-5Z"/></svg>';
       default:
-        return '';
+        return "";
     }
   }
 
@@ -452,12 +452,12 @@ export class ViewportToolbar {
   private getSettingsIcon(setting: string): string {
     // Simple SVG icons for settings
     switch (setting) {
-      case 'grid':
+      case "grid":
         return '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M20,2H4C2.9,2,2,2.9,2,4v16c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V4C22,2.9,21.1,2,20,2z M8,20H4v-4h4V20z M8,14H4v-4h4V14z M8,8H4V4h4V8z M14,20h-4v-4h4V20z M14,14h-4v-4h4V14z M14,8h-4V4h4V8z M20,20h-4v-4h4V20z M20,14h-4v-4h4V14z M20,8h-4V4h4V8z"/></svg>';
-      case 'snap':
+      case "snap":
         return '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M17,7h-4v4h4V7z M17,13h-4v4h4V13z M7,7H3v4h4V7z M7,13H3v4h4V13z M17,1H7C5.9,1,5,1.9,5,3v2h2V3h10v18H7v-2H5v2c0,1.1,0.9,2,2,2h10c1.1,0,2-0.9,2-2V3C19,1.9,18.1,1,17,1z"/></svg>';
       default:
-        return '';
+        return "";
     }
   }
 
@@ -520,7 +520,7 @@ export class ViewportToolbar {
       this.hasMoved = false;
 
       // Add a class to indicate dragging state
-      this.element.classList.add('dragging');
+      this.element.classList.add("dragging");
     };
 
     // Common function to move during drag
@@ -549,11 +549,11 @@ export class ViewportToolbar {
       this.isDragging = false;
 
       // Remove the dragging class
-      this.element.classList.remove('dragging');
+      this.element.classList.remove("dragging");
     };
 
     // Mouse events
-    this.dragHandle.addEventListener('mousedown', (e) => {
+    this.dragHandle.addEventListener("mousedown", (e) => {
       // Only start dragging if it's a left-click
       if (e.button !== 0) return;
 
@@ -563,11 +563,11 @@ export class ViewportToolbar {
       startDrag(e.clientX, e.clientY);
     });
 
-    window.addEventListener('mousemove', (e) => {
+    window.addEventListener("mousemove", (e) => {
       moveDrag(e.clientX, e.clientY);
     });
 
-    window.addEventListener('mouseup', (e) => {
+    window.addEventListener("mouseup", (e) => {
       if (!this.isDragging) return;
 
       // If the mouse has moved, prevent the click event
@@ -579,10 +579,10 @@ export class ViewportToolbar {
       endDrag();
     });
 
-    window.addEventListener('mouseleave', endDrag);
+    window.addEventListener("mouseleave", endDrag);
 
     // Touch events for mobile devices
-    this.dragHandle.addEventListener('touchstart', (e) => {
+    this.dragHandle.addEventListener("touchstart", (e) => {
       // Prevent default behavior (scrolling, zooming)
       e.preventDefault();
 
@@ -592,17 +592,17 @@ export class ViewportToolbar {
       }
     });
 
-    window.addEventListener('touchmove', (e) => {
+    window.addEventListener("touchmove", (e) => {
       if (e.touches.length === 1) {
         const touch = e.touches[0];
         moveDrag(touch.clientX, touch.clientY);
       }
     });
 
-    window.addEventListener('touchend', () => {
+    window.addEventListener("touchend", () => {
       endDrag();
     });
 
-    window.addEventListener('touchcancel', endDrag);
+    window.addEventListener("touchcancel", endDrag);
   }
 }

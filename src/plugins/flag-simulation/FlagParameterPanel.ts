@@ -162,9 +162,15 @@ export class FlagParameterPanel extends ParameterPanelComponent {
     ];
 
     // Add Pole Controls
-    const poleEntities = this.world.componentManager.getEntitiesWithComponents([PoleComponent]);
-    const poleOptions: { text: string; value: number | null }[] = poleEntities.map(entityId => ({ text: `Pole ${entityId}`, value: entityId }));
-    poleOptions.unshift({ text: 'None', value: null }); // Add a 'None' option
+    const poleEntities = this.world.componentManager.getEntitiesWithComponents([
+      PoleComponent
+    ]);
+    const poleOptions: { text: string; value: number | null }[] =
+      poleEntities.map((entityId) => ({
+        text: `Pole ${entityId}`,
+        value: entityId
+      }));
+    poleOptions.unshift({ text: "None", value: null }); // Add a 'None' option
 
     properties.push(
       {
@@ -178,10 +184,10 @@ export class FlagParameterPanel extends ParameterPanelComponent {
         type: "list",
         label: "Attached Edge",
         options: [
-          { text: 'Left', value: 'left' },
-          { text: 'Right', value: 'right' },
-          { text: 'Top', value: 'top' },
-          { text: 'Bottom', value: 'bottom' }
+          { text: "Left", value: "left" },
+          { text: "Right", value: "right" },
+          { text: "Top", value: "top" },
+          { text: "Bottom", value: "bottom" }
         ]
       }
     );

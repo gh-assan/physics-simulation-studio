@@ -33,7 +33,7 @@ describe("WaterSystem", () => {
     world.componentManager.addComponent(
       droplet,
       WaterDropletComponent.type,
-      new WaterDropletComponent(0.5, 10, new Vector3(0, 0, 0))
+      new WaterDropletComponent(new Vector3(0, 10, 0))
     );
     world.componentManager.addComponent(
       droplet,
@@ -78,7 +78,7 @@ describe("WaterSystem", () => {
     world.componentManager.addComponent(
       droplet,
       WaterDropletComponent.type,
-      new WaterDropletComponent(0.5, 1, new Vector3(0, 0, 0))
+      new WaterDropletComponent(new Vector3(0, 0.1, 0))
     );
     world.componentManager.addComponent(
       droplet,
@@ -110,18 +110,15 @@ describe("WaterSystem", () => {
     const droplet = world.entityManager.createEntity();
 
     // Create a droplet with custom physics parameters
-    const customDroplet = new WaterDropletComponent(
-      0.5, // size
-      10, // fallHeight
-      new Vector3(1, 0, 0), // initial velocity
-      2.0, // mass (heavier)
-      0.2, // drag (more drag)
-      new Vector3(0, -5, 0), // custom gravity (less than default)
-      2.0, // splashForce
-      3.0, // splashRadius
-      0.3, // rippleDecay
-      8.0 // rippleExpansionRate
-    );
+    const customDroplet = new WaterDropletComponent(new Vector3(0, 10, 0));
+    customDroplet.velocity = new Vector3(1, 0, 0);
+    customDroplet.mass.set(2.0);
+    customDroplet.drag.set(0.2);
+    customDroplet.gravity = new Vector3(0, -5, 0);
+    customDroplet.splashForce.set(2.0);
+    customDroplet.splashRadius.set(3.0);
+    customDroplet.rippleDecay.set(0.3);
+    customDroplet.rippleExpansionRate.set(8.0);
 
     world.componentManager.addComponent(
       droplet,

@@ -71,14 +71,14 @@ export class CameraControls {
    */
   private setupKeyboardControls(): void {
     // Track key state
-    window.addEventListener('keydown', (event) => {
+    window.addEventListener("keydown", (event) => {
       this.keyState[event.key] = true;
 
       // Handle keyboard shortcuts
       this.handleKeyboardShortcuts(event);
     });
 
-    window.addEventListener('keyup', (event) => {
+    window.addEventListener("keyup", (event) => {
       this.keyState[event.key] = false;
     });
 
@@ -99,42 +99,42 @@ export class CameraControls {
     const shouldPreventDefault = true;
 
     switch (event.key) {
-      case 'r': // Reset camera
+      case "r": // Reset camera
         if (!event.ctrlKey && !event.metaKey) {
           this.resetCamera();
           if (shouldPreventDefault) event.preventDefault();
         }
         break;
 
-      case 'p': // Toggle perspective/orthographic
+      case "p": // Toggle perspective/orthographic
         if (!event.ctrlKey && !event.metaKey) {
           this.toggleCameraMode();
           if (shouldPreventDefault) event.preventDefault();
         }
         break;
 
-      case '0': // Top view
+      case "0": // Top view
         if (!event.ctrlKey && !event.metaKey) {
           this.setTopView();
           if (shouldPreventDefault) event.preventDefault();
         }
         break;
 
-      case '1': // Front view
+      case "1": // Front view
         if (!event.ctrlKey && !event.metaKey) {
           this.setFrontView();
           if (shouldPreventDefault) event.preventDefault();
         }
         break;
 
-      case '2': // Side view
+      case "2": // Side view
         if (!event.ctrlKey && !event.metaKey) {
           this.setSideView();
           if (shouldPreventDefault) event.preventDefault();
         }
         break;
 
-      case '3': // Perspective view
+      case "3": // Perspective view
         if (!event.ctrlKey && !event.metaKey) {
           this.setPerspectiveView();
           if (shouldPreventDefault) event.preventDefault();
@@ -152,38 +152,38 @@ export class CameraControls {
     const zoomSpeed = 0.1;
 
     // Pan with arrow keys
-    if (this.keyState['ArrowUp']) {
+    if (this.keyState["ArrowUp"]) {
       this.pan(0, panSpeed);
     }
-    if (this.keyState['ArrowDown']) {
+    if (this.keyState["ArrowDown"]) {
       this.pan(0, -panSpeed);
     }
-    if (this.keyState['ArrowLeft']) {
+    if (this.keyState["ArrowLeft"]) {
       this.pan(panSpeed, 0);
     }
-    if (this.keyState['ArrowRight']) {
+    if (this.keyState["ArrowRight"]) {
       this.pan(-panSpeed, 0);
     }
 
     // Rotate with Shift + arrow keys
-    if (this.keyState['Shift'] && this.keyState['ArrowUp']) {
+    if (this.keyState["Shift"] && this.keyState["ArrowUp"]) {
       this.rotate(0, -rotateSpeed);
     }
-    if (this.keyState['Shift'] && this.keyState['ArrowDown']) {
+    if (this.keyState["Shift"] && this.keyState["ArrowDown"]) {
       this.rotate(0, rotateSpeed);
     }
-    if (this.keyState['Shift'] && this.keyState['ArrowLeft']) {
+    if (this.keyState["Shift"] && this.keyState["ArrowLeft"]) {
       this.rotate(-rotateSpeed, 0);
     }
-    if (this.keyState['Shift'] && this.keyState['ArrowRight']) {
+    if (this.keyState["Shift"] && this.keyState["ArrowRight"]) {
       this.rotate(rotateSpeed, 0);
     }
 
     // Zoom with + and - keys
-    if (this.keyState['+'] || this.keyState['=']) {
+    if (this.keyState["+"] || this.keyState["="]) {
       this.zoom(zoomSpeed);
     }
-    if (this.keyState['-'] || this.keyState['_']) {
+    if (this.keyState["-"] || this.keyState["_"]) {
       this.zoom(-zoomSpeed);
     }
   }
@@ -236,7 +236,9 @@ export class CameraControls {
    */
   public zoom(delta: number): void {
     // Get the current distance from camera to target
-    const distance = this.camera.position.distanceTo((this.controls as any).target);
+    const distance = this.camera.position.distanceTo(
+      (this.controls as any).target
+    );
 
     // Calculate the new distance based on the zoom factor
     // Using a multiplier approach for smoother zooming
@@ -244,10 +246,9 @@ export class CameraControls {
     const newDistance = distance * zoomFactor;
 
     // Get the direction vector from target to camera
-    const direction = new THREE.Vector3().subVectors(
-      this.camera.position,
-      (this.controls as any).target
-    ).normalize();
+    const direction = new THREE.Vector3()
+      .subVectors(this.camera.position, (this.controls as any).target)
+      .normalize();
 
     // Calculate the new position
     const newPosition = new THREE.Vector3().addVectors(
@@ -261,7 +262,9 @@ export class CameraControls {
     // Update the controls
     this.controls.update();
 
-    console.log(`Zoomed camera: delta=${delta}, distance=${distance}, newDistance=${newDistance}`);
+    console.log(
+      `Zoomed camera: delta=${delta}, distance=${distance}, newDistance=${newDistance}`
+    );
   }
 
   /**
@@ -317,8 +320,8 @@ export class CameraControls {
       const aspectRatio = window.innerWidth / window.innerHeight;
       const frustumSize = 20;
       this.camera = new THREE.OrthographicCamera(
-        frustumSize * aspectRatio / -2,
-        frustumSize * aspectRatio / 2,
+        (frustumSize * aspectRatio) / -2,
+        (frustumSize * aspectRatio) / 2,
         frustumSize / 2,
         frustumSize / -2,
         0.1,
@@ -335,7 +338,10 @@ export class CameraControls {
     this.graphicsManager.setCamera(this.camera);
 
     // Update the controls with the new camera
-    this.controls = new OrbitControls(this.camera, this.graphicsManager.getRenderer().domElement);
+    this.controls = new OrbitControls(
+      this.camera,
+      this.graphicsManager.getRenderer().domElement
+    );
     this.configureControls();
     (this.controls as any).target.copy(target);
     this.controls.update();
