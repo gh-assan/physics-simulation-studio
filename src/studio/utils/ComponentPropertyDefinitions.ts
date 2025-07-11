@@ -12,7 +12,7 @@ registerComponentProperties(FlagComponent.type, [
   {
     property: "width",
     type: "number",
-    label: "Flag Width",
+    label: "Width",
     min: 0.1,
     max: 10,
     step: 0.1
@@ -20,7 +20,7 @@ registerComponentProperties(FlagComponent.type, [
   {
     property: "height",
     type: "number",
-    label: "Flag Height",
+    label: "Height",
     min: 0.1,
     max: 10,
     step: 0.1
@@ -28,7 +28,7 @@ registerComponentProperties(FlagComponent.type, [
   {
     property: "segmentsX",
     type: "number",
-    label: "Segments X",
+    label: "Seg X",
     min: 1,
     max: 50,
     step: 1
@@ -36,7 +36,7 @@ registerComponentProperties(FlagComponent.type, [
   {
     property: "segmentsY",
     type: "number",
-    label: "Segments Y",
+    label: "Seg Y",
     min: 1,
     max: 50,
     step: 1
@@ -44,7 +44,7 @@ registerComponentProperties(FlagComponent.type, [
   {
     property: "mass",
     type: "number",
-    label: "Particle Mass",
+    label: "Mass",
     min: 0.01,
     max: 1,
     step: 0.01
@@ -68,13 +68,13 @@ registerComponentProperties(FlagComponent.type, [
   {
     property: "textureUrl",
     type: "text",
-    label: "Texture URL"
+    label: "Texture"
   },
   // Gravity properties
   {
     property: "gravity.x",
     type: "number",
-    label: "Gravity X",
+    label: "Grav X",
     min: -20,
     max: 20,
     step: 0.1
@@ -82,7 +82,7 @@ registerComponentProperties(FlagComponent.type, [
   {
     property: "gravity.y",
     type: "number",
-    label: "Gravity Y",
+    label: "Grav Y",
     min: -20,
     max: 20,
     step: 0.1
@@ -90,7 +90,7 @@ registerComponentProperties(FlagComponent.type, [
   {
     property: "gravity.z",
     type: "number",
-    label: "Gravity Z",
+    label: "Grav Z",
     min: -20,
     max: 20,
     step: 0.1
@@ -99,7 +99,7 @@ registerComponentProperties(FlagComponent.type, [
   {
     property: "windStrength",
     type: "number",
-    label: "Wind Strength",
+    label: "Wind Str",
     min: 0,
     max: 10,
     step: 0.1
@@ -107,7 +107,7 @@ registerComponentProperties(FlagComponent.type, [
   {
     property: "windDirection.x",
     type: "number",
-    label: "Wind Direction X",
+    label: "Wind X",
     min: -1,
     max: 1,
     step: 0.1
@@ -115,7 +115,7 @@ registerComponentProperties(FlagComponent.type, [
   {
     property: "windDirection.y",
     type: "number",
-    label: "Wind Direction Y",
+    label: "Wind Y",
     min: -1,
     max: 1,
     step: 0.1
@@ -123,7 +123,7 @@ registerComponentProperties(FlagComponent.type, [
   {
     property: "windDirection.z",
     type: "number",
-    label: "Wind Direction Z",
+    label: "Wind Z",
     min: -1,
     max: 1,
     step: 0.1
@@ -191,6 +191,70 @@ registerComponentProperties(WaterDropletComponent.type, [
     min: -10,
     max: 10,
     step: 0.1
+  }
+]);
+
+// Register properties for PositionComponent
+registerComponentProperties("PositionComponent", [
+  {
+    property: "x",
+    type: "number",
+    label: "Pos X",
+    min: -100,
+    max: 100,
+    step: 0.1
+  },
+  {
+    property: "y",
+    type: "number",
+    label: "Pos Y",
+    min: -100,
+    max: 100,
+    step: 0.1
+  },
+  {
+    property: "z",
+    type: "number",
+    label: "Pos Z",
+    min: -100,
+    max: 100,
+    step: 0.1
+  }
+]);
+
+// Register properties for RotationComponent
+registerComponentProperties("RotationComponent", [
+  {
+    property: "x",
+    type: "number",
+    label: "Rot X",
+    min: -1,
+    max: 1,
+    step: 0.01
+  },
+  {
+    property: "y",
+    type: "number",
+    label: "Rot Y",
+    min: -1,
+    max: 1,
+    step: 0.01
+  },
+  {
+    property: "z",
+    type: "number",
+    label: "Rot Z",
+    min: -1,
+    max: 1,
+    step: 0.01
+  },
+  {
+    property: "w",
+    type: "number",
+    label: "Rot W",
+    min: -1,
+    max: 1,
+    step: 0.01
   }
 ]);
 

@@ -11,7 +11,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
  */
 export class ThreeGraphicsManager {
   public scene: THREE.Scene;
-  public camera: THREE.PerspectiveCamera;
+  public camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   public renderer: THREE.WebGLRenderer;
   public controls: OrbitControls;
   private controlsEnabled = false;
@@ -82,10 +82,12 @@ export class ThreeGraphicsManager {
   private _addHelpers(): void {
     // Add a grid helper to visualize the 3D space
     const gridHelper = new THREE.GridHelper(50, 50, 0x888888, 0x444444);
+    gridHelper.name = 'grid'; // Name the grid so it can be toggled
     this.scene.add(gridHelper);
 
     // Add axes helper to show the orientation (red=X, green=Y, blue=Z)
     const axesHelper = new THREE.AxesHelper(10);
+    axesHelper.name = 'axes';
     this.scene.add(axesHelper);
 
     // Add a small sphere at the origin for reference
@@ -93,6 +95,7 @@ export class ThreeGraphicsManager {
     const originMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff });
     const originSphere = new THREE.Mesh(originGeometry, originMaterial);
     originSphere.position.set(0, 0, 0);
+    originSphere.name = 'origin';
     this.scene.add(originSphere);
   }
 
@@ -127,8 +130,20 @@ export class ThreeGraphicsManager {
     return this.scene;
   }
 
-  public getCamera(): THREE.PerspectiveCamera {
+  public getCamera(): THREE.PerspectiveCamera | THREE.OrthographicCamera {
     return this.camera;
+  }
+
+  /**
+   * Sets the camera
+   * @param camera The camera to set
+   */
+  public setCamera(camera: THREE.Camera): void {
+    if (camera instanceof THREE.PerspectiveCamera || camera instanceof THREE.OrthographicCamera) {
+      this.camera = camera;
+    } else {
+      console.error("Unsupported camera type");
+    }
   }
 
   public getRenderer(): THREE.WebGLRenderer {
@@ -149,7 +164,7 @@ export class ThreeGraphicsManager {
    */
   private _handleResize(): void {
     // Update camera aspect ratio
-    this.camera.aspect = window.innerWidth / window.innerHeight;
+    // this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
 
     // Update renderer size

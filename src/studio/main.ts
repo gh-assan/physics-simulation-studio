@@ -19,6 +19,11 @@ import { RotationComponent } from "../core/components/RotationComponent";
 import { Pane } from "tweakpane";
 import { registerComponentProperties } from "./utils/ComponentPropertyRegistry";
 import { ComponentControlProperty } from "./types";
+import { ViewportToolbar } from "./ui/ViewportToolbar";
+
+// Import styles
+import "./styles/studio.css";
+import "./styles/toolbar.css";
 
 const world = new World();
 const pluginManager = new PluginManager(world);
@@ -308,6 +313,14 @@ world.systemManager.registerSystem(
 // Set renderSystem on studio
 studio.setRenderSystem(renderSystem);
 
+// Create viewport toolbar
+const viewportToolbar = new ViewportToolbar({
+  graphicsManager: renderSystem.getGraphicsManager()
+});
+
+// Expose for debugging/console interaction
+(window as any).viewportToolbar = viewportToolbar;
+
 // Register plugins
 pluginManager.registerPlugin(new FlagSimulationPlugin());
 pluginManager.registerPlugin(new WaterSimulationPlugin());
@@ -332,29 +345,24 @@ globalControlsFolder
   .addButton({ title: "Reset" })
   .on("click", () => studio.reset());
 
-// Add camera controls to the global controls folder
-const cameraControlsFolder = (pane as any).addFolder({
-  title: "Camera Controls"
+// Enable camera controls by default
+const graphicsManager = renderSystem.getGraphicsManager();
+graphicsManager.toggleControls(true);
+
+// Add event listeners for toolbar events
+window.addEventListener('tool-changed', (event) => {
+  const customEvent = event as CustomEvent;
+  console.log(`Tool changed to: ${customEvent.detail.tool}`);
 });
 
-const cameraControlsParams = {
-  enabled: false
-};
+window.addEventListener('snap-changed', (event) => {
+  const customEvent = event as CustomEvent;
+  console.log(`Snap to grid changed to: ${customEvent.detail.snapToGrid}`);
+});
 
-cameraControlsFolder
-  .addBinding(cameraControlsParams, "enabled", { label: "Enable Controls" })
-  .on("change", (ev: { value: boolean }) => {
-    const graphicsManager = renderSystem.getGraphicsManager();
-    graphicsManager.toggleControls(ev.value);
-  });
-
-// Add help text directly in the UI
-const helpTextParams = {
-  "Controls Help":
-    "Left Click + Drag: Rotate\nRight Click + Drag: Pan\nScroll Wheel: Zoom"
-};
-cameraControlsFolder.addBinding(helpTextParams, "Controls Help", {
-  readonly: true
+window.addEventListener('grid-changed', (event) => {
+  const customEvent = event as CustomEvent;
+  console.log(`Grid visibility changed to: ${customEvent.detail.visible}`);
 });
 
 const simulationSelectionFolder = (pane as any).addFolder({
