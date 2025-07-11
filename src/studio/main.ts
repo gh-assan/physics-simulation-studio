@@ -19,6 +19,11 @@ import { RotationComponent } from "../core/components/RotationComponent";
 import { Pane } from "tweakpane";
 import { registerComponentProperties } from "./utils/ComponentPropertyRegistry";
 import { ComponentControlProperty } from "./types";
+import { ViewportToolbar } from "./ui/ViewportToolbar";
+
+// Import styles
+import "./styles/studio.css";
+import "./styles/toolbar.css";
 
 const world = new World();
 const pluginManager = new PluginManager(world);
@@ -308,6 +313,14 @@ world.systemManager.registerSystem(
 // Set renderSystem on studio
 studio.setRenderSystem(renderSystem);
 
+// Create viewport toolbar
+const viewportToolbar = new ViewportToolbar({
+  graphicsManager: renderSystem.getGraphicsManager()
+});
+
+// Expose for debugging/console interaction
+(window as any).viewportToolbar = viewportToolbar;
+
 // Register plugins
 pluginManager.registerPlugin(new FlagSimulationPlugin());
 pluginManager.registerPlugin(new WaterSimulationPlugin());
@@ -338,7 +351,8 @@ const cameraControlsFolder = (pane as any).addFolder({
 });
 
 const cameraControlsParams = {
-  enabled: false
+  enabled: false,
+  mode: "perspective"
 };
 
 cameraControlsFolder
@@ -348,13 +362,135 @@ cameraControlsFolder
     graphicsManager.toggleControls(ev.value);
   });
 
+cameraControlsFolder
+  .addButton({ title: "Reset Camera" })
+  .on("click", () => {
+    viewportToolbar.getCameraControls().resetCamera();
+  });
+
+cameraControlsFolder
+  .addBinding(cameraControlsParams, "mode", {
+    label: "Camera Mode",
+    options: [
+      { text: "Perspective", value: "perspective" },
+      { text: "Orthographic", value: "orthographic" }
+    ]
+  })
+  .on("change", (ev: { value: string }) => {
+    viewportToolbar.getCameraControls().setCameraMode(
+      ev.value as "perspective" | "orthographic"
+    );
+  });
+
+// Add view buttons
+const viewButtonsParams = {
+  view: "perspective"
+};
+
+cameraControlsFolder
+  .addBinding(viewButtonsParams, "view", {
+    label: "View",
+    options: [
+      { text: "Perspective", value: "perspective" },
+      { text: "Top", value: "top" },
+      { text: "Front", value: "front" },
+      { text: "Side", value: "side" }
+    ]
+  })
+  .on("change", (ev: { value: string }) => {
+    switch (ev.value) {
+      case "perspective":
+        viewportToolbar.getCameraControls().setPerspectiveView();
+        break;
+      case "top":
+        viewportToolbar.getCameraControls().setTopView();
+        break;
+      case "front":
+        viewportToolbar.getCameraControls().setFrontView();
+        break;
+      case "side":
+        viewportToolbar.getCameraControls().setSideView();
+        break;
+    }
+  });
+
 // Add help text directly in the UI
 const helpTextParams = {
   "Controls Help":
-    "Left Click + Drag: Rotate\nRight Click + Drag: Pan\nScroll Wheel: Zoom"
+    "Left Click + Drag: Rotate\nRight Click + Drag: Pan\nScroll Wheel: Zoom\n\nKeyboard Shortcuts:\nQ: Select Tool\nW: Move Tool\nE: Rotate Tool\nR: Scale Tool\nG: Toggle Grid\nShift+S: Toggle Snap\n\nCamera Shortcuts:\nP: Toggle Perspective/Orthographic\n0: Top View\n1: Front View\n2: Side View\n3: Perspective View\nArrow Keys: Pan\nShift+Arrow Keys: Rotate\n+/-: Zoom"
 };
 cameraControlsFolder.addBinding(helpTextParams, "Controls Help", {
   readonly: true
+});
+
+// Add viewport settings folder
+const viewportSettingsFolder = (pane as any).addFolder({
+  title: "Viewport Settings"
+});
+
+const viewportSettingsParams = {
+  showGrid: true,
+  snapToGrid: false
+};
+
+viewportSettingsFolder
+  .addBinding(viewportSettingsParams, "showGrid", { label: "Show Grid" })
+  .on("change", (ev: { value: boolean }) => {
+    // Toggle grid visibility
+    const scene = renderSystem.getGraphicsManager().getScene();
+    scene.traverse((object) => {
+      if (object.name === 'grid') {
+        object.visible = ev.value;
+      }
+    });
+
+    // Update toolbar button state
+    const gridButton = viewportToolbar.getElement().querySelector('.toolbar-button[title*="Grid"]');
+    if (gridButton) {
+      if (ev.value) {
+        gridButton.classList.add('active');
+      } else {
+        gridButton.classList.remove('active');
+      }
+    }
+  });
+
+viewportSettingsFolder
+  .addBinding(viewportSettingsParams, "snapToGrid", { label: "Snap to Grid" })
+  .on("change", (ev: { value: boolean }) => {
+    // Dispatch event for snap change
+    const event = new CustomEvent('snap-changed', {
+      detail: { snapToGrid: ev.value }
+    });
+    window.dispatchEvent(event);
+
+    // Update toolbar button state
+    const snapButton = viewportToolbar.getElement().querySelector('.toolbar-button[title*="Snap"]');
+    if (snapButton) {
+      if (ev.value) {
+        snapButton.classList.add('active');
+      } else {
+        snapButton.classList.remove('active');
+      }
+    }
+  });
+
+// Add event listeners to synchronize toolbar and settings panel
+window.addEventListener('tool-changed', (event: CustomEvent) => {
+  console.log(`Tool changed to: ${event.detail.tool}`);
+});
+
+window.addEventListener('snap-changed', (event: CustomEvent) => {
+  console.log(`Snap to grid changed to: ${event.detail.snapToGrid}`);
+  // Update the settings panel
+  viewportSettingsParams.snapToGrid = event.detail.snapToGrid;
+});
+
+// Listen for grid visibility changes from the toolbar
+window.addEventListener('grid-changed', (event: CustomEvent) => {
+  console.log(`Grid visibility changed to: ${event.detail.visible}`);
+  // Update the settings panel
+  viewportSettingsParams.showGrid = event.detail.visible;
 });
 
 const simulationSelectionFolder = (pane as any).addFolder({
