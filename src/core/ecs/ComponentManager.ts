@@ -158,7 +158,11 @@ export class ComponentManager {
       (c) => (c as any).type || c.name
     );
 
-    return this.getEntitiesWithComponentTypes(componentTypes);
+    const entities = this.getEntitiesWithComponentTypes(componentTypes);
+    console.log(
+      `[ComponentManager] getEntitiesWithComponents returning: ${entities.length} entities for types: ${componentTypes.join(", ")}`
+    );
+    return entities;
   }
 
   /**

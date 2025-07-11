@@ -29,12 +29,17 @@ describe("WaterDropletParameterPanel", () => {
   });
 
   it("should have the correct component type", () => {
-    expect(waterDropletParameterPanel.componentType).toBe(WaterDropletComponent.type);
+    expect(waterDropletParameterPanel.componentType).toBe(
+      WaterDropletComponent.type
+    );
   });
 
   it("should register UI controls for a WaterDropletComponent", () => {
     // Call the registerControls method
-    waterDropletParameterPanel.registerControls(uiManager, waterDropletComponent);
+    waterDropletParameterPanel.registerControls(
+      uiManager,
+      waterDropletComponent
+    );
 
     // The registerComponentControls method of the UIManager should be called
     expect(uiManager.registerComponentControls).toHaveBeenCalledWith(

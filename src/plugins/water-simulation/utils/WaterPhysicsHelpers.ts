@@ -25,20 +25,20 @@ export function updateDropletPhysics(
   const dropletGravity = dropletComponent.gravity || gravity;
 
   // Apply gravity force (F = m*g)
-  const gravityForce = dropletGravity.scale(dropletComponent.mass * dt);
+  const gravityForce = dropletGravity.scale(dropletComponent.mass.value * dt);
 
   // Apply drag force (F = -k*v)
-  const dragForceX = -dropletComponent.drag * dropletComponent.velocity.x * dt;
-  const dragForceY = -dropletComponent.drag * dropletComponent.velocity.y * dt;
-  const dragForceZ = -dropletComponent.drag * dropletComponent.velocity.z * dt;
+  const dragForceX = -dropletComponent.drag.value * dropletComponent.velocity.x * dt;
+  const dragForceY = -dropletComponent.drag.value * dropletComponent.velocity.y * dt;
+  const dragForceZ = -dropletComponent.drag.value * dropletComponent.velocity.z * dt;
 
   // Update velocity (a = F/m)
   dropletComponent.velocity.x +=
-    (gravityForce.x + dragForceX) / dropletComponent.mass;
+    (gravityForce.x + dragForceX) / dropletComponent.mass.value;
   dropletComponent.velocity.y +=
-    (gravityForce.y + dragForceY) / dropletComponent.mass;
+    (gravityForce.y + dragForceY) / dropletComponent.mass.value;
   dropletComponent.velocity.z +=
-    (gravityForce.z + dragForceZ) / dropletComponent.mass;
+    (gravityForce.z + dragForceZ) / dropletComponent.mass.value;
 
   // Update position
   positionComponent.x += dropletComponent.velocity.x * dt;
@@ -88,9 +88,9 @@ export function createRipples(
   droplet?: WaterDropletComponent
 ): void {
   // Use droplet properties if available, otherwise use defaults
-  const splashForce = droplet ? droplet.splashForce : 1.0;
-  const rippleDecay = droplet ? droplet.rippleDecay : 0.5;
-  const rippleExpansionRate = droplet ? droplet.rippleExpansionRate : 5.0;
+  const splashForce = droplet ? droplet.splashForce.value : 1.0;
+  const rippleDecay = droplet ? droplet.rippleDecay.value : 0.5;
+  const rippleExpansionRate = droplet ? droplet.rippleExpansionRate.value : 5.0;
 
   const newRipple: Ripple = {
     x: x,

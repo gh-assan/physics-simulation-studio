@@ -31,7 +31,7 @@ export class ThreeGraphicsManager {
     document.body.appendChild(this.renderer.domElement);
 
     // Position the camera to get a better view of objects at the origin
-    this.camera.position.set(0, 10, 15);
+    this.camera.position.set(0, 5, 20); // Adjusted camera position
     this.camera.lookAt(0, 0, 0);
 
     // Initialize OrbitControls
@@ -82,12 +82,12 @@ export class ThreeGraphicsManager {
   private _addHelpers(): void {
     // Add a grid helper to visualize the 3D space
     const gridHelper = new THREE.GridHelper(50, 50, 0x888888, 0x444444);
-    gridHelper.name = 'grid'; // Name the grid so it can be toggled
+    gridHelper.name = "grid"; // Name the grid so it can be toggled
     this.scene.add(gridHelper);
 
     // Add axes helper to show the orientation (red=X, green=Y, blue=Z)
     const axesHelper = new THREE.AxesHelper(10);
-    axesHelper.name = 'axes';
+    axesHelper.name = "axes";
     this.scene.add(axesHelper);
 
     // Add a small sphere at the origin for reference
@@ -95,7 +95,7 @@ export class ThreeGraphicsManager {
     const originMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff });
     const originSphere = new THREE.Mesh(originGeometry, originMaterial);
     originSphere.position.set(0, 0, 0);
-    originSphere.name = 'origin';
+    originSphere.name = "origin";
     this.scene.add(originSphere);
   }
 
@@ -139,7 +139,10 @@ export class ThreeGraphicsManager {
    * @param camera The camera to set
    */
   public setCamera(camera: THREE.Camera): void {
-    if (camera instanceof THREE.PerspectiveCamera || camera instanceof THREE.OrthographicCamera) {
+    if (
+      camera instanceof THREE.PerspectiveCamera ||
+      camera instanceof THREE.OrthographicCamera
+    ) {
       this.camera = camera;
     } else {
       console.error("Unsupported camera type");

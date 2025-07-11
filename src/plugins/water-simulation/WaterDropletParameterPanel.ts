@@ -4,6 +4,8 @@ import { IComponent } from "../../core/ecs/IComponent";
 import { WaterDropletComponent } from "./WaterComponents";
 import { ComponentControlProperty } from "../../studio/types";
 
+import { WATER_PHYSICS_CONSTANTS } from "./constants";
+
 /**
  * Parameter panel for the WaterDropletComponent
  * This class defines the UI controls for the WaterDropletComponent
@@ -35,38 +37,38 @@ export class WaterDropletParameterPanel extends ParameterPanelComponent {
     const properties: ComponentControlProperty[] = [
       // Basic properties
       {
-        property: "size",
+        property: "radius.value",
         type: "number",
-        label: "Droplet Size",
-        min: 0.1,
-        max: 5,
-        step: 0.1
+        label: "Droplet Radius",
+        min: WATER_PHYSICS_CONSTANTS.DROPLET_RADIUS.min,
+        max: WATER_PHYSICS_CONSTANTS.DROPLET_RADIUS.max,
+        step: WATER_PHYSICS_CONSTANTS.DROPLET_RADIUS.step
       },
       {
-        property: "fallHeight",
+        property: "fallHeight.value",
         type: "number",
         label: "Fall Height",
-        min: 1,
-        max: 100,
-        step: 1
+        min: WATER_PHYSICS_CONSTANTS.DROPLET_FALL_HEIGHT.min,
+        max: WATER_PHYSICS_CONSTANTS.DROPLET_FALL_HEIGHT.max,
+        step: WATER_PHYSICS_CONSTANTS.DROPLET_FALL_HEIGHT.step
       },
 
       // Physics properties
       {
-        property: "mass",
+        property: "mass.value",
         type: "number",
         label: "Mass",
-        min: 0.1,
-        max: 10,
-        step: 0.1
+        min: WATER_PHYSICS_CONSTANTS.DROPLET_MASS.min,
+        max: WATER_PHYSICS_CONSTANTS.DROPLET_MASS.max,
+        step: WATER_PHYSICS_CONSTANTS.DROPLET_MASS.step
       },
       {
-        property: "drag",
+        property: "drag.value",
         type: "number",
         label: "Drag Coefficient",
-        min: 0,
-        max: 1,
-        step: 0.01
+        min: WATER_PHYSICS_CONSTANTS.DROPLET_DRAG.min,
+        max: WATER_PHYSICS_CONSTANTS.DROPLET_DRAG.max,
+        step: WATER_PHYSICS_CONSTANTS.DROPLET_DRAG.step
       },
 
       // Gravity properties
@@ -123,38 +125,72 @@ export class WaterDropletParameterPanel extends ParameterPanelComponent {
 
       // Splash properties
       {
-        property: "splashForce",
+        property: "splashForce.value",
         type: "number",
         label: "Splash Force",
-        min: 0.1,
-        max: 5,
-        step: 0.1
+        min: WATER_PHYSICS_CONSTANTS.DROPLET_SPLASH_FORCE.min,
+        max: WATER_PHYSICS_CONSTANTS.DROPLET_SPLASH_FORCE.max,
+        step: WATER_PHYSICS_CONSTANTS.DROPLET_SPLASH_FORCE.step
       },
       {
-        property: "splashRadius",
+        property: "splashRadius.value",
         type: "number",
         label: "Splash Radius",
-        min: 0.1,
-        max: 10,
-        step: 0.1
+        min: WATER_PHYSICS_CONSTANTS.DROPLET_SPLASH_RADIUS.min,
+        max: WATER_PHYSICS_CONSTANTS.DROPLET_SPLASH_RADIUS.max,
+        step: WATER_PHYSICS_CONSTANTS.DROPLET_SPLASH_RADIUS.step
       },
 
       // Ripple properties
       {
-        property: "rippleDecay",
+        property: "rippleDecay.value",
         type: "number",
         label: "Ripple Decay",
-        min: 0.1,
-        max: 2,
-        step: 0.1
+        min: WATER_PHYSICS_CONSTANTS.DROPLET_RIPPLE_DECAY.min,
+        max: WATER_PHYSICS_CONSTANTS.DROPLET_RIPPLE_DECAY.max,
+        step: WATER_PHYSICS_CONSTANTS.DROPLET_RIPPLE_DECAY.step
       },
       {
-        property: "rippleExpansionRate",
+        property: "rippleExpansionRate.value",
         type: "number",
         label: "Ripple Expansion Rate",
-        min: 1,
-        max: 20,
-        step: 0.5
+        min: WATER_PHYSICS_CONSTANTS.DROPLET_RIPPLE_EXPANSION_RATE.min,
+        max: WATER_PHYSICS_CONSTANTS.DROPLET_RIPPLE_EXPANSION_RATE.max,
+        step: WATER_PHYSICS_CONSTANTS.DROPLET_RIPPLE_EXPANSION_RATE.step
+      },
+
+      // SPH Properties
+      {
+        property: "smoothingLength.value",
+        type: "number",
+        label: "Smoothing Length (h)",
+        min: WATER_PHYSICS_CONSTANTS.SMOOTHING_LENGTH.min,
+        max: WATER_PHYSICS_CONSTANTS.SMOOTHING_LENGTH.max,
+        step: WATER_PHYSICS_CONSTANTS.SMOOTHING_LENGTH.step
+      },
+      {
+        property: "gasConstant.value",
+        type: "number",
+        label: "Gas Constant (k)",
+        min: WATER_PHYSICS_CONSTANTS.GAS_CONSTANT.min,
+        max: WATER_PHYSICS_CONSTANTS.GAS_CONSTANT.max,
+        step: WATER_PHYSICS_CONSTANTS.GAS_CONSTANT.step
+      },
+      {
+        property: "restDensity.value",
+        type: "number",
+        label: "Rest Density (rho0)",
+        min: WATER_PHYSICS_CONSTANTS.REST_DENSITY.min,
+        max: WATER_PHYSICS_CONSTANTS.REST_DENSITY.max,
+        step: WATER_PHYSICS_CONSTANTS.REST_DENSITY.step
+      },
+      {
+        property: "surfaceTensionCoefficient.value",
+        type: "number",
+        label: "Surface Tension Coeff",
+        min: WATER_PHYSICS_CONSTANTS.SURFACE_TENSION_COEFFICIENT.min,
+        max: WATER_PHYSICS_CONSTANTS.SURFACE_TENSION_COEFFICIENT.max,
+        step: WATER_PHYSICS_CONSTANTS.SURFACE_TENSION_COEFFICIENT.step
       }
     ];
 

@@ -15,7 +15,7 @@ export class FlagComponent implements IComponent {
 
   // Pole attachment
   poleEntityId: number | null = null;
-  attachedEdge: 'left' | 'right' | 'top' | 'bottom';
+  attachedEdge: "left" | "right" | "top" | "bottom";
 
   // Material properties
   mass: number; // Mass of each point in the grid
@@ -51,7 +51,7 @@ export class FlagComponent implements IComponent {
     windDirection?: { x: number; y: number; z: number } | null,
     gravity?: { x: number; y: number; z: number } | null,
     poleEntityId: number | null = null,
-    attachedEdge: 'left' | 'right' | 'top' | 'bottom' = 'left'
+    attachedEdge: "left" | "right" | "top" | "bottom" = "left"
   ) {
     this.width = width;
     this.height = height;

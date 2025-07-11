@@ -18,7 +18,12 @@ export class PropertyInspectorSystem extends System {
   private studio: Studio;
   private pluginManager: PluginManager;
 
-  constructor(uiManager: UIManager, world: World, studio: Studio, pluginManager: PluginManager) {
+  constructor(
+    uiManager: UIManager,
+    world: World,
+    studio: Studio,
+    pluginManager: PluginManager
+  ) {
     super();
     this.uiManager = uiManager;
     this.world = world;
@@ -102,22 +107,30 @@ export class PropertyInspectorSystem extends System {
   private getParameterPanelsFromActivePlugin(): ParameterPanelComponent[] {
     const activeSimulationName = this.studio.getActiveSimulationName();
     if (!activeSimulationName) {
-      console.log(`[PropertyInspectorSystem] No active simulation, returning empty parameter panels array`);
+      console.log(
+        `[PropertyInspectorSystem] No active simulation, returning empty parameter panels array`
+      );
       return [];
     }
 
     const activePlugin = this.pluginManager.getPlugin(activeSimulationName);
     if (!activePlugin) {
-      console.log(`[PropertyInspectorSystem] No active plugin found for simulation ${activeSimulationName}, returning empty parameter panels array`);
+      console.log(
+        `[PropertyInspectorSystem] No active plugin found for simulation ${activeSimulationName}, returning empty parameter panels array`
+      );
       return [];
     }
 
     if (activePlugin.getParameterPanels) {
       const panels = activePlugin.getParameterPanels();
-      console.log(`[PropertyInspectorSystem] Got ${panels.length} parameter panels from active plugin ${activeSimulationName}`);
+      console.log(
+        `[PropertyInspectorSystem] Got ${panels.length} parameter panels from active plugin ${activeSimulationName}`
+      );
       return panels;
     } else {
-      console.log(`[PropertyInspectorSystem] Active plugin ${activeSimulationName} does not implement getParameterPanels, returning empty parameter panels array`);
+      console.log(
+        `[PropertyInspectorSystem] Active plugin ${activeSimulationName} does not implement getParameterPanels, returning empty parameter panels array`
+      );
       return [];
     }
   }
@@ -164,7 +177,7 @@ export class PropertyInspectorSystem extends System {
 
     // First, try to find a parameter panel component for this component type
     const parameterPanel = parameterPanels.find(
-      panel => panel.componentType === componentTypeKey
+      (panel) => panel.componentType === componentTypeKey
     );
 
     if (parameterPanel) {
@@ -207,8 +220,14 @@ export class PropertyInspectorSystem extends System {
     const currentActiveSimulation = this.studio.getActiveSimulationName();
 
     // Debugging logs to verify the selected entity and active simulation
-    console.log("[PropertyInspectorSystem] Current selected entity:", currentSelectedEntity);
-    console.log("[PropertyInspectorSystem] Current active simulation:", currentActiveSimulation);
+    console.log(
+      "[PropertyInspectorSystem] Current selected entity:",
+      currentSelectedEntity
+    );
+    console.log(
+      "[PropertyInspectorSystem] Current active simulation:",
+      currentActiveSimulation
+    );
 
     // Check if the selected entity has changed OR if the active simulation has changed
     if (
@@ -254,7 +273,10 @@ export class PropertyInspectorSystem extends System {
         const component = components[componentName];
 
         // Skip SelectableComponent and RenderableComponent
-        if (componentName === "SelectableComponent" || componentName === "RenderableComponent") {
+        if (
+          componentName === "SelectableComponent" ||
+          componentName === "RenderableComponent"
+        ) {
           console.log(
             `[PropertyInspectorSystem] Skipping component '${componentName}' as it is hidden from the UI`
           );

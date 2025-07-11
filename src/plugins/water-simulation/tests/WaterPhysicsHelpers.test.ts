@@ -30,7 +30,9 @@ describe("WaterPhysicsHelpers", () => {
 
   it("updateRipples should expand and decay ripples", () => {
     const waterBody = new WaterBodyComponent();
-    waterBody.ripples = [{ x: 0, z: 0, radius: 0, amplitude: 1, decay: 0.1, expansionRate: 5 }];
+    waterBody.ripples = [
+      { x: 0, z: 0, radius: 0, amplitude: 1, decay: 0.1, expansionRate: 5 }
+    ];
 
     updateRipples(waterBody, 1); // Simulate 1 second
 
@@ -42,7 +44,8 @@ describe("WaterPhysicsHelpers", () => {
   });
 
   it("updateDropletPhysics should apply gravity to droplet velocity and position", () => {
-    const droplet = new WaterDropletComponent(0.5, 10, new Vector3(0, 0, 0));
+    const droplet = new WaterDropletComponent();
+    droplet.velocity = new Vector3(0, 0, 0);
     const position = new PositionComponent(0, 10, 0);
     const gravity = new Vector3(0, -9.81, 0);
 
@@ -61,7 +64,7 @@ describe("WaterPhysicsHelpers", () => {
     world.componentManager.addComponent(
       dropletEntity,
       WaterDropletComponent.type,
-      new WaterDropletComponent()
+      new WaterDropletComponent(dropletPosition.toVector3())
     );
     world.componentManager.addComponent(
       dropletEntity,
@@ -93,7 +96,7 @@ describe("WaterPhysicsHelpers", () => {
     world.componentManager.addComponent(
       dropletEntity,
       WaterDropletComponent.type,
-      new WaterDropletComponent()
+      new WaterDropletComponent(dropletPosition.toVector3())
     );
     world.componentManager.addComponent(
       dropletEntity,

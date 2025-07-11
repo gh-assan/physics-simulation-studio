@@ -85,7 +85,7 @@ describe("PropertyInspectorSystem", () => {
     const mockStudio = new Studio(mockWorld, mockPluginManager);
 
     // Mock the getActiveSimulationName method
-    jest.spyOn(mockStudio, 'getActiveSimulationName').mockReturnValue(null);
+    jest.spyOn(mockStudio, "getActiveSimulationName").mockReturnValue(null);
 
     propertyInspectorSystem = new PropertyInspectorSystem(
       uiManager,

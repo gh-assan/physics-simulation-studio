@@ -1,4 +1,5 @@
 import { Component } from "../ecs/Component";
+import { Vector3 } from "../../plugins/water-simulation/utils/Vector3";
 
 /**
  * Component that stores the position of an entity in 3D space.
@@ -45,5 +46,9 @@ export class PositionComponent extends Component<PositionComponent> {
    */
   clone(): PositionComponent {
     return new PositionComponent(this.x, this.y, this.z);
+  }
+
+  toVector3(): Vector3 {
+    return new Vector3(this.x, this.y, this.z);
   }
 }

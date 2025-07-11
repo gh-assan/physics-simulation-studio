@@ -350,17 +350,17 @@ const graphicsManager = renderSystem.getGraphicsManager();
 graphicsManager.toggleControls(true);
 
 // Add event listeners for toolbar events
-window.addEventListener('tool-changed', (event) => {
+window.addEventListener("tool-changed", (event) => {
   const customEvent = event as CustomEvent;
   console.log(`Tool changed to: ${customEvent.detail.tool}`);
 });
 
-window.addEventListener('snap-changed', (event) => {
+window.addEventListener("snap-changed", (event) => {
   const customEvent = event as CustomEvent;
   console.log(`Snap to grid changed to: ${customEvent.detail.snapToGrid}`);
 });
 
-window.addEventListener('grid-changed', (event) => {
+window.addEventListener("grid-changed", (event) => {
   const customEvent = event as CustomEvent;
   console.log(`Grid visibility changed to: ${customEvent.detail.visible}`);
 });
@@ -369,7 +369,7 @@ const simulationSelectionFolder = (pane as any).addFolder({
   title: "Simulations"
 });
 const simulationParams = {
-  selectedSimulation: "flag-simulation" // Default selected simulation
+  selectedSimulation: "water-simulation" // Default selected simulation
 };
 
 simulationSelectionFolder

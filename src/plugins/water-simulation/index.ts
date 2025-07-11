@@ -10,6 +10,7 @@ import { RotationComponent } from "@core/components/RotationComponent"; // Impor
 import { ParameterPanelComponent } from "@core/components/ParameterPanelComponent";
 import { WaterBodyParameterPanel } from "./WaterBodyParameterPanel";
 import { WaterDropletParameterPanel } from "./WaterDropletParameterPanel";
+import { Vector3 } from "./utils/Vector3"; // Add this import
 
 export { WaterBodyComponent, WaterDropletComponent } from "./WaterComponents";
 export { WaterBodyParameterPanel } from "./WaterBodyParameterPanel";
@@ -66,7 +67,11 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
       this._parameterPanels.push(waterDropletPanel);
 
       // Create and register parameter panel entities if ParameterPanelComponent is registered
-      if (world.componentManager.getComponentConstructors().has(ParameterPanelComponent.type)) {
+      if (
+        world.componentManager
+          .getComponentConstructors()
+          .has(ParameterPanelComponent.type)
+      ) {
         const waterBodyPanelEntity = world.entityManager.createEntity();
         world.componentManager.addComponent(
           waterBodyPanelEntity,
@@ -81,12 +86,19 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
           waterDropletPanel
         );
 
-        console.log("Water Simulation Plugin registered with parameter panels.");
+        console.log(
+          "Water Simulation Plugin registered with parameter panels."
+        );
       } else {
-        console.log("Water Simulation Plugin registered without parameter panels (ParameterPanelComponent not registered).");
+        console.log(
+          "Water Simulation Plugin registered without parameter panels (ParameterPanelComponent not registered)."
+        );
       }
     } catch (error) {
-      console.warn("Failed to register parameter panels, but simulation will continue:", error);
+      console.warn(
+        "Failed to register parameter panels, but simulation will continue:",
+        error
+      );
     }
   }
 
@@ -130,16 +142,23 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
 
     // Create a water droplet
     const droplet = world.entityManager.createEntity();
+    console.log("[WaterSimulationPlugin] Created droplet entity:", droplet);
     world.componentManager.addComponent(
       droplet,
       PositionComponent.type,
-      new PositionComponent(0, 10, 0)
+      new PositionComponent(0, 5, 0)
     );
+    const initialDropletComponent = new WaterDropletComponent(new Vector3(0, 5, 0));
     world.componentManager.addComponent(
       droplet,
       WaterDropletComponent.type,
-      new WaterDropletComponent()
+      initialDropletComponent
     );
+    console.log(
+      "[WaterSimulationPlugin] Initial DropletComponent properties:",
+      initialDropletComponent
+    );
+
     world.componentManager.addComponent(
       droplet,
       RenderableComponent.type,
@@ -153,8 +172,8 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
     world.componentManager.addComponent(
       droplet,
       RotationComponent.type,
-      new RotationComponent(0, 0, 0, 1)
-    ); // Add RotationComponent
+      new RotationComponent(0, 0, 0, 1) // Add RotationComponent
+    );
   }
 
   getRenderer(): WaterRenderer {

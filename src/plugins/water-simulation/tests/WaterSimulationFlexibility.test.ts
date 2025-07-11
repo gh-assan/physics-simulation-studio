@@ -1,5 +1,16 @@
 import { World } from "../../../core/ecs/World";
 import { WaterSimulationPlugin } from "../index";
+
+jest.mock("../WaterRenderer", () => {
+  return {
+    WaterRenderer: jest.fn().mockImplementation(() => {
+      return {
+        render: jest.fn(),
+        unregister: jest.fn()
+      };
+    })
+  };
+});
 import { ParameterPanelComponent } from "../../../core/components/ParameterPanelComponent";
 import { WaterBodyParameterPanel } from "../WaterBodyParameterPanel";
 import { PositionComponent } from "../../../core/components/PositionComponent";
@@ -21,12 +32,30 @@ describe("WaterSimulationFlexibility", () => {
     // Don't register ParameterPanelComponent
 
     // Register required components
-    world.componentManager.registerComponent(PositionComponent.type, PositionComponent);
-    world.componentManager.registerComponent(RenderableComponent.type, RenderableComponent);
-    world.componentManager.registerComponent(SelectableComponent.type, SelectableComponent);
-    world.componentManager.registerComponent(RotationComponent.type, RotationComponent);
-    world.componentManager.registerComponent(WaterBodyComponent.type, WaterBodyComponent);
-    world.componentManager.registerComponent(WaterDropletComponent.type, WaterDropletComponent);
+    world.componentManager.registerComponent(
+      PositionComponent.type,
+      PositionComponent
+    );
+    world.componentManager.registerComponent(
+      RenderableComponent.type,
+      RenderableComponent
+    );
+    world.componentManager.registerComponent(
+      SelectableComponent.type,
+      SelectableComponent
+    );
+    world.componentManager.registerComponent(
+      RotationComponent.type,
+      RotationComponent
+    );
+    world.componentManager.registerComponent(
+      WaterBodyComponent.type,
+      WaterBodyComponent
+    );
+    world.componentManager.registerComponent(
+      WaterDropletComponent.type,
+      WaterDropletComponent
+    );
 
     // Register the water plugin
     waterPlugin.register(world);
@@ -39,10 +68,16 @@ describe("WaterSimulationFlexibility", () => {
     expect(entities.size).toBeGreaterThan(0);
 
     // Verify that water components were added
-    const waterBodyEntities = world.componentManager.getEntitiesWithComponentTypes(["WaterBodyComponent"]);
+    const waterBodyEntities =
+      world.componentManager.getEntitiesWithComponentTypes([
+        "WaterBodyComponent"
+      ]);
     expect(waterBodyEntities.length).toBeGreaterThan(0);
 
-    const waterDropletEntities = world.componentManager.getEntitiesWithComponentTypes(["WaterDropletComponent"]);
+    const waterDropletEntities =
+      world.componentManager.getEntitiesWithComponentTypes([
+        "WaterDropletComponent"
+      ]);
     expect(waterDropletEntities.length).toBeGreaterThan(0);
 
     // Verify that parameter panels were created but not registered as entities
@@ -50,7 +85,10 @@ describe("WaterSimulationFlexibility", () => {
     expect(parameterPanels.length).toBeGreaterThan(0);
 
     // Verify that no parameter panel entities were created
-    const parameterPanelEntities = world.componentManager.getEntitiesWithComponentTypes([ParameterPanelComponent.type]);
+    const parameterPanelEntities =
+      world.componentManager.getEntitiesWithComponentTypes([
+        ParameterPanelComponent.type
+      ]);
     expect(parameterPanelEntities.length).toBe(0);
   });
 
@@ -63,12 +101,30 @@ describe("WaterSimulationFlexibility", () => {
     // which is the main requirement from the issue description
 
     // Register required components
-    world.componentManager.registerComponent(PositionComponent.type, PositionComponent);
-    world.componentManager.registerComponent(RenderableComponent.type, RenderableComponent);
-    world.componentManager.registerComponent(SelectableComponent.type, SelectableComponent);
-    world.componentManager.registerComponent(RotationComponent.type, RotationComponent);
-    world.componentManager.registerComponent(WaterBodyComponent.type, WaterBodyComponent);
-    world.componentManager.registerComponent(WaterDropletComponent.type, WaterDropletComponent);
+    world.componentManager.registerComponent(
+      PositionComponent.type,
+      PositionComponent
+    );
+    world.componentManager.registerComponent(
+      RenderableComponent.type,
+      RenderableComponent
+    );
+    world.componentManager.registerComponent(
+      SelectableComponent.type,
+      SelectableComponent
+    );
+    world.componentManager.registerComponent(
+      RotationComponent.type,
+      RotationComponent
+    );
+    world.componentManager.registerComponent(
+      WaterBodyComponent.type,
+      WaterBodyComponent
+    );
+    world.componentManager.registerComponent(
+      WaterDropletComponent.type,
+      WaterDropletComponent
+    );
 
     // Register the water plugin
     waterPlugin.register(world);
@@ -81,10 +137,16 @@ describe("WaterSimulationFlexibility", () => {
     expect(entities.size).toBeGreaterThan(0);
 
     // Verify that water components were added
-    const waterBodyEntities = world.componentManager.getEntitiesWithComponentTypes(["WaterBodyComponent"]);
+    const waterBodyEntities =
+      world.componentManager.getEntitiesWithComponentTypes([
+        "WaterBodyComponent"
+      ]);
     expect(waterBodyEntities.length).toBeGreaterThan(0);
 
-    const waterDropletEntities = world.componentManager.getEntitiesWithComponentTypes(["WaterDropletComponent"]);
+    const waterDropletEntities =
+      world.componentManager.getEntitiesWithComponentTypes([
+        "WaterDropletComponent"
+      ]);
     expect(waterDropletEntities.length).toBeGreaterThan(0);
   });
 });

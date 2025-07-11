@@ -23,14 +23,15 @@ describe("FlagParameterPanel", () => {
   let world: World; // Declare world
 
   beforeEach(() => {
-    world = { // Mock World
+    world = {
+      // Mock World
       componentManager: {
         getEntitiesWithComponents: jest.fn().mockReturnValue([]),
         getComponent: jest.fn(),
         addComponent: jest.fn()
       },
       entityManager: {
-        createEntity: jest.fn().mockReturnValue('test-entity-id'),
+        createEntity: jest.fn().mockReturnValue("test-entity-id"),
         getEntityById: jest.fn()
       }
     } as any; // Cast to any to satisfy type checking for partial mock

@@ -6,13 +6,13 @@
  */
 
 export interface ToolbarButtonOptions {
-  icon?: string;       // Icon URL or SVG content
-  label?: string;      // Text label for the button
-  tooltip?: string;    // Tooltip text
-  shortcut?: string;   // Keyboard shortcut (displayed in tooltip)
+  icon?: string; // Icon URL or SVG content
+  label?: string; // Text label for the button
+  tooltip?: string; // Tooltip text
+  shortcut?: string; // Keyboard shortcut (displayed in tooltip)
   onClick?: () => void; // Click handler
-  active?: boolean;    // Whether the button is active (toggled on)
-  disabled?: boolean;  // Whether the button is disabled
+  active?: boolean; // Whether the button is active (toggled on)
+  disabled?: boolean; // Whether the button is disabled
 }
 
 export class ToolbarButton {
@@ -29,21 +29,21 @@ export class ToolbarButton {
     this._disabled = options.disabled || false;
 
     // Create button element
-    this.element = document.createElement('div');
-    this.element.className = 'toolbar-button';
+    this.element = document.createElement("div");
+    this.element.className = "toolbar-button";
 
     // Add icon if provided
     if (options.icon) {
-      this.iconElement = document.createElement('div');
-      this.iconElement.className = 'toolbar-button-icon';
+      this.iconElement = document.createElement("div");
+      this.iconElement.className = "toolbar-button-icon";
 
       // Check if the icon is an SVG string or a URL
-      if (options.icon.trim().startsWith('<svg')) {
+      if (options.icon.trim().startsWith("<svg")) {
         this.iconElement.innerHTML = options.icon;
       } else {
-        const img = document.createElement('img');
+        const img = document.createElement("img");
         img.src = options.icon;
-        img.alt = options.label || '';
+        img.alt = options.label || "";
         this.iconElement.appendChild(img);
       }
 
@@ -52,8 +52,8 @@ export class ToolbarButton {
 
     // Add label if provided
     if (options.label) {
-      this.labelElement = document.createElement('div');
-      this.labelElement.className = 'toolbar-button-label';
+      this.labelElement = document.createElement("div");
+      this.labelElement.className = "toolbar-button-label";
       this.labelElement.textContent = options.label;
       this.element.appendChild(this.labelElement);
     }
@@ -72,19 +72,25 @@ export class ToolbarButton {
 
     // Set initial states
     if (this._active) {
-      this.element.classList.add('active');
+      this.element.classList.add("active");
     }
 
     if (this._disabled) {
-      this.element.classList.add('disabled');
+      this.element.classList.add("disabled");
     } else {
       // Add click handler if not disabled
-      this.element.addEventListener('click', this._handleClick.bind(this));
+      this.element.addEventListener("click", this._handleClick.bind(this));
     }
 
     // Add hover effects
-    this.element.addEventListener('mouseenter', this._handleMouseEnter.bind(this));
-    this.element.addEventListener('mouseleave', this._handleMouseLeave.bind(this));
+    this.element.addEventListener(
+      "mouseenter",
+      this._handleMouseEnter.bind(this)
+    );
+    this.element.addEventListener(
+      "mouseleave",
+      this._handleMouseLeave.bind(this)
+    );
   }
 
   /**
@@ -106,7 +112,7 @@ export class ToolbarButton {
    */
   private _handleMouseEnter(): void {
     if (!this._disabled) {
-      this.element.classList.add('hover');
+      this.element.classList.add("hover");
     }
   }
 
@@ -114,7 +120,7 @@ export class ToolbarButton {
    * Handles mouse leave events for hover effects
    */
   private _handleMouseLeave(): void {
-    this.element.classList.remove('hover');
+    this.element.classList.remove("hover");
   }
 
   /**
@@ -131,9 +137,9 @@ export class ToolbarButton {
     this._active = active;
 
     if (active) {
-      this.element.classList.add('active');
+      this.element.classList.add("active");
     } else {
-      this.element.classList.remove('active');
+      this.element.classList.remove("active");
     }
   }
 
@@ -151,11 +157,11 @@ export class ToolbarButton {
     this._disabled = disabled;
 
     if (disabled) {
-      this.element.classList.add('disabled');
-      this.element.removeEventListener('click', this._handleClick.bind(this));
+      this.element.classList.add("disabled");
+      this.element.removeEventListener("click", this._handleClick.bind(this));
     } else {
-      this.element.classList.remove('disabled');
-      this.element.addEventListener('click', this._handleClick.bind(this));
+      this.element.classList.remove("disabled");
+      this.element.addEventListener("click", this._handleClick.bind(this));
     }
   }
 
@@ -174,13 +180,13 @@ export class ToolbarButton {
 
     // Update icon if provided
     if (options.icon && this.iconElement) {
-      if (options.icon.trim().startsWith('<svg')) {
+      if (options.icon.trim().startsWith("<svg")) {
         this.iconElement.innerHTML = options.icon;
       } else {
-        const img = this.iconElement.querySelector('img');
+        const img = this.iconElement.querySelector("img");
         if (img) {
           img.src = options.icon;
-          img.alt = this.options.label || '';
+          img.alt = this.options.label || "";
         }
       }
     }

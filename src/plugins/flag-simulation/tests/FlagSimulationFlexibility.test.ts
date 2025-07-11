@@ -9,7 +9,7 @@ import { RotationComponent } from "../../../core/components/RotationComponent";
 import { FlagComponent } from "../FlagComponent";
 
 // Mock THREE library
-jest.mock('three', () => {
+jest.mock("three", () => {
   return {
     Vector3: jest.fn().mockImplementation(() => {
       return {
@@ -43,12 +43,27 @@ describe("FlagSimulationFlexibility", () => {
     // Don't register ParameterPanelComponent
 
     // Register required components
-    world.componentManager.registerComponent(PositionComponent.type, PositionComponent);
-    world.componentManager.registerComponent(RenderableComponent.type, RenderableComponent);
-    world.componentManager.registerComponent(SelectableComponent.type, SelectableComponent);
-    world.componentManager.registerComponent(RotationComponent.type, RotationComponent);
+    world.componentManager.registerComponent(
+      PositionComponent.type,
+      PositionComponent
+    );
+    world.componentManager.registerComponent(
+      RenderableComponent.type,
+      RenderableComponent
+    );
+    world.componentManager.registerComponent(
+      SelectableComponent.type,
+      SelectableComponent
+    );
+    world.componentManager.registerComponent(
+      RotationComponent.type,
+      RotationComponent
+    );
     world.componentManager.registerComponent(FlagComponent.type, FlagComponent);
-    world.componentManager.registerComponent(FlagParameterPanel.type, FlagParameterPanel);
+    world.componentManager.registerComponent(
+      FlagParameterPanel.type,
+      FlagParameterPanel
+    );
 
     // Register the flag plugin
     flagPlugin.register(world);
@@ -61,7 +76,9 @@ describe("FlagSimulationFlexibility", () => {
     expect(entities.size).toBeGreaterThan(0);
 
     // Verify that flag components were added
-    const flagEntities = world.componentManager.getEntitiesWithComponentTypes(["FlagComponent"]);
+    const flagEntities = world.componentManager.getEntitiesWithComponentTypes([
+      "FlagComponent"
+    ]);
     expect(flagEntities.length).toBeGreaterThan(0);
 
     // Verify that parameter panels were created but not registered as entities
@@ -69,7 +86,10 @@ describe("FlagSimulationFlexibility", () => {
     expect(parameterPanels.length).toBeGreaterThan(0);
 
     // Verify that no parameter panel entities were created
-    const parameterPanelEntities = world.componentManager.getEntitiesWithComponentTypes([ParameterPanelComponent.type]);
+    const parameterPanelEntities =
+      world.componentManager.getEntitiesWithComponentTypes([
+        ParameterPanelComponent.type
+      ]);
     expect(parameterPanelEntities.length).toBe(0);
   });
 
@@ -82,12 +102,27 @@ describe("FlagSimulationFlexibility", () => {
     // which is the main requirement from the issue description
 
     // Register required components
-    world.componentManager.registerComponent(PositionComponent.type, PositionComponent);
-    world.componentManager.registerComponent(RenderableComponent.type, RenderableComponent);
-    world.componentManager.registerComponent(SelectableComponent.type, SelectableComponent);
-    world.componentManager.registerComponent(RotationComponent.type, RotationComponent);
+    world.componentManager.registerComponent(
+      PositionComponent.type,
+      PositionComponent
+    );
+    world.componentManager.registerComponent(
+      RenderableComponent.type,
+      RenderableComponent
+    );
+    world.componentManager.registerComponent(
+      SelectableComponent.type,
+      SelectableComponent
+    );
+    world.componentManager.registerComponent(
+      RotationComponent.type,
+      RotationComponent
+    );
     world.componentManager.registerComponent(FlagComponent.type, FlagComponent);
-    world.componentManager.registerComponent(FlagParameterPanel.type, FlagParameterPanel);
+    world.componentManager.registerComponent(
+      FlagParameterPanel.type,
+      FlagParameterPanel
+    );
 
     // Register the flag plugin
     flagPlugin.register(world);
@@ -100,7 +135,9 @@ describe("FlagSimulationFlexibility", () => {
     expect(entities.size).toBeGreaterThan(0);
 
     // Verify that flag components were added
-    const flagEntities = world.componentManager.getEntitiesWithComponentTypes(["FlagComponent"]);
+    const flagEntities = world.componentManager.getEntitiesWithComponentTypes([
+      "FlagComponent"
+    ]);
     expect(flagEntities.length).toBeGreaterThan(0);
   });
 });

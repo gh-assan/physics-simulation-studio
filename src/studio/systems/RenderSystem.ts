@@ -9,9 +9,13 @@ import { WaterRenderer } from "../../plugins/water-simulation/WaterRenderer"; //
 import { SelectableComponent } from "../../core/components/SelectableComponent"; // Import SelectableComponent
 import { createGeometry, disposeThreeJsObject } from "../utils/ThreeJsUtils";
 import { ThreeGraphicsManager } from "../graphics/ThreeGraphicsManager";
-import { createPoleMesh, createFlagMesh } from "../../plugins/flag-simulation/FlagRenderer"; // Import createPoleMesh and createFlagMesh
+import {
+  createPoleMesh,
+  createFlagMesh
+} from "../../plugins/flag-simulation/FlagRenderer"; // Import createPoleMesh and createFlagMesh
 import { FlagComponent } from "../../plugins/flag-simulation/FlagComponent"; // Import FlagComponent
 import { PoleComponent } from "../../plugins/flag-simulation/PoleComponent"; // Import PoleComponent
+import { WaterDropletComponent } from "../../plugins/water-simulation/WaterComponents"; // Import WaterDropletComponent
 
 export class RenderSystem extends System {
   private graphicsManager: ThreeGraphicsManager;
@@ -122,6 +126,7 @@ export class RenderSystem extends System {
     // console.log(`Found ${entities.length} general entities.`);
 
     for (const entityId of entities) {
+      console.log(`[RenderSystem] Processing entity: ${entityId}`);
       const position = world.componentManager.getComponent(
         entityId,
         PositionComponent.name
@@ -147,17 +152,28 @@ export class RenderSystem extends System {
           world.componentManager.hasComponent(entityId, FlagComponent.type)
         ) {
           // Handle flag rendering directly here
-          const flagComponent = world.componentManager.getComponent(entityId, FlagComponent.type) as FlagComponent;
-          if (flagComponent && flagComponent.points && flagComponent.points.length > 0) {
+          const flagComponent = world.componentManager.getComponent(
+            entityId,
+            FlagComponent.type
+          ) as FlagComponent;
+          if (
+            flagComponent &&
+            flagComponent.points &&
+            flagComponent.points.length > 0
+          ) {
             let flagMesh = this.meshes.get(entityId);
             if (!flagMesh) {
               flagMesh = createFlagMesh(flagComponent);
               this.graphicsManager.getScene().add(flagMesh);
               this.meshes.set(entityId, flagMesh);
-              console.log("[RenderSystem] Added new flag mesh to scene:", flagMesh);
+              console.log(
+                "[RenderSystem] Added new flag mesh to scene:",
+                flagMesh
+              );
             } else {
               // Update existing flag mesh positions
-              const positions = flagMesh.geometry.attributes.position.array as Float32Array; // Directly use TypedArray
+              const positions = flagMesh.geometry.attributes.position
+                .array as Float32Array; // Directly use TypedArray
               flagComponent.points.forEach((p, i) => {
                 positions[i * 3] = p.position.x;
                 positions[i * 3 + 1] = p.position.y;
@@ -165,7 +181,10 @@ export class RenderSystem extends System {
               });
               flagMesh.geometry.attributes.position.needsUpdate = true;
               flagMesh.geometry.computeVertexNormals();
-              console.log("[RenderSystem] Updated existing flag mesh positions for entity:", entityId);
+              console.log(
+                "[RenderSystem] Updated existing flag mesh positions for entity:",
+                entityId
+              );
             }
           }
           continue;
@@ -174,6 +193,57 @@ export class RenderSystem extends System {
         // FlagComponent might not be available if flag-simulation plugin is not loaded
         // Just continue with normal rendering
         console.error("[RenderSystem] Error handling FlagComponent:", e);
+      }
+
+      // Temporary debug: Add a visible box for water droplets
+      if (
+        world.componentManager.hasComponent(
+          entityId,
+          WaterDropletComponent.type
+        )
+      ) {
+        console.log(
+          `[RenderSystem] Handling WaterDropletComponent for entity: ${entityId}`
+        );
+        const position = world.componentManager.getComponent(
+          entityId,
+          PositionComponent.type
+        ) as PositionComponent;
+        if (!position) {
+          console.warn(
+            `[RenderSystem] WaterDropletComponent for entity ${entityId} has no PositionComponent.`
+          );
+          continue; // Skip if no position
+        }
+        if (position) {
+          let debugBox = this.graphicsManager
+            .getScene()
+            .getObjectByName(`debugBox_${entityId}`);
+          if (!debugBox) {
+            const geometry = new THREE.BoxGeometry(2, 2, 2); // Large box
+            const material = new THREE.MeshBasicMaterial({
+              color: 0x00ff00,
+              wireframe: true
+            }); // Green wireframe
+            debugBox = new THREE.Mesh(geometry, material);
+            debugBox.name = `debugBox_${entityId}`;
+            this.graphicsManager.getScene().add(debugBox);
+            console.log(
+              "[RenderSystem] Added debug box for droplet at:",
+              position.x,
+              position.y,
+              position.z
+            );
+          }
+          debugBox.position.set(position.x, position.y, position.z);
+          console.log(
+            "[RenderSystem] Updated debug box position for droplet to:",
+            position.x,
+            position.y,
+            position.z
+          );
+        }
+        continue; // Skip normal rendering for droplet, let debug box handle it
       }
 
       let mesh = this.meshes.get(entityId);
@@ -235,7 +305,11 @@ export class RenderSystem extends System {
 
       // Update pole mesh position (only if it changes, or if it's dynamic)
       // For now, assuming pole position is static after creation, but can be updated here if needed
-      poleMesh.position.set(poleComponent.position.x, poleComponent.position.y + poleComponent.height / 2, poleComponent.position.z);
+      poleMesh.position.set(
+        poleComponent.position.x,
+        poleComponent.position.y + poleComponent.height / 2,
+        poleComponent.position.z
+      );
     }
 
     // Update the FlagRenderer to handle flag entities if available
@@ -303,20 +377,12 @@ export class RenderSystem extends System {
     });
     this.poleMeshes.clear();
 
-    // Dispose of water mesh if it exists
-    const activeRenderer = this.studio.getRenderer();
-    if (activeRenderer instanceof WaterRenderer && activeRenderer.waterMesh) {
-      this.graphicsManager.getScene().remove(activeRenderer.waterMesh);
-      activeRenderer.waterMesh.geometry.dispose();
-      if (activeRenderer.waterMesh.material instanceof THREE.Material) {
-        activeRenderer.waterMesh.material.dispose();
-      } else if (Array.isArray(activeRenderer.waterMesh.material)) {
-        activeRenderer.waterMesh.material.forEach((material) =>
-          material.dispose()
-        );
-      }
-      activeRenderer.waterMesh = null; // Reset the reference
-    }
+    // Remove all debug boxes
+    this.graphicsManager.getScene().children = this.graphicsManager
+      .getScene()
+      .children.filter(
+        (child: THREE.Object3D) => !child.name.startsWith("debugBox_")
+      );
 
     // Remove all ripple meshes from the scene
     this.graphicsManager.getScene().children = this.graphicsManager

@@ -55,7 +55,11 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
       this._parameterPanels.push(flagParameterPanel);
 
       // Create and register parameter panel entity if ParameterPanelComponent is registered
-      if (world.componentManager.getComponentConstructors().has(ParameterPanelComponent.type)) {
+      if (
+        world.componentManager
+          .getComponentConstructors()
+          .has(ParameterPanelComponent.type)
+      ) {
         const panelEntity = world.entityManager.createEntity();
         world.componentManager.addComponent(
           panelEntity,
@@ -65,10 +69,15 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
 
         console.log("FlagSimulationPlugin registered with parameter panel.");
       } else {
-        console.log("FlagSimulationPlugin registered without parameter panel (ParameterPanelComponent not registered).");
+        console.log(
+          "FlagSimulationPlugin registered without parameter panel (ParameterPanelComponent not registered)."
+        );
       }
     } catch (error) {
-      console.warn("Failed to register parameter panel, but simulation will continue:", error);
+      console.warn(
+        "Failed to register parameter panel, but simulation will continue:",
+        error
+      );
     }
   }
   unregister(): void {
@@ -111,13 +120,44 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
       new RenderableComponent("plane", "#ff0000")
     );
     // Create a larger flag with more segments for better visibility
-    const initialFlagComponent = new FlagComponent(30, 20, 30, 20, 0.1, 0.5, 0.05, "", 0, null, null, poleEntity, 'left');
+    const initialFlagComponent = new FlagComponent(
+      30,
+      20,
+      30,
+      20,
+      0.1,
+      0.5,
+      0.05,
+      "",
+      0,
+      null,
+      null,
+      poleEntity,
+      "left"
+    );
     world.componentManager.addComponent(
       flagEntity,
       FlagComponent.type,
-      new FlagComponent(30, 20, 30, 20, 0.1, 0.5, 0.05, "", 5, { x: 1, y: 0.5, z: 0.5 }, null, poleEntity, 'left')
+      new FlagComponent(
+        30,
+        20,
+        30,
+        20,
+        0.1,
+        0.5,
+        0.05,
+        "",
+        5,
+        { x: 1, y: 0.5, z: 0.5 },
+        null,
+        poleEntity,
+        "left"
+      )
     );
-    console.log("[FlagSimulationPlugin] Initial FlagComponent properties:", initialFlagComponent);
+    console.log(
+      "[FlagSimulationPlugin] Initial FlagComponent properties:",
+      initialFlagComponent
+    );
 
     world.componentManager.addComponent(
       flagEntity,
@@ -154,7 +194,11 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     ) as PositionComponent;
 
     if (flagComponent && positionComponent) {
-      FlagPhysicsInitializer.initializeFlag(flagComponent, positionComponent, world);
+      FlagPhysicsInitializer.initializeFlag(
+        flagComponent,
+        positionComponent,
+        world
+      );
       console.log(
         "[FlagSimulationPlugin] Flag physics initialized with",
         flagComponent.points.length,
@@ -162,7 +206,10 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
         flagComponent.springs.length,
         "springs"
       );
-      console.log("[FlagSimulationPlugin] First few flag points after init:", flagComponent.points.slice(0, 5));
+      console.log(
+        "[FlagSimulationPlugin] First few flag points after init:",
+        flagComponent.points.slice(0, 5)
+      );
     }
   }
 }
