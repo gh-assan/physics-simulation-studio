@@ -6,7 +6,7 @@ import { Vector3 } from "./utils/Vector3";
 export class FlagComponent implements IComponent {
   public static readonly type = "FlagComponent";
   readonly type = FlagComponent.type;
-  public simulationType: string = "flag-simulation";
+  public simulationType = "flag-simulation";
   // Flag dimensions
   width: number;
   height: number;

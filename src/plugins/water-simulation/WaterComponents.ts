@@ -5,7 +5,7 @@ import { Vector3 } from "./utils/Vector3";
 export class WaterBodyComponent implements IComponent {
   public static readonly type = "WaterBodyComponent";
   readonly type = WaterBodyComponent.type;
-  public simulationType: string = "water-simulation";
+  public simulationType = "water-simulation";
 
   public ripples: Ripple[] = [];
 
@@ -22,7 +22,7 @@ export class WaterBodyComponent implements IComponent {
 export class WaterDropletComponent implements IComponent {
   public static readonly type = "WaterDropletComponent";
   readonly type = WaterDropletComponent.type;
-  public simulationType: string = "water-simulation";
+  public simulationType = "water-simulation";
 
   constructor(
     public size: number = 0.5,

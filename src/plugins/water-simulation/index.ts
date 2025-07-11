@@ -47,38 +47,47 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
       WaterDropletComponent.type,
       WaterDropletComponent
     );
-    world.componentManager.registerComponent(
-      ParameterPanelComponent.type,
-      ParameterPanelComponent
-    );
+    // ParameterPanelComponent registration is handled by the core system
+    // world.componentManager.registerComponent(
+    //   ParameterPanelComponent.type,
+    //   ParameterPanelComponent
+    // );
 
     // Register systems
     world.systemManager.registerSystem(this.waterSystem);
 
-    // Create parameter panels
-    const waterBodyPanel = new WaterBodyParameterPanel();
-    const waterDropletPanel = new WaterDropletParameterPanel();
+    try {
+      // Create parameter panels
+      const waterBodyPanel = new WaterBodyParameterPanel();
+      const waterDropletPanel = new WaterDropletParameterPanel();
 
-    // Store them in the parameter panels array
-    this._parameterPanels.push(waterBodyPanel);
-    this._parameterPanels.push(waterDropletPanel);
+      // Store them in the parameter panels array
+      this._parameterPanels.push(waterBodyPanel);
+      this._parameterPanels.push(waterDropletPanel);
 
-    // Create and register parameter panel entities
-    const waterBodyPanelEntity = world.entityManager.createEntity();
-    world.componentManager.addComponent(
-      waterBodyPanelEntity,
-      ParameterPanelComponent.type,
-      waterBodyPanel
-    );
+      // Create and register parameter panel entities if ParameterPanelComponent is registered
+      if (world.componentManager.getComponentConstructors().has(ParameterPanelComponent.type)) {
+        const waterBodyPanelEntity = world.entityManager.createEntity();
+        world.componentManager.addComponent(
+          waterBodyPanelEntity,
+          ParameterPanelComponent.type,
+          waterBodyPanel
+        );
 
-    const waterDropletPanelEntity = world.entityManager.createEntity();
-    world.componentManager.addComponent(
-      waterDropletPanelEntity,
-      ParameterPanelComponent.type,
-      waterDropletPanel
-    );
+        const waterDropletPanelEntity = world.entityManager.createEntity();
+        world.componentManager.addComponent(
+          waterDropletPanelEntity,
+          ParameterPanelComponent.type,
+          waterDropletPanel
+        );
 
-    console.log("Water Simulation Plugin registered with parameter panels.");
+        console.log("Water Simulation Plugin registered with parameter panels.");
+      } else {
+        console.log("Water Simulation Plugin registered without parameter panels (ParameterPanelComponent not registered).");
+      }
+    } catch (error) {
+      console.warn("Failed to register parameter panels, but simulation will continue:", error);
+    }
   }
 
   unregister(): void {

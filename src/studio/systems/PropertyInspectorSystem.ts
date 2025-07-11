@@ -28,17 +28,17 @@ export class PropertyInspectorSystem extends System {
     // Listen for simulation-loaded events to refresh the UI
     window.addEventListener(
       "simulation-loaded",
-      this.onSimulationLoaded.bind(this)
+      this.onSimulationLoaded.bind(this) as EventListener
     );
 
     // Listen for simulation-play and simulation-pause events
     window.addEventListener(
       "simulation-play",
-      this.onSimulationPlayPause.bind(this)
+      this.onSimulationPlayPause.bind(this) as EventListener
     );
     window.addEventListener(
       "simulation-pause",
-      this.onSimulationPlayPause.bind(this)
+      this.onSimulationPlayPause.bind(this) as EventListener
     );
   }
 
@@ -205,6 +205,10 @@ export class PropertyInspectorSystem extends System {
   public update(world: World, _deltaTime: number): void {
     const currentSelectedEntity = this.findSelectedEntity(world);
     const currentActiveSimulation = this.studio.getActiveSimulationName();
+
+    // Debugging logs to verify the selected entity and active simulation
+    console.log("[PropertyInspectorSystem] Current selected entity:", currentSelectedEntity);
+    console.log("[PropertyInspectorSystem] Current active simulation:", currentActiveSimulation);
 
     // Check if the selected entity has changed OR if the active simulation has changed
     if (

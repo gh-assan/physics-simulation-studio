@@ -35,30 +35,39 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
       FlagParameterPanel.type,
       FlagParameterPanel
     );
-    world.componentManager.registerComponent(
-      ParameterPanelComponent.type,
-      ParameterPanelComponent
-    );
+    // ParameterPanelComponent registration is handled by the core system
+    // world.componentManager.registerComponent(
+    //   ParameterPanelComponent.type,
+    //   ParameterPanelComponent
+    // );
 
     // Register systems
     this._flagSystem = new FlagSystem();
     world.systemManager.registerSystem(this._flagSystem);
 
-    // Create parameter panel
-    const flagParameterPanel = new FlagParameterPanel();
+    try {
+      // Create parameter panel
+      const flagParameterPanel = new FlagParameterPanel();
 
-    // Store it in the parameter panels array
-    this._parameterPanels.push(flagParameterPanel);
+      // Store it in the parameter panels array
+      this._parameterPanels.push(flagParameterPanel);
 
-    // Create and register parameter panel entity
-    const panelEntity = world.entityManager.createEntity();
-    world.componentManager.addComponent(
-      panelEntity,
-      ParameterPanelComponent.type,
-      flagParameterPanel
-    );
+      // Create and register parameter panel entity if ParameterPanelComponent is registered
+      if (world.componentManager.getComponentConstructors().has(ParameterPanelComponent.type)) {
+        const panelEntity = world.entityManager.createEntity();
+        world.componentManager.addComponent(
+          panelEntity,
+          ParameterPanelComponent.type,
+          flagParameterPanel
+        );
 
-    console.log("FlagSimulationPlugin registered with parameter panel.");
+        console.log("FlagSimulationPlugin registered with parameter panel.");
+      } else {
+        console.log("FlagSimulationPlugin registered without parameter panel (ParameterPanelComponent not registered).");
+      }
+    } catch (error) {
+      console.warn("Failed to register parameter panel, but simulation will continue:", error);
+    }
   }
   unregister(): void {
     if (this._flagSystem) {

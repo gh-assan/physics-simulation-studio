@@ -30,7 +30,7 @@ describe("WaterPhysicsHelpers", () => {
 
   it("updateRipples should expand and decay ripples", () => {
     const waterBody = new WaterBodyComponent();
-    waterBody.ripples = [{ x: 0, z: 0, radius: 0, amplitude: 1, decay: 0.1 }];
+    waterBody.ripples = [{ x: 0, z: 0, radius: 0, amplitude: 1, decay: 0.1, expansionRate: 5 }];
 
     updateRipples(waterBody, 1); // Simulate 1 second
 

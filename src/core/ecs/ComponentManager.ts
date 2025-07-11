@@ -1,5 +1,4 @@
 import { IComponent } from "./IComponent";
-// @ts-ignore
 import { ComponentRegistry } from "./ComponentRegistry";
 
 /**

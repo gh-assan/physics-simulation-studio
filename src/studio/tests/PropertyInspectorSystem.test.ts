@@ -3,6 +3,8 @@ import { SelectableComponent } from "@core/components";
 import { UIManager } from "../uiManager";
 import { World } from "@core/ecs";
 import { PositionComponent } from "@core/components";
+import { Studio } from "../Studio";
+import { PluginManager } from "@core/plugin/PluginManager";
 
 // Mock the Tweakpane library
 jest.mock("tweakpane", () => {
@@ -76,7 +78,21 @@ describe("PropertyInspectorSystem", () => {
         >
       )();
     uiManager = new UIManager(mockPaneInstance);
-    propertyInspectorSystem = new PropertyInspectorSystem(uiManager);
+
+    // Create mock instances for Studio and PluginManager
+    const mockWorld = new World();
+    const mockPluginManager = new PluginManager(mockWorld);
+    const mockStudio = new Studio(mockWorld, mockPluginManager);
+
+    // Mock the getActiveSimulationName method
+    jest.spyOn(mockStudio, 'getActiveSimulationName').mockReturnValue(null);
+
+    propertyInspectorSystem = new PropertyInspectorSystem(
+      uiManager,
+      mockWorld,
+      mockStudio,
+      mockPluginManager
+    );
 
     // Register components used in the test
     world.componentManager.registerComponent(
