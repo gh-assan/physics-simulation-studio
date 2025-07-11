@@ -1,0 +1,81 @@
+import { ParameterPanelComponent } from "../../core/components/ParameterPanelComponent";
+import { UIManager } from "../../studio/uiManager";
+import { IComponent } from "../../core/ecs/IComponent";
+import { WaterBodyComponent } from "./WaterComponents";
+import { ComponentControlProperty } from "../../studio/types";
+
+/**
+ * Parameter panel for the WaterBodyComponent
+ * This class defines the UI controls for the WaterBodyComponent
+ */
+export class WaterBodyParameterPanel extends ParameterPanelComponent {
+  /**
+   * The type of the component, used for serialization and deserialization
+   */
+  static readonly type: string = "WaterBodyParameterPanel";
+
+  /**
+   * The component type this panel is associated with
+   */
+  readonly componentType: string = WaterBodyComponent.type;
+
+  /**
+   * Register UI controls for this parameter panel
+   * @param uiManager The UI manager to register controls with
+   * @param component The component instance to bind controls to
+   */
+  registerControls(uiManager: UIManager, component: IComponent): void {
+    if (!(component instanceof WaterBodyComponent)) {
+      console.error(
+        "WaterBodyParameterPanel: component is not a WaterBodyComponent"
+      );
+      return;
+    }
+
+    const properties: ComponentControlProperty[] = [
+      {
+        property: "viscosity",
+        type: "number",
+        label: "Viscosity",
+        min: 0,
+        max: 1,
+        step: 0.01
+      },
+      {
+        property: "surfaceTension",
+        type: "number",
+        label: "Surface Tension",
+        min: 0,
+        max: 1,
+        step: 0.01
+      }
+    ];
+
+    uiManager.registerComponentControls(
+      this.componentType,
+      component,
+      properties
+    );
+  }
+
+  /**
+   * Update the UI controls when the component changes
+   * @param component The component instance that changed
+   */
+  updateControls(component: IComponent): void {
+    // This method would be called when the component changes
+    // For now, we don't need to do anything here as the UI is bound directly to the component
+    // and will update automatically when the component changes
+  }
+
+  /**
+   * Handle events from the UI controls
+   * @param event The event to handle
+   * @param component The component instance to update
+   */
+  handleEvent(event: string, component: IComponent): void {
+    // This method would be called when an event is triggered from the UI
+    // For now, we don't need to do anything here as the UI is bound directly to the component
+    // and will update the component automatically when the UI changes
+  }
+}

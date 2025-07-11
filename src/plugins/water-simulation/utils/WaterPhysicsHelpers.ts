@@ -9,7 +9,7 @@ export function updateRipples(
   dt: number
 ): void {
   waterBodyComponent.ripples = waterBodyComponent.ripples.filter((ripple) => {
-    ripple.radius += dt * 5; // Ripple expands
+    ripple.radius += dt * ripple.expansionRate; // Ripple expands based on its expansion rate
     ripple.amplitude *= 1 - ripple.decay * dt; // Ripple decays
     return ripple.amplitude > 0.01; // Remove if amplitude is too small
   });
@@ -21,14 +21,29 @@ export function updateDropletPhysics(
   gravity: Vector3,
   dt: number
 ): void {
-  // Simple gravity - update velocity components directly instead of replacing the Vector3 instance
-  // This ensures UI bindings to velocity.x, velocity.y, velocity.z remain valid
-  const gravityEffect = gravity.scale(dt);
-  dropletComponent.velocity.x += gravityEffect.x;
-  dropletComponent.velocity.y += gravityEffect.y;
-  dropletComponent.velocity.z += gravityEffect.z;
+  // Use droplet's own gravity instead of the system gravity
+  const dropletGravity = dropletComponent.gravity || gravity;
 
+  // Apply gravity force (F = m*g)
+  const gravityForce = dropletGravity.scale(dropletComponent.mass * dt);
+
+  // Apply drag force (F = -k*v)
+  const dragForceX = -dropletComponent.drag * dropletComponent.velocity.x * dt;
+  const dragForceY = -dropletComponent.drag * dropletComponent.velocity.y * dt;
+  const dragForceZ = -dropletComponent.drag * dropletComponent.velocity.z * dt;
+
+  // Update velocity (a = F/m)
+  dropletComponent.velocity.x +=
+    (gravityForce.x + dragForceX) / dropletComponent.mass;
+  dropletComponent.velocity.y +=
+    (gravityForce.y + dragForceY) / dropletComponent.mass;
+  dropletComponent.velocity.z +=
+    (gravityForce.z + dragForceZ) / dropletComponent.mass;
+
+  // Update position
+  positionComponent.x += dropletComponent.velocity.x * dt;
   positionComponent.y += dropletComponent.velocity.y * dt;
+  positionComponent.z += dropletComponent.velocity.z * dt;
 }
 
 export function handleDropletCollision(
@@ -40,7 +55,26 @@ export function handleDropletCollision(
 ): boolean {
   if (dropletPosition.y <= waterBodyPosition.y) {
     console.log("Splash!");
-    createRipples(waterBodyComponent, dropletPosition.x, dropletPosition.z);
+
+    // Get the droplet component to access its properties
+    const dropletComponent = world.componentManager.getComponent(
+      dropletEntityId,
+      WaterDropletComponent.type
+    ) as WaterDropletComponent;
+
+    if (dropletComponent) {
+      // Create ripples based on droplet properties
+      createRipples(
+        waterBodyComponent,
+        dropletPosition.x,
+        dropletPosition.z,
+        dropletComponent
+      );
+    } else {
+      // Fallback to default ripple creation if droplet component not found
+      createRipples(waterBodyComponent, dropletPosition.x, dropletPosition.z);
+    }
+
     world.entityManager.destroyEntity(dropletEntityId);
     return true;
   }
@@ -50,15 +84,25 @@ export function handleDropletCollision(
 export function createRipples(
   waterBody: WaterBodyComponent,
   x: number,
-  z: number
+  z: number,
+  droplet?: WaterDropletComponent
 ): void {
+  // Use droplet properties if available, otherwise use defaults
+  const splashForce = droplet ? droplet.splashForce : 1.0;
+  const rippleDecay = droplet ? droplet.rippleDecay : 0.5;
+  const rippleExpansionRate = droplet ? droplet.rippleExpansionRate : 5.0;
+
   const newRipple: Ripple = {
     x: x,
     z: z,
     radius: 0,
-    amplitude: 1,
-    decay: 0.5 // Adjust decay rate as needed
+    amplitude: splashForce, // Use splash force as initial amplitude
+    decay: rippleDecay, // Use droplet's ripple decay
+    expansionRate: rippleExpansionRate // Use droplet's ripple expansion rate
   };
+
   waterBody.ripples.push(newRipple);
-  console.log(`Creating ripples at (${x}, ${z})`);
+  console.log(
+    `Creating ripples at (${x}, ${z}) with amplitude ${splashForce}, decay ${rippleDecay}, expansion rate ${rippleExpansionRate}`
+  );
 }

@@ -7,13 +7,17 @@ import { RenderableComponent } from "../../core/components/RenderableComponent";
 import { SelectableComponent } from "../../core/components/SelectableComponent";
 import { RotationComponent } from "../../core/components/RotationComponent";
 import { FlagPhysicsInitializer } from "./utils/FlagPhysicsInitializer";
+import { FlagParameterPanel } from "./FlagParameterPanel";
+import { ParameterPanelComponent } from "../../core/components/ParameterPanelComponent";
 import * as THREE from "three";
 
 export { FlagComponent } from "./FlagComponent";
 export { FlagSystem } from "./FlagSystem";
+export { FlagParameterPanel } from "./FlagParameterPanel";
 
 export class FlagSimulationPlugin implements ISimulationPlugin {
   private _flagSystem: FlagSystem | null = null;
+  private _parameterPanels: ParameterPanelComponent[] = [];
 
   getName(): string {
     return "flag-simulation";
@@ -21,17 +25,58 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
   getDependencies(): string[] {
     return [];
   }
+  getParameterPanels(): ParameterPanelComponent[] {
+    return this._parameterPanels;
+  }
   register(world: World): void {
+    // Register components
     world.componentManager.registerComponent(FlagComponent.type, FlagComponent);
+    world.componentManager.registerComponent(
+      FlagParameterPanel.type,
+      FlagParameterPanel
+    );
+    // ParameterPanelComponent registration is handled by the core system
+    // world.componentManager.registerComponent(
+    //   ParameterPanelComponent.type,
+    //   ParameterPanelComponent
+    // );
+
+    // Register systems
     this._flagSystem = new FlagSystem();
     world.systemManager.registerSystem(this._flagSystem);
-    console.log("FlagSimulationPlugin registered.");
+
+    try {
+      // Create parameter panel
+      const flagParameterPanel = new FlagParameterPanel();
+
+      // Store it in the parameter panels array
+      this._parameterPanels.push(flagParameterPanel);
+
+      // Create and register parameter panel entity if ParameterPanelComponent is registered
+      if (world.componentManager.getComponentConstructors().has(ParameterPanelComponent.type)) {
+        const panelEntity = world.entityManager.createEntity();
+        world.componentManager.addComponent(
+          panelEntity,
+          ParameterPanelComponent.type,
+          flagParameterPanel
+        );
+
+        console.log("FlagSimulationPlugin registered with parameter panel.");
+      } else {
+        console.log("FlagSimulationPlugin registered without parameter panel (ParameterPanelComponent not registered).");
+      }
+    } catch (error) {
+      console.warn("Failed to register parameter panel, but simulation will continue:", error);
+    }
   }
   unregister(): void {
     if (this._flagSystem) {
       this._flagSystem.unregister();
       this._flagSystem = null;
     }
+
+    // Clear parameter panels
+    this._parameterPanels = [];
   }
 
   initializeEntities(world: World): void {
