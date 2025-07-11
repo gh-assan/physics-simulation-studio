@@ -235,9 +235,33 @@ export class CameraControls {
    * @param delta Amount to zoom (positive = zoom in, negative = zoom out)
    */
   public zoom(delta: number): void {
-    // Use the OrbitControls' built-in zoom
-    this.controls.zoomIn(delta * 10);
+    // Get the current distance from camera to target
+    const distance = this.camera.position.distanceTo(this.controls.target);
+
+    // Calculate the new distance based on the zoom factor
+    // Using a multiplier approach for smoother zooming
+    const zoomFactor = delta > 0 ? 0.8 : 1.25; // Zoom in: reduce distance by 20%, Zoom out: increase by 25%
+    const newDistance = distance * zoomFactor;
+
+    // Get the direction vector from target to camera
+    const direction = new THREE.Vector3().subVectors(
+      this.camera.position,
+      this.controls.target
+    ).normalize();
+
+    // Calculate the new position
+    const newPosition = new THREE.Vector3().addVectors(
+      this.controls.target,
+      direction.multiplyScalar(newDistance)
+    );
+
+    // Update the camera position
+    this.camera.position.copy(newPosition);
+
+    // Update the controls
     this.controls.update();
+
+    console.log(`Zoomed camera: delta=${delta}, distance=${distance}, newDistance=${newDistance}`);
   }
 
   /**

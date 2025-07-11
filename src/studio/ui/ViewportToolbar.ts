@@ -164,6 +164,20 @@ export class ViewportToolbar {
       onClick: () => this.cameraControls.resetCamera()
     });
 
+    const zoomInButton = new ToolbarButton({
+      icon: this.getCameraIcon('zoomIn'),
+      tooltip: 'Zoom In',
+      shortcut: '+',
+      onClick: () => this.cameraControls.zoom(0.5)
+    });
+
+    const zoomOutButton = new ToolbarButton({
+      icon: this.getCameraIcon('zoomOut'),
+      tooltip: 'Zoom Out',
+      shortcut: '-',
+      onClick: () => this.cameraControls.zoom(-0.5)
+    });
+
     const perspectiveButton = new ToolbarButton({
       icon: this.getCameraIcon('perspective'),
       tooltip: 'Perspective View',
@@ -195,6 +209,8 @@ export class ViewportToolbar {
 
     // Store buttons for later reference
     this.cameraButtons.set('reset', resetButton);
+    this.cameraButtons.set('zoomIn', zoomInButton);
+    this.cameraButtons.set('zoomOut', zoomOutButton);
     this.cameraButtons.set('perspective', perspectiveButton);
     this.cameraButtons.set('top', topButton);
     this.cameraButtons.set('front', frontButton);
@@ -202,6 +218,8 @@ export class ViewportToolbar {
 
     // Add buttons to section
     section.appendChild(resetButton.getElement());
+    section.appendChild(zoomInButton.getElement());
+    section.appendChild(zoomOutButton.getElement());
     section.appendChild(perspectiveButton.getElement());
     section.appendChild(topButton.getElement());
     section.appendChild(frontButton.getElement());
@@ -418,6 +436,10 @@ export class ViewportToolbar {
         return '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M4,10h16v4H4V10z"/></svg>';
       case 'side':
         return '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M10,4v16h4V4H10z"/></svg>';
+      case 'zoomIn':
+        return '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M15.5,14h-.79l-.28-.27a6.51,6.51,0,1,0-.7.7l.27.28v.79l5,4.99L20.49,19Zm-6,0A4.5,4.5,0,1,1,14,9.5,4.5,4.5,0,0,1,9.5,14Zm2.5-4h-2v2h-1v-2h-2v-1h2v-2h1v2h2Z"/></svg>';
+      case 'zoomOut':
+        return '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M15.5,14h-.79l-.28-.27a6.51,6.51,0,1,0-.7.7l.27.28v.79l5,4.99L20.49,19Zm-6,0A4.5,4.5,0,1,1,14,9.5,4.5,4.5,0,0,1,9.5,14Zm-2-5h5v1h-5Z"/></svg>';
       default:
         return '';
     }
