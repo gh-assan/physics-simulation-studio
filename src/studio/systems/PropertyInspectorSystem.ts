@@ -253,6 +253,14 @@ export class PropertyInspectorSystem extends System {
       if (Object.prototype.hasOwnProperty.call(components, componentName)) {
         const component = components[componentName];
 
+        // Skip SelectableComponent and RenderableComponent
+        if (componentName === "SelectableComponent" || componentName === "RenderableComponent") {
+          console.log(
+            `[PropertyInspectorSystem] Skipping component '${componentName}' as it is hidden from the UI`
+          );
+          continue;
+        }
+
         // Filter components based on active simulation
         // Only filter if both active simulation and component.simulationType are defined
         const currentActiveSimulation = this.studio.getActiveSimulationName();
