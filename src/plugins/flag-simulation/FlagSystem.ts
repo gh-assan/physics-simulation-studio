@@ -79,14 +79,52 @@ export class FlagSystem extends System {
                   let pointZ = point.position.z;
 
                   // Recalculate position based on pole and attached edge
-                  if (flagComponent.attachedEdge === 'left' || flagComponent.attachedEdge === 'right') {
-                    pointY = poleComp.position.y + (y / (numRows - 1)) * flagComponent.height; // Distribute along pole height
-                    pointX = poleComp.position.x;
-                    pointZ = poleComp.position.z;
-                  } else if (flagComponent.attachedEdge === 'top' || flagComponent.attachedEdge === 'bottom') {
-                    pointX = poleComp.position.x + (x / (numCols - 1)) * flagComponent.width; // Distribute along pole width
-                    pointY = poleComp.position.y;
-                    pointZ = poleComp.position.z;
+                  // Only the two fixed corners should be constrained
+                  const isTopRow = y === numRows - 1;
+                  const isBottomRow = y === 0;
+                  const isLeftCol = x === 0;
+                  const isRightCol = x === numCols - 1;
+
+                  if (flagComponent.attachedEdge === 'left') {
+                    if (isLeftCol && isBottomRow) {
+                      pointX = poleComp.position.x;
+                      pointY = poleComp.position.y;
+                      pointZ = poleComp.position.z;
+                    } else if (isLeftCol && isTopRow) {
+                      pointX = poleComp.position.x;
+                      pointY = poleComp.position.y + poleComp.height;
+                      pointZ = poleComp.position.z;
+                    }
+                  } else if (flagComponent.attachedEdge === 'right') {
+                    if (isRightCol && isBottomRow) {
+                      pointX = poleComp.position.x;
+                      pointY = poleComp.position.y;
+                      pointZ = poleComp.position.z;
+                    } else if (isRightCol && isTopRow) {
+                      pointX = poleComp.position.x;
+                      pointY = poleComp.position.y + poleComp.height;
+                      pointZ = poleComp.position.z;
+                    }
+                  } else if (flagComponent.attachedEdge === 'top') {
+                    if (isTopRow && isLeftCol) {
+                      pointX = poleComp.position.x - flagComponent.width / 2;
+                      pointY = poleComp.position.y;
+                      pointZ = poleComp.position.z;
+                    } else if (isTopRow && isRightCol) {
+                      pointX = poleComp.position.x + flagComponent.width / 2;
+                      pointY = poleComp.position.y;
+                      pointZ = poleComp.position.z;
+                    }
+                  } else if (flagComponent.attachedEdge === 'bottom') {
+                    if (isBottomRow && isLeftCol) {
+                      pointX = poleComp.position.x - flagComponent.width / 2;
+                      pointY = poleComp.position.y;
+                      pointZ = poleComp.position.z;
+                    } else if (isBottomRow && isRightCol) {
+                      pointX = poleComp.position.x + flagComponent.width / 2;
+                      pointY = poleComp.position.y;
+                      pointZ = poleComp.position.z;
+                    }
                   }
                   point.position.set(pointX, pointY, pointZ);
                   point.previousPosition.set(pointX, pointY, pointZ);

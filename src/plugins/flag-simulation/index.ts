@@ -102,7 +102,7 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     world.componentManager.addComponent(
       flagEntity,
       PositionComponent.type,
-      new PositionComponent(0, 0, -5)
+      new PositionComponent(0, 15, 0) // Adjusted flag position to be near the top of the pole
     );
     // Use a bright red color for better visibility against the default background
     world.componentManager.addComponent(
