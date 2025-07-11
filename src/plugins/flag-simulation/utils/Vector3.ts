@@ -33,4 +33,11 @@ export class Vector3 {
   clone(): Vector3 {
     return new Vector3(this.x, this.y, this.z);
   }
+
+  set(x: number, y: number, z: number): Vector3 {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    return this;
+  }
 }

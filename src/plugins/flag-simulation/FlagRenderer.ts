@@ -1,7 +1,9 @@
 import { FlagComponent } from "./FlagComponent";
+import { PoleComponent } from "./PoleComponent";
 import * as THREE from "three";
 
 export function createFlagMesh(flag: FlagComponent): THREE.Mesh {
+  console.log("[FlagRenderer] createFlagMesh called for flag:", flag);
   const geometry = new THREE.BufferGeometry();
   const vertices: number[] = [];
   const indices: number[] = [];
@@ -37,4 +39,12 @@ export function createFlagMesh(flag: FlagComponent): THREE.Mesh {
     side: THREE.DoubleSide
   });
   return new THREE.Mesh(geometry, material);
+}
+
+export function createPoleMesh(pole: PoleComponent): THREE.Mesh {
+  const geometry = new THREE.CylinderGeometry(pole.radius, pole.radius, pole.height, 32);
+  const material = new THREE.MeshStandardMaterial({ color: 0x0000ff }); // Bright blue color
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.set(pole.position.x, pole.position.y + pole.height / 2, pole.position.z);
+  return mesh;
 }

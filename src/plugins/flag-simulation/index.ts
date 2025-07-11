@@ -1,6 +1,7 @@
 import { World } from "../../core/ecs/World";
 import { ISimulationPlugin } from "../../core/plugin/ISimulationPlugin";
 import { FlagComponent } from "./FlagComponent";
+import { PoleComponent } from "./PoleComponent"; // Add this import
 import { FlagSystem } from "./FlagSystem";
 import { PositionComponent } from "../../core/components/PositionComponent";
 import { RenderableComponent } from "../../core/components/RenderableComponent";
@@ -31,6 +32,7 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
   register(world: World): void {
     // Register components
     world.componentManager.registerComponent(FlagComponent.type, FlagComponent);
+    world.componentManager.registerComponent(PoleComponent.type, PoleComponent);
     world.componentManager.registerComponent(
       FlagParameterPanel.type,
       FlagParameterPanel
@@ -47,7 +49,7 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
 
     try {
       // Create parameter panel
-      const flagParameterPanel = new FlagParameterPanel();
+      const flagParameterPanel = new FlagParameterPanel(world);
 
       // Store it in the parameter panels array
       this._parameterPanels.push(flagParameterPanel);
@@ -80,13 +82,27 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
   }
 
   initializeEntities(world: World): void {
+    // Create a default pole entity
+    const poleEntity = world.entityManager.createEntity();
+    console.log("[FlagSimulationPlugin] Created pole entity:", poleEntity);
+    world.componentManager.addComponent(
+      poleEntity,
+      PositionComponent.type,
+      new PositionComponent(0, 0, 0) // Pole at origin
+    );
+    world.componentManager.addComponent(
+      poleEntity,
+      PoleComponent.type,
+      new PoleComponent({ height: 20, radius: 0.2 }) // Default pole properties
+    );
+
     // Create flag entity
     const flagEntity = world.entityManager.createEntity();
     console.log("[FlagSimulationPlugin] Created flag entity:", flagEntity);
     world.componentManager.addComponent(
       flagEntity,
       PositionComponent.type,
-      new PositionComponent(0, 0, -5)
+      new PositionComponent(0, 15, 0) // Adjusted flag position to be near the top of the pole
     );
     // Use a bright red color for better visibility against the default background
     world.componentManager.addComponent(
@@ -95,11 +111,14 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
       new RenderableComponent("plane", "#ff0000")
     );
     // Create a larger flag with more segments for better visibility
+    const initialFlagComponent = new FlagComponent(30, 20, 30, 20, 0.1, 0.5, 0.05, "", 0, null, null, poleEntity, 'left');
     world.componentManager.addComponent(
       flagEntity,
       FlagComponent.type,
-      new FlagComponent(30, 20, 30, 20)
+      new FlagComponent(30, 20, 30, 20, 0.1, 0.5, 0.05, "", 5, { x: 1, y: 0.5, z: 0.5 }, null, poleEntity, 'left')
     );
+    console.log("[FlagSimulationPlugin] Initial FlagComponent properties:", initialFlagComponent);
+
     world.componentManager.addComponent(
       flagEntity,
       SelectableComponent.type,
@@ -135,7 +154,7 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     ) as PositionComponent;
 
     if (flagComponent && positionComponent) {
-      FlagPhysicsInitializer.initializeFlag(flagComponent, positionComponent);
+      FlagPhysicsInitializer.initializeFlag(flagComponent, positionComponent, world);
       console.log(
         "[FlagSimulationPlugin] Flag physics initialized with",
         flagComponent.points.length,
@@ -143,6 +162,7 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
         flagComponent.springs.length,
         "springs"
       );
+      console.log("[FlagSimulationPlugin] First few flag points after init:", flagComponent.points.slice(0, 5));
     }
   }
 }

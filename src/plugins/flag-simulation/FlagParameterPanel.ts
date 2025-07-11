@@ -3,6 +3,8 @@ import { UIManager } from "../../studio/uiManager";
 import { IComponent } from "../../core/ecs/IComponent";
 import { FlagComponent } from "./FlagComponent";
 import { ComponentControlProperty } from "../../studio/types";
+import { World } from "../../core/ecs/World";
+import { PoleComponent } from "./PoleComponent";
 
 /**
  * Parameter panel for the FlagComponent
@@ -18,6 +20,13 @@ export class FlagParameterPanel extends ParameterPanelComponent {
    * The component type this panel is associated with
    */
   readonly componentType: string = FlagComponent.type;
+
+  private world: World;
+
+  constructor(world: World) {
+    super();
+    this.world = world;
+  }
 
   /**
    * Register UI controls for this parameter panel
@@ -151,6 +160,65 @@ export class FlagParameterPanel extends ParameterPanelComponent {
         step: 0.1
       }
     ];
+
+    // Add Pole Controls
+    const poleEntities = this.world.componentManager.getEntitiesWithComponents([PoleComponent]);
+    const poleOptions: { text: string; value: number | null }[] = poleEntities.map(entityId => ({ text: `Pole ${entityId}`, value: entityId }));
+    poleOptions.unshift({ text: 'None', value: null }); // Add a 'None' option
+
+    properties.push(
+      {
+        property: "poleEntityId",
+        type: "list",
+        label: "Attach to Pole",
+        options: poleOptions
+      },
+      {
+        property: "attachedEdge",
+        type: "list",
+        label: "Attached Edge",
+        options: [
+          { text: 'Left', value: 'left' },
+          { text: 'Right', value: 'right' },
+          { text: 'Top', value: 'top' },
+          { text: 'Bottom', value: 'bottom' }
+        ]
+      }
+    );
+
+    // Add controls for creating a new pole
+    /*
+    uiManager.addFolder('Pole Creation', (folder) => {
+      const newPoleParams = {
+        x: 0,
+        y: 0,
+        z: 0,
+        height: 10,
+        radius: 0.1,
+        create: () => {
+          const poleEntity = this.world.entityManager.createEntity();
+          this.world.componentManager.addComponent(
+            poleEntity,
+            PoleComponent.type,
+            new PoleComponent({
+              position: new PoleComponent().position.set(newPoleParams.x, newPoleParams.y, newPoleParams.z),
+              height: newPoleParams.height,
+              radius: newPoleParams.radius
+            })
+          );
+          // Refresh the UI to show the new pole in the dropdown
+          uiManager.refresh();
+        }
+      };
+
+      folder.addBinding(newPoleParams, 'x', { label: 'X' });
+      folder.addBinding(newPoleParams, 'y', { label: 'Y' });
+      folder.addBinding(newPoleParams, 'z', { label: 'Z' });
+      folder.addBinding(newPoleParams, 'height', { label: 'Height', min: 1, max: 50, step: 0.1 });
+      folder.addBinding(newPoleParams, 'radius', { label: 'Radius', min: 0.01, max: 1, step: 0.01 });
+      folder.addButton({ title: 'Create New Pole' }).on('click', newPoleParams.create);
+    });
+    */
 
     uiManager.registerComponentControls(
       this.componentType,

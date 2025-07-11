@@ -9,23 +9,23 @@ import { WaterRenderer } from "../../plugins/water-simulation/WaterRenderer"; //
 import { SelectableComponent } from "../../core/components/SelectableComponent"; // Import SelectableComponent
 import { createGeometry, disposeThreeJsObject } from "../utils/ThreeJsUtils";
 import { ThreeGraphicsManager } from "../graphics/ThreeGraphicsManager";
-import { FlagRenderer } from "./FlagRenderer"; // Import FlagRenderer
+import { createPoleMesh, createFlagMesh } from "../../plugins/flag-simulation/FlagRenderer"; // Import createPoleMesh and createFlagMesh
 import { FlagComponent } from "../../plugins/flag-simulation/FlagComponent"; // Import FlagComponent
+import { PoleComponent } from "../../plugins/flag-simulation/PoleComponent"; // Import PoleComponent
 
 export class RenderSystem extends System {
   private graphicsManager: ThreeGraphicsManager;
   private meshes: Map<number, THREE.Mesh> = new Map();
+  private poleMeshes: Map<number, THREE.Mesh> = new Map(); // New map for pole meshes
   private studio: Studio; // Add studio reference
   private raycaster: THREE.Raycaster;
   private mouse: THREE.Vector2;
-  private flagRenderer: FlagRenderer | null = null; // Add FlagRenderer, initialize as null
 
   constructor(studio: Studio) {
     super();
     this.studio = studio;
 
     this.graphicsManager = new ThreeGraphicsManager();
-    // FlagRenderer will be initialized when needed
 
     // Setup raycaster for object selection
     this.raycaster = new THREE.Raycaster();
@@ -47,9 +47,6 @@ export class RenderSystem extends System {
       // Only update rendering if simulation is not already playing
       const world = this.studio.world;
       this.update(world, 0); // Update with zero deltaTime to avoid physics simulation
-      if (this.flagRenderer) {
-        this.flagRenderer.update(world, 0);
-      }
       this.graphicsManager.render();
     }
   }
@@ -149,11 +146,34 @@ export class RenderSystem extends System {
           FlagComponent &&
           world.componentManager.hasComponent(entityId, FlagComponent.type)
         ) {
+          // Handle flag rendering directly here
+          const flagComponent = world.componentManager.getComponent(entityId, FlagComponent.type) as FlagComponent;
+          if (flagComponent && flagComponent.points && flagComponent.points.length > 0) {
+            let flagMesh = this.meshes.get(entityId);
+            if (!flagMesh) {
+              flagMesh = createFlagMesh(flagComponent);
+              this.graphicsManager.getScene().add(flagMesh);
+              this.meshes.set(entityId, flagMesh);
+              console.log("[RenderSystem] Added new flag mesh to scene:", flagMesh);
+            } else {
+              // Update existing flag mesh positions
+              const positions = flagMesh.geometry.attributes.position.array as Float32Array; // Directly use TypedArray
+              flagComponent.points.forEach((p, i) => {
+                positions[i * 3] = p.position.x;
+                positions[i * 3 + 1] = p.position.y;
+                positions[i * 3 + 2] = p.position.z;
+              });
+              flagMesh.geometry.attributes.position.needsUpdate = true;
+              flagMesh.geometry.computeVertexNormals();
+              console.log("[RenderSystem] Updated existing flag mesh positions for entity:", entityId);
+            }
+          }
           continue;
         }
       } catch (e) {
         // FlagComponent might not be available if flag-simulation plugin is not loaded
         // Just continue with normal rendering
+        console.error("[RenderSystem] Error handling FlagComponent:", e);
       }
 
       let mesh = this.meshes.get(entityId);
@@ -190,17 +210,41 @@ export class RenderSystem extends System {
       }
     }
 
+    // Render PoleComponents
+    const poleEntities = world.componentManager.getEntitiesWithComponents([
+      PoleComponent
+    ]);
+
+    for (const entityId of poleEntities) {
+      const poleComponent = world.componentManager.getComponent(
+        entityId,
+        PoleComponent.type
+      ) as PoleComponent;
+
+      if (!poleComponent) {
+        continue;
+      }
+
+      let poleMesh = this.poleMeshes.get(entityId);
+
+      if (!poleMesh) {
+        poleMesh = createPoleMesh(poleComponent);
+        this.graphicsManager.getScene().add(poleMesh);
+        this.poleMeshes.set(entityId, poleMesh);
+      }
+
+      // Update pole mesh position (only if it changes, or if it's dynamic)
+      // For now, assuming pole position is static after creation, but can be updated here if needed
+      poleMesh.position.set(poleComponent.position.x, poleComponent.position.y + poleComponent.height / 2, poleComponent.position.z);
+    }
+
     // Update the FlagRenderer to handle flag entities if available
     // Initialize FlagRenderer if needed and if FlagComponent is available
     try {
       if (FlagComponent) {
         console.log("[RenderSystem] FlagComponent is available");
-        if (!this.flagRenderer) {
-          console.log("[RenderSystem] Creating new FlagRenderer");
-          this.flagRenderer = new FlagRenderer(this.graphicsManager);
-        }
-        console.log("[RenderSystem] Updating FlagRenderer");
-        this.flagRenderer.update(world, _deltaTime);
+        // The flag mesh is created and updated directly within this system
+        // No separate FlagRenderer class is used for rendering the flag mesh itself
       } else {
         console.log("[RenderSystem] FlagComponent is not available");
       }
@@ -247,11 +291,17 @@ export class RenderSystem extends System {
     });
     this.meshes.clear();
 
-    // Clear the FlagRenderer if it exists
-    if (this.flagRenderer) {
-      this.flagRenderer.unregister();
-      this.flagRenderer = null;
-    }
+    // Clear pole meshes
+    this.poleMeshes.forEach((mesh) => {
+      this.graphicsManager.getScene().remove(mesh);
+      mesh.geometry.dispose();
+      if (mesh.material instanceof THREE.Material) {
+        mesh.material.dispose();
+      } else if (Array.isArray(mesh.material)) {
+        mesh.material.forEach((material) => material.dispose());
+      }
+    });
+    this.poleMeshes.clear();
 
     // Dispose of water mesh if it exists
     const activeRenderer = this.studio.getRenderer();

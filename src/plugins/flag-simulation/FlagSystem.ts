@@ -3,6 +3,7 @@ import { World } from "../../core/ecs/World";
 import { FlagComponent } from "./FlagComponent";
 import { FlagPhysicsInitializer } from "./utils/FlagPhysicsInitializer";
 import { PositionComponent } from "../../core/components/PositionComponent";
+import { PoleComponent } from "./PoleComponent"; // Add this import
 
 import { PointMass } from "./utils/PointMass";
 import { Spring } from "./utils/Spring";
@@ -49,7 +50,89 @@ export class FlagSystem extends System {
 
       // Initialize point masses and springs if not already done for this flag
       if (!flagComponent.points || flagComponent.points.length === 0) {
-        FlagPhysicsInitializer.initializeFlag(flagComponent, positionComponent);
+        FlagPhysicsInitializer.initializeFlag(flagComponent, positionComponent, world);
+      }
+
+      // If attached to a pole, ensure fixed points are constrained to the pole's position
+      if (flagComponent.poleEntityId) {
+        const poleEntity = world.entityManager.getEntityById(flagComponent.poleEntityId);
+        if (poleEntity) {
+          const poleComp = world.componentManager.getComponent(
+            poleEntity,
+            PoleComponent.type
+          ) as PoleComponent;
+
+          if (poleComp) {
+            const numRows = flagComponent.segmentsY + 1;
+            const numCols = flagComponent.segmentsX + 1;
+            const segmentWidth = flagComponent.width / flagComponent.segmentsX;
+            const segmentHeight = flagComponent.height / flagComponent.segmentsY;
+
+            for (let y = 0; y < numRows; y++) {
+              for (let x = 0; x < numCols; x++) {
+                const p1Index = y * numCols + x;
+                const point = flagComponent.points[p1Index];
+
+                if (point.isFixed) {
+                  let pointX = point.position.x;
+                  let pointY = point.position.y;
+                  let pointZ = point.position.z;
+
+                  // Recalculate position based on pole and attached edge
+                  // Only the two fixed corners should be constrained
+                  const isTopRow = y === numRows - 1;
+                  const isBottomRow = y === 0;
+                  const isLeftCol = x === 0;
+                  const isRightCol = x === numCols - 1;
+
+                  if (flagComponent.attachedEdge === 'left') {
+                    if (isLeftCol && isBottomRow) {
+                      pointX = poleComp.position.x;
+                      pointY = poleComp.position.y;
+                      pointZ = poleComp.position.z;
+                    } else if (isLeftCol && isTopRow) {
+                      pointX = poleComp.position.x;
+                      pointY = poleComp.position.y + poleComp.height;
+                      pointZ = poleComp.position.z;
+                    }
+                  } else if (flagComponent.attachedEdge === 'right') {
+                    if (isRightCol && isBottomRow) {
+                      pointX = poleComp.position.x;
+                      pointY = poleComp.position.y;
+                      pointZ = poleComp.position.z;
+                    } else if (isRightCol && isTopRow) {
+                      pointX = poleComp.position.x;
+                      pointY = poleComp.position.y + poleComp.height;
+                      pointZ = poleComp.position.z;
+                    }
+                  } else if (flagComponent.attachedEdge === 'top') {
+                    if (isTopRow && isLeftCol) {
+                      pointX = poleComp.position.x - flagComponent.width / 2;
+                      pointY = poleComp.position.y;
+                      pointZ = poleComp.position.z;
+                    } else if (isTopRow && isRightCol) {
+                      pointX = poleComp.position.x + flagComponent.width / 2;
+                      pointY = poleComp.position.y;
+                      pointZ = poleComp.position.z;
+                    }
+                  } else if (flagComponent.attachedEdge === 'bottom') {
+                    if (isBottomRow && isLeftCol) {
+                      pointX = poleComp.position.x - flagComponent.width / 2;
+                      pointY = poleComp.position.y;
+                      pointZ = poleComp.position.z;
+                    } else if (isBottomRow && isRightCol) {
+                      pointX = poleComp.position.x + flagComponent.width / 2;
+                      pointY = poleComp.position.y;
+                      pointZ = poleComp.position.z;
+                    }
+                  }
+                  point.position.set(pointX, pointY, pointZ);
+                  point.previousPosition.set(pointX, pointY, pointZ);
+                }
+              }
+            }
+          }
+        }
       }
 
       this.applyForces(flagComponent);
@@ -155,9 +238,7 @@ export class FlagSystem extends System {
         const distance = delta.magnitude();
 
         if (distance === 0) {
-          console.warn(
-            "Division by zero: distance is 0 in satisfyConstraints."
-          );
+          // console.warn("Division by zero: distance is 0 in satisfyConstraints.");
           continue;
         }
 

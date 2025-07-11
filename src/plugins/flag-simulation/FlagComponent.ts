@@ -13,6 +13,10 @@ export class FlagComponent implements IComponent {
   segmentsX: number;
   segmentsY: number;
 
+  // Pole attachment
+  poleEntityId: number | null = null;
+  attachedEdge: 'left' | 'right' | 'top' | 'bottom';
+
   // Material properties
   mass: number; // Mass of each point in the grid
   textureUrl: string;
@@ -45,7 +49,9 @@ export class FlagComponent implements IComponent {
     textureUrl = "",
     windStrength = 0,
     windDirection?: { x: number; y: number; z: number } | null,
-    gravity?: { x: number; y: number; z: number } | null
+    gravity?: { x: number; y: number; z: number } | null,
+    poleEntityId: number | null = null,
+    attachedEdge: 'left' | 'right' | 'top' | 'bottom' = 'left'
   ) {
     this.width = width;
     this.height = height;
@@ -59,6 +65,8 @@ export class FlagComponent implements IComponent {
     this.points = [];
     this.springs = [];
     this.windStrength = windStrength;
+    this.poleEntityId = poleEntityId;
+    this.attachedEdge = attachedEdge;
 
     // Defensive: always ensure windDirection is an object with x/y/z
     if (!windDirection || typeof windDirection !== "object") {
@@ -126,7 +134,9 @@ export class FlagComponent implements IComponent {
       this.textureUrl,
       this.windStrength,
       { ...this.windDirection },
-      { ...this.gravity }
+      { ...this.gravity },
+      this.poleEntityId,
+      this.attachedEdge
     );
   }
 }

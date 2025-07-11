@@ -66,6 +66,19 @@ export class EntityManager {
   }
 
   /**
+   * Gets an entity by its ID.
+   *
+   * @param entityID The ID of the entity to retrieve
+   * @returns The entity ID if it exists, otherwise undefined
+   */
+  public getEntityById(entityID: number): number | undefined {
+    if (this.activeEntities.has(entityID)) {
+      return entityID;
+    }
+    return undefined;
+  }
+
+  /**
    * Clears all entities from the manager.
    */
   public clear(): void {
