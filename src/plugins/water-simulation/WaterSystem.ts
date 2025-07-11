@@ -26,6 +26,8 @@ export class WaterSystem extends System {
   }
 
   update(world: World, dt: number): void {
+    // Clamp timestep for stability
+    dt = Math.min(dt, 1 / 60);
     if (dt === 0) {
       return;
     }
@@ -268,10 +270,55 @@ export class WaterSystem extends System {
       positionComponent.y = newPosition.y;
       positionComponent.z = newPosition.z;
 
-      // Step 4: Boundary Handling (Simple collision with a floor at y=0)
+      // Clamp velocity for realism
+      const maxVelocity = 10;
+      dropletComponent.velocity.x = Math.max(-maxVelocity, Math.min(maxVelocity, dropletComponent.velocity.x));
+      dropletComponent.velocity.y = Math.max(-maxVelocity, Math.min(maxVelocity, dropletComponent.velocity.y));
+      dropletComponent.velocity.z = Math.max(-maxVelocity, Math.min(maxVelocity, dropletComponent.velocity.z));
+
+      // Step 4: Boundary Handling (Collision with water surface at y=0)
       if (positionComponent.y < 0) {
-        // Instead of bouncing, remove the droplet when it hits the water
-        world.entityManager.destroyEntity(entityId);
+        // Splash/ripple logic
+        // Find water body
+        const waterEntities = world.componentManager.getEntitiesWithComponents([
+          WaterBodyComponent,
+          PositionComponent
+        ]);
+        if (waterEntities.length > 0) {
+          const waterEntity = waterEntities[0];
+          const waterBody = world.componentManager.getComponent(waterEntity, WaterBodyComponent.type) as WaterBodyComponent;
+          // Add ripple
+          waterBody.ripples.push({
+            x: positionComponent.x,
+            z: positionComponent.z,
+            radius: 0.2,
+            amplitude: 0.5,
+            decay: 0.02,
+            expansionRate: 0.15
+          });
+        }
+        // Animate ripple for a few frames, then remove droplet
+        setTimeout(() => {
+          world.entityManager.destroyEntity(entityId);
+        }, 300); // 300ms splash duration
+        // Move droplet below surface to hide
+        positionComponent.y = -1;
+      }
+    }
+    // Animate ripples (expand and fade)
+    const waterEntities = world.componentManager.getEntitiesWithComponents([
+      WaterBodyComponent,
+      PositionComponent
+    ]);
+    for (const waterEntity of waterEntities) {
+      const waterBody = world.componentManager.getComponent(waterEntity, WaterBodyComponent.type) as WaterBodyComponent;
+      if (waterBody.ripples) {
+        for (const ripple of waterBody.ripples) {
+          ripple.radius += ripple.expansionRate * dt;
+          ripple.amplitude -= ripple.decay * dt;
+        }
+        // Remove faded ripples
+        waterBody.ripples = waterBody.ripples.filter(r => r.amplitude > 0);
       }
     }
   }

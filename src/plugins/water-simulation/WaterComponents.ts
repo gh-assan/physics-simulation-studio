@@ -32,14 +32,14 @@ export class WaterDropletComponent implements IComponent {
   public density: PhysicsParameter = new PhysicsParameter(0, 0, Infinity, 0.001);
   public pressure: PhysicsParameter = new PhysicsParameter(0, -Infinity, Infinity, 0.001);
   public viscosity: PhysicsParameter = WATER_PHYSICS_CONSTANTS.VISCOSITY_COEFFICIENT;
-  public radius: PhysicsParameter = WATER_PHYSICS_CONSTANTS.DROPLET_RADIUS;
+  public radius: PhysicsParameter = new PhysicsParameter(0.2, 0.05, 0.5, 0.01); // Realistic default radius
   public previousPosition: Vector3; // For Verlet integration
   public neighbors: number[] = []; // Entity IDs of neighboring particles
 
   public fallHeight: PhysicsParameter = WATER_PHYSICS_CONSTANTS.DROPLET_FALL_HEIGHT;
-  public velocity: Vector3 = new Vector3(0, 0, 0);
-  public mass: PhysicsParameter = WATER_PHYSICS_CONSTANTS.DROPLET_MASS;
-  public drag: PhysicsParameter = WATER_PHYSICS_CONSTANTS.DROPLET_DRAG;
+  public velocity: Vector3 = new Vector3(0, 0, 0); // Start at rest
+  public mass: PhysicsParameter = new PhysicsParameter(1, 0.1, 10, 0.1); // Realistic default mass
+  public drag: PhysicsParameter = new PhysicsParameter(0.05, 0, 0.2, 0.01); // Realistic drag
   public gravity: Vector3 = new Vector3(0, -9.81, 0);
   public splashForce: PhysicsParameter = WATER_PHYSICS_CONSTANTS.DROPLET_SPLASH_FORCE;
   public splashRadius: PhysicsParameter = WATER_PHYSICS_CONSTANTS.DROPLET_SPLASH_RADIUS;
