@@ -7,6 +7,7 @@ export interface ComponentControlProperty {
   min?: number;
   max?: number;
   step?: number;
+  options?: { text: string; value: string | number | null }[];
 }
 
 export interface ComponentPropertyMap {

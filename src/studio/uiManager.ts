@@ -9,6 +9,15 @@ export class UIManager {
     this.pane = pane;
   }
 
+  public addFolder(title: string, callback: (folder: FolderApi) => void): void {
+    const folder = this.pane.addFolder({ title });
+    callback(folder);
+  }
+
+  public refresh(): void {
+    this.pane.refresh();
+  }
+
   public registerComponentControls(
     componentName: string,
     data: any,

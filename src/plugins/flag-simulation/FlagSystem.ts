@@ -3,6 +3,7 @@ import { World } from "../../core/ecs/World";
 import { FlagComponent } from "./FlagComponent";
 import { FlagPhysicsInitializer } from "./utils/FlagPhysicsInitializer";
 import { PositionComponent } from "../../core/components/PositionComponent";
+import { PoleComponent } from "./PoleComponent"; // Add this import
 
 import { PointMass } from "./utils/PointMass";
 import { Spring } from "./utils/Spring";
@@ -49,7 +50,51 @@ export class FlagSystem extends System {
 
       // Initialize point masses and springs if not already done for this flag
       if (!flagComponent.points || flagComponent.points.length === 0) {
-        FlagPhysicsInitializer.initializeFlag(flagComponent, positionComponent);
+        FlagPhysicsInitializer.initializeFlag(flagComponent, positionComponent, world);
+      }
+
+      // If attached to a pole, ensure fixed points are constrained to the pole's position
+      if (flagComponent.poleEntityId) {
+        const poleEntity = world.entityManager.getEntityById(flagComponent.poleEntityId);
+        if (poleEntity) {
+          const poleComp = world.componentManager.getComponent(
+            poleEntity,
+            PoleComponent.type
+          ) as PoleComponent;
+
+          if (poleComp) {
+            const numRows = flagComponent.segmentsY + 1;
+            const numCols = flagComponent.segmentsX + 1;
+            const segmentWidth = flagComponent.width / flagComponent.segmentsX;
+            const segmentHeight = flagComponent.height / flagComponent.segmentsY;
+
+            for (let y = 0; y < numRows; y++) {
+              for (let x = 0; x < numCols; x++) {
+                const p1Index = y * numCols + x;
+                const point = flagComponent.points[p1Index];
+
+                if (point.isFixed) {
+                  let pointX = point.position.x;
+                  let pointY = point.position.y;
+                  let pointZ = point.position.z;
+
+                  // Recalculate position based on pole and attached edge
+                  if (flagComponent.attachedEdge === 'left' || flagComponent.attachedEdge === 'right') {
+                    pointY = poleComp.position.y + (y / (numRows - 1)) * flagComponent.height; // Distribute along pole height
+                    pointX = poleComp.position.x;
+                    pointZ = poleComp.position.z;
+                  } else if (flagComponent.attachedEdge === 'top' || flagComponent.attachedEdge === 'bottom') {
+                    pointX = poleComp.position.x + (x / (numCols - 1)) * flagComponent.width; // Distribute along pole width
+                    pointY = poleComp.position.y;
+                    pointZ = poleComp.position.z;
+                  }
+                  point.position.set(pointX, pointY, pointZ);
+                  point.previousPosition.set(pointX, pointY, pointZ);
+                }
+              }
+            }
+          }
+        }
       }
 
       this.applyForces(flagComponent);

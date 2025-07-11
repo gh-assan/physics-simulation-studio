@@ -1,13 +1,16 @@
 import { FlagParameterPanel } from "../FlagParameterPanel";
 import { FlagComponent } from "../FlagComponent";
 import { UIManager } from "../../../studio/uiManager";
+import { World } from "../../../core/ecs/World"; // Import World
 
 // Mock UIManager
 jest.mock("../../../studio/uiManager", () => {
   return {
     UIManager: jest.fn().mockImplementation(() => {
       return {
-        registerComponentControls: jest.fn()
+        registerComponentControls: jest.fn(),
+        addFolder: jest.fn(), // Mock addFolder
+        refresh: jest.fn() // Mock refresh
       };
     })
   };
@@ -17,9 +20,21 @@ describe("FlagParameterPanel", () => {
   let flagParameterPanel: FlagParameterPanel;
   let uiManager: UIManager;
   let flagComponent: FlagComponent;
+  let world: World; // Declare world
 
   beforeEach(() => {
-    flagParameterPanel = new FlagParameterPanel();
+    world = { // Mock World
+      componentManager: {
+        getEntitiesWithComponents: jest.fn().mockReturnValue([]),
+        getComponent: jest.fn(),
+        addComponent: jest.fn()
+      },
+      entityManager: {
+        createEntity: jest.fn().mockReturnValue('test-entity-id'),
+        getEntityById: jest.fn()
+      }
+    } as any; // Cast to any to satisfy type checking for partial mock
+    flagParameterPanel = new FlagParameterPanel(world);
     uiManager = new UIManager(null as any);
     flagComponent = new FlagComponent();
   });

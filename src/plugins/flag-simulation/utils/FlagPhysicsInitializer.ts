@@ -3,11 +3,14 @@ import { PositionComponent } from "../../../core/components/PositionComponent";
 import { PointMass } from "./PointMass";
 import { Spring } from "./Spring";
 import { Vector3 } from "./Vector3";
+import { World } from "../../../core/ecs/World";
+import { PoleComponent } from "../PoleComponent";
 
 export class FlagPhysicsInitializer {
   static initializeFlag(
     flagComponent: FlagComponent,
-    positionComponent: PositionComponent
+    positionComponent: PositionComponent,
+    world: World
   ): void {
     flagComponent.points = [];
     flagComponent.springs = [];
@@ -17,14 +20,61 @@ export class FlagPhysicsInitializer {
     const segmentWidth = flagComponent.width / flagComponent.segmentsX;
     const segmentHeight = flagComponent.height / flagComponent.segmentsY;
 
+    let polePosition: Vector3 | null = null;
+    if (flagComponent.poleEntityId) {
+      const poleEntity = world.entityManager.getEntityById(flagComponent.poleEntityId);
+      if (poleEntity) {
+        const poleComp = world.componentManager.getComponent(
+          poleEntity,
+          PoleComponent.type
+        ) as PoleComponent;
+        if (poleComp) {
+          polePosition = poleComp.position;
+        }
+      }
+    }
+
     // Create PointMass objects
     for (let y = 0; y < numRows; y++) {
       for (let x = 0; x < numCols; x++) {
-        const isFixed = x === 0; // Left column is fixed
+        let isFixed = false;
+        let pointX = positionComponent.x + x * segmentWidth - flagComponent.width / 2;
+        let pointY = positionComponent.y + y * segmentHeight;
+        let pointZ = positionComponent.z;
+
+        switch (flagComponent.attachedEdge) {
+          case 'left':
+            isFixed = x === 0;
+            break;
+          case 'right':
+            isFixed = x === numCols - 1;
+            break;
+          case 'top':
+            isFixed = y === numRows - 1;
+            break;
+          case 'bottom':
+            isFixed = y === 0;
+            break;
+        }
+
+        if (isFixed && polePosition) {
+          // Position fixed points relative to the pole
+          // Assuming the flag's attached edge aligns with the pole's height
+          if (flagComponent.attachedEdge === 'left' || flagComponent.attachedEdge === 'right') {
+            pointX = polePosition.x;
+            pointY = polePosition.y + (y / (numRows - 1)) * flagComponent.height; // Distribute along pole height
+            pointZ = polePosition.z;
+          } else if (flagComponent.attachedEdge === 'top' || flagComponent.attachedEdge === 'bottom') {
+            pointX = polePosition.x + (x / (numCols - 1)) * flagComponent.width; // Distribute along pole width
+            pointY = polePosition.y;
+            pointZ = polePosition.z;
+          }
+        }
+
         const position = new Vector3(
-          positionComponent.x + x * segmentWidth - flagComponent.width / 2,
-          positionComponent.y + y * segmentHeight,
-          positionComponent.z
+          pointX,
+          pointY,
+          pointZ
         );
         const pointMass = new PointMass(position, flagComponent.mass, isFixed);
         flagComponent.points.push(pointMass);
