@@ -21,7 +21,7 @@ export class FlagPhysicsInitializer {
     const segmentHeight = flagComponent.height / flagComponent.segmentsY;
 
     let polePosition: Vector3 | null = null;
-    let poleHeight: number = 0; // Initialize poleHeight
+    let poleHeight = 0; // Initialize poleHeight
 
     if (flagComponent.poleEntityId !== null) {
       const poleEntity = world.entityManager.getEntityById(flagComponent.poleEntityId);
@@ -41,9 +41,9 @@ export class FlagPhysicsInitializer {
     for (let y = 0; y < numRows; y++) {
       for (let x = 0; x < numCols; x++) {
         let isFixed = false;
-        let finalPointX: number;
-        let finalPointY: number;
-        let finalPointZ: number;
+        let finalPointX = 0; // Initialize
+        let finalPointY = 0; // Initialize
+        let finalPointZ = 0; // Initialize
 
         // Determine if this point is one of the two fixed corners
         const isTopRow = y === numRows - 1;

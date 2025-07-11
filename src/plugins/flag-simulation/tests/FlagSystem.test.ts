@@ -3,6 +3,7 @@ import { FlagComponent } from "../FlagComponent";
 import { PositionComponent } from "@core/components";
 import { FlagSystem } from "../FlagSystem";
 import { Vector3 } from "../utils/Vector3";
+import { PoleComponent } from "../PoleComponent"; // Import PoleComponent
 
 describe("FlagSystem", () => {
   let world: World;
@@ -17,11 +18,16 @@ describe("FlagSystem", () => {
       PositionComponent.name,
       PositionComponent
     );
+    world.componentManager.registerComponent(PoleComponent.type, PoleComponent); // Register PoleComponent
   });
 
   it("should initialize flag points and springs when a FlagComponent is added", () => {
     const entity = world.entityManager.createEntity();
-    const flagComponent = new FlagComponent(10, 6, 2, 2); // 10x6 flag, 2x2 segments
+    const poleEntity = world.entityManager.createEntity(); // Create a pole entity
+    const poleComponent = new PoleComponent({ position: new Vector3(0, 0, 0), height: 10, radius: 0.1 });
+    world.componentManager.addComponent(poleEntity, PoleComponent.type, poleComponent);
+
+    const flagComponent = new FlagComponent(10, 6, 2, 2, 0.1, 0.5, 0.05, "", 0, null, null, poleEntity, 'left'); // Link flag to pole
     const positionComponent = new PositionComponent(0, 0, 0);
 
     world.componentManager.addComponent(
@@ -44,18 +50,19 @@ describe("FlagSystem", () => {
     expect(flagComponent.springs).toBeDefined();
     expect(flagComponent.springs.length).toBeGreaterThan(0);
 
-    // Check if fixed points are correctly set
-    const topLeft = flagComponent.points[0];
-    const bottomLeft =
-      flagComponent.points[
-        flagComponent.segmentsY * (flagComponent.segmentsX + 1)
-      ];
-    expect(topLeft.isFixed).toBe(true);
-    expect(bottomLeft.isFixed).toBe(true);
+    // Check if fixed points are correctly set (top-left and bottom-left for 'left' attachedEdge)
+    const numCols = flagComponent.segmentsX + 1;
+    const numRows = flagComponent.segmentsY + 1;
 
-    // Check a non-fixed point
-    const nonFixedPoint = flagComponent.points[1];
-    expect(nonFixedPoint.isFixed).toBe(false);
+    const bottomLeftFixedPoint = flagComponent.points[0]; // (0,0)
+    const topLeftFixedPoint = flagComponent.points[(numRows - 1) * numCols]; // (0, numRows-1)
+
+    expect(bottomLeftFixedPoint.isFixed).toBe(true);
+    expect(topLeftFixedPoint.isFixed).toBe(true);
+
+    // Check a non-fixed point (e.g., top-right)
+    const topRightNonFixedPoint = flagComponent.points[numCols - 1];
+    expect(topRightNonFixedPoint.isFixed).toBe(false);
   });
 
   it("should apply gravity and wind forces to non-fixed points", () => {

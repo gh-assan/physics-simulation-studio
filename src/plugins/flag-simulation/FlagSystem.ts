@@ -238,9 +238,7 @@ export class FlagSystem extends System {
         const distance = delta.magnitude();
 
         if (distance === 0) {
-          console.warn(
-            "Division by zero: distance is 0 in satisfyConstraints."
-          );
+          // console.warn("Division by zero: distance is 0 in satisfyConstraints.");
           continue;
         }
 
