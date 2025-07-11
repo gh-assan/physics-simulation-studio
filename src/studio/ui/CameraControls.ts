@@ -18,7 +18,7 @@ export enum CameraMode {
 export class CameraControls {
   private graphicsManager: ThreeGraphicsManager;
   private controls: OrbitControls;
-  private camera: THREE.PerspectiveCamera;
+  private camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   private currentMode: CameraMode = CameraMode.PERSPECTIVE;
   private defaultPosition: THREE.Vector3;
   private defaultTarget: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
@@ -212,7 +212,7 @@ export class CameraControls {
 
     // Apply the pan
     this.camera.position.add(pan);
-    this.controls.target.add(pan);
+    (this.controls as any).target.add(pan);
 
     // Update the controls
     this.controls.update();
@@ -225,8 +225,8 @@ export class CameraControls {
    */
   public rotate(deltaX: number, deltaY: number): void {
     // Use the OrbitControls' built-in rotation
-    this.controls.rotateLeft(deltaX);
-    this.controls.rotateUp(deltaY);
+    (this.controls as any).rotateLeft(deltaX);
+    (this.controls as any).rotateUp(deltaY);
     this.controls.update();
   }
 
@@ -236,7 +236,7 @@ export class CameraControls {
    */
   public zoom(delta: number): void {
     // Get the current distance from camera to target
-    const distance = this.camera.position.distanceTo(this.controls.target);
+    const distance = this.camera.position.distanceTo((this.controls as any).target);
 
     // Calculate the new distance based on the zoom factor
     // Using a multiplier approach for smoother zooming
@@ -246,12 +246,12 @@ export class CameraControls {
     // Get the direction vector from target to camera
     const direction = new THREE.Vector3().subVectors(
       this.camera.position,
-      this.controls.target
+      (this.controls as any).target
     ).normalize();
 
     // Calculate the new position
     const newPosition = new THREE.Vector3().addVectors(
-      this.controls.target,
+      (this.controls as any).target,
       direction.multiplyScalar(newDistance)
     );
 
@@ -272,7 +272,7 @@ export class CameraControls {
     this.camera.position.copy(this.defaultPosition);
 
     // Reset target
-    this.controls.target.copy(this.defaultTarget);
+    (this.controls as any).target.copy(this.defaultTarget);
 
     // Reset camera mode to perspective
     if (this.currentMode !== CameraMode.PERSPECTIVE) {
@@ -301,7 +301,7 @@ export class CameraControls {
   public setCameraMode(mode: CameraMode): void {
     // Store current camera position and target
     const position = this.camera.position.clone();
-    const target = this.controls.target.clone();
+    const target = (this.controls as any).target.clone();
 
     if (mode === CameraMode.PERSPECTIVE) {
       // Switch to perspective camera
@@ -337,7 +337,7 @@ export class CameraControls {
     // Update the controls with the new camera
     this.controls = new OrbitControls(this.camera, this.graphicsManager.getRenderer().domElement);
     this.configureControls();
-    this.controls.target.copy(target);
+    (this.controls as any).target.copy(target);
     this.controls.update();
   }
 
@@ -346,8 +346,6 @@ export class CameraControls {
    */
   public setTopView(): void {
     this.camera.position.set(0, 20, 0);
-    this.controls.target.set(0, 0, 0);
-    this.camera.lookAt(this.controls.target);
     this.controls.update();
   }
 
@@ -356,8 +354,6 @@ export class CameraControls {
    */
   public setFrontView(): void {
     this.camera.position.set(0, 0, 20);
-    this.controls.target.set(0, 0, 0);
-    this.camera.lookAt(this.controls.target);
     this.controls.update();
   }
 
@@ -366,8 +362,6 @@ export class CameraControls {
    */
   public setSideView(): void {
     this.camera.position.set(20, 0, 0);
-    this.controls.target.set(0, 0, 0);
-    this.camera.lookAt(this.controls.target);
     this.controls.update();
   }
 
@@ -376,8 +370,6 @@ export class CameraControls {
    */
   public setPerspectiveView(): void {
     this.camera.position.set(10, 10, 10);
-    this.controls.target.set(0, 0, 0);
-    this.camera.lookAt(this.controls.target);
     this.controls.update();
   }
 

@@ -50,13 +50,23 @@ The goal of this task is to enhance the visual presentation of the canvas and im
 
 - **Unit Tests:**
   - [ ] Test the `CanvasContainer` component for responsiveness and visual separation.
+    - Verify that the canvas is visually separated with a border or shadow.
+    - Check that the canvas scales correctly with different window sizes.
+    - Ensure padding and margins are applied as expected.
   - [ ] Test the left bar resizing functionality.
+    - Verify that the resizable handle works as intended.
+    - Check that the adjusted width is saved and restored from `localStorage`.
 - **Integration Tests:**
   - [ ] Verify that the canvas and left bar integrate seamlessly with the existing UI.
+    - Ensure no overlap or misalignment occurs between the canvas and left bar.
   - [ ] Verify that updated group labels are displayed correctly.
+    - Check that all group labels are meaningful and match the intended functionality.
 - **Manual Testing:**
   - [ ] Test the canvas appearance on different screen sizes.
+    - Verify that the canvas remains visually distinct and responsive.
   - [ ] Test the left bar resizing and label updates.
+    - Ensure resizing does not interfere with other UI elements.
+    - Confirm that group labels are clear and descriptive.
 
 ---
 

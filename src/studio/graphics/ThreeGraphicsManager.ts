@@ -11,7 +11,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
  */
 export class ThreeGraphicsManager {
   public scene: THREE.Scene;
-  public camera: THREE.PerspectiveCamera;
+  public camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   public renderer: THREE.WebGLRenderer;
   public controls: OrbitControls;
   private controlsEnabled = false;
@@ -130,7 +130,7 @@ export class ThreeGraphicsManager {
     return this.scene;
   }
 
-  public getCamera(): THREE.PerspectiveCamera {
+  public getCamera(): THREE.PerspectiveCamera | THREE.OrthographicCamera {
     return this.camera;
   }
 
@@ -164,7 +164,7 @@ export class ThreeGraphicsManager {
    */
   private _handleResize(): void {
     // Update camera aspect ratio
-    this.camera.aspect = window.innerWidth / window.innerHeight;
+    // this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
 
     // Update renderer size

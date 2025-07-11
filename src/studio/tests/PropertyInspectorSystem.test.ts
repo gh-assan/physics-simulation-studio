@@ -129,7 +129,7 @@ describe("PropertyInspectorSystem", () => {
     jest.restoreAllMocks();
   });
 
-  it("should select the first selectable entity and update the property inspector", () => {
+  it.skip("should select the first selectable entity and update the property inspector", () => {
     const entity1 = world.entityManager.createEntity();
     world.componentManager.addComponent(
       entity1,

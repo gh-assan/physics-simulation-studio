@@ -350,16 +350,19 @@ const graphicsManager = renderSystem.getGraphicsManager();
 graphicsManager.toggleControls(true);
 
 // Add event listeners for toolbar events
-window.addEventListener('tool-changed', (event: CustomEvent) => {
-  console.log(`Tool changed to: ${event.detail.tool}`);
+window.addEventListener('tool-changed', (event) => {
+  const customEvent = event as CustomEvent;
+  console.log(`Tool changed to: ${customEvent.detail.tool}`);
 });
 
-window.addEventListener('snap-changed', (event: CustomEvent) => {
-  console.log(`Snap to grid changed to: ${event.detail.snapToGrid}`);
+window.addEventListener('snap-changed', (event) => {
+  const customEvent = event as CustomEvent;
+  console.log(`Snap to grid changed to: ${customEvent.detail.snapToGrid}`);
 });
 
-window.addEventListener('grid-changed', (event: CustomEvent) => {
-  console.log(`Grid visibility changed to: ${event.detail.visible}`);
+window.addEventListener('grid-changed', (event) => {
+  const customEvent = event as CustomEvent;
+  console.log(`Grid visibility changed to: ${customEvent.detail.visible}`);
 });
 
 const simulationSelectionFolder = (pane as any).addFolder({
