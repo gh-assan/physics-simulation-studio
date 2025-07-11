@@ -109,6 +109,7 @@ export class Studio {
   }
 
   public update(deltaTime: number): void {
+    console.log(`[Studio] update called. isPlaying: ${this.isPlaying}, deltaTime: ${deltaTime}`);
     if (this.isPlaying) {
       this.world.update(deltaTime);
     }

@@ -187,6 +187,7 @@ export class FlagParameterPanel extends ParameterPanelComponent {
     );
 
     // Add controls for creating a new pole
+    /*
     uiManager.addFolder('Pole Creation', (folder) => {
       const newPoleParams = {
         x: 0,
@@ -217,6 +218,7 @@ export class FlagParameterPanel extends ParameterPanelComponent {
       folder.addBinding(newPoleParams, 'radius', { label: 'Radius', min: 0.01, max: 1, step: 0.01 });
       folder.addButton({ title: 'Create New Pole' }).on('click', newPoleParams.create);
     });
+    */
 
     uiManager.registerComponentControls(
       this.componentType,

@@ -115,7 +115,7 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     world.componentManager.addComponent(
       flagEntity,
       FlagComponent.type,
-      initialFlagComponent
+      new FlagComponent(30, 20, 30, 20, 0.1, 0.5, 0.05, "", 5, { x: 1, y: 0.5, z: 0.5 }, null, poleEntity, 'left')
     );
     console.log("[FlagSimulationPlugin] Initial FlagComponent properties:", initialFlagComponent);
 
