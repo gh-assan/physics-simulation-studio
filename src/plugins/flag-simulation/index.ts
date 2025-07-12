@@ -11,10 +11,16 @@ import { FlagPhysicsInitializer } from "./utils/FlagPhysicsInitializer";
 import { FlagParameterPanel } from "./FlagParameterPanel";
 import { ParameterPanelComponent } from "../../core/components/ParameterPanelComponent";
 import * as THREE from "three";
+import { flagComponentProperties } from "./flagComponentProperties";
+import { registerComponentProperties } from "../../studio/utils/ComponentPropertyRegistry";
 
 export { FlagComponent } from "./FlagComponent";
 export { FlagSystem } from "./FlagSystem";
 export { FlagParameterPanel } from "./FlagParameterPanel";
+
+export function registerFlagComponentProperties() {
+  registerComponentProperties("FlagComponent", flagComponentProperties);
+}
 
 export class FlagSimulationPlugin implements ISimulationPlugin {
   private _flagSystem: FlagSystem | null = null;

@@ -11,10 +11,17 @@ import { ParameterPanelComponent } from "@core/components/ParameterPanelComponen
 import { WaterBodyParameterPanel } from "./WaterBodyParameterPanel";
 import { WaterDropletParameterPanel } from "./WaterDropletParameterPanel";
 import { Vector3 } from "./utils/Vector3"; // Add this import
+import { waterBodyComponentProperties, waterDropletComponentProperties } from "./waterComponentProperties";
+import { registerComponentProperties } from "../../studio/utils/ComponentPropertyRegistry";
 
 export { WaterBodyComponent, WaterDropletComponent } from "./WaterComponents";
 export { WaterBodyParameterPanel } from "./WaterBodyParameterPanel";
 export { WaterDropletParameterPanel } from "./WaterDropletParameterPanel";
+
+export function registerWaterComponentProperties() {
+  registerComponentProperties("WaterBodyComponent", waterBodyComponentProperties);
+  registerComponentProperties("WaterDropletComponent", waterDropletComponentProperties);
+}
 
 export class WaterSimulationPlugin implements ISimulationPlugin {
   public getName(): string {

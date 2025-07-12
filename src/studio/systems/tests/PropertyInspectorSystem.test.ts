@@ -3,6 +3,33 @@ import { UIManager } from "../../uiManager";
 import { World } from "../../../core/ecs/World";
 import { Studio } from "../../Studio";
 import { PluginManager } from "../../../core/plugin/PluginManager";
+import { SelectedSimulationStateManager } from "../../state/SelectedSimulationState";
+import { StateManager } from "../../state/StateManager";
+import { mockStateManager } from "../../tests/testUtils/StateManagerMock";
+
+// Robust singleton mock for StateManager
+jest.mock("../../state/StateManager", require("../../tests/testUtils/StateManagerMock").mockStateManager);
+
+// Mock SelectedSimulationStateManager
+jest.mock("../../state/SelectedSimulationState", () => {
+  return {
+    SelectedSimulationStateManager: jest.fn().mockImplementation(() => {
+      let simulationName: string | null = "flag-simulation";
+      const emitter = new (require("../../../core/events/EventEmitter").EventEmitter)();
+
+      return {
+        state: { name: simulationName },
+        setSimulation: jest.fn((name: string | null) => {
+          simulationName = name;
+          emitter.emit("change", { name: simulationName });
+        }),
+        getSimulationName: jest.fn(() => simulationName),
+        on: jest.fn(emitter.on.bind(emitter)),
+        off: jest.fn(emitter.off.bind(emitter)),
+      };
+    }),
+  };
+});
 import { SelectableComponent } from "../../../core/components/SelectableComponent";
 import { PositionComponent } from "../../../core/components/PositionComponent";
 import { FlagComponent } from "../../../plugins/flag-simulation/FlagComponent";
@@ -28,9 +55,9 @@ jest.mock("../../uiManager", () => {
 // Mock Studio
 jest.mock("../../Studio", () => {
   return {
-    Studio: jest.fn().mockImplementation(() => {
+    Studio: jest.fn().mockImplementation((world, pluginManager, stateManager) => {
       return {
-        getActiveSimulationName: jest.fn().mockReturnValue("flag-simulation"),
+        getActiveSimulationName: jest.fn().mockReturnValue(stateManager.selectedSimulation.getSimulationName()),
         play: jest.fn(),
         pause: jest.fn()
       };
@@ -70,7 +97,7 @@ describe("PropertyInspectorSystem", () => {
     // Create a new world for each test
     world = new World();
     uiManager = new UIManager(null as any);
-    studio = new Studio(null as any, null as any);
+    studio = new Studio(null as any, null as any, require("../../state/StateManager").StateManager.getInstance());
     pluginManager = new PluginManager(null as any);
     propertyInspectorSystem = new PropertyInspectorSystem(
       uiManager,
