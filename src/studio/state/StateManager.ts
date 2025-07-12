@@ -18,7 +18,7 @@ export class StateManager {
 
   public getAppState(): AppState {
     return {
-      selectedSimulation: this.selectedSimulation.state || 'flag-simulation',
+      selectedSimulation: this.selectedSimulation.state,
     };
   }
 }

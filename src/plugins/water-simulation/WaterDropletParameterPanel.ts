@@ -26,11 +26,22 @@ export class WaterDropletParameterPanel extends ParameterPanelComponent {
    * @param uiManager The UI manager to register controls with
    * @param component The component instance to bind controls to
    */
-  registerControls(uiManager: UIManager, component: IComponent): void {
-    if (!(component instanceof WaterDropletComponent)) {
+  registerControls(uiManager: UIManager, component?: IComponent): void {
+    if (component && !(component instanceof WaterDropletComponent)) {
       console.error(
         "WaterDropletParameterPanel: component is not a WaterDropletComponent"
       );
+      return;
+    }
+
+    if (!component) {
+      uiManager.addFolder('Water Droplet Settings', (folder) => {
+        folder.addBlade({
+            view: 'text',
+            value: 'No water droplet selected. Select a water droplet to see its properties.',
+            label: 'Info',
+        });
+      });
       return;
     }
 

@@ -26,11 +26,22 @@ export class WaterBodyParameterPanel extends ParameterPanelComponent {
    * @param uiManager The UI manager to register controls with
    * @param component The component instance to bind controls to
    */
-  registerControls(uiManager: UIManager, component: IComponent): void {
-    if (!(component instanceof WaterBodyComponent)) {
+  registerControls(uiManager: UIManager, component?: IComponent): void {
+    if (component && !(component instanceof WaterBodyComponent)) {
       console.error(
         "WaterBodyParameterPanel: component is not a WaterBodyComponent"
       );
+      return;
+    }
+
+    if (!component) {
+      uiManager.addFolder('Water Body Settings', (folder) => {
+        folder.addBlade({
+            view: 'text',
+            value: 'No water body selected. Select a water body to see its properties.',
+            label: 'Info',
+        });
+      });
       return;
     }
 

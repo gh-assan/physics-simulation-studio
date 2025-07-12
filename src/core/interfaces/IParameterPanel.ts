@@ -14,7 +14,7 @@ export interface IParameterPanel {
    * @param uiManager The UI manager to register controls with
    * @param component The component instance to bind controls to
    */
-  registerControls(uiManager: any, component: any): void;
+  registerControls(uiManager: any, component?: any): void;
 
   /**
    * Update the UI controls when the component changes

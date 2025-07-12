@@ -167,6 +167,10 @@ export class PluginManager {
     return this.eventEmitter.on(event, callback);
   }
 
+  public onPluginsChanged(callback: () => void): () => void {
+    return this.eventEmitter.on(PluginManagerEvent.PLUGIN_REGISTERED, callback);
+  }
+
   /**
    * Checks if a plugin is active.
    *

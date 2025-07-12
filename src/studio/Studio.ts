@@ -11,6 +11,7 @@ export class Studio {
   private renderSystem: RenderSystem | null = null;
   private isPlaying = true; // Set to true by default
   private selectedSimulation: SelectedSimulationStateManager;
+  private _activePluginName: string | null = null;
 
   public get world(): World {
     return this._world;
@@ -20,11 +21,6 @@ export class Studio {
     this._world = world;
     this.pluginManager = pluginManager;
     this.selectedSimulation = stateManager.selectedSimulation;
-    // Load simulation if state already has one selected
-    const initialSimulation = this.selectedSimulation.getSimulationName();
-    if (initialSimulation) {
-      void this.loadSimulation(initialSimulation);
-    }
   }
 
   public setRenderSystem(renderSystem: RenderSystem): void {
@@ -37,11 +33,11 @@ export class Studio {
 
     // Dispatch a custom event to notify systems
     const event = new CustomEvent("simulation-play", {
-      detail: { simulationName: this.selectedSimulation.getSimulationName() }
+      detail: { simulationName: this._activePluginName }
     });
     window.dispatchEvent(event);
     console.log(
-      `Dispatched simulation-play event for ${this.selectedSimulation.getSimulationName()}`
+      `Dispatched simulation-play event for ${this._activePluginName}`
     );
   }
 
@@ -51,19 +47,19 @@ export class Studio {
 
     // Dispatch a custom event to notify systems
     const event = new CustomEvent("simulation-pause", {
-      detail: { simulationName: this.selectedSimulation.getSimulationName() }
+      detail: { simulationName: this._activePluginName }
     });
     window.dispatchEvent(event);
     console.log(
-      `Dispatched simulation-pause event for ${this.selectedSimulation.getSimulationName()}`
+      `Dispatched simulation-pause event for ${this._activePluginName}`
     );
   }
 
   public reset(): void {
     console.log("Simulation reset.");
     this._clearWorldAndRenderSystem();
-    if (this.selectedSimulation.getSimulationName()) {
-      void this.loadSimulation(this.selectedSimulation.getSimulationName()!); // Reload the current simulation
+    if (this._activePluginName) {
+      void this.loadSimulation(this._activePluginName); // Reload the current simulation
     }
   }
 
@@ -71,6 +67,7 @@ export class Studio {
     this._deactivateCurrentSimulation();
     this._clearWorldAndRenderSystem();
     this.selectedSimulation.setSimulation(null);
+    this._activePluginName = null;
     console.log("No simulation loaded.");
   }
 
@@ -80,7 +77,7 @@ export class Studio {
       return;
     }
 
-    if (this.selectedSimulation.getSimulationName() === pluginName) {
+    if (this._activePluginName === pluginName) {
       console.log(`Simulation "${pluginName}" is already active.`);
       return;
     }
@@ -93,6 +90,7 @@ export class Studio {
     } catch (error) {
       console.error(`Failed to load simulation "${pluginName}":`, error);
       this.selectedSimulation.setSimulation(null);
+      this._activePluginName = null;
     }
   }
 
@@ -104,9 +102,8 @@ export class Studio {
   }
 
   private _deactivateCurrentSimulation(): void {
-    const currentSimulationName = this.selectedSimulation.getSimulationName();
-    if (currentSimulationName) {
-      this.pluginManager.deactivatePlugin(currentSimulationName);
+    if (this._activePluginName) {
+      this.pluginManager.deactivatePlugin(this._activePluginName);
     }
   }
 
@@ -114,15 +111,20 @@ export class Studio {
     pluginName: string
   ): Promise<void> {
     await this.pluginManager.activatePlugin(pluginName);
-    this.selectedSimulation.setSimulation(pluginName);
     console.log(`Loaded simulation: ${pluginName}`);
     const activePlugin = this.pluginManager.getPlugin(pluginName);
     if (activePlugin && activePlugin.initializeEntities) {
       activePlugin.initializeEntities(this.world);
+      this.world.update(0); // Force an immediate update of all systems
       this.world.systemManager.updateAll(this.world, 0);
       if (this.renderSystem) {
         this.renderSystem.update(this.world, 0); // Force an immediate render
       }
+
+      // Update internal state first
+      this._activePluginName = pluginName;
+      // Then update the global state
+      this.selectedSimulation.setSimulation(pluginName);
 
       // Dispatch a custom event to trigger UI refresh
       const event = new CustomEvent("simulation-loaded", {
@@ -144,14 +146,13 @@ export class Studio {
   }
 
   public getActiveSimulationName(): string | null {
-    return this.selectedSimulation.getSimulationName();
+    return this._activePluginName;
   }
 
   public getRenderer(): any | null {
-    const activeSimulationName = this.selectedSimulation.getSimulationName();
-    if (activeSimulationName) {
+    if (this._activePluginName) {
       const activePlugin = this.pluginManager.getPlugin(
-        activeSimulationName
+        this._activePluginName
       );
       // Check if the plugin has a getRenderer method (duck typing for ISimulationPlugin)
       if (activePlugin && activePlugin.getRenderer) {
@@ -165,3 +166,5 @@ export class Studio {
     return Array.from(this.pluginManager.getAvailablePluginNames());
   }
 }
+
+console.log("Studio.prototype.getAvailableSimulationNames:", typeof Studio.prototype.getAvailableSimulationNames);

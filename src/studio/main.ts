@@ -1,9 +1,9 @@
+
 import { Studio } from "./Studio";
 import { World } from "../core/ecs/World";
 import { PluginManager } from "../core/plugin/PluginManager";
 import { RenderSystem } from "./systems/RenderSystem";
 import { StateManager } from "./state/StateManager";
-import { SelectedSimulationState } from "./state/StateTypes";
 import { PropertyInspectorSystem } from "./systems/PropertyInspectorSystem";
 import { UIManager } from "./uiManager";
 import { SceneSerializer } from "./systems/SceneSerializer";
@@ -11,155 +11,147 @@ import { FlagSimulationPlugin } from "@plugins/flag-simulation";
 import { WaterSimulationPlugin } from "@plugins/water-simulation";
 import { registerFlagComponentProperties } from "@plugins/flag-simulation";
 import { registerWaterComponentProperties } from "@plugins/water-simulation";
-import {
-  WaterBodyComponent,
-  WaterDropletComponent
-} from "../plugins/water-simulation/WaterComponents";
 import { PositionComponent } from "../core/components/PositionComponent";
 import { RenderableComponent } from "../core/components/RenderableComponent";
 import { SelectableComponent } from "../core/components/SelectableComponent";
 import { RotationComponent } from "../core/components/RotationComponent";
 import { Pane } from "tweakpane";
-import { registerComponentProperties } from "./utils/ComponentPropertyRegistry";
-import { ComponentControlProperty } from "./types";
 import { ViewportToolbar } from "./ui/ViewportToolbar";
+import { SelectionSystem } from "./systems/SelectionSystem";
 
 // Import styles
 import "./styles/studio.css";
 import "./styles/toolbar.css";
 
-const world = new World();
-const pluginManager = new PluginManager(world);
-const stateManager = StateManager.getInstance();
+function setupCoreSystems() {
+  const world = new World();
+  const pluginManager = new PluginManager(world);
+  const stateManager = StateManager.getInstance();
+  const studio = new Studio(world, pluginManager, stateManager);
+  const sceneSerializer = new SceneSerializer();
 
-// Setup Tweakpane for global controls
-const pane = new Pane();
-const uiManager = new UIManager(pane);
-const sceneSerializer = new SceneSerializer();
+  // Expose for debugging
+  (window as any).world = world;
+  (window as any).pluginManager = pluginManager;
+  (window as any).stateManager = stateManager;
+  (window as any).studio = studio;
+  (window as any).sceneSerializer = sceneSerializer;
 
-// Initialize Studio first
-const studio = new Studio(world, pluginManager, stateManager);
-
-// Register flag component properties via plugin
-registerFlagComponentProperties();
-// Register water component properties via plugin
-registerWaterComponentProperties();
-
-// Register core components
-world.componentManager.registerComponent(
-  PositionComponent.type,
-  PositionComponent
-);
-world.componentManager.registerComponent(
-  RenderableComponent.type,
-  RenderableComponent
-);
-world.componentManager.registerComponent(
-  SelectableComponent.type,
-  SelectableComponent
-);
-world.componentManager.registerComponent(
-  RotationComponent.type,
-  RotationComponent
-);
-
-// Register systems
-const renderSystem = new RenderSystem(studio);
-world.systemManager.registerSystem(renderSystem);
-world.systemManager.registerSystem(
-  new PropertyInspectorSystem(uiManager, world, studio, pluginManager)
-);
-
-// Set renderSystem on studio
-studio.setRenderSystem(renderSystem);
-
-// Create viewport toolbar
-const viewportToolbar = new ViewportToolbar({
-  graphicsManager: renderSystem.getGraphicsManager()
-});
-
-// Expose for debugging/console interaction
-(window as any).viewportToolbar = viewportToolbar;
-
-// Register plugins
-pluginManager.registerPlugin(new FlagSimulationPlugin());
-pluginManager.registerPlugin(new WaterSimulationPlugin());
-
-// Expose for debugging/console interaction
-(window as any).world = world;
-(window as any).pluginManager = pluginManager;
-(window as any).uiManager = uiManager;
-(window as any).sceneSerializer = sceneSerializer;
-(window as any).studio = studio;
-
-// Initial load of the default simulation
-const defaultSimulationName = studio.getAvailableSimulationNames()[0] || null;
-stateManager.selectedSimulation.setSimulation(defaultSimulationName);
-
-const globalControlsFolder = (pane as any).addFolder({
-  title: "Global Controls"
-});
-globalControlsFolder
-  .addButton({ title: "Play" })
-  .on("click", () => studio.play());
-globalControlsFolder
-  .addButton({ title: "Pause" })
-  .on("click", () => studio.pause());
-globalControlsFolder
-  .addButton({ title: "Reset" })
-  .on("click", () => studio.reset());
-
-// Enable camera controls by default
-const graphicsManager = renderSystem.getGraphicsManager();
-graphicsManager.toggleControls(true);
-
-// Add event listeners for toolbar events
-window.addEventListener("tool-changed", (event) => {
-  const customEvent = event as CustomEvent;
-  console.log(`Tool changed to: ${customEvent.detail.tool}`);
-});
-
-window.addEventListener("snap-changed", (event) => {
-  const customEvent = event as CustomEvent;
-  console.log(`Snap to grid changed to: ${customEvent.detail.snapToGrid}`);
-});
-
-window.addEventListener("grid-changed", (event) => {
-  const customEvent = event as CustomEvent;
-  console.log(`Grid visibility changed to: ${customEvent.detail.visible}`);
-});
-
-const simulationSelectionFolder = (pane as any).addFolder({
-  title: "Simulations"
-});
-
-simulationSelectionFolder
-  .addBinding(stateManager.selectedSimulation.state, "name", {
-    label: "Select Simulation",
-    options: studio
-      .getAvailableSimulationNames()
-      .map((name) => ({ text: name, value: name }))
-  })
-  .on("change", (ev: { value: string }) => {
-    stateManager.selectedSimulation.setSimulation(ev.value);
-  });
-
-stateManager.selectedSimulation.on("change", (state: SelectedSimulationState) => {
-  void studio.loadSimulation(state.name);
-});
-
-// Main application loop
-let lastTime = 0;
-function animate(currentTime: number) {
-  requestAnimationFrame(animate);
-
-  const deltaTime = (currentTime - lastTime) / 1000; // Convert to seconds
-  lastTime = currentTime;
-
-  // Update the studio (which updates the world if playing)
-  studio.update(deltaTime);
+  return { world, pluginManager, stateManager, studio };
 }
 
-animate(0);
+function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager) {
+  console.log("Inside setupUI, typeof studio:", typeof studio);
+  console.log("Inside setupUI, studio instanceof Studio:", studio instanceof Studio);
+  console.log("Inside setupUI, studio:", studio); // Log the entire object
+  console.log("Inside setupUI, typeof studio.getAvailableSimulationNames:", typeof studio.getAvailableSimulationNames);
 
-console.log("Physics Simulation Studio Initialized");
+  const pane = new Pane();
+  const uiManager = new UIManager(pane);
+  (window as any).uiManager = uiManager;
+
+  const globalControlsFolder = pane.addFolder({ title: "Global Controls" });
+  globalControlsFolder.addButton({ title: "Play" }).on("click", () => studio.play());
+  globalControlsFolder.addButton({ title: "Pause" }).on("click", () => studio.pause());
+  globalControlsFolder.addButton({ title: "Reset" }).on("click", () => studio.reset());
+
+  const simulationSelectionFolder = pane.addFolder({ title: "Simulations" });
+
+  function updateSimulationSelector() {
+    console.log("Inside updateSimulationSelector, typeof studio.getAvailableSimulationNames:", typeof studio.getAvailableSimulationNames);
+    simulationSelectionFolder.children.forEach((child: any) => child.dispose());
+    simulationSelectionFolder
+      .addBinding(stateManager.selectedSimulation.state, "name", {
+        label: "Select Simulation",
+        options: studio
+          .getAvailableSimulationNames()
+          .map((name) => ({ text: name, value: name })),
+      })
+      .on("change", (ev: { value: string }) => {
+        void studio.loadSimulation(ev.value);
+      });
+  }
+
+  // Initial population
+  updateSimulationSelector();
+
+  pluginManager.onPluginsChanged(() => {
+    updateSimulationSelector();
+  });
+
+  return { uiManager };
+}
+
+function registerComponentsAndSystems(world: World, studio: Studio, uiManager: UIManager, pluginManager: PluginManager) {
+  // Register Component Properties
+  registerFlagComponentProperties();
+  registerWaterComponentProperties();
+
+  // Register Core Components
+  world.componentManager.registerComponent(PositionComponent.type, PositionComponent);
+  world.componentManager.registerComponent(RenderableComponent.type, RenderableComponent);
+  world.componentManager.registerComponent(SelectableComponent.type, SelectableComponent);
+  world.componentManager.registerComponent(RotationComponent.type, RotationComponent);
+
+  // Register Systems
+  const renderSystem = new RenderSystem(studio);
+  world.systemManager.registerSystem(renderSystem);
+
+  const selectionSystem = new SelectionSystem(studio, world); // Create a single instance
+  world.systemManager.registerSystem(selectionSystem);
+
+  world.systemManager.registerSystem(
+    new PropertyInspectorSystem(uiManager, world, studio, pluginManager, selectionSystem)
+  );
+  studio.setRenderSystem(renderSystem);
+
+  // Create viewport toolbar
+  const viewportToolbar = new ViewportToolbar({
+    graphicsManager: renderSystem.getGraphicsManager(),
+  });
+  (window as any).viewportToolbar = viewportToolbar;
+}
+
+function registerPlugins(pluginManager: PluginManager) {
+  pluginManager.registerPlugin(new FlagSimulationPlugin());
+  pluginManager.registerPlugin(new WaterSimulationPlugin());
+}
+
+function startApplication(studio: Studio) {
+  let lastTime = 0;
+  function animate(currentTime: number) {
+    requestAnimationFrame(animate);
+    const deltaTime = (currentTime - lastTime) / 1000;
+    lastTime = currentTime;
+    studio.update(deltaTime);
+  }
+
+  animate(0);
+}
+
+async function main() {
+  console.log("Initializing Physics Simulation Studio...");
+
+  const { world, pluginManager, stateManager, studio } = setupCoreSystems();
+  const { uiManager } = setupUI(studio, stateManager, pluginManager);
+  registerComponentsAndSystems(world, studio, uiManager, pluginManager);
+  registerPlugins(pluginManager);
+
+  // Load Initial Simulation
+  const defaultSimulationName = studio.getAvailableSimulationNames()[0] || null;
+  if (defaultSimulationName) {
+    console.log(`Loading default simulation: ${defaultSimulationName}`);
+    await studio.loadSimulation(defaultSimulationName);
+  } else {
+    console.warn("No default simulation found to load.");
+  }
+
+  startApplication(studio);
+
+  console.log("Physics Simulation Studio Initialized");
+}
+
+// Run the main initialization function
+main().catch((error) => {
+  console.error("Failed to initialize the studio:", error);
+});

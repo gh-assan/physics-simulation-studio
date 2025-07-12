@@ -1,103 +1,36 @@
 import { System } from "../../core/ecs/System";
 import { World } from "../../core/ecs/World";
 import { UIManager } from "../uiManager";
-import { SelectableComponent } from "../../core/components/SelectableComponent";
 import { IComponent } from "../../core/ecs/IComponent";
 import { getComponentProperties } from "../utils/ComponentPropertyRegistry";
 import "../utils/ComponentPropertyDefinitions"; // Import to ensure component properties are registered
 import { ParameterPanelComponent } from "../../core/components/ParameterPanelComponent";
 import { PluginManager } from "../../core/plugin/PluginManager";
 import { Studio } from "../Studio";
+import { SelectionSystem } from "./SelectionSystem";
 
 export class PropertyInspectorSystem extends System {
   private uiManager: UIManager;
   private lastSelectedEntity: number | null = null;
-  private activeSimulationName: string | null = null;
   private lastActiveSimulationName: string | null = null;
   private world: World;
   private studio: Studio;
   private pluginManager: PluginManager;
+  private selectionSystem: SelectionSystem;
 
   constructor(
     uiManager: UIManager,
     world: World,
     studio: Studio,
-    pluginManager: PluginManager
+    pluginManager: PluginManager,
+    selectionSystem: SelectionSystem
   ) {
     super();
     this.uiManager = uiManager;
     this.world = world;
     this.studio = studio;
     this.pluginManager = pluginManager;
-
-    // Listen for simulation-loaded events to refresh the UI
-    window.addEventListener(
-      "simulation-loaded",
-      this.onSimulationLoaded.bind(this) as EventListener
-    );
-
-    // Listen for simulation-play and simulation-pause events
-    window.addEventListener(
-      "simulation-play",
-      this.onSimulationPlayPause.bind(this) as EventListener
-    );
-    window.addEventListener(
-      "simulation-pause",
-      this.onSimulationPlayPause.bind(this) as EventListener
-    );
-  }
-
-  /**
-   * Handles simulation-play and simulation-pause events
-   * @param event The simulation-play or simulation-pause event
-   */
-  private onSimulationPlayPause(event: CustomEvent): void {
-    console.log(
-      `[PropertyInspectorSystem] Received ${event.type} event for ${event.detail.simulationName}`
-    );
-
-    // Update the active simulation name from the event
-    this.activeSimulationName = event.detail.simulationName;
-
-    // Force a UI refresh by setting lastSelectedEntity to null
-    this.lastSelectedEntity = null;
-
-    // Update the UI immediately
-    const currentSelectedEntity = this.findSelectedEntity(this.world);
-    if (currentSelectedEntity !== null) {
-      this.uiManager.clearControls(); // Clear previous inspector content
-      this.updateInspectorForEntity(this.world, currentSelectedEntity);
-    }
-  }
-
-  /**
-   * Handles simulation-loaded events
-   * @param event The simulation-loaded event
-   */
-  private onSimulationLoaded(event: CustomEvent): void {
-    console.log(
-      `[PropertyInspectorSystem] Received simulation-loaded event for ${event.detail.simulationName}`
-    );
-    // Store the active simulation name
-    this.activeSimulationName = event.detail.simulationName;
-    // Force a UI refresh by setting lastSelectedEntity to null
-    this.lastSelectedEntity = null;
-
-    // Deselect all currently selected entities to force a fresh selection
-    const selectableEntities =
-      this.world.componentManager.getEntitiesWithComponents([
-        SelectableComponent
-      ]);
-    for (const entityId of selectableEntities) {
-      const selectable = this.world.componentManager.getComponent(
-        entityId,
-        SelectableComponent.type
-      ) as SelectableComponent;
-      if (selectable && selectable.isSelected) {
-        selectable.isSelected = false;
-        console.log(`[PropertyInspectorSystem] Deselected entity ${entityId}`);
-      }
-    }
+    this.selectionSystem = selectionSystem;
   }
 
   /**
@@ -133,55 +66,6 @@ export class PropertyInspectorSystem extends System {
       );
       return [];
     }
-  }
-
-  /**
-   * Finds the currently selected entity in the world
-   * @param world The ECS world
-   * @returns The ID of the selected entity, or the first selectable entity matching the active simulation if none is selected
-   */
-  private findSelectedEntity(world: World): number | null {
-    const selectableEntities = world.componentManager.getEntitiesWithComponents(
-      [SelectableComponent]
-    );
-    const currentActiveSimulation = this.studio.getActiveSimulationName();
-
-    for (const entityId of selectableEntities) {
-      const selectable = world.componentManager.getComponent(
-        entityId,
-        SelectableComponent.type || SelectableComponent.name
-      );
-      if (selectable && (selectable as SelectableComponent).isSelected) {
-        // Only return if simulationType matches or is undefined
-        if (
-          !currentActiveSimulation ||
-          !(selectable as any).simulationType ||
-          (selectable as any).simulationType === currentActiveSimulation
-        ) {
-          return entityId;
-        }
-      }
-    }
-
-    // If no entity is selected, select the first one matching the active simulation by default (if any)
-  
-    for (const entityId of selectableEntities) {
-      const selectable = world.componentManager.getComponent(
-        entityId,
-        SelectableComponent.type || SelectableComponent.name
-      ) as SelectableComponent;
-      if (
-        selectable &&
-        (!currentActiveSimulation ||
-          !(selectable as any).simulationType ||
-          (selectable as any).simulationType === currentActiveSimulation)
-      ) {
-        selectable.isSelected = true;
-        return entityId;
-      }
-    }
-
-    return null;
   }
 
   /**
@@ -241,7 +125,7 @@ export class PropertyInspectorSystem extends System {
    * @param _deltaTime The time elapsed since the last update
    */
   public update(world: World, _deltaTime: number): void {
-    const currentSelectedEntity = this.findSelectedEntity(world);
+    const currentSelectedEntity = this.selectionSystem.getSelectedEntity();
     const currentActiveSimulation = this.studio.getActiveSimulationName();
 
     // Debugging logs to verify the selected entity and active simulation
@@ -265,6 +149,13 @@ export class PropertyInspectorSystem extends System {
 
       if (currentSelectedEntity !== null) {
         this.updateInspectorForEntity(world, currentSelectedEntity);
+      } else {
+        // If no entity is selected, display the parameter panels from the active plugin
+        this.uiManager.clearControls(); // Clear previous inspector content
+        const parameterPanels = this.getParameterPanelsFromActivePlugin();
+        for (const panel of parameterPanels) {
+          panel.registerControls(this.uiManager);
+        }
       }
     }
   }
