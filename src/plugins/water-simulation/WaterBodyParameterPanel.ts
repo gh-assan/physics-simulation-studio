@@ -3,6 +3,7 @@ import { UIManager } from "../../studio/uiManager";
 import { IComponent } from "../../core/ecs/IComponent";
 import { WaterBodyComponent } from "./WaterComponents";
 import { ComponentControlProperty } from "../../studio/types";
+import { Logger } from "../../core/utils/Logger";
 
 import { WATER_PHYSICS_CONSTANTS } from "./constants";
 
@@ -26,11 +27,22 @@ export class WaterBodyParameterPanel extends ParameterPanelComponent {
    * @param uiManager The UI manager to register controls with
    * @param component The component instance to bind controls to
    */
-  registerControls(uiManager: UIManager, component: IComponent): void {
-    if (!(component instanceof WaterBodyComponent)) {
-      console.error(
+  registerControls(uiManager: UIManager, component?: IComponent): void {
+    if (component && !(component instanceof WaterBodyComponent)) {
+      Logger.error(
         "WaterBodyParameterPanel: component is not a WaterBodyComponent"
       );
+      return;
+    }
+
+    if (!component) {
+      uiManager.addFolder('Water Body Settings', (folder) => {
+        folder.addBlade({
+            view: 'text',
+            value: 'No water body selected. Select a water body to see its properties.',
+            label: 'Info',
+        });
+      });
       return;
     }
 

@@ -5,6 +5,11 @@ import { World } from "@core/ecs";
 import { PositionComponent } from "@core/components";
 import { Studio } from "../Studio";
 import { PluginManager } from "@core/plugin/PluginManager";
+import { StateManager } from "../state/StateManager";
+import { SelectionSystem } from "../systems/SelectionSystem";
+
+// Robust singleton mock for StateManager
+jest.mock("../state/StateManager", require("./testUtils/StateManagerMock").mockStateManager);
 
 // Mock the Tweakpane library
 jest.mock("tweakpane", () => {
@@ -43,6 +48,7 @@ describe("PropertyInspectorSystem", () => {
   let uiManager: UIManager;
   let propertyInspectorSystem: PropertyInspectorSystem;
   let mockPaneInstance: UIManager["pane"]; // Use the correct type for the mockPaneInstance
+  let selectionSystem: SelectionSystem;
 
   beforeEach(() => {
     // Create required DOM elements
@@ -82,16 +88,24 @@ describe("PropertyInspectorSystem", () => {
     // Create mock instances for Studio and PluginManager
     const mockWorld = new World();
     const mockPluginManager = new PluginManager(mockWorld);
-    const mockStudio = new Studio(mockWorld, mockPluginManager);
+    const mockStudio = new Studio(mockWorld, mockPluginManager, StateManager.getInstance());
 
     // Mock the getActiveSimulationName method
     jest.spyOn(mockStudio, "getActiveSimulationName").mockReturnValue(null);
+
+    selectionSystem = {
+      getSelectedEntity: jest.fn(() => null),
+      setSelectedEntity: jest.fn(),
+      update: jest.fn(),
+      setDefaultSelectedEntity: jest.fn()
+    } as unknown as SelectionSystem;
 
     propertyInspectorSystem = new PropertyInspectorSystem(
       uiManager,
       mockWorld,
       mockStudio,
-      mockPluginManager
+      mockPluginManager,
+      selectionSystem
     );
 
     // Register components used in the test

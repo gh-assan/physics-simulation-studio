@@ -38,7 +38,7 @@ export abstract class ParameterPanelComponent
    * @param uiManager The UI manager to register controls with
    * @param component The component instance to bind controls to
    */
-  abstract registerControls(uiManager: UIManager, component: IComponent): void;
+  abstract registerControls(uiManager: UIManager, component?: IComponent): void;
 
   /**
    * Update the UI controls when the component changes

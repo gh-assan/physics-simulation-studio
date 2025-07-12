@@ -1,22 +1,27 @@
 import { World } from "../core/ecs/World";
 import { PluginManager } from "../core/plugin/PluginManager";
+import { Logger } from "../core/utils/Logger";
 
 import { RenderSystem } from "./systems/RenderSystem";
+import { SelectedSimulationStateManager } from "./state/SelectedSimulationState";
+import { StateManager } from "./state/StateManager";
 
 export class Studio {
   private _world: World;
   private pluginManager: PluginManager;
   private renderSystem: RenderSystem | null = null;
   private isPlaying = true; // Set to true by default
-  private activeSimulationName: string | null = null;
+  private selectedSimulation: SelectedSimulationStateManager;
+  private _activePluginName: string | null = null;
 
   public get world(): World {
     return this._world;
   }
 
-  constructor(world: World, pluginManager: PluginManager) {
+  constructor(world: World, pluginManager: PluginManager, stateManager: StateManager) {
     this._world = world;
     this.pluginManager = pluginManager;
+    this.selectedSimulation = stateManager.selectedSimulation;
   }
 
   public setRenderSystem(renderSystem: RenderSystem): void {
@@ -25,43 +30,56 @@ export class Studio {
 
   public play(): void {
     this.isPlaying = true;
-    console.log("Simulation playing.");
+    Logger.log("Simulation playing.");
 
     // Dispatch a custom event to notify systems
     const event = new CustomEvent("simulation-play", {
-      detail: { simulationName: this.activeSimulationName }
+      detail: { simulationName: this._activePluginName }
     });
     window.dispatchEvent(event);
-    console.log(
-      `Dispatched simulation-play event for ${this.activeSimulationName}`
+    Logger.log(
+      `Dispatched simulation-play event for ${this._activePluginName}`
     );
   }
 
   public pause(): void {
     this.isPlaying = false;
-    console.log("Simulation paused.");
+    Logger.log("Simulation paused.");
 
     // Dispatch a custom event to notify systems
     const event = new CustomEvent("simulation-pause", {
-      detail: { simulationName: this.activeSimulationName }
+      detail: { simulationName: this._activePluginName }
     });
     window.dispatchEvent(event);
-    console.log(
-      `Dispatched simulation-pause event for ${this.activeSimulationName}`
+    Logger.log(
+      `Dispatched simulation-pause event for ${this._activePluginName}`
     );
   }
 
   public reset(): void {
-    console.log("Simulation reset.");
+    Logger.log("Simulation reset.");
     this._clearWorldAndRenderSystem();
-    if (this.activeSimulationName) {
-      void this.loadSimulation(this.activeSimulationName); // Reload the current simulation
+    if (this._activePluginName) {
+      void this.loadSimulation(this._activePluginName); // Reload the current simulation
     }
   }
 
-  public async loadSimulation(pluginName: string): Promise<void> {
-    if (this.activeSimulationName === pluginName) {
-      console.log(`Simulation "${pluginName}" is already active.`);
+  private _unloadCurrentSimulation(): void {
+    this._deactivateCurrentSimulation();
+    this._clearWorldAndRenderSystem();
+    this.selectedSimulation.setSimulation(null);
+    this._activePluginName = null;
+    Logger.log("No simulation loaded.");
+  }
+
+  public async loadSimulation(pluginName: string | null): Promise<void> {
+    if (pluginName === null) {
+      this._unloadCurrentSimulation();
+      return;
+    }
+
+    if (this._activePluginName === pluginName) {
+      Logger.log(`Simulation "${pluginName}" is already active.`);
       return;
     }
 
@@ -71,8 +89,9 @@ export class Studio {
     try {
       await this._activateAndInitializePlugin(pluginName);
     } catch (error) {
-      console.error(`Failed to load simulation "${pluginName}":`, error);
-      this.activeSimulationName = null;
+      Logger.error(`Failed to load simulation "${pluginName}":`, error);
+      this.selectedSimulation.setSimulation(null);
+      this._activePluginName = null;
     }
   }
 
@@ -84,8 +103,8 @@ export class Studio {
   }
 
   private _deactivateCurrentSimulation(): void {
-    if (this.activeSimulationName) {
-      this.pluginManager.deactivatePlugin(this.activeSimulationName);
+    if (this._activePluginName) {
+      this.pluginManager.deactivatePlugin(this._activePluginName);
     }
   }
 
@@ -93,22 +112,27 @@ export class Studio {
     pluginName: string
   ): Promise<void> {
     await this.pluginManager.activatePlugin(pluginName);
-    this.activeSimulationName = pluginName;
-    console.log(`Loaded simulation: ${pluginName}`);
+    Logger.log(`Loaded simulation: ${pluginName}`);
     const activePlugin = this.pluginManager.getPlugin(pluginName);
     if (activePlugin && activePlugin.initializeEntities) {
       activePlugin.initializeEntities(this.world);
+      this.world.update(0); // Force an immediate update of all systems
       this.world.systemManager.updateAll(this.world, 0);
       if (this.renderSystem) {
         this.renderSystem.update(this.world, 0); // Force an immediate render
       }
+
+      // Update internal state first
+      this._activePluginName = pluginName;
+      // Then update the global state
+      this.selectedSimulation.setSimulation(pluginName);
 
       // Dispatch a custom event to trigger UI refresh
       const event = new CustomEvent("simulation-loaded", {
         detail: { simulationName: pluginName }
       });
       window.dispatchEvent(event);
-      console.log(`Dispatched simulation-loaded event for ${pluginName}`);
+      Logger.log(`Dispatched simulation-loaded event for ${pluginName}`);
     }
   }
 
@@ -123,13 +147,13 @@ export class Studio {
   }
 
   public getActiveSimulationName(): string | null {
-    return this.activeSimulationName;
+    return this._activePluginName;
   }
 
   public getRenderer(): any | null {
-    if (this.activeSimulationName) {
+    if (this._activePluginName) {
       const activePlugin = this.pluginManager.getPlugin(
-        this.activeSimulationName
+        this._activePluginName
       );
       // Check if the plugin has a getRenderer method (duck typing for ISimulationPlugin)
       if (activePlugin && activePlugin.getRenderer) {

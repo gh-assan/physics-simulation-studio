@@ -5,6 +5,7 @@ import { FlagComponent } from "./FlagComponent";
 import { ComponentControlProperty } from "../../studio/types";
 import { World } from "../../core/ecs/World";
 import { PoleComponent } from "./PoleComponent";
+import { Logger } from "../../core/utils/Logger";
 
 /**
  * Parameter panel for the FlagComponent
@@ -33,9 +34,24 @@ export class FlagParameterPanel extends ParameterPanelComponent {
    * @param uiManager The UI manager to register controls with
    * @param component The component instance to bind controls to
    */
-  registerControls(uiManager: UIManager, component: IComponent): void {
-    if (!(component instanceof FlagComponent)) {
-      console.error("FlagParameterPanel: component is not a FlagComponent");
+  registerControls(uiManager: UIManager, component?: IComponent): void {
+    // If a component is provided, ensure it's a FlagComponent
+    if (component && !(component instanceof FlagComponent)) {
+      Logger.error("FlagParameterPanel: provided component is not a FlagComponent");
+      return;
+    }
+
+    // If no component is provided, we can't register controls for it.
+    // In a future implementation, we could show global simulation settings here.
+    if (!component) {
+      // For now, we'll just add a folder indicating the active simulation.
+      uiManager.addFolder('Flag Simulation Settings', (folder) => {
+        folder.addBlade({
+            view: 'text',
+            value: 'No flag selected. Select a flag to see its properties.',
+            label: 'Info',
+        });
+      });
       return;
     }
 
