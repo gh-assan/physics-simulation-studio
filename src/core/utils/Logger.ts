@@ -1,5 +1,5 @@
 export class Logger {
-  private static enabled: boolean = true; // Global switch to enable/disable logging
+  private static enabled = true; // Global switch to enable/disable logging
 
   public static enable(): void {
     Logger.enabled = true;
