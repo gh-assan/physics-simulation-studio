@@ -20,6 +20,11 @@ export class Studio {
     this._world = world;
     this.pluginManager = pluginManager;
     this.selectedSimulation = stateManager.selectedSimulation;
+    // Load simulation if state already has one selected
+    const initialSimulation = this.selectedSimulation.getSimulationName();
+    if (initialSimulation) {
+      void this.loadSimulation(initialSimulation);
+    }
   }
 
   public setRenderSystem(renderSystem: RenderSystem): void {

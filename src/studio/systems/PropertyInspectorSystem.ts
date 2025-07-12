@@ -138,20 +138,45 @@ export class PropertyInspectorSystem extends System {
   /**
    * Finds the currently selected entity in the world
    * @param world The ECS world
-   * @returns The ID of the selected entity, or null if no entity is selected
+   * @returns The ID of the selected entity, or the first selectable entity matching the active simulation if none is selected
    */
   private findSelectedEntity(world: World): number | null {
     const selectableEntities = world.componentManager.getEntitiesWithComponents(
       [SelectableComponent]
     );
+    const currentActiveSimulation = this.studio.getActiveSimulationName();
 
     for (const entityId of selectableEntities) {
-      // Use SelectableComponent.type instead of SelectableComponent.name for consistency
       const selectable = world.componentManager.getComponent(
         entityId,
         SelectableComponent.type || SelectableComponent.name
       );
       if (selectable && (selectable as SelectableComponent).isSelected) {
+        // Only return if simulationType matches or is undefined
+        if (
+          !currentActiveSimulation ||
+          !(selectable as any).simulationType ||
+          (selectable as any).simulationType === currentActiveSimulation
+        ) {
+          return entityId;
+        }
+      }
+    }
+
+    // If no entity is selected, select the first one matching the active simulation by default (if any)
+  
+    for (const entityId of selectableEntities) {
+      const selectable = world.componentManager.getComponent(
+        entityId,
+        SelectableComponent.type || SelectableComponent.name
+      ) as SelectableComponent;
+      if (
+        selectable &&
+        (!currentActiveSimulation ||
+          !(selectable as any).simulationType ||
+          (selectable as any).simulationType === currentActiveSimulation)
+      ) {
+        selectable.isSelected = true;
         return entityId;
       }
     }
