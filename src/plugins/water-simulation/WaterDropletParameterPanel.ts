@@ -3,6 +3,7 @@ import { UIManager } from "../../studio/uiManager";
 import { IComponent } from "../../core/ecs/IComponent";
 import { WaterDropletComponent } from "./WaterComponents";
 import { ComponentControlProperty } from "../../studio/types";
+import { Logger } from "../../core/utils/Logger";
 
 import { WATER_PHYSICS_CONSTANTS } from "./constants";
 
@@ -28,7 +29,7 @@ export class WaterDropletParameterPanel extends ParameterPanelComponent {
    */
   registerControls(uiManager: UIManager, component?: IComponent): void {
     if (component && !(component instanceof WaterDropletComponent)) {
-      console.error(
+      Logger.error(
         "WaterDropletParameterPanel: component is not a WaterDropletComponent"
       );
       return;

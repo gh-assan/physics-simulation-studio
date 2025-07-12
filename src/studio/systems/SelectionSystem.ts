@@ -2,6 +2,7 @@ import { System } from "../../core/ecs/System";
 import { World } from "../../core/ecs/World";
 import { SelectableComponent } from "../../core/components/SelectableComponent";
 import { Studio } from "../Studio";
+import { Logger } from "../../core/utils/Logger";
 
 export class SelectionSystem extends System {
   private studio: Studio;
@@ -12,7 +13,6 @@ export class SelectionSystem extends System {
     super();
     this.studio = studio;
     this.world = world; // Store world
-    console.log("[SelectionSystem] Constructor: this.world is", this.world);
 
     // Listen for simulation-loaded events to set a default selection
     window.addEventListener(
@@ -24,18 +24,16 @@ export class SelectionSystem extends System {
   }
 
   private onSimulationLoaded(event: CustomEvent): void {
-    console.log(
+    Logger.log(
       `[SelectionSystem] Received simulation-loaded event for ${event.detail.simulationName}`
     );
     this.setDefaultSelectedEntity();
   }
 
   private setDefaultSelectedEntity(): void {
-    console.log("[SelectionSystem] setDefaultSelectedEntity: this.world is", this.world);
     const selectableEntities = this.world.componentManager.getEntitiesWithComponents(
       [SelectableComponent]
     );
-    console.log("[SelectionSystem] setDefaultSelectedEntity: Found selectable entities:", selectableEntities.length);
 
     const currentActiveSimulation = this.studio.getActiveSimulationName();
 
@@ -88,7 +86,7 @@ export class SelectionSystem extends System {
       }
     }
 
-    console.log(`[SelectionSystem] Selected entity: ${this.currentSelectedEntity}`);
+    Logger.log(`[SelectionSystem] Selected entity: ${this.currentSelectedEntity}`);
   }
 
   public getSelectedEntity(): number | null {

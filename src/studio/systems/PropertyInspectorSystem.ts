@@ -8,6 +8,7 @@ import { ParameterPanelComponent } from "../../core/components/ParameterPanelCom
 import { PluginManager } from "../../core/plugin/PluginManager";
 import { Studio } from "../Studio";
 import { SelectionSystem } from "./SelectionSystem";
+import { Logger } from "../../core/utils/Logger";
 
 export class PropertyInspectorSystem extends System {
   private uiManager: UIManager;
@@ -40,7 +41,7 @@ export class PropertyInspectorSystem extends System {
   private getParameterPanelsFromActivePlugin(): ParameterPanelComponent[] {
     const activeSimulationName = this.studio.getActiveSimulationName();
     if (!activeSimulationName) {
-      console.log(
+      Logger.log(
         `[PropertyInspectorSystem] No active simulation, returning empty parameter panels array`
       );
       return [];
@@ -48,7 +49,7 @@ export class PropertyInspectorSystem extends System {
 
     const activePlugin = this.pluginManager.getPlugin(activeSimulationName);
     if (!activePlugin) {
-      console.log(
+      Logger.log(
         `[PropertyInspectorSystem] No active plugin found for simulation ${activeSimulationName}, returning empty parameter panels array`
       );
       return [];
@@ -56,12 +57,12 @@ export class PropertyInspectorSystem extends System {
 
     if (activePlugin.getParameterPanels) {
       const panels = activePlugin.getParameterPanels();
-      console.log(
+      Logger.log(
         `[PropertyInspectorSystem] Got ${panels.length} parameter panels from active plugin ${activeSimulationName}`
       );
       return panels;
     } else {
-      console.log(
+      Logger.log(
         `[PropertyInspectorSystem] Active plugin ${activeSimulationName} does not implement getParameterPanels, returning empty parameter panels array`
       );
       return [];
@@ -91,7 +92,7 @@ export class PropertyInspectorSystem extends System {
 
     if (parameterPanel) {
       // If a parameter panel component is found, use it to register UI controls
-      console.log(
+      Logger.log(
         `[PropertyInspectorSystem] Using parameter panel for component '${displayName}'`
       );
       parameterPanel.registerControls(this.uiManager, componentInstance);
@@ -102,11 +103,11 @@ export class PropertyInspectorSystem extends System {
 
       // Log whether properties were found
       if (properties) {
-        console.log(
+        Logger.log(
           `[PropertyInspectorSystem] Found ${properties.length} properties for component '${displayName}' using key '${registryKey}'`
         );
       } else {
-        console.warn(
+        Logger.warn(
           `[PropertyInspectorSystem] No properties found for component '${displayName}' using key '${registryKey}'`
         );
       }
@@ -127,16 +128,6 @@ export class PropertyInspectorSystem extends System {
   public update(world: World, _deltaTime: number): void {
     const currentSelectedEntity = this.selectionSystem.getSelectedEntity();
     const currentActiveSimulation = this.studio.getActiveSimulationName();
-
-    // Debugging logs to verify the selected entity and active simulation
-    console.log(
-      "[PropertyInspectorSystem] Current selected entity:",
-      currentSelectedEntity
-    );
-    console.log(
-      "[PropertyInspectorSystem] Current active simulation:",
-      currentActiveSimulation
-    );
 
     // Check if the selected entity has changed OR if the active simulation has changed
     if (
@@ -169,19 +160,8 @@ export class PropertyInspectorSystem extends System {
     const components =
       world.componentManager.getAllComponentsForEntity(entityId);
 
-    // Log the components for debugging
-    console.log(
-      "[PropertyInspectorSystem] Components for entity",
-      entityId,
-      ":",
-      components
-    );
-
     // Get parameter panels from the active plugin
     const parameterPanels = this.getParameterPanelsFromActivePlugin();
-    console.log(
-      `[PropertyInspectorSystem] Got ${parameterPanels.length} parameter panels from active plugin`
-    );
 
     // Process all components
     for (const componentName in components) {
@@ -193,7 +173,7 @@ export class PropertyInspectorSystem extends System {
           componentName === "SelectableComponent" ||
           componentName === "RenderableComponent"
         ) {
-          console.log(
+          Logger.log(
             `[PropertyInspectorSystem] Skipping component '${componentName}' as it is hidden from the UI`
           );
           continue;
@@ -204,14 +184,14 @@ export class PropertyInspectorSystem extends System {
         const currentActiveSimulation = this.studio.getActiveSimulationName();
         if (currentActiveSimulation && component.simulationType) {
           if (component.simulationType !== currentActiveSimulation) {
-            console.log(
+            Logger.log(
               `[PropertyInspectorSystem] Skipping component '${componentName}' (simulationType: ${component.simulationType}) as it does not match active simulation '${currentActiveSimulation}'`
             );
             continue; // Skip components that don't belong to the active simulation
           }
         }
 
-        console.log(
+        Logger.log(
           `[PropertyInspectorSystem] Processing component: '${componentName}' for entity ${entityId}`
         );
 
@@ -219,7 +199,7 @@ export class PropertyInspectorSystem extends System {
         // as returned by ComponentManager.getAllComponentsForEntity.
         // We can directly use it as the registryKey.
         const registryKey = componentName;
-        console.log(
+        Logger.log(
           `[PropertyInspectorSystem] Using registry key '${registryKey}' for component '${componentName}' from getAllComponentsForEntity result.`
         );
 

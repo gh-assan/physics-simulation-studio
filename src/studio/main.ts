@@ -18,6 +18,7 @@ import { RotationComponent } from "../core/components/RotationComponent";
 import { Pane } from "tweakpane";
 import { ViewportToolbar } from "./ui/ViewportToolbar";
 import { SelectionSystem } from "./systems/SelectionSystem";
+import { Logger } from "../core/utils/Logger";
 
 // Import styles
 import "./styles/studio.css";
@@ -41,11 +42,6 @@ function setupCoreSystems() {
 }
 
 function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager) {
-  console.log("Inside setupUI, typeof studio:", typeof studio);
-  console.log("Inside setupUI, studio instanceof Studio:", studio instanceof Studio);
-  console.log("Inside setupUI, studio:", studio); // Log the entire object
-  console.log("Inside setupUI, typeof studio.getAvailableSimulationNames:", typeof studio.getAvailableSimulationNames);
-
   const pane = new Pane();
   const uiManager = new UIManager(pane);
   (window as any).uiManager = uiManager;
@@ -58,7 +54,6 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
   const simulationSelectionFolder = pane.addFolder({ title: "Simulations" });
 
   function updateSimulationSelector() {
-    console.log("Inside updateSimulationSelector, typeof studio.getAvailableSimulationNames:", typeof studio.getAvailableSimulationNames);
     simulationSelectionFolder.children.forEach((child: any) => child.dispose());
     simulationSelectionFolder
       .addBinding(stateManager.selectedSimulation.state, "name", {
@@ -67,7 +62,7 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
           .getAvailableSimulationNames()
           .map((name) => ({ text: name, value: name })),
       })
-      .on("change", (ev: { value: string }) => {
+      .on("change", (ev: { value: string | null }) => {
         void studio.loadSimulation(ev.value);
       });
   }
@@ -130,7 +125,7 @@ function startApplication(studio: Studio) {
 }
 
 async function main() {
-  console.log("Initializing Physics Simulation Studio...");
+  Logger.log("Initializing Physics Simulation Studio...");
 
   const { world, pluginManager, stateManager, studio } = setupCoreSystems();
   const { uiManager } = setupUI(studio, stateManager, pluginManager);
@@ -140,18 +135,19 @@ async function main() {
   // Load Initial Simulation
   const defaultSimulationName = studio.getAvailableSimulationNames()[0] || null;
   if (defaultSimulationName) {
-    console.log(`Loading default simulation: ${defaultSimulationName}`);
+    Logger.log(`Loading default simulation: ${defaultSimulationName}`);
     await studio.loadSimulation(defaultSimulationName);
   } else {
-    console.warn("No default simulation found to load.");
+    Logger.warn("No default simulation found to load.");
   }
 
   startApplication(studio);
 
-  console.log("Physics Simulation Studio Initialized");
+  Logger.log("Physics Simulation Studio Initialized");
 }
 
 // Run the main initialization function
 main().catch((error) => {
-  console.error("Failed to initialize the studio:", error);
+  Logger.error("Failed to initialize the studio:", error);
 });
+

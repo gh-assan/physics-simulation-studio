@@ -1,5 +1,6 @@
 import { World } from "../core/ecs/World";
 import { PluginManager } from "../core/plugin/PluginManager";
+import { Logger } from "../core/utils/Logger";
 
 import { RenderSystem } from "./systems/RenderSystem";
 import { SelectedSimulationStateManager } from "./state/SelectedSimulationState";
@@ -29,34 +30,34 @@ export class Studio {
 
   public play(): void {
     this.isPlaying = true;
-    console.log("Simulation playing.");
+    Logger.log("Simulation playing.");
 
     // Dispatch a custom event to notify systems
     const event = new CustomEvent("simulation-play", {
       detail: { simulationName: this._activePluginName }
     });
     window.dispatchEvent(event);
-    console.log(
+    Logger.log(
       `Dispatched simulation-play event for ${this._activePluginName}`
     );
   }
 
   public pause(): void {
     this.isPlaying = false;
-    console.log("Simulation paused.");
+    Logger.log("Simulation paused.");
 
     // Dispatch a custom event to notify systems
     const event = new CustomEvent("simulation-pause", {
       detail: { simulationName: this._activePluginName }
     });
     window.dispatchEvent(event);
-    console.log(
+    Logger.log(
       `Dispatched simulation-pause event for ${this._activePluginName}`
     );
   }
 
   public reset(): void {
-    console.log("Simulation reset.");
+    Logger.log("Simulation reset.");
     this._clearWorldAndRenderSystem();
     if (this._activePluginName) {
       void this.loadSimulation(this._activePluginName); // Reload the current simulation
@@ -68,7 +69,7 @@ export class Studio {
     this._clearWorldAndRenderSystem();
     this.selectedSimulation.setSimulation(null);
     this._activePluginName = null;
-    console.log("No simulation loaded.");
+    Logger.log("No simulation loaded.");
   }
 
   public async loadSimulation(pluginName: string | null): Promise<void> {
@@ -78,7 +79,7 @@ export class Studio {
     }
 
     if (this._activePluginName === pluginName) {
-      console.log(`Simulation "${pluginName}" is already active.`);
+      Logger.log(`Simulation "${pluginName}" is already active.`);
       return;
     }
 
@@ -88,7 +89,7 @@ export class Studio {
     try {
       await this._activateAndInitializePlugin(pluginName);
     } catch (error) {
-      console.error(`Failed to load simulation "${pluginName}":`, error);
+      Logger.error(`Failed to load simulation "${pluginName}":`, error);
       this.selectedSimulation.setSimulation(null);
       this._activePluginName = null;
     }
@@ -111,7 +112,7 @@ export class Studio {
     pluginName: string
   ): Promise<void> {
     await this.pluginManager.activatePlugin(pluginName);
-    console.log(`Loaded simulation: ${pluginName}`);
+    Logger.log(`Loaded simulation: ${pluginName}`);
     const activePlugin = this.pluginManager.getPlugin(pluginName);
     if (activePlugin && activePlugin.initializeEntities) {
       activePlugin.initializeEntities(this.world);
@@ -131,7 +132,7 @@ export class Studio {
         detail: { simulationName: pluginName }
       });
       window.dispatchEvent(event);
-      console.log(`Dispatched simulation-loaded event for ${pluginName}`);
+      Logger.log(`Dispatched simulation-loaded event for ${pluginName}`);
     }
   }
 
@@ -166,5 +167,3 @@ export class Studio {
     return Array.from(this.pluginManager.getAvailablePluginNames());
   }
 }
-
-console.log("Studio.prototype.getAvailableSimulationNames:", typeof Studio.prototype.getAvailableSimulationNames);

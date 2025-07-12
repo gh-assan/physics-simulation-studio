@@ -5,6 +5,7 @@ import { FlagComponent } from "./FlagComponent";
 import { ComponentControlProperty } from "../../studio/types";
 import { World } from "../../core/ecs/World";
 import { PoleComponent } from "./PoleComponent";
+import { Logger } from "../../core/utils/Logger";
 
 /**
  * Parameter panel for the FlagComponent
@@ -36,7 +37,7 @@ export class FlagParameterPanel extends ParameterPanelComponent {
   registerControls(uiManager: UIManager, component?: IComponent): void {
     // If a component is provided, ensure it's a FlagComponent
     if (component && !(component instanceof FlagComponent)) {
-      console.error("FlagParameterPanel: provided component is not a FlagComponent");
+      Logger.error("FlagParameterPanel: provided component is not a FlagComponent");
       return;
     }
 

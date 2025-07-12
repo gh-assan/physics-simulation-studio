@@ -3,6 +3,7 @@ import { UIManager } from "../../studio/uiManager";
 import { IComponent } from "../../core/ecs/IComponent";
 import { WaterBodyComponent } from "./WaterComponents";
 import { ComponentControlProperty } from "../../studio/types";
+import { Logger } from "../../core/utils/Logger";
 
 import { WATER_PHYSICS_CONSTANTS } from "./constants";
 
@@ -28,7 +29,7 @@ export class WaterBodyParameterPanel extends ParameterPanelComponent {
    */
   registerControls(uiManager: UIManager, component?: IComponent): void {
     if (component && !(component instanceof WaterBodyComponent)) {
-      console.error(
+      Logger.error(
         "WaterBodyParameterPanel: component is not a WaterBodyComponent"
       );
       return;
