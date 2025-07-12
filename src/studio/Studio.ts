@@ -2,21 +2,24 @@ import { World } from "../core/ecs/World";
 import { PluginManager } from "../core/plugin/PluginManager";
 
 import { RenderSystem } from "./systems/RenderSystem";
+import { SelectedSimulationStateManager } from "./state/SelectedSimulationState";
+import { StateManager } from "./state/StateManager";
 
 export class Studio {
   private _world: World;
   private pluginManager: PluginManager;
   private renderSystem: RenderSystem | null = null;
   private isPlaying = true; // Set to true by default
-  private activeSimulationName: string | null = null;
+  private selectedSimulation: SelectedSimulationStateManager;
 
   public get world(): World {
     return this._world;
   }
 
-  constructor(world: World, pluginManager: PluginManager) {
+  constructor(world: World, pluginManager: PluginManager, stateManager: StateManager) {
     this._world = world;
     this.pluginManager = pluginManager;
+    this.selectedSimulation = stateManager.selectedSimulation;
   }
 
   public setRenderSystem(renderSystem: RenderSystem): void {
@@ -29,11 +32,11 @@ export class Studio {
 
     // Dispatch a custom event to notify systems
     const event = new CustomEvent("simulation-play", {
-      detail: { simulationName: this.activeSimulationName }
+      detail: { simulationName: this.selectedSimulation.getSimulationName() }
     });
     window.dispatchEvent(event);
     console.log(
-      `Dispatched simulation-play event for ${this.activeSimulationName}`
+      `Dispatched simulation-play event for ${this.selectedSimulation.getSimulationName()}`
     );
   }
 
@@ -43,24 +46,36 @@ export class Studio {
 
     // Dispatch a custom event to notify systems
     const event = new CustomEvent("simulation-pause", {
-      detail: { simulationName: this.activeSimulationName }
+      detail: { simulationName: this.selectedSimulation.getSimulationName() }
     });
     window.dispatchEvent(event);
     console.log(
-      `Dispatched simulation-pause event for ${this.activeSimulationName}`
+      `Dispatched simulation-pause event for ${this.selectedSimulation.getSimulationName()}`
     );
   }
 
   public reset(): void {
     console.log("Simulation reset.");
     this._clearWorldAndRenderSystem();
-    if (this.activeSimulationName) {
-      void this.loadSimulation(this.activeSimulationName); // Reload the current simulation
+    if (this.selectedSimulation.getSimulationName()) {
+      void this.loadSimulation(this.selectedSimulation.getSimulationName()!); // Reload the current simulation
     }
   }
 
-  public async loadSimulation(pluginName: string): Promise<void> {
-    if (this.activeSimulationName === pluginName) {
+  private _unloadCurrentSimulation(): void {
+    this._deactivateCurrentSimulation();
+    this._clearWorldAndRenderSystem();
+    this.selectedSimulation.setSimulation(null);
+    console.log("No simulation loaded.");
+  }
+
+  public async loadSimulation(pluginName: string | null): Promise<void> {
+    if (pluginName === null) {
+      this._unloadCurrentSimulation();
+      return;
+    }
+
+    if (this.selectedSimulation.getSimulationName() === pluginName) {
       console.log(`Simulation "${pluginName}" is already active.`);
       return;
     }
@@ -72,7 +87,7 @@ export class Studio {
       await this._activateAndInitializePlugin(pluginName);
     } catch (error) {
       console.error(`Failed to load simulation "${pluginName}":`, error);
-      this.activeSimulationName = null;
+      this.selectedSimulation.setSimulation(null);
     }
   }
 
@@ -84,8 +99,9 @@ export class Studio {
   }
 
   private _deactivateCurrentSimulation(): void {
-    if (this.activeSimulationName) {
-      this.pluginManager.deactivatePlugin(this.activeSimulationName);
+    const currentSimulationName = this.selectedSimulation.getSimulationName();
+    if (currentSimulationName) {
+      this.pluginManager.deactivatePlugin(currentSimulationName);
     }
   }
 
@@ -93,7 +109,7 @@ export class Studio {
     pluginName: string
   ): Promise<void> {
     await this.pluginManager.activatePlugin(pluginName);
-    this.activeSimulationName = pluginName;
+    this.selectedSimulation.setSimulation(pluginName);
     console.log(`Loaded simulation: ${pluginName}`);
     const activePlugin = this.pluginManager.getPlugin(pluginName);
     if (activePlugin && activePlugin.initializeEntities) {
@@ -123,13 +139,14 @@ export class Studio {
   }
 
   public getActiveSimulationName(): string | null {
-    return this.activeSimulationName;
+    return this.selectedSimulation.getSimulationName();
   }
 
   public getRenderer(): any | null {
-    if (this.activeSimulationName) {
+    const activeSimulationName = this.selectedSimulation.getSimulationName();
+    if (activeSimulationName) {
       const activePlugin = this.pluginManager.getPlugin(
-        this.activeSimulationName
+        activeSimulationName
       );
       // Check if the plugin has a getRenderer method (duck typing for ISimulationPlugin)
       if (activePlugin && activePlugin.getRenderer) {

@@ -1,33 +1,25 @@
-import { StateManager } from './StateManager';
-import { SelectedSimulationState as ISelectedSimulationState } from './StateTypes';
+import { EventEmitter } from "../../core/events/EventEmitter";
+import { SelectedSimulationState } from "./StateTypes";
 
-export class SelectedSimulationState {
-  private static instance: SelectedSimulationState;
-  private stateManager: StateManager;
+export class SelectedSimulationStateManager extends EventEmitter {
+  private _state: SelectedSimulationState = { name: null };
 
-  private constructor() {
-    this.stateManager = StateManager.getInstance();
+  constructor() {
+    super();
   }
 
-  public static getInstance(): SelectedSimulationState {
-    if (!SelectedSimulationState.instance) {
-      SelectedSimulationState.instance = new SelectedSimulationState();
+  public get state(): SelectedSimulationState {
+    return this._state;
+  }
+
+  public setSimulation(name: string | null): void {
+    if (this._state.name !== name) {
+      this._state.name = name;
+      this.emit("change", this._state);
     }
-    return SelectedSimulationState.instance;
   }
 
-  public getSimulationId(): string | null {
-    return this.stateManager.getState().selectedSimulation.simulationId;
-  }
-
-  public setSimulationId(id: string | null): void {
-    this.stateManager.setState({
-      selectedSimulation: { simulationId: id },
-    });
-  }
-
-  public subscribe(callback: (state: ISelectedSimulationState) => void): () => void {
-    return this.stateManager.subscribe('selectedSimulation', callback);
+  public getSimulationName(): string | null {
+    return this._state.name;
   }
 }
-

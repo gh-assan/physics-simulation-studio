@@ -2,6 +2,8 @@ import { Studio } from "./Studio";
 import { World } from "../core/ecs/World";
 import { PluginManager } from "../core/plugin/PluginManager";
 import { RenderSystem } from "./systems/RenderSystem";
+import { StateManager } from "./state/StateManager";
+import { SelectedSimulationState } from "./state/StateTypes";
 import { PropertyInspectorSystem } from "./systems/PropertyInspectorSystem";
 import { UIManager } from "./uiManager";
 import { SceneSerializer } from "./systems/SceneSerializer";
@@ -27,6 +29,7 @@ import "./styles/toolbar.css";
 
 const world = new World();
 const pluginManager = new PluginManager(world);
+const stateManager = StateManager.getInstance();
 
 // Setup Tweakpane for global controls
 const pane = new Pane();
@@ -34,7 +37,7 @@ const uiManager = new UIManager(pane);
 const sceneSerializer = new SceneSerializer();
 
 // Initialize Studio first
-const studio = new Studio(world, pluginManager);
+const studio = new Studio(world, pluginManager, stateManager);
 
 // Define component properties for UI
 const flagComponentProperties: ComponentControlProperty[] = [
@@ -368,23 +371,25 @@ window.addEventListener("grid-changed", (event) => {
 const simulationSelectionFolder = (pane as any).addFolder({
   title: "Simulations"
 });
-const simulationParams = {
-  selectedSimulation: "water-simulation" // Default selected simulation
-};
 
 simulationSelectionFolder
-  .addBinding(simulationParams, "selectedSimulation", {
+  .addBinding(stateManager.selectedSimulation.state, "name", {
     label: "Select Simulation",
     options: studio
       .getAvailableSimulationNames()
       .map((name) => ({ text: name, value: name }))
   })
   .on("change", (ev: { value: string }) => {
-    void studio.loadSimulation(ev.value);
+    stateManager.selectedSimulation.setSimulation(ev.value);
   });
 
+stateManager.selectedSimulation.on("change", (state: SelectedSimulationState) => {
+  void studio.loadSimulation(state.name);
+});
+
 // Initial load of the default simulation
-await studio.loadSimulation(simulationParams.selectedSimulation);
+const defaultSimulationName = studio.getAvailableSimulationNames()[0] || null;
+stateManager.selectedSimulation.setSimulation(defaultSimulationName);
 
 let lastTime = 0;
 // Main application loop

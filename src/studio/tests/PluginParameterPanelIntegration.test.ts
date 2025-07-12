@@ -5,6 +5,28 @@ import { UIManager } from "../uiManager";
 import { PropertyInspectorSystem } from "../systems/PropertyInspectorSystem";
 import { FlagSimulationPlugin } from "../../plugins/flag-simulation";
 import { WaterSimulationPlugin } from "../../plugins/water-simulation";
+jest.mock("../state/StateManager", require("./testUtils/StateManagerMock").mockStateManager);
+import { StateManager } from "../state/StateManager";
+
+jest.mock("../state/SelectedSimulationState", () => {
+  return {
+    SelectedSimulationStateManager: jest.fn().mockImplementation(() => {
+      let simulationName: string | null = "flag-simulation";
+      const emitter = new (require("../../core/events/EventEmitter").EventEmitter)();
+
+      return {
+        state: { name: simulationName },
+        setSimulation: jest.fn((name: string | null) => {
+          simulationName = name;
+          emitter.emit("change", { name: simulationName });
+        }),
+        getSimulationName: jest.fn(() => simulationName),
+        on: jest.fn(emitter.on.bind(emitter)),
+        off: jest.fn(emitter.off.bind(emitter)),
+      };
+    }),
+  };
+});
 
 jest.mock("../../plugins/water-simulation/WaterRenderer", () => {
   return {
@@ -47,7 +69,7 @@ describe("Plugin Parameter Panel Integration", () => {
     // Create a new world for each test
     world = new World();
     pluginManager = new PluginManager(world);
-    studio = new Studio(world, pluginManager);
+    studio = new Studio(world, pluginManager, StateManager.getInstance());
     uiManager = new UIManager(null as any);
     propertyInspectorSystem = new PropertyInspectorSystem(
       uiManager,

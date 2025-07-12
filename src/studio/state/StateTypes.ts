@@ -1,5 +1,5 @@
 export interface SelectedSimulationState {
-  simulationId: string | null;
+  name: string | null;
 }
 
 export interface AppState {

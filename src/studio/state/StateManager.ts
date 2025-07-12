@@ -1,43 +1,24 @@
-import { EventEmitter } from '../../core/events/EventEmitter';
-import { AppState } from './StateTypes';
+import { AppState } from "./StateTypes";
+import { SelectedSimulationStateManager } from "./SelectedSimulationState";
 
-export class StateManager extends EventEmitter {
-  private static instance: StateManager;
-  private state: AppState;
+export class StateManager {
+  private static _instance: StateManager;
+  public selectedSimulation: SelectedSimulationStateManager;
 
   private constructor() {
-    super();
-    this.state = {
-      selectedSimulation: {
-        simulationId: null,
-      },
-    };
+    this.selectedSimulation = new SelectedSimulationStateManager();
   }
 
   public static getInstance(): StateManager {
-    if (!StateManager.instance) {
-      StateManager.instance = new StateManager();
+    if (!StateManager._instance) {
+      StateManager._instance = new StateManager();
     }
-    return StateManager.instance;
+    return StateManager._instance;
   }
 
-  public getState(): AppState {
-    return this.state;
-  }
-
-  public setState(newState: Partial<AppState>): void {
-    this.state = { ...this.state, ...newState };
-    this.emit('stateChange', this.state);
-  }
-
-  public subscribe<K extends keyof AppState>(
-    stateKey: K,
-    callback: (value: AppState[K]) => void
-  ): () => void {
-    const handler = (newState: AppState) => {
-      callback(newState[stateKey]);
+  public getAppState(): AppState {
+    return {
+      selectedSimulation: this.selectedSimulation.state,
     };
-    this.on('stateChange', handler);
-    return () => this.off('stateChange', handler);
   }
 }
