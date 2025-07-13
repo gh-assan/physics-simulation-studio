@@ -27,7 +27,7 @@ This section details the analysis of specific classes identified as violating th
     *   **Simplify `registerComponent`:** Remove the unused `componentName` parameter from `registerComponent` to streamline its API.
     *   **Complete `destroyEntity`:** Ensure `destroyEntity` fully cleans up all components associated with the destroyed entity by coordinating with `ComponentManager`.
 
-### 2.2. `src/core/ecs/ComponentManager.ts`
+### 2.2. `src/core/ecs/ComponentManager.ts` - Completed
 
 *   **Current State:** Responsible for managing components (registration, addition, retrieval, removal, querying).
 *   **Violations/Concerns:**
