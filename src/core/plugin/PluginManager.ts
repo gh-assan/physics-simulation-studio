@@ -1,3 +1,4 @@
+import { Logger } from "../utils/Logger";
 import { World } from "../ecs";
 import { ISimulationPlugin } from "./ISimulationPlugin";
 import { EventEmitter } from "../events/EventEmitter";
@@ -93,7 +94,7 @@ export class PluginManager {
       // Emit event
       this.eventEmitter.emit(PluginManagerEvent.PLUGIN_ACTIVATED, plugin);
 
-      console.log(`Plugin "${pluginName}" activated.`);
+      Logger.log(`Plugin "${pluginName}" activated.`);
     } catch (error) {
       this.handlePluginError(pluginName, "activation", error);
       throw error;
@@ -148,7 +149,7 @@ export class PluginManager {
 
       this.eventEmitter.emit(PluginManagerEvent.PLUGIN_DEACTIVATED, plugin);
 
-      console.log(`Plugin "${pluginName}" deactivated.`);
+      Logger.log(`Plugin "${pluginName}" deactivated.`);
       return true;
     } catch (error) {
       this.handlePluginError(pluginName, "deactivation", error);
@@ -165,6 +166,22 @@ export class PluginManager {
    */
   public on(event: PluginManagerEvent, callback: Function): () => void {
     return this.eventEmitter.on(event, callback);
+  }
+
+  public onPluginRegistered(callback: (plugin: ISimulationPlugin) => void): () => void {
+    return this.eventEmitter.on(PluginManagerEvent.PLUGIN_REGISTERED, callback);
+  }
+
+  public onPluginActivated(callback: (plugin: ISimulationPlugin) => void): () => void {
+    return this.eventEmitter.on(PluginManagerEvent.PLUGIN_ACTIVATED, callback);
+  }
+
+  public onPluginDeactivated(callback: (plugin: ISimulationPlugin) => void): () => void {
+    return this.eventEmitter.on(PluginManagerEvent.PLUGIN_DEACTIVATED, callback);
+  }
+
+  public onPluginError(callback: (pluginName: string, operation: string, error: any) => void): () => void {
+    return this.eventEmitter.on(PluginManagerEvent.PLUGIN_ERROR, callback);
   }
 
   public onPluginsChanged(callback: () => void): () => void {
@@ -232,7 +249,7 @@ export class PluginManager {
     operation: string,
     error: any
   ): void {
-    console.error(`Error during plugin "${pluginName}" ${operation}:`, error);
+    Logger.error(`Error during plugin "${pluginName}" ${operation}:`, error);
 
     this.eventEmitter.emit(
       PluginManagerEvent.PLUGIN_ERROR,

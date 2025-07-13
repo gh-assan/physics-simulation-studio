@@ -70,7 +70,7 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
   // Initial population
   updateSimulationSelector();
 
-  pluginManager.onPluginsChanged(() => {
+  pluginManager.onPluginRegistered(() => {
     updateSimulationSelector();
   });
 
@@ -83,10 +83,10 @@ function registerComponentsAndSystems(world: World, studio: Studio, uiManager: U
   registerWaterComponentProperties();
 
   // Register Core Components
-  world.componentManager.registerComponent(PositionComponent.type, PositionComponent);
-  world.componentManager.registerComponent(RenderableComponent.type, RenderableComponent);
-  world.componentManager.registerComponent(SelectableComponent.type, SelectableComponent);
-  world.componentManager.registerComponent(RotationComponent.type, RotationComponent);
+  world.componentManager.registerComponent(PositionComponent);
+  world.componentManager.registerComponent(RenderableComponent);
+  world.componentManager.registerComponent(SelectableComponent);
+  world.componentManager.registerComponent(RotationComponent);
 
   // Register Systems
   const renderSystem = new RenderSystem(studio);

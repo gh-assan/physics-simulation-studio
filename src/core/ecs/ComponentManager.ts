@@ -14,32 +14,14 @@ export class ComponentManager {
    * Registers a component type with the component manager.
    * This creates a new storage for components of this type and registers the constructor.
    *
-   * @param componentClassOrName The component class to register or the component name
-   * @param constructor Optional constructor if componentClassOrName is a string
+   * @param componentClass
    */
   public registerComponent<T extends IComponent>(
-    componentClassOrName: string | (new (...args: any[]) => T),
-    constructor?: new (...args: any[]) => T
+    componentClass: new (...args: any[]) => T
   ): void {
     Logger.log(
-      `[ComponentManager] Registering component: ${typeof componentClassOrName === "string" ? componentClassOrName : componentClassOrName.name}`
+      `[ComponentManager] Registering component: ${componentClass.name}`
     );
-    // Handle both old and new calling conventions
-    let componentClass: new (...args: any[]) => T;
-
-    if (typeof componentClassOrName === "string" && constructor) {
-      // Old calling convention: registerComponent(name, constructor)
-      componentClass = constructor;
-      // Use the provided name as the type if the class doesn't have a static type property
-      if (!(componentClass as any).type) {
-        (componentClass as any).type = componentClassOrName;
-      }
-    } else if (typeof componentClassOrName === "function") {
-      // New calling convention: registerComponent(componentClass)
-      componentClass = componentClassOrName;
-    } else {
-      throw new Error("Invalid arguments to registerComponent");
-    }
 
     const type = (componentClass as any).type;
     if (!type) {

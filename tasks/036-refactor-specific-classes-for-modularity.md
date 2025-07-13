@@ -27,7 +27,7 @@ This section details the analysis of specific classes identified as violating th
     *   **Simplify `registerComponent`:** Remove the unused `componentName` parameter from `registerComponent` to streamline its API.
     *   **Complete `destroyEntity`:** Ensure `destroyEntity` fully cleans up all components associated with the destroyed entity by coordinating with `ComponentManager`.
 
-### 2.2. `src/core/ecs/ComponentManager.ts` - Completed
+### 2.2. `src/core/ecs/ComponentManager.ts` - Completed - Completed
 
 *   **Current State:** Responsible for managing components (registration, addition, retrieval, removal, querying).
 *   **Violations/Concerns:**
@@ -39,7 +39,7 @@ This section details the analysis of specific classes identified as violating th
     *   **Simplify `registerComponent` (Future):** Align `registerComponent` to primarily use component classes with a static `type` property, as per the "Data-Driven Design" principle.
     *   **Centralize Logging:** Replace all direct `console.log`/`console.warn` calls with the centralized `Logger` instance.
 
-### 2.3. `src/core/plugin/PluginManager.ts`
+### 2.3. `src/core/plugin/PluginManager.ts` - Completed
 
 *   **Current State:** Manages plugin lifecycle (registration, activation, deactivation), dependencies, and events.
 *   **Violations/Concerns:**

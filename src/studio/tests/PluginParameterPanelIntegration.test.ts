@@ -111,19 +111,10 @@ describe("Plugin Parameter Panel Integration", () => {
     );
 
     // Register components
-    world.componentManager.registerComponent(
-      SelectableComponent.type,
-      SelectableComponent
-    );
-    world.componentManager.registerComponent(FlagComponent.type, FlagComponent);
-    world.componentManager.registerComponent(
-      WaterDropletComponent.type,
-      WaterDropletComponent
-    );
-    world.componentManager.registerComponent(
-      ParameterPanelComponent.type,
-      MockParameterPanelComponent
-    );
+    world.componentManager.registerComponent(SelectableComponent);
+    world.componentManager.registerComponent(FlagComponent);
+    world.componentManager.registerComponent(WaterDropletComponent);
+    world.componentManager.registerComponent(MockParameterPanelComponent);
 
     // Create and register plugins
     flagPlugin = new FlagSimulationPlugin();

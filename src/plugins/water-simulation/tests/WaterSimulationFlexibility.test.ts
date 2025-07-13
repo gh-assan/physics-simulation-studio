@@ -32,30 +32,12 @@ describe("WaterSimulationFlexibility", () => {
     // Don't register ParameterPanelComponent
 
     // Register required components
-    world.componentManager.registerComponent(
-      PositionComponent.type,
-      PositionComponent
-    );
-    world.componentManager.registerComponent(
-      RenderableComponent.type,
-      RenderableComponent
-    );
-    world.componentManager.registerComponent(
-      SelectableComponent.type,
-      SelectableComponent
-    );
-    world.componentManager.registerComponent(
-      RotationComponent.type,
-      RotationComponent
-    );
-    world.componentManager.registerComponent(
-      WaterBodyComponent.type,
-      WaterBodyComponent
-    );
-    world.componentManager.registerComponent(
-      WaterDropletComponent.type,
-      WaterDropletComponent
-    );
+    world.componentManager.registerComponent(PositionComponent);
+    world.componentManager.registerComponent(RenderableComponent);
+    world.componentManager.registerComponent(SelectableComponent);
+    world.componentManager.registerComponent(RotationComponent);
+    world.componentManager.registerComponent(WaterBodyComponent);
+    world.componentManager.registerComponent(WaterDropletComponent);
 
     // Register the water plugin
     waterPlugin.register(world);
@@ -101,30 +83,12 @@ describe("WaterSimulationFlexibility", () => {
     // which is the main requirement from the issue description
 
     // Register required components
-    world.componentManager.registerComponent(
-      PositionComponent.type,
-      PositionComponent
-    );
-    world.componentManager.registerComponent(
-      RenderableComponent.type,
-      RenderableComponent
-    );
-    world.componentManager.registerComponent(
-      SelectableComponent.type,
-      SelectableComponent
-    );
-    world.componentManager.registerComponent(
-      RotationComponent.type,
-      RotationComponent
-    );
-    world.componentManager.registerComponent(
-      WaterBodyComponent.type,
-      WaterBodyComponent
-    );
-    world.componentManager.registerComponent(
-      WaterDropletComponent.type,
-      WaterDropletComponent
-    );
+    world.componentManager.registerComponent(PositionComponent);
+    world.componentManager.registerComponent(RenderableComponent);
+    world.componentManager.registerComponent(SelectableComponent);
+    world.componentManager.registerComponent(RotationComponent);
+    world.componentManager.registerComponent(WaterBodyComponent);
+    world.componentManager.registerComponent(WaterDropletComponent);
 
     // Register the water plugin
     waterPlugin.register(world);

@@ -43,27 +43,12 @@ describe("FlagSimulationFlexibility", () => {
     // Don't register ParameterPanelComponent
 
     // Register required components
-    world.componentManager.registerComponent(
-      PositionComponent.type,
-      PositionComponent
-    );
-    world.componentManager.registerComponent(
-      RenderableComponent.type,
-      RenderableComponent
-    );
-    world.componentManager.registerComponent(
-      SelectableComponent.type,
-      SelectableComponent
-    );
-    world.componentManager.registerComponent(
-      RotationComponent.type,
-      RotationComponent
-    );
-    world.componentManager.registerComponent(FlagComponent.type, FlagComponent);
-    world.componentManager.registerComponent(
-      FlagParameterPanel.type,
-      FlagParameterPanel
-    );
+    world.componentManager.registerComponent(PositionComponent);
+    world.componentManager.registerComponent(RenderableComponent);
+    world.componentManager.registerComponent(SelectableComponent);
+    world.componentManager.registerComponent(RotationComponent);
+    world.componentManager.registerComponent(FlagComponent);
+    world.componentManager.registerComponent(FlagParameterPanel);
 
     // Register the flag plugin
     flagPlugin.register(world);
@@ -102,27 +87,12 @@ describe("FlagSimulationFlexibility", () => {
     // which is the main requirement from the issue description
 
     // Register required components
-    world.componentManager.registerComponent(
-      PositionComponent.type,
-      PositionComponent
-    );
-    world.componentManager.registerComponent(
-      RenderableComponent.type,
-      RenderableComponent
-    );
-    world.componentManager.registerComponent(
-      SelectableComponent.type,
-      SelectableComponent
-    );
-    world.componentManager.registerComponent(
-      RotationComponent.type,
-      RotationComponent
-    );
-    world.componentManager.registerComponent(FlagComponent.type, FlagComponent);
-    world.componentManager.registerComponent(
-      FlagParameterPanel.type,
-      FlagParameterPanel
-    );
+    world.componentManager.registerComponent(PositionComponent);
+    world.componentManager.registerComponent(RenderableComponent);
+    world.componentManager.registerComponent(SelectableComponent);
+    world.componentManager.registerComponent(RotationComponent);
+    world.componentManager.registerComponent(FlagComponent);
+    world.componentManager.registerComponent(FlagParameterPanel);
 
     // Register the flag plugin
     flagPlugin.register(world);

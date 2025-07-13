@@ -29,7 +29,6 @@ describe("RigidBodyPlugin", () => {
     plugin.register(world);
 
     expect(world.componentManager.registerComponent).toHaveBeenCalledWith(
-      RigidBodyComponent.name,
       RigidBodyComponent
     );
     expect(world.systemManager.registerSystem).toHaveBeenCalledTimes(1);

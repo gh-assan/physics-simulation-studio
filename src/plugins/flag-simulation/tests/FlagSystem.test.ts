@@ -13,12 +13,9 @@ describe("FlagSystem", () => {
     world = new World();
     flagSystem = new FlagSystem();
     world.systemManager.registerSystem(flagSystem);
-    world.componentManager.registerComponent(FlagComponent.type, FlagComponent);
-    world.componentManager.registerComponent(
-      PositionComponent.name,
-      PositionComponent
-    );
-    world.componentManager.registerComponent(PoleComponent.type, PoleComponent); // Register PoleComponent
+    world.componentManager.registerComponent(FlagComponent);
+    world.componentManager.registerComponent(PositionComponent);
+    world.componentManager.registerComponent(PoleComponent); // Register PoleComponent
   });
 
   it("should initialize flag points and springs when a FlagComponent is added", () => {

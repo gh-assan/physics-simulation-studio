@@ -109,14 +109,8 @@ describe("PropertyInspectorSystem", () => {
     );
 
     // Register components used in the test
-    world.componentManager.registerComponent(
-      SelectableComponent.name,
-      SelectableComponent
-    );
-    world.componentManager.registerComponent(
-      PositionComponent.name,
-      PositionComponent
-    );
+    world.componentManager.registerComponent(SelectableComponent);
+    world.componentManager.registerComponent(PositionComponent);
 
     // Spy on UIManager methods
     jest.spyOn(uiManager, "registerComponentControls");
