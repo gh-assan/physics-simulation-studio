@@ -28,7 +28,7 @@ describe('UIManager', () => {
   beforeEach(() => {
     ui = new MockUIFramework();
     eventBus = new MockEventBus();
-    uiManager = new UIManager(ui as any, eventBus as any);
+    uiManager = new UIManager(ui as any); // Only pass pane/mock
   });
 
   it('registers component controls and dispatches event on change', () => {
