@@ -17,7 +17,7 @@ This task focuses on the practical application of the architectural principles o
 
 This section details the analysis of specific classes identified as violating the Single Responsibility Principle or having opportunities for improved modularity.
 
-### 2.1. `src/core/ecs/World.ts`
+### 2.1. `src/core/ecs/World.ts` - Completed
 
 *   **Current State:** The `World` class acts as the central orchestrator of the ECS architecture, delegating most operations to `EntityManager`, `ComponentManager`, and `SystemManager`.
 *   **Violations/Concerns:**
@@ -80,8 +80,6 @@ This section details the analysis of specific classes identified as violating th
     *   **Tight Coupling:** Coupled to `World`, `PluginManager`, `RenderSystem`, and `SelectedSimulationStateManager`.
 *   **Refactor Goals:**
     *   **Extract Simulation Orchestration Logic:** Create a dedicated `SimulationOrchestrator` (or similar) class responsible solely for the complex logic of loading, activating, initializing, and unloading simulations/plugins. `Studio.ts` would then delegate these operations.
-    *   **Introduce an Application Event Bus:** Replace direct `window.dispatchEvent` calls with an injected `ApplicationEventBus` instance. This decouples core logic from the browser environment and makes events testable and observable.
-    *   **Consolidate State Management:** Ensure a single source of truth for the active simulation state, likely within `SelectedSimulationStateManager`, and remove redundant internal state in `Studio.ts`.
     *   **Abstract Plugin Interactions:** Interact with plugins through more abstract interfaces or commands, rather than direct method calls where possible.
     *   **Centralize Logging:** Replace all `Logger.log` and `Logger.error` calls with the centralized `Logger` instance.
 

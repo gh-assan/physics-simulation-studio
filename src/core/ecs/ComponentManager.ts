@@ -359,6 +359,17 @@ export class ComponentManager {
   }
 
   /**
+   * Removes all components from an entity.
+   *
+   * @param entityID The ID of the entity
+   */
+  public removeAllComponentsForEntity(entityID: number): void {
+    this.componentStores.forEach((store) => {
+      store.delete(entityID);
+    });
+  }
+
+  /**
    * Creates a new component instance of the specified type and adds it to an entity.
    *
    * @param entityID The ID of the entity
