@@ -1,12 +1,23 @@
+import { Logger } from "../core/utils/Logger";
+import { ApplicationEventBus } from "./utils/ApplicationEventBus";
+import { ComponentPropertyPreparer } from "./utils/ComponentPropertyPreparer";
 import { Pane, FolderApi } from "tweakpane";
 import { ComponentControlProperty } from "./types";
 
 export class UIManager {
   private pane: Pane;
   private folders: Map<string, FolderApi> = new Map();
+  private eventBus: ApplicationEventBus;
+  private propertyPreparer: typeof ComponentPropertyPreparer;
 
-  constructor(pane: Pane) {
+  constructor(
+    pane: Pane,
+    eventBus?: ApplicationEventBus,
+    propertyPreparer?: typeof ComponentPropertyPreparer
+  ) {
     this.pane = pane;
+    this.eventBus = eventBus || new ApplicationEventBus();
+    this.propertyPreparer = propertyPreparer || ComponentPropertyPreparer;
   }
 
   public addFolder(title: string, callback: (folder: FolderApi) => void): void {
@@ -23,40 +34,17 @@ export class UIManager {
     data: any,
     properties?: ComponentControlProperty[]
   ) {
-    // Use the component's constructor name if available, otherwise use the provided name
     const displayName = data.constructor
       ? `${data.constructor.name} (${componentName})`
       : componentName;
-    console.log(
-      `[UIManager] Registering controls for component: ${displayName}`
-    );
-
     const folder = this.pane.addFolder({ title: displayName });
     this.folders.set(componentName, folder);
 
-    if (properties) {
-      console.log(
-        `[UIManager] Adding ${properties.length} properties for ${displayName}`
-      );
-      properties.forEach((prop) => {
-        this._addBindingForProperty(folder, data, prop);
-      });
-    } else {
-      console.log(
-        `[UIManager] No properties provided for ${displayName}, using default properties`
-      );
-      for (const key in data) {
-        if (Object.prototype.hasOwnProperty.call(data, key)) {
-          if (
-            key !== "particles" &&
-            key !== "springs" &&
-            key !== "fixedParticles"
-          ) {
-            folder.addBinding(data, key);
-          }
-        }
-      }
-    }
+    // Use provided properties, or prepare them if not provided
+    const props = properties || this.propertyPreparer.filterProperties(data);
+    props.forEach((prop) => {
+      this._addBindingForProperty(folder, data, prop);
+    });
   }
 
   private _addBindingForProperty(
@@ -93,12 +81,9 @@ export class UIManager {
       const parentData = this._getNestedProperty(data, parentPath);
 
       if (parentData) {
-        console.log(
-          `[UIManager] Adding binding for nested property: ${prop.property}, parent: ${parentPath}, child: ${lastKey}`
-        );
         binding = folder.addBinding(parentData, lastKey, options);
       } else {
-        console.warn(
+        Logger.warn(
           `[UIManager] Could not find parent object for property: ${prop.property}`
         );
       }
@@ -119,7 +104,7 @@ export class UIManager {
         window.dispatchEvent(event);
       });
     } else {
-      console.warn(
+      Logger.warn(
         `[UIManager] Failed to create binding for property: ${prop.property}`
       );
     }
@@ -139,5 +124,26 @@ export class UIManager {
       folder.dispose();
     });
     this.folders.clear();
+  }
+
+  // Utility: get all registered component names
+  public getRegisteredComponentNames(): string[] {
+    return Array.from(this.folders.keys());
+  }
+
+  // Utility: remove a specific component's controls
+  public removeComponentControls(componentName: string): void {
+    const folder = this.folders.get(componentName);
+    if (folder) {
+      folder.dispose();
+      this.folders.delete(componentName);
+    }
+  }
+
+  // Future extensibility: allow switching UI frameworks
+  // This method can be expanded to support other UI libraries
+  public setUIPane(newPane: Pane): void {
+    this.pane = newPane;
+    this.clearControls(); // Clear old controls when switching UI
   }
 }

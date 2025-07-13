@@ -103,9 +103,9 @@ describe("UIManager", () => {
       title: "Object (TestComponent)"
     });
     const mockFolder = mockPaneInstance.addFolder.mock.results[0]?.value;
-    expect(mockFolder.addBinding).toHaveBeenCalledWith(obj, "value");
-    expect(mockFolder.addBinding).toHaveBeenCalledWith(obj, "enabled");
-    expect(mockFolder.addBinding).toHaveBeenCalledWith(obj, "name");
+    expect(mockFolder.addBinding).toHaveBeenCalledWith(obj, "value", expect.objectContaining({ label: expect.any(String) }));
+    expect(mockFolder.addBinding).toHaveBeenCalledWith(obj, "enabled", expect.objectContaining({ label: expect.any(String) }));
+    expect(mockFolder.addBinding).toHaveBeenCalledWith(obj, "name", expect.objectContaining({ label: expect.any(String) }));
   });
 
   it("should clear all controls", () => {
