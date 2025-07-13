@@ -47,14 +47,8 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
 
   register(world: World): void {
     // Register components
-    world.componentManager.registerComponent(
-      WaterBodyComponent.type,
-      WaterBodyComponent
-    );
-    world.componentManager.registerComponent(
-      WaterDropletComponent.type,
-      WaterDropletComponent
-    );
+    world.componentManager.registerComponent(WaterBodyComponent);
+    world.componentManager.registerComponent(WaterDropletComponent);
     // ParameterPanelComponent registration is handled by the core system
     // world.componentManager.registerComponent(
     //   ParameterPanelComponent.type,

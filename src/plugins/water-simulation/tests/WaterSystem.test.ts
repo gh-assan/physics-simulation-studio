@@ -12,18 +12,9 @@ describe("WaterSystem", () => {
     world = new World();
     waterSystem = new WaterSystem();
 
-    world.componentManager.registerComponent(
-      WaterDropletComponent.type,
-      WaterDropletComponent
-    );
-    world.componentManager.registerComponent(
-      WaterBodyComponent.type,
-      WaterBodyComponent
-    );
-    world.componentManager.registerComponent(
-      PositionComponent.type,
-      PositionComponent
-    );
+    world.componentManager.registerComponent(WaterDropletComponent);
+    world.componentManager.registerComponent(WaterBodyComponent);
+    world.componentManager.registerComponent(PositionComponent);
 
     world.systemManager.registerSystem(waterSystem);
   });

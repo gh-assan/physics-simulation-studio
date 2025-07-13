@@ -76,18 +76,9 @@ describe("RenderSystem", () => {
       .spyOn(document.body, "appendChild")
       .mockImplementation((node: Node) => node);
     world = new World();
-    world.componentManager.registerComponent(
-      PositionComponent.name,
-      PositionComponent
-    );
-    world.componentManager.registerComponent(
-      RotationComponent.name,
-      RotationComponent
-    );
-    world.componentManager.registerComponent(
-      RenderableComponent.name,
-      RenderableComponent
-    );
+    world.componentManager.registerComponent(PositionComponent);
+    world.componentManager.registerComponent(RotationComponent);
+    world.componentManager.registerComponent(RenderableComponent);
     mockStudio = {
       _world: world,
       world: world,

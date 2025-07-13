@@ -65,21 +65,17 @@ export class World {
    */
   public destroyEntity(entityId: number): void {
     this.entityManager.destroyEntity(entityId);
-    // Could also remove all components for this entity
-    // This would require iterating through all component types
+    this.componentManager.removeAllComponentsForEntity(entityId);
   }
 
   /**
    * Registers a component type with the world.
    *
-   * @param componentName The name of the component type
    * @param constructor The constructor function for the component
    */
   public registerComponent<T extends IComponent>(
-    componentName: string,
     constructor: new (...args: any[]) => T
   ): void {
-    // Ignore componentName and just pass the constructor to ComponentManager
     this.componentManager.registerComponent(constructor);
   }
 

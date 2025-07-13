@@ -1,3 +1,4 @@
+import { Logger } from "../utils/Logger";
 import { IComponent } from "./IComponent";
 import { ComponentRegistry } from "./ComponentRegistry";
 
@@ -13,32 +14,14 @@ export class ComponentManager {
    * Registers a component type with the component manager.
    * This creates a new storage for components of this type and registers the constructor.
    *
-   * @param componentClassOrName The component class to register or the component name
-   * @param constructor Optional constructor if componentClassOrName is a string
+   * @param componentClass
    */
   public registerComponent<T extends IComponent>(
-    componentClassOrName: string | (new (...args: any[]) => T),
-    constructor?: new (...args: any[]) => T
+    componentClass: new (...args: any[]) => T
   ): void {
-    console.log(
-      `[ComponentManager] Registering component: ${typeof componentClassOrName === "string" ? componentClassOrName : componentClassOrName.name}`
+    Logger.log(
+      `[ComponentManager] Registering component: ${componentClass.name}`
     );
-    // Handle both old and new calling conventions
-    let componentClass: new (...args: any[]) => T;
-
-    if (typeof componentClassOrName === "string" && constructor) {
-      // Old calling convention: registerComponent(name, constructor)
-      componentClass = constructor;
-      // Use the provided name as the type if the class doesn't have a static type property
-      if (!(componentClass as any).type) {
-        (componentClass as any).type = componentClassOrName;
-      }
-    } else if (typeof componentClassOrName === "function") {
-      // New calling convention: registerComponent(componentClass)
-      componentClass = componentClassOrName;
-    } else {
-      throw new Error("Invalid arguments to registerComponent");
-    }
 
     const type = (componentClass as any).type;
     if (!type) {
@@ -63,14 +46,14 @@ export class ComponentManager {
     componentType: string,
     component: T
   ): void {
-    console.log(
+    Logger.log(
       `[ComponentManager] Adding component '${componentType}' to entity ${entityID}`
     );
     const store = this.getComponentStore(componentType);
     if (store) {
       store.set(entityID, component);
     } else {
-      console.error(
+      Logger.error(
         `[ComponentManager] Component type '${componentType}' is not registered. Entity: ${entityID}`
       );
       throw new Error(`Component type '${componentType}' is not registered`);
@@ -88,14 +71,14 @@ export class ComponentManager {
     entityID: number,
     componentType: string
   ): T | undefined {
-    console.log(
+    Logger.log(
       `[ComponentManager] Getting component '${componentType}' for entity ${entityID}`
     );
     const component = this.componentStores
       .get(componentType)
       ?.get(entityID) as T;
     if (!component) {
-      console.warn(
+      Logger.warn(
         `[ComponentManager] Component '${componentType}' not found for entity ${entityID}`
       );
     }
@@ -109,14 +92,14 @@ export class ComponentManager {
    * @param componentType The type of the component
    */
   public removeComponent(entityID: number, componentType: string): void {
-    console.log(
+    Logger.log(
       `[ComponentManager] Removing component '${componentType}' from entity ${entityID}`
     );
     const store = this.getComponentStore(componentType);
     if (store) {
       store.delete(entityID);
     } else {
-      console.warn(
+      Logger.warn(
         `[ComponentManager] Attempted to remove unregistered component type '${componentType}' from entity ${entityID}`
       );
     }
@@ -159,7 +142,7 @@ export class ComponentManager {
     );
 
     const entities = this.getEntitiesWithComponentTypes(componentTypes);
-    console.log(
+    Logger.log(
       `[ComponentManager] getEntitiesWithComponents returning: ${entities.length} entities for types: ${componentTypes.join(", ")}`
     );
     return entities;
@@ -174,7 +157,7 @@ export class ComponentManager {
   public getAllComponentsForEntity(entityID: number): {
     [key: string]: IComponent;
   } {
-    console.log(
+    Logger.log(
       `[ComponentManager] Getting all components for entity ${entityID}`
     );
     const components: { [key: string]: IComponent } = {};
@@ -186,7 +169,7 @@ export class ComponentManager {
       }
     });
 
-    console.log(
+    Logger.log(
       `[ComponentManager] Found ${Object.keys(components).length} components for entity ${entityID}:`,
       components
     );
@@ -205,14 +188,14 @@ export class ComponentManager {
     componentType: string,
     newComponent: T
   ): void {
-    console.log(
+    Logger.log(
       `[ComponentManager] Updating component '${componentType}' for entity ${entityID}`
     );
     const store = this.getComponentStore(componentType);
     if (store) {
       store.set(entityID, newComponent);
     } else {
-      console.error(
+      Logger.error(
         `[ComponentManager] Component type '${componentType}' is not registered. Entity: ${entityID}`
       );
       throw new Error(`Component type '${componentType}' is not registered`);
@@ -356,6 +339,17 @@ export class ComponentManager {
     for (const componentType of componentTypes) {
       this.removeComponent(entityID, componentType);
     }
+  }
+
+  /**
+   * Removes all components from an entity.
+   *
+   * @param entityID The ID of the entity
+   */
+  public removeAllComponentsForEntity(entityID: number): void {
+    this.componentStores.forEach((store) => {
+      store.delete(entityID);
+    });
   }
 
   /**

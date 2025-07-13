@@ -25,18 +25,9 @@ describe("PhysicsSystem", () => {
     world = new World();
     physicsSystem = new PhysicsSystem();
 
-    world.componentManager.registerComponent(
-      PositionComponent.name,
-      PositionComponent
-    );
-    world.componentManager.registerComponent(
-      RotationComponent.name,
-      RotationComponent
-    );
-    world.componentManager.registerComponent(
-      RigidBodyComponent.name,
-      RigidBodyComponent
-    );
+    world.componentManager.registerComponent(PositionComponent);
+    world.componentManager.registerComponent(RotationComponent);
+    world.componentManager.registerComponent(RigidBodyComponent);
   });
 
   it("should synchronize rigid body translation and rotation to ECS components", () => {

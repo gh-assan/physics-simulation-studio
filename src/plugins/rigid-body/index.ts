@@ -16,10 +16,7 @@ class RigidBodyPlugin implements ISimulationPlugin {
     console.log("Registering RigidBodyPlugin...");
 
     // 1. Register components with the ECS
-    world.componentManager.registerComponent(
-      RigidBodyComponent.name,
-      RigidBodyComponent
-    );
+    world.componentManager.registerComponent(RigidBodyComponent);
 
     // 2. Register the system with the ECS
     const physicsSystem = new PhysicsSystem();

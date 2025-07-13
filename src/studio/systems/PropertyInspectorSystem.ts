@@ -1,17 +1,15 @@
 import { System } from "../../core/ecs/System";
 import { World } from "../../core/ecs/World";
-import { UIManager } from "../uiManager";
-import { IComponent } from "../../core/ecs/IComponent";
-import { getComponentProperties } from "../utils/ComponentPropertyRegistry";
-import "../utils/ComponentPropertyDefinitions"; // Import to ensure component properties are registered
 import { ParameterPanelComponent } from "../../core/components/ParameterPanelComponent";
 import { PluginManager } from "../../core/plugin/PluginManager";
 import { Studio } from "../Studio";
 import { SelectionSystem } from "./SelectionSystem";
 import { Logger } from "../../core/utils/Logger";
+import { PropertyInspectorUIManager } from "../ui/PropertyInspectorUIManager";
+import { ComponentFilter } from "../utils/ComponentFilter";
 
 export class PropertyInspectorSystem extends System {
-  private uiManager: UIManager;
+  private propertyInspectorUIManager: PropertyInspectorUIManager;
   private lastSelectedEntity: number | null = null;
   private lastActiveSimulationName: string | null = null;
   private world: World;
@@ -20,14 +18,14 @@ export class PropertyInspectorSystem extends System {
   private selectionSystem: SelectionSystem;
 
   constructor(
-    uiManager: UIManager,
+    propertyInspectorUIManager: PropertyInspectorUIManager,
     world: World,
     studio: Studio,
     pluginManager: PluginManager,
     selectionSystem: SelectionSystem
   ) {
     super();
-    this.uiManager = uiManager;
+    this.propertyInspectorUIManager = propertyInspectorUIManager;
     this.world = world;
     this.studio = studio;
     this.pluginManager = pluginManager;
@@ -70,57 +68,6 @@ export class PropertyInspectorSystem extends System {
   }
 
   /**
-   * Registers UI controls for a component
-   * @param componentName The name of the component
-   * @param componentInstance The component instance
-   * @param parameterPanels Optional array of parameter panel components
-   */
-  private registerComponentControls(
-    componentTypeKey: string,
-    componentInstance: IComponent,
-    parameterPanels: ParameterPanelComponent[]
-  ): void {
-    // The componentTypeKey is already the correct type string (e.g., "FlagComponent")
-    // as passed from updateInspectorForEntity.
-    const registryKey = componentTypeKey;
-    const displayName = componentTypeKey;
-
-    // First, try to find a parameter panel component for this component type
-    const parameterPanel = parameterPanels.find(
-      (panel) => panel.componentType === componentTypeKey
-    );
-
-    if (parameterPanel) {
-      // If a parameter panel component is found, use it to register UI controls
-      Logger.log(
-        `[PropertyInspectorSystem] Using parameter panel for component '${displayName}'`
-      );
-      parameterPanel.registerControls(this.uiManager, componentInstance);
-    } else {
-      // Fall back to the old approach if no parameter panel component is found
-      // Get properties using the determined registry key
-      const properties = getComponentProperties(registryKey);
-
-      // Log whether properties were found
-      if (properties) {
-        Logger.log(
-          `[PropertyInspectorSystem] Found ${properties.length} properties for component '${displayName}' using key '${registryKey}'`
-        );
-      } else {
-        Logger.warn(
-          `[PropertyInspectorSystem] No properties found for component '${displayName}' using key '${registryKey}'`
-        );
-      }
-
-      this.uiManager.registerComponentControls(
-        displayName,
-        componentInstance,
-        properties
-      );
-    }
-  }
-
-  /**
    * Updates the property inspector UI based on the selected entity
    * @param world The ECS world
    * @param _deltaTime The time elapsed since the last update
@@ -136,17 +83,15 @@ export class PropertyInspectorSystem extends System {
     ) {
       this.lastSelectedEntity = currentSelectedEntity;
       this.lastActiveSimulationName = currentActiveSimulation; // Update last active simulation
-      this.uiManager.clearControls(); // Clear previous inspector content
+      this.propertyInspectorUIManager.clearInspectorControls(); // Clear previous inspector content
 
       if (currentSelectedEntity !== null) {
         this.updateInspectorForEntity(world, currentSelectedEntity);
       } else {
         // If no entity is selected, display the parameter panels from the active plugin
-        this.uiManager.clearControls(); // Clear previous inspector content
+        this.propertyInspectorUIManager.clearInspectorControls(); // Clear previous inspector content
         const parameterPanels = this.getParameterPanelsFromActivePlugin();
-        for (const panel of parameterPanels) {
-          panel.registerControls(this.uiManager);
-        }
+        this.propertyInspectorUIManager.registerParameterPanels(parameterPanels);
       }
     }
   }
@@ -168,27 +113,15 @@ export class PropertyInspectorSystem extends System {
       if (Object.prototype.hasOwnProperty.call(components, componentName)) {
         const component = components[componentName];
 
-        // Skip SelectableComponent and RenderableComponent
-        if (
-          componentName === "SelectableComponent" ||
-          componentName === "RenderableComponent"
-        ) {
-          Logger.log(
-            `[PropertyInspectorSystem] Skipping component '${componentName}' as it is hidden from the UI`
-          );
+        // Use ComponentFilter to determine if the component should be skipped from UI
+        if (ComponentFilter.shouldSkipFromUI(componentName)) {
           continue;
         }
 
-        // Filter components based on active simulation
-        // Only filter if both active simulation and component.simulationType are defined
+        // Filter components based on active simulation using ComponentFilter
         const currentActiveSimulation = this.studio.getActiveSimulationName();
-        if (currentActiveSimulation && component.simulationType) {
-          if (component.simulationType !== currentActiveSimulation) {
-            Logger.log(
-              `[PropertyInspectorSystem] Skipping component '${componentName}' (simulationType: ${component.simulationType}) as it does not match active simulation '${currentActiveSimulation}'`
-            );
-            continue; // Skip components that don't belong to the active simulation
-          }
+        if (!ComponentFilter.matchesActiveSimulation(component, currentActiveSimulation)) {
+          continue;
         }
 
         Logger.log(
@@ -204,7 +137,7 @@ export class PropertyInspectorSystem extends System {
         );
 
         // Register the component controls, passing the parameter panels
-        this.registerComponentControls(registryKey, component, parameterPanels);
+        this.propertyInspectorUIManager.registerComponentControls(registryKey, component, parameterPanels);
       }
     }
   }

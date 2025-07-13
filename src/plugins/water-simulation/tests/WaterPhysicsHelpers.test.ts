@@ -14,18 +14,9 @@ describe("WaterPhysicsHelpers", () => {
 
   beforeEach(() => {
     world = new World();
-    world.componentManager.registerComponent(
-      WaterDropletComponent.type,
-      WaterDropletComponent
-    );
-    world.componentManager.registerComponent(
-      WaterBodyComponent.type,
-      WaterBodyComponent
-    );
-    world.componentManager.registerComponent(
-      PositionComponent.name,
-      PositionComponent
-    );
+    world.componentManager.registerComponent(WaterDropletComponent);
+    world.componentManager.registerComponent(WaterBodyComponent);
+    world.componentManager.registerComponent(PositionComponent);
   });
 
   it("updateRipples should expand and decay ripples", () => {

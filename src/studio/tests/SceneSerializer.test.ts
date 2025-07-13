@@ -39,22 +39,10 @@ describe("SceneSerializer", () => {
     world = new World();
 
     // Register all core components that might be serialized
-    world.componentManager.registerComponent(
-      PositionComponent.name,
-      PositionComponent
-    );
-    world.componentManager.registerComponent(
-      RenderableComponent.name,
-      RenderableComponent
-    );
-    world.componentManager.registerComponent(
-      RotationComponent.name,
-      RotationComponent
-    );
-    world.componentManager.registerComponent(
-      SelectableComponent.name,
-      SelectableComponent
-    );
+    world.componentManager.registerComponent(PositionComponent);
+    world.componentManager.registerComponent(RenderableComponent);
+    world.componentManager.registerComponent(RotationComponent);
+    world.componentManager.registerComponent(SelectableComponent);
 
     global.btoa = jest.fn((str) => Buffer.from(str).toString("base64"));
     global.atob = jest.fn((str) =>
@@ -65,22 +53,10 @@ describe("SceneSerializer", () => {
   beforeEach(() => {
     // Reset hash for each test
     world = new World(); // Re-initialize world for each test to ensure clean state
-    world.componentManager.registerComponent(
-      PositionComponent.name,
-      PositionComponent
-    );
-    world.componentManager.registerComponent(
-      RenderableComponent.name,
-      RenderableComponent
-    );
-    world.componentManager.registerComponent(
-      RotationComponent.name,
-      RotationComponent
-    );
-    world.componentManager.registerComponent(
-      SelectableComponent.name,
-      SelectableComponent
-    );
+    world.componentManager.registerComponent(PositionComponent);
+    world.componentManager.registerComponent(RenderableComponent);
+    world.componentManager.registerComponent(RotationComponent);
+    world.componentManager.registerComponent(SelectableComponent);
     window.location.hash = "";
 
     // Move file picker mocks here for each test
@@ -160,22 +136,10 @@ describe("SceneSerializer", () => {
 
   it("should deserialize a JSON string into the world", () => {
     // Register components on the current world instance right before deserialization
-    world.componentManager.registerComponent(
-      PositionComponent.name,
-      PositionComponent
-    );
-    world.componentManager.registerComponent(
-      RenderableComponent.name,
-      RenderableComponent
-    );
-    world.componentManager.registerComponent(
-      RotationComponent.name,
-      RotationComponent
-    );
-    world.componentManager.registerComponent(
-      SelectableComponent.name,
-      SelectableComponent
-    );
+    world.componentManager.registerComponent(PositionComponent);
+    world.componentManager.registerComponent(RenderableComponent);
+    world.componentManager.registerComponent(RotationComponent);
+    world.componentManager.registerComponent(SelectableComponent);
 
     // Debug: print registered component keys
     // eslint-disable-next-line no-console

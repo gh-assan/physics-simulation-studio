@@ -80,4 +80,16 @@ describe("World", () => {
     expect(position.x).toBe(20);
     expect(position.y).toBe(10);
   });
+
+  it("should destroy an entity and its components", () => {
+    const entity = world.createEntity();
+    world.addComponent(entity, PositionComponent.type, new PositionComponent(1, 2));
+    world.addComponent(entity, VelocityComponent.type, new VelocityComponent(3, 4));
+
+    world.destroyEntity(entity);
+
+    expect(world.entityManager.getEntityById(entity)).toBeUndefined();
+    expect(world.componentManager.getComponent(entity, PositionComponent.type)).toBeUndefined();
+    expect(world.componentManager.getComponent(entity, VelocityComponent.type)).toBeUndefined();
+  });
 });

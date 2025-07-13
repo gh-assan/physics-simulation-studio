@@ -37,12 +37,9 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
   }
   register(world: World): void {
     // Register components
-    world.componentManager.registerComponent(FlagComponent.type, FlagComponent);
-    world.componentManager.registerComponent(PoleComponent.type, PoleComponent);
-    world.componentManager.registerComponent(
-      FlagParameterPanel.type,
-      FlagParameterPanel
-    );
+    world.componentManager.registerComponent(FlagComponent);
+    world.componentManager.registerComponent(PoleComponent);
+    world.componentManager.registerComponent(FlagParameterPanel);
     // ParameterPanelComponent registration is handled by the core system
     // world.componentManager.registerComponent(
     //   ParameterPanelComponent.type,
