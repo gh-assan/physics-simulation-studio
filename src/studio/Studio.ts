@@ -5,14 +5,15 @@ import { Logger } from "../core/utils/Logger";
 import { RenderSystem } from "./systems/RenderSystem";
 import { SelectedSimulationStateManager } from "./state/SelectedSimulationState";
 import { StateManager } from "./state/StateManager";
+import { SimulationOrchestrator } from "./SimulationOrchestrator";
 
 export class Studio {
   private _world: World;
   private pluginManager: PluginManager;
   private renderSystem: RenderSystem | null = null;
-  private isPlaying = true; // Set to true by default
+  private isPlaying = true;
   private selectedSimulation: SelectedSimulationStateManager;
-  private _activePluginName: string | null = null;
+  private orchestrator: SimulationOrchestrator;
 
   public get world(): World {
     return this._world;
@@ -22,112 +23,42 @@ export class Studio {
     this._world = world;
     this.pluginManager = pluginManager;
     this.selectedSimulation = stateManager.selectedSimulation;
+    this.orchestrator = new SimulationOrchestrator(world, pluginManager);
   }
 
   public setRenderSystem(renderSystem: RenderSystem): void {
     this.renderSystem = renderSystem;
+    // Update orchestrator with renderSystem
+    this.orchestrator = new SimulationOrchestrator(this._world, this.pluginManager, renderSystem);
   }
 
   public play(): void {
     this.isPlaying = true;
-    Logger.log("Simulation playing.");
-
-    // Dispatch a custom event to notify systems
-    const event = new CustomEvent("simulation-play", {
-      detail: { simulationName: this._activePluginName }
-    });
-    window.dispatchEvent(event);
-    Logger.log(
-      `Dispatched simulation-play event for ${this._activePluginName}`
-    );
+    this.orchestrator.play();
+    // Optionally, dispatch event via ApplicationEventBus in future
   }
 
   public pause(): void {
     this.isPlaying = false;
-    Logger.log("Simulation paused.");
-
-    // Dispatch a custom event to notify systems
-    const event = new CustomEvent("simulation-pause", {
-      detail: { simulationName: this._activePluginName }
-    });
-    window.dispatchEvent(event);
-    Logger.log(
-      `Dispatched simulation-pause event for ${this._activePluginName}`
-    );
+    this.orchestrator.pause();
+    // Optionally, dispatch event via ApplicationEventBus in future
   }
 
   public reset(): void {
-    Logger.log("Simulation reset.");
-    this._clearWorldAndRenderSystem();
-    if (this._activePluginName) {
-      void this.loadSimulation(this._activePluginName); // Reload the current simulation
-    }
-  }
-
-  private _unloadCurrentSimulation(): void {
-    this._deactivateCurrentSimulation();
-    this._clearWorldAndRenderSystem();
-    this.selectedSimulation.setSimulation(null);
-    this._activePluginName = null;
-    Logger.log("No simulation loaded.");
+    this.orchestrator.reset();
+    // Optionally, dispatch event via ApplicationEventBus in future
   }
 
   public async loadSimulation(pluginName: string | null): Promise<void> {
-    if (pluginName === null) {
-      this._unloadCurrentSimulation();
-      return;
-    }
-
-    if (this._activePluginName === pluginName) {
-      Logger.log(`Simulation "${pluginName}" is already active.`);
-      return;
-    }
-
-    this._deactivateCurrentSimulation();
-    this._clearWorldAndRenderSystem();
-
-    try {
-      await this._activateAndInitializePlugin(pluginName);
-    } catch (error) {
-      Logger.error(`Failed to load simulation "${pluginName}":`, error);
+    const currentSimulation = this.selectedSimulation.getSimulationName();
+    if (currentSimulation) {
+      this.orchestrator.unloadSimulation(currentSimulation);
       this.selectedSimulation.setSimulation(null);
-      this._activePluginName = null;
     }
-  }
-
-  private _clearWorldAndRenderSystem(): void {
-    this.world.clear(); // Clear all entities and components
-    if (this.renderSystem) {
-      this.renderSystem.clear(); // Clear rendered meshes
-    }
-  }
-
-  private _deactivateCurrentSimulation(): void {
-    if (this._activePluginName) {
-      this.pluginManager.deactivatePlugin(this._activePluginName);
-    }
-  }
-
-  private async _activateAndInitializePlugin(
-    pluginName: string
-  ): Promise<void> {
-    await this.pluginManager.activatePlugin(pluginName);
-    Logger.log(`Loaded simulation: ${pluginName}`);
-    const activePlugin = this.pluginManager.getPlugin(pluginName);
-    if (activePlugin && activePlugin.initializeEntities) {
-      activePlugin.initializeEntities(this.world);
-      this.world.update(0); // Force an immediate update of all systems
-      this.world.systemManager.updateAll(this.world, 0);
-      if (this.renderSystem) {
-        this.renderSystem.update(this.world, 0); // Force an immediate render
-      }
-
-      // Update internal state first
-      this._activePluginName = pluginName;
-      // Then update the global state
+    if (pluginName) {
+      await this.orchestrator.loadSimulation(pluginName);
       this.selectedSimulation.setSimulation(pluginName);
-
-      // Dispatch a custom event to trigger UI refresh
+      // Dispatch event after state update so UI can react to correct state
       const event = new CustomEvent("simulation-loaded", {
         detail: { simulationName: pluginName }
       });
@@ -147,15 +78,13 @@ export class Studio {
   }
 
   public getActiveSimulationName(): string | null {
-    return this._activePluginName;
+    return this.selectedSimulation.getSimulationName();
   }
 
   public getRenderer(): any | null {
-    if (this._activePluginName) {
-      const activePlugin = this.pluginManager.getPlugin(
-        this._activePluginName
-      );
-      // Check if the plugin has a getRenderer method (duck typing for ISimulationPlugin)
+    const pluginName = this.selectedSimulation.getSimulationName();
+    if (pluginName) {
+      const activePlugin = this.pluginManager.getPlugin(pluginName);
       if (activePlugin && activePlugin.getRenderer) {
         return activePlugin.getRenderer();
       }
