@@ -141,7 +141,7 @@ export class RenderSystem extends System {
       ) as RenderableComponent;
 
       if (!position || !rotation || !renderable) {
-        continue; // Skip if any required component is missing
+        continue; // Skip if any component is missing
       }
 
       // Skip flag entities - they will be handled by the FlagRenderer
@@ -389,6 +389,16 @@ export class RenderSystem extends System {
       .getScene()
       .children.filter(
         (child: THREE.Object3D) => !child.name.startsWith("ripple_")
+      );
+
+    // Remove all water meshes from the scene
+    this.graphicsManager.getScene().children = this.graphicsManager
+      .getScene()
+      .children.filter(
+        (child: THREE.Object3D) =>
+          child.name !== "waterMesh" &&
+          child.name !== "waterDropletMesh" &&
+          child.name !== "waterRipple"
       );
   }
 }

@@ -53,16 +53,16 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
         Logger.log("No simulation loaded.");
     }
 
+    private _deactivateCurrentSimulation(activePluginName: string | null): void {
+        if (!activePluginName) return;
+        // Deactivate plugin (calls unregister internally)
+        this.pluginManager.deactivatePlugin(activePluginName);
+    }
+
     private _clearWorldAndRenderSystem(): void {
         this.world.clear();
         if (this.renderSystem) {
             this.renderSystem.clear();
-        }
-    }
-
-    private _deactivateCurrentSimulation(activePluginName: string | null): void {
-        if (activePluginName) {
-            this.pluginManager.deactivatePlugin(activePluginName);
         }
     }
 

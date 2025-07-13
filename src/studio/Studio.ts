@@ -32,6 +32,17 @@ export class Studio {
     this.orchestrator = new SimulationOrchestrator(this._world, this.pluginManager, renderSystem);
   }
 
+  /**
+   * Remove plugin renderer reference after simulation switch
+   */
+  public clearRenderer(): void {
+    // Optionally, set a flag or null out any plugin renderer reference
+    // This disables plugin-specific rendering after unload
+    if (this.selectedSimulation) {
+      this.selectedSimulation.setSimulation(null);
+    }
+  }
+
   public play(): void {
     this.isPlaying = true;
     this.orchestrator.play();
