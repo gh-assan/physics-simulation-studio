@@ -1,4 +1,3 @@
-
 import { Studio } from "./Studio";
 import { World } from "../core/ecs/World";
 import { PluginManager } from "../core/plugin/PluginManager";
