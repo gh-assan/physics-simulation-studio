@@ -96,6 +96,25 @@ This section details the analysis of specific classes identified as violating th
     *   **Refine Property Inference/Filtering:** Extract the logic for preparing `ComponentControlProperty[]` (including inference and filtering of specific keys) into a separate utility or service. `UIManager` should receive a pre-processed, ready-to-render list of properties.
     *   **Centralize Logging:** Replace all `console.log` and `console.warn` calls with the centralized `Logger` instance.
     *   **Consider UI Abstraction (Future):** For long-term extensibility, consider introducing an abstraction layer over `tweakpane` if the project anticipates supporting multiple UI frameworks. (This is a lower priority for this task).
+O*   **Refactor Steps for UIManager.ts:**
+    1. **Introduce ApplicationEventBus:**
+        - Create or inject an `ApplicationEventBus` class to handle all UI-related events.
+        - Replace all direct `window.dispatchEvent` calls with `ApplicationEventBus.emit` for parameter changes and other UI events.
+    2. **Centralize Logging:**
+        - Replace all `console.log` and `console.warn` calls with the centralized `Logger` instance for consistent, testable logging.
+    3. **Extract Property Inference/Filtering Logic:**
+        - Move the logic for inferring and filtering properties (e.g., excluding `"particles"`, `"springs"`, `"fixedParticles"`) out of `registerComponentControls`.
+        - Create a dedicated utility/service (e.g., `ComponentPropertyPreparer`) that prepares a list of `ComponentControlProperty[]` for UI rendering.
+        - Refactor `UIManager` to only receive pre-processed properties and focus on rendering.
+    4. **Decouple UIManager from Tweakpane (optional/future):**
+        - Abstract Tweakpane-specific logic behind an interface to allow future support for other UI frameworks.
+        - This step is lower priority but should be considered for extensibility.
+    5. **Update Constructor and Methods:**
+        - Update the constructor to accept dependencies (`ApplicationEventBus`, property preparer).
+        - Refactor methods to use these dependencies instead of direct calls.
+    6. **Update Tests:**
+        - Ensure all existing tests are updated to reflect the new event and logging mechanisms.
+        - Add new tests for the property preparer utility/service.
 
 ### 2.7. `src/studio/graphics/ThreeGraphicsManager.ts`
 
