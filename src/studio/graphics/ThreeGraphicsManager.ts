@@ -22,7 +22,7 @@ export class ThreeGraphicsManager {
   private controlsEnabled = false;
   private resizeHandler: WindowResizeHandler;
 
-  constructor() {
+  constructor(container?: HTMLElement) {
     this.scene = SceneBuilder.buildScene();
     this.camera = new THREE.PerspectiveCamera(
       75,
@@ -33,7 +33,7 @@ export class ThreeGraphicsManager {
     this.camera.position.set(0, 5, 20);
     this.camera.lookAt(0, 0, 0);
     this.renderer = RendererProvider.createRenderer();
-    RendererProvider.attachRendererDom(this.renderer);
+    RendererProvider.attachRendererDom(this.renderer, container || document.body);
     this.controlsManager = new OrbitControlsManager(
       this.camera,
       this.renderer.domElement
@@ -133,10 +133,40 @@ export class ThreeGraphicsManager {
   }
 
   /**
+   * Small refactor: Use Logger for all error reporting and add a helper for safe disposal
+   */
+  private _disposeObject3D(obj: THREE.Object3D) {
+    try {
+      if ((obj as any).geometry && typeof (obj as any).geometry.dispose === 'function') {
+        (obj as any).geometry.dispose();
+      }
+      if ((obj as any).material) {
+        if (Array.isArray((obj as any).material)) {
+          (obj as any).material.forEach((mat: any) => {
+            if (mat && typeof mat.dispose === 'function') mat.dispose();
+          });
+        } else if (typeof (obj as any).material.dispose === 'function') {
+          (obj as any).material.dispose();
+        }
+      }
+    } catch (e) {
+      Logger.error('Error disposing object:', e);
+    }
+  }
+
+  /**
    * Disposes the manager, cleaning up resources
    */
   public dispose(): void {
     this.resizeHandler.dispose();
+    // Dispose scene objects
+    this.scene.traverse((obj) => {
+      this._disposeObject3D(obj);
+    });
+    // Optionally remove renderer DOM element
+    if (this.renderer && this.renderer.domElement && this.renderer.domElement.parentNode) {
+      this.renderer.domElement.parentNode.removeChild(this.renderer.domElement);
+    }
   }
 
   public showControlInstructions(show: boolean): void {
