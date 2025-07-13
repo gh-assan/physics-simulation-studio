@@ -26,6 +26,16 @@ export class OrbitControlsManager {
         this.controls.update();
     }
 
+    /**
+     * Disposes the OrbitControls instance
+     */
+    dispose() {
+        if (this.controls && typeof this.controls.dispose === 'function') {
+            this.controls.dispose();
+        }
+        // If you added any event listeners, remove them here.
+    }
+
     get instance() {
         return this.controls;
     }
