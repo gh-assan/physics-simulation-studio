@@ -25,6 +25,7 @@ export class WaterRenderer {
         const geometry = new THREE.PlaneGeometry(10, 10);
         const material = new THREE.MeshPhongMaterial({ color: 0x2196f3, transparent: true, opacity: 0.8 });
         this.waterMesh = new THREE.Mesh(geometry, material);
+        this.waterMesh.name = "waterMesh";
         this.waterMesh.position.set(positionComponent.x, positionComponent.y, positionComponent.z);
         this.waterMesh.rotation.x = -Math.PI / 2;
         scene.add(this.waterMesh);
@@ -40,6 +41,7 @@ export class WaterRenderer {
           const geometry = new THREE.RingGeometry(ripple.radius - 0.05, ripple.radius, 32);
           const material = new THREE.MeshBasicMaterial({ color: 0x90caf9, transparent: true, opacity: Math.max(0, ripple.amplitude) });
           const mesh = new THREE.Mesh(geometry, material);
+          mesh.name = "waterRipple";
           mesh.position.set(ripple.x, positionComponent.y + 0.01, ripple.z);
           mesh.rotation.x = -Math.PI / 2;
           scene.add(mesh);
@@ -71,6 +73,7 @@ export class WaterRenderer {
         material,
         droplets.length
       );
+      this.instancedMesh.name = "waterDropletMesh";
       scene.add(this.instancedMesh);
     }
     let i = 0;

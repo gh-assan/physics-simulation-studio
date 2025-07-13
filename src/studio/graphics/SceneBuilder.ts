@@ -9,6 +9,10 @@ export class SceneBuilder {
     return scene;
   }
 
+  public static buildScene(): THREE.Scene {
+    return this.createScene();
+  }
+
   private static addLights(scene: THREE.Scene): void {
     const mainLight = new THREE.PointLight(0xffffff, 1, 100);
     mainLight.position.set(10, 10, 10);

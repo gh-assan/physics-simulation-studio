@@ -28,7 +28,7 @@ export class CameraControls {
 
   constructor(graphicsManager: ThreeGraphicsManager) {
     this.graphicsManager = graphicsManager;
-    this.controls = graphicsManager.getControls();
+    this.controls = graphicsManager.controls;
     this.camera = graphicsManager.getCamera();
 
     // Store the default camera position for reset functionality

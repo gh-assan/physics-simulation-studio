@@ -163,7 +163,7 @@ describe("ThreeGraphicsManager", () => {
     expect(graphicsManager.getScene()).toBe(graphicsManager.scene);
     expect(graphicsManager.getCamera()).toBe(graphicsManager.camera);
     expect(graphicsManager.getRenderer()).toBe(graphicsManager.renderer);
-    expect(graphicsManager.getControls()).toBe(graphicsManager.controls);
+    expect(graphicsManager.controls).toBe(graphicsManager.controls);
   });
 
   it("should not display camera control instructions directly", () => {
