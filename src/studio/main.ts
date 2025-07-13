@@ -6,6 +6,7 @@ import { RenderSystem } from "./systems/RenderSystem";
 import { StateManager } from "./state/StateManager";
 import { PropertyInspectorSystem } from "./systems/PropertyInspectorSystem";
 import { UIManager } from "./uiManager";
+import { PropertyInspectorUIManager } from "./ui/PropertyInspectorUIManager";
 import { SceneSerializer } from "./systems/SceneSerializer";
 import { FlagSimulationPlugin } from "@plugins/flag-simulation";
 import { WaterSimulationPlugin } from "@plugins/water-simulation";
@@ -44,7 +45,9 @@ function setupCoreSystems() {
 function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager) {
   const pane = new Pane();
   const uiManager = new UIManager(pane);
+  const propertyInspectorUIManager = new PropertyInspectorUIManager(uiManager);
   (window as any).uiManager = uiManager;
+  (window as any).propertyInspectorUIManager = propertyInspectorUIManager;
 
   const globalControlsFolder = pane.addFolder({ title: "Global Controls" });
   globalControlsFolder.addButton({ title: "Play" }).on("click", () => studio.play());
@@ -74,10 +77,10 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
     updateSimulationSelector();
   });
 
-  return { uiManager };
+  return { uiManager, propertyInspectorUIManager };
 }
 
-function registerComponentsAndSystems(world: World, studio: Studio, uiManager: UIManager, pluginManager: PluginManager) {
+function registerComponentsAndSystems(world: World, studio: Studio, propertyInspectorUIManager: PropertyInspectorUIManager, pluginManager: PluginManager) {
   // Register Component Properties
   registerFlagComponentProperties();
   registerWaterComponentProperties();
@@ -96,7 +99,7 @@ function registerComponentsAndSystems(world: World, studio: Studio, uiManager: U
   world.systemManager.registerSystem(selectionSystem);
 
   world.systemManager.registerSystem(
-    new PropertyInspectorSystem(uiManager, world, studio, pluginManager, selectionSystem)
+    new PropertyInspectorSystem(propertyInspectorUIManager, world, studio, pluginManager, selectionSystem)
   );
   studio.setRenderSystem(renderSystem);
 
@@ -128,8 +131,8 @@ async function main() {
   Logger.log("Initializing Physics Simulation Studio...");
 
   const { world, pluginManager, stateManager, studio } = setupCoreSystems();
-  const { uiManager } = setupUI(studio, stateManager, pluginManager);
-  registerComponentsAndSystems(world, studio, uiManager, pluginManager);
+  const { uiManager, propertyInspectorUIManager } = setupUI(studio, stateManager, pluginManager);
+  registerComponentsAndSystems(world, studio, propertyInspectorUIManager, pluginManager);
   registerPlugins(pluginManager);
 
   // Load Initial Simulation

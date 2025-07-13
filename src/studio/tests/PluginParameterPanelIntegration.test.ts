@@ -20,7 +20,8 @@ jest.mock('three', () => ({
 import { World } from "../../core/ecs/World";
 import { PluginManager } from "../../core/plugin/PluginManager";
 import { Studio } from "../Studio";
-import { UIManager } from "../uiManager";
+jest.mock("../ui/PropertyInspectorUIManager");
+import { PropertyInspectorUIManager } from "../ui/PropertyInspectorUIManager";
 import { PropertyInspectorSystem } from "../systems/PropertyInspectorSystem";
 import { FlagSimulationPlugin } from "../../plugins/flag-simulation";
 import { WaterSimulationPlugin } from "../../plugins/water-simulation";
@@ -36,7 +37,7 @@ describe("Plugin Parameter Panel Integration", () => {
   let world: World;
   let pluginManager: jest.Mocked<PluginManager>;
   let studio: jest.Mocked<Studio>;
-  let uiManager: jest.Mocked<UIManager>;
+  let propertyInspectorUIManager: jest.Mocked<PropertyInspectorUIManager>;
   let propertyInspectorSystem: PropertyInspectorSystem;
   let flagPlugin: FlagSimulationPlugin;
   let waterPlugin: WaterSimulationPlugin;
@@ -47,12 +48,12 @@ describe("Plugin Parameter Panel Integration", () => {
     world = new World();
 
     // Explicitly mock dependencies
-    uiManager = {
+    propertyInspectorUIManager = {
       registerComponentControls: jest.fn(),
-      clearControls: jest.fn(),
-      addFolder: jest.fn(() => ({ addBlade: jest.fn() })),
-      refresh: jest.fn(),
-    } as any;
+      clearInspectorControls: jest.fn(),
+      registerParameterPanels: jest.fn(),
+      uiManager: {} as any,
+    } as unknown as jest.Mocked<PropertyInspectorUIManager>;
 
     pluginManager = {
       getPlugin: jest.fn().mockImplementation((pluginName: string) => {
@@ -103,7 +104,7 @@ describe("Plugin Parameter Panel Integration", () => {
 
     // Instantiate the system under test
     propertyInspectorSystem = new PropertyInspectorSystem(
-      uiManager,
+      propertyInspectorUIManager,
       world,
       studio,
       pluginManager,
@@ -117,15 +118,13 @@ describe("Plugin Parameter Panel Integration", () => {
     world.componentManager.registerComponent(MockParameterPanelComponent);
 
     // Create and register plugins
+    const flagPanelMock = { componentType: FlagComponent.type, registerControls: jest.fn() };
+    const waterPanelMock = { componentType: WaterDropletComponent.type, registerControls: jest.fn() };
     flagPlugin = new FlagSimulationPlugin();
     waterPlugin = new WaterSimulationPlugin();
-    // Mock getParameterPanels for plugins
-    flagPlugin.getParameterPanels = jest.fn().mockReturnValue([
-      { componentType: FlagComponent.type, registerControls: jest.fn() }
-    ]);
-    waterPlugin.getParameterPanels = jest.fn().mockReturnValue([
-      { componentType: WaterDropletComponent.type, registerControls: jest.fn() }
-    ]);
+    // Mock getParameterPanels for plugins with shared mock instances
+    flagPlugin.getParameterPanels = jest.fn().mockReturnValue([flagPanelMock]);
+    waterPlugin.getParameterPanels = jest.fn().mockReturnValue([waterPanelMock]);
     pluginManager.registerPlugin(flagPlugin);
     pluginManager.registerPlugin(waterPlugin);
 

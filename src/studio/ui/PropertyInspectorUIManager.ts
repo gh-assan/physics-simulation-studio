@@ -4,6 +4,12 @@ import { getComponentProperties } from "../utils/ComponentPropertyRegistry";
 import { ParameterPanelComponent } from "../../core/components/ParameterPanelComponent";
 import { Logger } from "../../core/utils/Logger";
 
+/**
+ * Manages the rendering of properties in the Property Inspector UI.
+ * This class is responsible for interacting with the UIManager to display
+ * component properties, either via a dedicated ParameterPanelComponent
+ * or by dynamically generating controls from the ComponentPropertyRegistry.
+ */
 export class PropertyInspectorUIManager {
   private uiManager: UIManager;
 
@@ -11,17 +17,29 @@ export class PropertyInspectorUIManager {
     this.uiManager = uiManager;
   }
 
-  public clearInspector(): void {
+  /**
+   * Clears all controls from the property inspector.
+   */
+  public clearInspectorControls(): void {
     this.uiManager.clearControls();
   }
 
-  public displayComponentProperties(
+  /**
+   * Registers UI controls for a given component.
+   * It first attempts to use a provided ParameterPanelComponent. If not found,
+   * it falls back to dynamically generating controls based on the ComponentPropertyRegistry.
+   * @param componentTypeKey The string key representing the component type (e.g., "FlagComponent").
+   * @param componentInstance The instance of the component.
+   * @param parameterPanels An array of available ParameterPanelComponents.
+   */
+  public registerComponentControls(
     componentTypeKey: string,
     componentInstance: IComponent,
     parameterPanels: ParameterPanelComponent[]
   ): void {
     const displayName = componentTypeKey;
 
+    // First, try to find a parameter panel component for this component type
     const parameterPanel = parameterPanels.find(
       (panel) => panel.componentType === componentTypeKey
     );
@@ -32,6 +50,7 @@ export class PropertyInspectorUIManager {
       );
       parameterPanel.registerControls(this.uiManager, componentInstance);
     } else {
+      // Fall back to dynamically generating controls if no parameter panel component is found
       const properties = getComponentProperties(componentTypeKey);
 
       if (properties) {
@@ -52,9 +71,16 @@ export class PropertyInspectorUIManager {
     }
   }
 
-  public displayParameterPanels(panels: ParameterPanelComponent[]): void {
-    this.uiManager.clearControls();
-    for (const panel of panels) {
+  /**
+   * Registers UI controls for a list of parameter panels.
+   * This is typically used for simulation-level parameters when no entity is selected.
+   * @param parameterPanels An array of ParameterPanelComponents to register.
+   */
+  public registerParameterPanels(parameterPanels: ParameterPanelComponent[]): void {
+    Logger.log(
+      `[PropertyInspectorUIManager] Registering ${parameterPanels.length} parameter panels.`
+    );
+    for (const panel of parameterPanels) {
       panel.registerControls(this.uiManager);
     }
   }

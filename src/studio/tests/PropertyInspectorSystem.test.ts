@@ -7,6 +7,7 @@ import { Studio } from "../Studio";
 import { PluginManager } from "@core/plugin/PluginManager";
 import { StateManager } from "../state/StateManager";
 import { SelectionSystem } from "../systems/SelectionSystem";
+import { PropertyInspectorUIManager } from "../ui/PropertyInspectorUIManager";
 
 // Robust singleton mock for StateManager
 jest.mock("../state/StateManager", require("./testUtils/StateManagerMock").mockStateManager);
@@ -49,6 +50,7 @@ describe("PropertyInspectorSystem", () => {
   let propertyInspectorSystem: PropertyInspectorSystem;
   let mockPaneInstance: UIManager["pane"]; // Use the correct type for the mockPaneInstance
   let selectionSystem: SelectionSystem;
+  let propertyInspectorUIManager: PropertyInspectorUIManager;
 
   beforeEach(() => {
     // Create required DOM elements
@@ -84,6 +86,7 @@ describe("PropertyInspectorSystem", () => {
         >
       )();
     uiManager = new UIManager(mockPaneInstance);
+    propertyInspectorUIManager = new PropertyInspectorUIManager(uiManager);
 
     // Create mock instances for Studio and PluginManager
     const mockWorld = new World();
@@ -101,7 +104,7 @@ describe("PropertyInspectorSystem", () => {
     } as unknown as SelectionSystem;
 
     propertyInspectorSystem = new PropertyInspectorSystem(
-      uiManager,
+      propertyInspectorUIManager,
       mockWorld,
       mockStudio,
       mockPluginManager,
