@@ -7,7 +7,7 @@ class MockBindingApi {
   on = jest.fn();
 }
 class MockFolderApi {
-  addBinding = jest.fn(() => new MockBindingApi());
+  addBinding = jest.fn((data, key, options) => new MockBindingApi());
   dispose = jest.fn();
 }
 class MockUIFramework {
@@ -35,8 +35,8 @@ describe('UIManager', () => {
     const data = { foo: 1, bar: 2 };
     uiManager.registerComponentControls('TestComponent', data);
     const folder = ui.addFolder.mock.results[0].value;
-    expect(folder.addBinding).toHaveBeenCalledWith(data, 'foo');
-    expect(folder.addBinding).toHaveBeenCalledWith(data, 'bar');
+    expect(folder.addBinding).toHaveBeenCalledWith(data, 'foo', expect.objectContaining({ label: expect.any(String) }));
+    expect(folder.addBinding).toHaveBeenCalledWith(data, 'bar', expect.objectContaining({ label: expect.any(String) }));
     // Simulate binding change
     const binding = folder.addBinding.mock.results[0].value;
     binding.on('change', expect.any(Function));

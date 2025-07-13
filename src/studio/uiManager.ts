@@ -37,14 +37,11 @@ export class UIManager {
     const displayName = data.constructor
       ? `${data.constructor.name} (${componentName})`
       : componentName;
-    Logger.log(`[UIManager] Registering controls for component: ${displayName}`);
-
     const folder = this.pane.addFolder({ title: displayName });
     this.folders.set(componentName, folder);
 
     // Use provided properties, or prepare them if not provided
     const props = properties || this.propertyPreparer.filterProperties(data);
-    Logger.log(`[UIManager] Adding ${props.length} properties for ${displayName}`);
     props.forEach((prop) => {
       this._addBindingForProperty(folder, data, prop);
     });
@@ -84,9 +81,6 @@ export class UIManager {
       const parentData = this._getNestedProperty(data, parentPath);
 
       if (parentData) {
-        Logger.log(
-          `[UIManager] Adding binding for nested property: ${prop.property}, parent: ${parentPath}, child: ${lastKey}`
-        );
         binding = folder.addBinding(parentData, lastKey, options);
       } else {
         Logger.warn(
@@ -130,5 +124,26 @@ export class UIManager {
       folder.dispose();
     });
     this.folders.clear();
+  }
+
+  // Utility: get all registered component names
+  public getRegisteredComponentNames(): string[] {
+    return Array.from(this.folders.keys());
+  }
+
+  // Utility: remove a specific component's controls
+  public removeComponentControls(componentName: string): void {
+    const folder = this.folders.get(componentName);
+    if (folder) {
+      folder.dispose();
+      this.folders.delete(componentName);
+    }
+  }
+
+  // Future extensibility: allow switching UI frameworks
+  // This method can be expanded to support other UI libraries
+  public setUIPane(newPane: Pane): void {
+    this.pane = newPane;
+    this.clearControls(); // Clear old controls when switching UI
   }
 }
