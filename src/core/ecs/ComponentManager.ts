@@ -91,13 +91,21 @@ export class ComponentManager {
    * @param entityID The ID of the entity
    * @param componentType The type of the component
    */
-  public removeComponent(entityID: number, componentType: string): void {
+  public removeComponent(entityID: number, componentType: string, world?: any): void {
     Logger.log(
       `[ComponentManager] Removing component '${componentType}' from entity ${entityID}`
     );
     const store = this.getComponentStore(componentType);
     if (store) {
       store.delete(entityID);
+      // Call onComponentRemoved on all systems if world is provided
+      if (world && world.systemManager && typeof world.systemManager.getAllSystems === 'function') {
+        for (const system of world.systemManager.getAllSystems()) {
+          if (typeof system.onComponentRemoved === 'function') {
+            system.onComponentRemoved(entityID, componentType, world);
+          }
+        }
+      }
     } else {
       Logger.warn(
         `[ComponentManager] Attempted to remove unregistered component type '${componentType}' from entity ${entityID}`

@@ -20,42 +20,52 @@ import { WaterDropletComponent } from "../../plugins/water-simulation/WaterCompo
 export class RenderSystem extends System {
   private graphicsManager: ThreeGraphicsManager;
   private meshes: Map<number, THREE.Mesh> = new Map();
-  private poleMeshes: Map<number, THREE.Mesh> = new Map(); // New map for pole meshes
-  private studio: Studio; // Add studio reference
-  private raycaster: THREE.Raycaster;
-  private mouse: THREE.Vector2;
+  private poleMeshes: Map<number, THREE.Mesh> = new Map();
+  private studio!: Studio;
+  private raycaster!: THREE.Raycaster;
+  private mouse!: THREE.Vector2;
+  // ...existing code...
 
   constructor(studio: Studio) {
     super();
     this.studio = studio;
-
     this.graphicsManager = new ThreeGraphicsManager();
 
     // Setup raycaster for object selection
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
 
-    window.addEventListener("mousedown", this.onMouseDown.bind(this), false);
+    window.addEventListener("mousedown", this.onMouseDown, false);
 
     // Listen for parameter changes to update rendering without starting simulation
     window.addEventListener(
       "parameter-changed",
-      this.onParameterChanged.bind(this),
+      this.onParameterChanged,
       false
     );
   }
 
-  private onParameterChanged(event: CustomEvent): void {
-    // Force a render update without starting the simulation
-    if (!this.studio.getIsPlaying()) {
-      // Only update rendering if simulation is not already playing
-      const world = this.studio.world;
-      this.update(world, 0); // Update with zero deltaTime to avoid physics simulation
-      this.graphicsManager.render();
+  // Automatically clean up meshes/materials when an entity is removed
+  public onEntityRemoved(entityId: number, world: any): void {
+    const mesh = this.meshes.get(entityId);
+    if (mesh) {
+      this.graphicsManager.getScene().remove(mesh);
+      mesh.geometry.dispose();
+      if (mesh.material instanceof THREE.Material) mesh.material.dispose();
+      else if (Array.isArray(mesh.material)) mesh.material.forEach((m: any) => m.dispose());
+      this.meshes.delete(entityId);
+    }
+    const poleMesh = this.poleMeshes.get(entityId);
+    if (poleMesh) {
+      this.graphicsManager.getScene().remove(poleMesh);
+      poleMesh.geometry.dispose();
+      if (poleMesh.material instanceof THREE.Material) poleMesh.material.dispose();
+      else if (Array.isArray(poleMesh.material)) poleMesh.material.forEach((m: any) => m.dispose());
+      this.poleMeshes.delete(entityId);
     }
   }
 
-  private onMouseDown(event: MouseEvent): void {
+  private onMouseDown = (event: MouseEvent): void => {
     // Calculate mouse position in normalized device coordinates (-1 to +1) for both components
     this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -115,8 +125,17 @@ export class RenderSystem extends System {
     }
   }
 
+  private onParameterChanged = (event: Event): void => {
+    // This method will be called when a 'parameter-changed' event is dispatched.
+    // It can be used to trigger a re-render or update specific parts of the scene
+    // based on the changed parameter, without necessarily restarting the simulation.
+    console.log('Parameter changed, re-rendering scene:', event);
+    // Example: if a parameter affects a mesh's color, update it here.
+    // For now, just trigger a render cycle.
+    this.graphicsManager.render();
+  }
+
   public update(world: World, _deltaTime: number): void {
-    // console.log("RenderSystem update called.");
     const entities = world.componentManager.getEntitiesWithComponents([
       PositionComponent,
       RotationComponent,
@@ -329,7 +348,7 @@ export class RenderSystem extends System {
     // Initialize FlagRenderer if needed and if FlagComponent is available
     try {
       if (FlagComponent) {
-        
+
         // The flag mesh is created and updated directly within this system
         // No separate FlagRenderer class is used for rendering the flag mesh itself
       } else {
@@ -352,7 +371,7 @@ export class RenderSystem extends System {
     }
 
     this.graphicsManager.render();
-    
+
   }
 
   /**
@@ -360,6 +379,9 @@ export class RenderSystem extends System {
    * @returns The ThreeGraphicsManager instance
    */
   public getGraphicsManager(): ThreeGraphicsManager {
+    if (!this.graphicsManager) {
+      throw new Error("RenderSystem: graphicsManager is not initialized!");
+    }
     return this.graphicsManager;
   }
 

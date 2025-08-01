@@ -4,8 +4,9 @@ import { Logger } from "../core/utils/Logger";
 
 import { RenderSystem } from "./systems/RenderSystem";
 import { SelectedSimulationStateManager } from "./state/SelectedSimulationState";
-import { StateManager } from "./state/StateManager";
-import { SimulationOrchestrator } from "./SimulationOrchestrator";
+import { StateManager } from "./state/StateManager"; // Restoring the import
+
+import { SimulationOrchestrator } from "./state/SimulationOrchestrator";
 
 export class Studio {
   private _world: World;
@@ -23,13 +24,14 @@ export class Studio {
     this._world = world;
     this.pluginManager = pluginManager;
     this.selectedSimulation = stateManager.selectedSimulation;
-    this.orchestrator = new SimulationOrchestrator(world, pluginManager);
+    this.orchestrator = new SimulationOrchestrator(world, pluginManager, this.selectedSimulation);
   }
 
   public setRenderSystem(renderSystem: RenderSystem): void {
     this.renderSystem = renderSystem;
-    // Update orchestrator with renderSystem
-    this.orchestrator = new SimulationOrchestrator(this._world, this.pluginManager, renderSystem);
+    if (this.orchestrator && typeof this.orchestrator.setRenderSystem === 'function') {
+      this.orchestrator.setRenderSystem(renderSystem);
+    }
   }
 
   /**
@@ -45,25 +47,22 @@ export class Studio {
 
   public play(): void {
     this.isPlaying = true;
-    this.orchestrator.play();
     // Optionally, dispatch event via ApplicationEventBus in future
   }
 
   public pause(): void {
     this.isPlaying = false;
-    this.orchestrator.pause();
     // Optionally, dispatch event via ApplicationEventBus in future
   }
 
   public reset(): void {
-    this.orchestrator.reset();
     // Optionally, dispatch event via ApplicationEventBus in future
   }
 
   public async loadSimulation(pluginName: string | null): Promise<void> {
     const currentSimulation = this.selectedSimulation.getSimulationName();
     if (currentSimulation) {
-      this.orchestrator.unloadSimulation(currentSimulation);
+      this.orchestrator.unloadCurrentSimulation();
       this.selectedSimulation.setSimulation(null);
     }
     if (pluginName) {

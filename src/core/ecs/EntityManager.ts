@@ -41,9 +41,17 @@ export class EntityManager {
    *
    * @param entityID The ID of the entity to destroy
    */
-  public destroyEntity(entityID: number): void {
+  public destroyEntity(entityID: number, world?: any): void {
     this.availableEntityIDs.push(entityID);
     this.activeEntities.delete(entityID);
+    // Call onEntityRemoved on all systems if world is provided
+    if (world && world.systemManager && typeof world.systemManager.getAllSystems === 'function') {
+      for (const system of world.systemManager.getAllSystems()) {
+        if (typeof system.onEntityRemoved === 'function') {
+          system.onEntityRemoved(entityID, world);
+        }
+      }
+    }
   }
 
   /**

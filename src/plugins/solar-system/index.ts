@@ -10,7 +10,7 @@ import { registerComponentProperties } from '../../studio/utils/ComponentPropert
 import { positionComponentProperties, celestialBodyComponentProperties, orbitComponentProperties } from './solarSystemComponentProperties';
 
 export class SolarSystemPlugin implements ISimulationPlugin {
-  public name = 'Solar System';
+  public name = 'solar-system';
   private world: World; // Add this line
 
   constructor(world: World) { // Add world to constructor
@@ -18,7 +18,7 @@ export class SolarSystemPlugin implements ISimulationPlugin {
   }
 
   public getName(): string {
-    return this.name;
+    return 'solar-system';
   }
 
   public getDependencies(): string[] {

@@ -64,8 +64,12 @@ export class World {
    * @param entityId The ID of the entity to destroy
    */
   public destroyEntity(entityId: number): void {
-    this.entityManager.destroyEntity(entityId);
-    this.componentManager.removeAllComponentsForEntity(entityId);
+    this.entityManager.destroyEntity(entityId, this);
+    // Remove all components and trigger hooks
+    const allComponents = Object.keys(this.componentManager.getAllComponentsForEntity(entityId));
+    for (const componentType of allComponents) {
+      this.componentManager.removeComponent(entityId, componentType, this);
+    }
   }
 
   /**

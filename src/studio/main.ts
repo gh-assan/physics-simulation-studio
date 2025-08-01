@@ -58,14 +58,25 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
 
   function updateSimulationSelector() {
     simulationSelectionFolder.children.forEach((child: any) => child.dispose());
+    const options = studio.getAvailableSimulationNames().map((name) => ({ text: name, value: name }));
+    if (options.length === 0) {
+      // Show a disabled selector or message if no simulations are available
+      simulationSelectionFolder.addButton({ title: "No simulations available" }).disabled = true;
+      stateManager.selectedSimulation.state.name = null;
+      return;
+    }
+    // Ensure the state is always a valid plugin name
+    if (!options.some(opt => opt.value === stateManager.selectedSimulation.state.name)) {
+      stateManager.selectedSimulation.state.name = options[0].value;
+    }
     simulationSelectionFolder
       .addBinding(stateManager.selectedSimulation.state, "name", {
         label: "Select Simulation",
-        options: studio
-          .getAvailableSimulationNames()
-          .map((name) => ({ text: name, value: name })),
+        options,
       })
       .on("change", (ev: { value: string | null }) => {
+        // Always set the state to the plugin name
+        stateManager.selectedSimulation.state.name = ev.value;
         void studio.loadSimulation(ev.value);
       });
   }
@@ -111,9 +122,10 @@ function registerComponentsAndSystems(world: World, studio: Studio, propertyInsp
 }
 
 function registerPlugins(pluginManager: PluginManager, world: World) {
-  pluginManager.registerPlugin(new FlagSimulationPlugin());
-  pluginManager.registerPlugin(new WaterSimulationPlugin());
-  pluginManager.registerPlugin(new SolarSystemPlugin(world));
+  const flagPlugin = new FlagSimulationPlugin();
+  Logger.log("Registering plugin:", flagPlugin.getName());
+  pluginManager.registerPlugin(flagPlugin);
+  Logger.log("Available plugins after registration:", pluginManager.getAvailablePluginNames());
 }
 
 function startApplication(studio: Studio) {
@@ -129,12 +141,20 @@ function startApplication(studio: Studio) {
 }
 
 async function main() {
+  // Enable logging for debugging
+  Logger.enable();
   Logger.log("Initializing Physics Simulation Studio...");
 
   const { world, pluginManager, stateManager, studio } = setupCoreSystems();
   const { uiManager, propertyInspectorUIManager } = setupUI(studio, stateManager, pluginManager);
   registerComponentsAndSystems(world, studio, propertyInspectorUIManager, pluginManager);
   registerPlugins(pluginManager, world);
+
+  // Set render system before loading simulation
+  const renderSystem = world.systemManager.getSystem(RenderSystem);
+  if (renderSystem) {
+    studio.setRenderSystem(renderSystem);
+  }
 
   // Load Initial Simulation
   const defaultSimulationName = studio.getAvailableSimulationNames()[0] || null;
