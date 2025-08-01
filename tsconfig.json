@@ -10,6 +10,7 @@
     "paths": {
       "@core/*": ["src/core/*"],
       "@plugins/*": ["src/plugins/*"],
+      "@plugins/solar-system": ["src/plugins/solar-system/index.ts"],
       "@app/*": ["src/studio/*"]
     },
     "types": ["jest", "node", "@types/three"],

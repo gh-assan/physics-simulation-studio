@@ -44,7 +44,7 @@ export class ThreeGraphicsManager {
       0.1,
       1000
     );
-    camera.position.set(0, 5, 20);
+    camera.position.set(0, 30, 60); // Natural, angled view
     camera.lookAt(0, 0, 0);
     return camera;
   }

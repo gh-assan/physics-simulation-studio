@@ -9,6 +9,7 @@ import { PropertyInspectorUIManager } from "./ui/PropertyInspectorUIManager";
 import { SceneSerializer } from "./systems/SceneSerializer";
 import { FlagSimulationPlugin } from "@plugins/flag-simulation";
 import { WaterSimulationPlugin } from "@plugins/water-simulation";
+import { SolarSystemPlugin } from "@plugins/solar-system";
 import { registerFlagComponentProperties } from "@plugins/flag-simulation";
 import { registerWaterComponentProperties } from "@plugins/water-simulation";
 import { PositionComponent } from "../core/components/PositionComponent";
@@ -109,9 +110,10 @@ function registerComponentsAndSystems(world: World, studio: Studio, propertyInsp
   (window as any).viewportToolbar = viewportToolbar;
 }
 
-function registerPlugins(pluginManager: PluginManager) {
+function registerPlugins(pluginManager: PluginManager, world: World) {
   pluginManager.registerPlugin(new FlagSimulationPlugin());
   pluginManager.registerPlugin(new WaterSimulationPlugin());
+  pluginManager.registerPlugin(new SolarSystemPlugin(world));
 }
 
 function startApplication(studio: Studio) {
@@ -132,7 +134,7 @@ async function main() {
   const { world, pluginManager, stateManager, studio } = setupCoreSystems();
   const { uiManager, propertyInspectorUIManager } = setupUI(studio, stateManager, pluginManager);
   registerComponentsAndSystems(world, studio, propertyInspectorUIManager, pluginManager);
-  registerPlugins(pluginManager);
+  registerPlugins(pluginManager, world);
 
   // Load Initial Simulation
   const defaultSimulationName = studio.getAvailableSimulationNames()[0] || null;

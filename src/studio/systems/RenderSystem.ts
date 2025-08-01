@@ -255,6 +255,19 @@ export class RenderSystem extends System {
           color: renderable.color
         });
         mesh = new THREE.Mesh(geometry, material);
+
+        // Scale mesh by radius if CelestialBodyComponent is present
+        const celestialBody = world.componentManager.getComponent(
+          entityId,
+          'CelestialBodyComponent'
+        ) as any;
+        if (celestialBody && typeof celestialBody.radius === 'number') {
+          // Use a visualization scale factor to avoid huge objects
+          const VISUALIZATION_RADIUS_SCALE = 0.01;
+          const scaledRadius = Math.max(0.1, celestialBody.radius * VISUALIZATION_RADIUS_SCALE);
+          mesh.scale.set(scaledRadius, scaledRadius, scaledRadius);
+        }
+
         this.graphicsManager.getScene().add(mesh);
         this.meshes.set(entityId, mesh);
       }
@@ -316,7 +329,7 @@ export class RenderSystem extends System {
     // Initialize FlagRenderer if needed and if FlagComponent is available
     try {
       if (FlagComponent) {
-        console.log("[RenderSystem] FlagComponent is available");
+        
         // The flag mesh is created and updated directly within this system
         // No separate FlagRenderer class is used for rendering the flag mesh itself
       } else {
@@ -339,10 +352,7 @@ export class RenderSystem extends System {
     }
 
     this.graphicsManager.render();
-    console.log(
-      "RenderSystem: Scene children after rendering:",
-      this.graphicsManager.getScene().children
-    );
+    
   }
 
   /**
