@@ -110,7 +110,7 @@ describe("PluginManager", () => {
   });
 
   it("should throw an error for missing dependencies", async () => {
-    const pluginB = new MockPlugin("B");
+    const pluginB = new MockPlugin("B", ["A"]);
     pluginManager.registerPlugin(pluginB);
 
     await expect(pluginManager.activatePlugin("B", mockStudio)).rejects.toThrow(

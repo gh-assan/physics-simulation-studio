@@ -20,6 +20,10 @@ class RigidBodyPlugin implements ISimulationPlugin {
 
     // 1. Register components with the ECS
     world.componentManager.registerComponent(RigidBodyComponent);
+    
+    // 2. Register systems with the ECS
+    world.systemManager.registerSystem(new PhysicsSystem());
+    
     // Example: create and add a RigidBodyComponent to an entity
     const entityId = world.entityManager.createEntity();
     const rigidBody = new RigidBody();

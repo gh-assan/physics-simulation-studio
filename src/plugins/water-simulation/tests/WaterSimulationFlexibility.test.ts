@@ -14,9 +14,9 @@ jest.mock("../WaterRenderer", () => {
 import { ParameterPanelComponent } from "../../../core/components/ParameterPanelComponent";
 import { WaterBodyParameterPanel } from "../WaterBodyParameterPanel";
 import { PositionComponent } from "../../../core/components/PositionComponent";
-import { RenderableComponent } from "../../../core/ecs/RenderableComponent";
+import { RenderableComponent } from "../../../core/components/RenderableComponent";
 import { SelectableComponent } from "../../../core/components/SelectableComponent";
-import { RotationComponent } from "../../../core/ecs/RotationComponent";
+import { RotationComponent } from "../../../core/components/RotationComponent";
 import { WaterBodyComponent, WaterDropletComponent } from "../WaterComponents";
 
 describe("WaterSimulationFlexibility", () => {

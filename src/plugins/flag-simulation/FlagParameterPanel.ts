@@ -20,7 +20,7 @@ export class FlagParameterPanel extends ParameterPanelComponent {
   /**
    * The component type this panel is associated with
    */
-  readonly componentType: string = new FlagComponent().simulationType;
+  readonly componentType: string = FlagComponent.type;
 
   private world: World;
 

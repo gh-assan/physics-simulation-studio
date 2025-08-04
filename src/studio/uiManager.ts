@@ -26,6 +26,16 @@ export class UIManager implements IUIManager {
       for (const prop of properties) {
         this._addBindingForProperty(folder, data, prop);
       }
+    } else {
+      // Auto-detect properties when not explicitly provided
+      for (const key in data) {
+        if (data.hasOwnProperty(key)) {
+          const value = data[key];
+          if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'string') {
+            folder.addBinding(data, key, { label: key });
+          }
+        }
+      }
     }
   }
   private pane: Pane;

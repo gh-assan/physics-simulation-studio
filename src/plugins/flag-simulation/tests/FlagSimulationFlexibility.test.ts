@@ -3,10 +3,10 @@ import { FlagSimulationPlugin } from "../index";
 import { ParameterPanelComponent } from "../../../core/components/ParameterPanelComponent";
 import { FlagParameterPanel } from "../FlagParameterPanel";
 import { PositionComponent } from "../../../core/components/PositionComponent";
-import { RenderableComponent } from "../../../core/ecs/RenderableComponent";
+import { RenderableComponent } from "../../../core/components/RenderableComponent";
 import { SelectableComponent } from "../../../core/components/SelectableComponent";
 import { RotationComponent } from "../../../core/components/RotationComponent";
-import { FlagComponent } from "../../../core/ecs/FlagComponent";
+import { FlagComponent } from "../FlagComponent";
 
 // Mock THREE library
 jest.mock("three", () => {
@@ -37,6 +37,24 @@ describe("FlagSimulationFlexibility", () => {
   beforeEach(() => {
     world = new World();
     flagPlugin = new FlagSimulationPlugin();
+    
+    // Create mock studio and attach to world
+    const mockCamera = { 
+      position: { set: jest.fn() },
+      lookAt: jest.fn()
+    };
+    
+    const mockGraphicsManager = {
+      getCamera: jest.fn(() => mockCamera),
+      getControlsManager: jest.fn(() => ({ enable: jest.fn() }))
+    };
+    
+    const mockStudio = {
+      getGraphicsManager: jest.fn(() => mockGraphicsManager)
+    };
+    
+    // Attach studio to world
+    (world as any).studio = mockStudio;
   });
 
   test("Flag simulation works without ParameterPanelComponent registered", () => {
