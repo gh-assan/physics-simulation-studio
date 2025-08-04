@@ -2,6 +2,7 @@ import { ISimulationPlugin } from "../../core/plugin";
 import { World } from "../../core/ecs";
 import { PhysicsSystem } from "./system";
 import { RigidBodyComponent } from "./components";
+import { RigidBody } from "../../core/physics/RigidBody";
 import { System } from "../../core/ecs/System";
 import { IStudio } from "../../studio/IStudio";
 
@@ -19,6 +20,11 @@ class RigidBodyPlugin implements ISimulationPlugin {
 
     // 1. Register components with the ECS
     world.componentManager.registerComponent(RigidBodyComponent);
+    // Example: create and add a RigidBodyComponent to an entity
+    const entityId = world.entityManager.createEntity();
+    const rigidBody = new RigidBody();
+    const rigidBodyComponent = new RigidBodyComponent(rigidBody);
+    world.componentManager.addComponent(entityId, RigidBodyComponent.type, rigidBodyComponent);
   }
 
   public unregister(): void {

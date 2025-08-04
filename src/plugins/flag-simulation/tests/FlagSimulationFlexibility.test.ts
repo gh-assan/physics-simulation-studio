@@ -3,10 +3,10 @@ import { FlagSimulationPlugin } from "../index";
 import { ParameterPanelComponent } from "../../../core/components/ParameterPanelComponent";
 import { FlagParameterPanel } from "../FlagParameterPanel";
 import { PositionComponent } from "../../../core/components/PositionComponent";
-import { RenderableComponent } from "../../../core/components/RenderableComponent";
+import { RenderableComponent } from "../../../core/ecs/RenderableComponent";
 import { SelectableComponent } from "../../../core/components/SelectableComponent";
 import { RotationComponent } from "../../../core/components/RotationComponent";
-import { FlagComponent } from "../FlagComponent";
+import { FlagComponent } from "../../core/ecs/FlagComponent";
 
 // Mock THREE library
 jest.mock("three", () => {

@@ -8,4 +8,5 @@ export interface ISystemManager {
   getSystem<T extends System>(systemType: new (...args: any[]) => T): T | undefined;
   removeSystem(system: System, world?: IWorld): boolean;
   clear(world?: IWorld): void;
+  getAllSystems(): System[];
 }

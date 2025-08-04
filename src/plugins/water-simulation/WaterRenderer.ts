@@ -1,9 +1,10 @@
 import { World } from "@core/ecs/World";
 import * as THREE from "three";
+import { IRenderable } from "../../core/components/IRenderable";
 import { WaterDropletComponent, WaterBodyComponent } from "./WaterComponents";
 import { PositionComponent } from "../../core/ecs/PositionComponent";
 
-export class WaterRenderer {
+export class WaterRenderer implements IRenderable {
   private instancedMesh: THREE.InstancedMesh | null = null;
   private waterMesh: THREE.Mesh | null = null;
   private rippleMeshes: THREE.Mesh[] = [];

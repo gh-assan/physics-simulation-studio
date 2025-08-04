@@ -22,11 +22,7 @@ export class UIManager implements IUIManager {
     this.propertyPreparer = propertyPreparer || ComponentPropertyPreparer;
   }
 
-  public createPanel(title: string): IPanel {
-    const folder = this.pane.addFolder({ title });
-    this.folders.set(title, folder);
-    return folder;
-  }
+  
 
   public addButton(panel: IPanel, title: string, onClick: () => void): void {
     (panel as FolderApi).addButton({ title }).on("click", onClick);
@@ -40,23 +36,7 @@ export class UIManager implements IUIManager {
     this.pane.refresh();
   }
 
-  public registerComponentControls(
-    componentName: string,
-    data: any,
-    properties?: ComponentControlProperty[]
-  ) {
-    const displayName = data.constructor
-      ? `${data.constructor.name} (${componentName})`
-      : componentName;
-    const folder = this.pane.addFolder({ title: displayName });
-    this.folders.set(componentName, folder);
-
-    // Use provided properties, or prepare them if not provided
-    const props = properties || this.propertyPreparer.filterProperties(data);
-    props.forEach((prop) => {
-      this._addBindingForProperty(folder, data, prop);
-    });
-  }
+  
 
   private _addBindingForProperty(
     folder: FolderApi,
@@ -153,7 +133,7 @@ export class UIManager implements IUIManager {
 
   // Future extensibility: allow switching UI frameworks
   // This method can be expanded to support other UI libraries
-  public setUIPane(newPane: Pane): void {
+  public setUIPane(newPane: any): void {
     this.pane = newPane;
     this.clearControls(); // Clear old controls when switching UI
   }

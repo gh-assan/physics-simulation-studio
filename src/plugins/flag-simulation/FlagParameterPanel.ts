@@ -1,7 +1,7 @@
 import { ParameterPanelComponent } from "../../core/components/ParameterPanelComponent";
-import { UIManager } from "../../studio/uiManager";
+import { IUIManager } from "../../studio/IUIManager";
 import { IComponent } from "../../core/ecs/IComponent";
-import { FlagComponent } from "./FlagComponent";
+import { FlagComponent } from "../../core/ecs/FlagComponent";
 import { ComponentControlProperty } from "../../studio/types";
 import { World } from "../../core/ecs/World";
 import { PoleComponent } from "./PoleComponent";
@@ -20,7 +20,7 @@ export class FlagParameterPanel extends ParameterPanelComponent {
   /**
    * The component type this panel is associated with
    */
-  readonly componentType: string = FlagComponent.type;
+  readonly componentType: string = FlagComponent.simulationType;
 
   private world: World;
 
@@ -34,7 +34,7 @@ export class FlagParameterPanel extends ParameterPanelComponent {
    * @param uiManager The UI manager to register controls with
    * @param component The component instance to bind controls to
    */
-  registerControls(uiManager: UIManager, component?: IComponent): void {
+  registerControls(uiManager: IUIManager, component?: IComponent): void {
     // If a component is provided, ensure it's a FlagComponent
     if (component && !(component instanceof FlagComponent)) {
       Logger.getInstance().error("FlagParameterPanel: provided component is not a FlagComponent");
@@ -45,12 +45,11 @@ export class FlagParameterPanel extends ParameterPanelComponent {
     // In a future implementation, we could show global simulation settings here.
     if (!component) {
       // For now, we'll just add a folder indicating the active simulation.
-      uiManager.addFolder('Flag Simulation Settings', (folder) => {
-        folder.addBlade({
-            view: 'text',
-            value: 'No flag selected. Select a flag to see its properties.',
-            label: 'Info',
-        });
+      const panel = uiManager.createPanel('Flag Simulation Settings');
+      panel.addBlade({
+        view: 'text',
+        value: 'No flag selected. Select a flag to see its properties.',
+        label: 'Info',
       });
       return;
     }
@@ -264,9 +263,5 @@ export class FlagParameterPanel extends ParameterPanelComponent {
    * @param event The event to handle
    * @param component The component instance to update
    */
-  handleEvent(event: string, component: IComponent): void {
-    // This method would be called when an event is triggered from the UI
-    // For now, we don't need to do anything here as the UI is bound directly to the component
-    // and will update the component automatically when the UI changes
-  }
+  handleEvent(event: string, component: IComponent): void {}
 }

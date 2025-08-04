@@ -4,7 +4,7 @@ import { WaterBodyComponent, WaterDropletComponent } from "./WaterComponents";
 import { WaterSystem } from "./WaterSystem";
 import { WaterRenderer } from "./WaterRenderer";
 import { PositionComponent } from "@core/components/PositionComponent";
-import { RenderableComponent } from "@core/components/RenderableComponent";
+import { RenderableComponent } from "../../core/ecs/RenderableComponent";
 import { SelectableComponent } from "@core/components/SelectableComponent";
 import { RotationComponent } from "../../core/ecs/RotationComponent";
 import { ParameterPanelComponent } from "@core/components/ParameterPanelComponent";
@@ -127,8 +127,8 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
     );
     world.componentManager.addComponent(
       waterBody,
-      RenderableComponent.type,
-      new RenderableComponent("plane", "blue")
+      RenderableComponent.name,
+      new RenderableComponent("plane", 0x0000ff)
     );
     world.componentManager.addComponent(
       waterBody,
@@ -162,8 +162,8 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
 
     world.componentManager.addComponent(
       droplet,
-      RenderableComponent.type,
-      new RenderableComponent("sphere", "lightblue")
+      RenderableComponent.name,
+      new RenderableComponent("sphere", 0x87ceeb)
     );
     world.componentManager.addComponent(
       droplet,

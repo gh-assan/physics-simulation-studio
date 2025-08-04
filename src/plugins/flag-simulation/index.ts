@@ -1,12 +1,12 @@
 import { IStudio } from "../../studio/IStudio";
 import { World } from "../../core/ecs/World";
 import { ISimulationPlugin } from "../../core/plugin/ISimulationPlugin";
-import { FlagComponent } from "./FlagComponent";
+import { FlagComponent } from "../../core/ecs/FlagComponent";
 import { PoleComponent } from "./PoleComponent"; // Add this import
 import { FlagSystem } from "./FlagSystem";
 import { FlagRenderSystem } from "./FlagRenderSystem";
 import { PositionComponent } from "../../core/components/PositionComponent";
-import { RenderableComponent } from "../../core/components/RenderableComponent";
+import { RenderableComponent } from "../../core/ecs/RenderableComponent";
 import { SelectableComponent } from "../../core/components/SelectableComponent";
 import { RotationComponent } from "../../core/components/RotationComponent";
 import { FlagPhysicsInitializer } from "./utils/FlagPhysicsInitializer";
@@ -20,7 +20,7 @@ import { System } from "../../core/ecs/System";
 export { FlagComponent } from "./FlagComponent";
 
 export function registerFlagComponentProperties() {
-  ComponentPropertyRegistry.getInstance().registerComponentProperties("FlagComponent", flagComponentProperties);
+  ComponentPropertyRegistry.getInstance().registerComponentProperties(FlagComponent.simulationType, flagComponentProperties);
 }
 
 export class FlagSimulationPlugin implements ISimulationPlugin {
@@ -37,7 +37,7 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     return this._parameterPanels;
   }
   getSystems(studio: IStudio): System[] {
-    return [new FlagSystem(), new FlagRenderSystem(studio.getGraphicsManager())];
+            return [new FlagSystem(), new FlagRenderSystem(studio.getGraphicsManager() as ThreeGraphicsManager)];
   }
 
   register(world: World): void {
@@ -113,8 +113,8 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     // Use a bright red color for better visibility against the default background
     world.componentManager.addComponent(
       flagEntity,
-      RenderableComponent.type,
-      new RenderableComponent("plane", "#ff0000")
+      RenderableComponent.name,
+      new RenderableComponent("plane", 0xff0000)
     );
     // Create a larger flag with more segments for better visibility
     const initialFlagComponent = new FlagComponent(

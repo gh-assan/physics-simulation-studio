@@ -6,20 +6,23 @@ import { IComponent } from "./IComponent";
  *
  * @template T The type of the component
  */
-export abstract class Component<T extends Component<T>>
-  implements IComponent<T>
+export abstract class Component<T extends Component<T>> implements IComponent<T>
 {
   /**
    * The type of the component, used for serialization and deserialization.
    * This should be set by each component class.
    */
-  static readonly type: string;
+  /**
+   * The type of the component, used for serialization and deserialization.
+   * This should be set by each component class.
+   */
+  static readonly simulationType: string;
 
   /**
-   * Instance property that references the static type property.
+   * Instance property that references the static simulationType property.
    * This is used for type-safe component lookup and registration.
    */
-  readonly type: string = (this.constructor as typeof Component).type;
+  readonly simulationType: string = (this.constructor as typeof Component).simulationType;
 
   /**
    * Creates a deep copy of this component.

@@ -48,7 +48,7 @@ export class EntityManager implements IEntityManager {
     this.availableEntityIDs.push(entityID);
     this.activeEntities.delete(entityID);
     // Call onEntityRemoved on all systems if world is provided
-    if (world && world.systemManager && typeof world.systemManager.getAllSystems === 'function') {
+    if (world && world.systemManager && world.systemManager.getAllSystems) {
       for (const system of world.systemManager.getAllSystems()) {
         if (typeof system.onEntityRemoved === 'function') {
           system.onEntityRemoved(entityID, world);

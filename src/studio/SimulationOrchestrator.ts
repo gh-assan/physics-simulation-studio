@@ -1,5 +1,7 @@
 import { IPluginManager } from '../core/plugin/IPluginManager';
-import { Logger } from '../core/utils/Logger';
+import { IWorld } from "../core/ecs/IWorld";
+import { IWorld } from "../core/ecs/IWorld";
+import { Logger } from "../core/utils/Logger";
 import { RenderSystem } from './systems/RenderSystem';
 import { IStudio } from './IStudio';
 
@@ -17,11 +19,10 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
     private renderSystem: RenderSystem | null = null;
     private studio: IStudio;
 
-    constructor(world: World, pluginManager: IPluginManager, studio: IStudio, renderSystem?: RenderSystem | null) {
+    constructor(world: IWorld, pluginManager: IPluginManager, studio: IStudio) {
         this.world = world;
         this.pluginManager = pluginManager;
         this.studio = studio;
-        this.renderSystem = renderSystem || null;
     }
 
     public async loadSimulation(pluginName: string): Promise<void> {

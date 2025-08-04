@@ -13,9 +13,31 @@ import { Pane } from "tweakpane";
 import { ViewportToolbar } from "./ui/ViewportToolbar";
 import { SelectionSystem } from "./systems/SelectionSystem";
 import { Logger } from "../core/utils/Logger";
+import { IWorld } from "../core/ecs/IWorld";
 import { IPluginManager } from "../core/plugin/IPluginManager";
+import { IStateManager } from "./state/IStateManager";
+import { IStudio } from "./IStudio";
+import { World } from "../core/ecs/World";
+import { PluginManager } from "../core/plugin/PluginManager";
+import { StateManager } from "./state/StateManager";
+import { Studio } from "./Studio";
+import { IUIManager } from "./IUIManager";
+import { UIManager } from "./uiManager";
+import { RenderSystem } from "./systems/RenderSystem";
+import { PropertyInspectorSystem } from "./systems/PropertyInspectorSystem";
+import { ComponentPropertyRegistry } from "./utils/ComponentPropertyRegistry";
+import { FlagComponent } from "../core/ecs/FlagComponent";
+import { flagComponentProperties } from "../plugins/flag-simulation/flagComponentProperties";
+import { WaterBodyComponent } from "../plugins/water-simulation/WaterBodyComponent";
+import { waterComponentProperties } from "../plugins/water-simulation/waterComponentProperties";
+import { IPluginContext } from "./IPluginContext";
+import { IPropertyInspectorUIManager } from "./ui/IPropertyInspectorUIManager";
+import { PositionComponent } from "../core/components/PositionComponent";
+import { RotationComponent } from "../core/components/RotationComponent";
+import { SelectionSystem } from "./systems/SelectionSystem";
+import { Logger } from "../core/utils/Logger";
 import { IGraphicsManager } from "./graphics/IGraphicsManager";
-import { ThreeGraphicsManager } from "./graphics/ThreeGraphicsManager";
+
 import { IPropertyInspectorUIManager } from "./ui/IPropertyInspectorUIManager";
 
 // Import styles
@@ -26,7 +48,13 @@ function setupCoreSystems(): { world: IWorld; pluginManager: IPluginManager; sta
   const world: World = new World();
   const pluginManager: PluginManager = new PluginManager(world);
   const stateManager: StateManager = StateManager.getInstance();
-  const studio = new Studio(world, pluginManager, stateManager);
+  const pluginContext: IPluginContext = {
+    studio: studio,
+    world: world,
+    eventBus: ApplicationEventBus.getInstance(),
+    getStateManager: () => stateManager,
+  };
+  const studio = new Studio(world, pluginManager, stateManager, pluginContext);
   const sceneSerializer = new SceneSerializer();
 
   // Expose for debugging
@@ -55,7 +83,7 @@ function setupUI(studio: Studio, stateManager: IStateManager, pluginManager: IPl
 
   function updateSimulationSelector() {
     simulationSelectionFolder.children.forEach((child: any) => child.dispose());
-    const options = studio.getAvailableSimulationNames().map((name) => ({ text: name, value: name }));
+    const options = studio.getAvailableSimulationNames().map((name: string) => ({ text: name, value: name }));
     if (options.length === 0) {
       // Show a disabled selector or message if no simulations are available
       simulationSelectionFolder.addButton({ title: "No simulations available" }).disabled = true;
@@ -63,7 +91,7 @@ function setupUI(studio: Studio, stateManager: IStateManager, pluginManager: IPl
       return;
     }
     // Ensure the state is always a valid plugin name
-    if (!options.some(opt => opt.value === stateManager.selectedSimulation.state.name)) {
+    if (!options.some((opt: { text: string; value: string; }) => opt.value === stateManager.selectedSimulation.state.name)) {
       stateManager.selectedSimulation.state.name = options[0].value;
     }
     simulationSelectionFolder
@@ -91,7 +119,7 @@ function setupUI(studio: Studio, stateManager: IStateManager, pluginManager: IPl
 function registerComponentsAndSystems(world: IWorld, studio: Studio, propertyInspectorUIManager: IPropertyInspectorUIManager, pluginManager: IPluginManager) {
   // Register Component Properties
   ComponentPropertyRegistry.getInstance().registerComponentProperties(FlagComponent.type, flagComponentProperties);
-  ComponentPropertyRegistry.getInstance().registerComponentProperties(WaterBodyComponent.type, waterComponentProperties);
+  ComponentPropertyRegistry.getInstance().registerComponentProperties(WaterBodyComponent.simulationType, waterComponentProperties);
 
   // Register Core Components
   world.registerComponent(PositionComponent);

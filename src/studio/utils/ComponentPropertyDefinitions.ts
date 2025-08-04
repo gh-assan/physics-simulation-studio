@@ -1,6 +1,10 @@
 // src/studio/utils/ComponentPropertyDefinitions.ts
 
-import { registerComponentProperties } from "./ComponentPropertyRegistry";
+import { ComponentPropertyRegistry } from "./ComponentPropertyRegistry";
+import { FlagComponent } from "../../core/ecs/FlagComponent";
+import { WaterBodyComponent, WaterDropletComponent } from "../../plugins/water-simulation/WaterComponents";
+import { PositionComponent } from "../../core/components/PositionComponent";
+import { RotationComponent } from "../../core/components/RotationComponent";
 import { FlagComponent } from "../../plugins/flag-simulation/FlagComponent";
 import {
   WaterBodyComponent,
@@ -223,7 +227,7 @@ registerComponentProperties("PositionComponent", [
 ]);
 
 // Register properties for RotationComponent
-registerComponentProperties("RotationComponent", [
+ComponentPropertyRegistry.getInstance().registerComponentProperties("RotationComponent", [
   {
     property: "x",
     type: "number",

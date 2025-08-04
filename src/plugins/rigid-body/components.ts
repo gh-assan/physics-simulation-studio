@@ -1,11 +1,11 @@
-import RAPIER from "@dimforge/rapier3d-compat";
-import { IComponent } from "../../core/ecs";
+import { IComponent } from "../../core/ecs/IComponent";
+import { IRigidBody } from "../../core/physics/IRigidBody";
 
-export class RigidBodyComponent implements IComponent {
+export class RigidBodyComponent implements IComponent<RigidBodyComponent> {
   static readonly type = "RigidBodyComponent";
-  public body: RAPIER.RigidBody;
+  public body: IRigidBody;
 
-  constructor(body: RAPIER.RigidBody) {
+  constructor(body: IRigidBody) {
     this.body = body;
   }
 

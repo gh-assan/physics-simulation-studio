@@ -101,7 +101,7 @@ export class ComponentManager implements IComponentManager {
     if (store) {
       store.delete(entityID);
       // Call onComponentRemoved on all systems if world is provided
-      if (world && world.systemManager && typeof world.systemManager.getAllSystems === 'function') {
+      if (world && world.systemManager && world.systemManager.getAllSystems) {
         for (const system of world.systemManager.getAllSystems()) {
           if (typeof system.onComponentRemoved === 'function') {
             system.onComponentRemoved(entityID, componentType, world);
@@ -148,7 +148,7 @@ export class ComponentManager implements IComponentManager {
     }
 
     const componentTypes = componentClasses.map(
-      (c) => (c as any).type || c.name
+      (c) => (c as any).simulationType || c.name
     );
 
     const entities = this.getEntitiesWithComponentTypes(componentTypes);
@@ -313,7 +313,7 @@ export class ComponentManager implements IComponentManager {
    * @param entityIds An array of entity IDs
    * @param operation The operation to perform on each entity
    */
-  public batchOperation(
+  private batchOperation(
     entityIds: number[],
     operation: (entityId: number) => void
   ): void {
@@ -330,7 +330,7 @@ export class ComponentManager implements IComponentManager {
    * @param components An object mapping component types to component instances
    * @throws Error if any component type is not registered
    */
-  public addComponents(
+  private addComponents(
     entityID: number,
     components: Record<string, IComponent>
   ): void {
@@ -345,7 +345,7 @@ export class ComponentManager implements IComponentManager {
    * @param entityID The ID of the entity
    * @param componentTypes An array of component types to remove
    */
-  public removeComponents(entityID: number, componentTypes: string[]): void {
+  private removeComponents(entityID: number, componentTypes: string[]): void {
     for (const componentType of componentTypes) {
       this.removeComponent(entityID, componentType);
     }
@@ -356,7 +356,7 @@ export class ComponentManager implements IComponentManager {
    *
    * @param entityID The ID of the entity
    */
-  public removeAllComponentsForEntity(entityID: number): void {
+  private removeAllComponentsForEntity(entityID: number): void {
     this.componentStores.forEach((store) => {
       store.delete(entityID);
     });
@@ -371,7 +371,7 @@ export class ComponentManager implements IComponentManager {
    * @returns The created component instance
    * @throws Error if the component type is not registered
    */
-  public createAndAddComponent<T extends IComponent>(
+  private createAndAddComponent<T extends IComponent>(
     entityID: number,
     componentType: string,
     ...args: any[]

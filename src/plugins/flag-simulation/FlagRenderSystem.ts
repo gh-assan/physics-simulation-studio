@@ -1,15 +1,16 @@
 import * as THREE from "three";
 import { System } from "../../core/ecs/System";
-import { World } from "../../core/ecs/World";
+import { IWorld } from "../../core/ecs/IWorld";
 import { PositionComponent } from "../../core/components/PositionComponent";
 import { RotationComponent } from "../../core/components/RotationComponent";
-import { RenderableComponent } from "../../core/components/RenderableComponent";
+import { RenderableComponent } from "../../core/ecs/RenderableComponent";
+import { IRenderable } from "../../core/components/IRenderable";
 import { ThreeGraphicsManager } from "../../studio/graphics/ThreeGraphicsManager";
 import { FlagComponent } from "./FlagComponent";
 import { PoleComponent } from "./PoleComponent";
 import { createFlagMesh, createPoleMesh } from "./FlagRenderer";
 
-export class FlagRenderSystem extends System {
+export class FlagRenderSystem extends System implements IRenderable {
   private graphicsManager: ThreeGraphicsManager;
   private meshes: Map<number, THREE.Mesh> = new Map();
   private poleMeshes: Map<number, THREE.Mesh> = new Map();
@@ -43,7 +44,7 @@ export class FlagRenderSystem extends System {
       ) as RotationComponent;
       const renderable = world.componentManager.getComponent(
         entityId,
-        RenderableComponent.type
+        RenderableComponent.name
       ) as RenderableComponent;
 
       if (!flagComponent || !position || !rotation || !renderable) {
@@ -60,7 +61,7 @@ export class FlagRenderSystem extends System {
         // Update existing flag mesh positions
         const positions = flagMesh.geometry.attributes.position
           .array as Float32Array;
-        flagComponent.points.forEach((p, i) => {
+        flagComponent.points.forEach((p: any, i: number) => {
           positions[i * 3] = p.position.x;
           positions[i * 3 + 1] = p.position.y;
           positions[i * 3 + 2] = p.position.z;
@@ -113,7 +114,12 @@ export class FlagRenderSystem extends System {
     }
   }
 
-  public onEntityRemoved(entityId: number, world: any): void {
+  public render(world: World, scene: THREE.Scene, camera: THREE.Camera): void {
+    // Call update to perform rendering logic
+    this.update(world, 0);
+  }
+
+  public onEntityRemoved(entityId: number, world: IWorld): void {
     const mesh = this.meshes.get(entityId);
     if (mesh) {
       this.graphicsManager.getScene().remove(mesh);

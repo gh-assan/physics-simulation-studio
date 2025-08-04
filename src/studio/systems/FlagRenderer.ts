@@ -1,9 +1,9 @@
 import * as THREE from "three";
 import { System } from "../../core/ecs/System";
 import { World } from "../../core/ecs/World";
-import { FlagComponent } from "../../plugins/flag-simulation/FlagComponent";
+import { FlagComponent } from "../../core/ecs/FlagComponent";
 import { PositionComponent } from "../../core/components/PositionComponent";
-import { RenderableComponent } from "../../core/components/RenderableComponent";
+import { RenderableComponent } from "../../core/ecs/RenderableComponent";
 import { RotationComponent } from "../../core/ecs/RotationComponent";
 import { ThreeGraphicsManager } from "../graphics/ThreeGraphicsManager";
 

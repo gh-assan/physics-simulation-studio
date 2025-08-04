@@ -1,9 +1,14 @@
 import { ISelectedSimulationStateManager } from "./state/ISelectedSimulationStateManager";
 import { IStateManager } from "./state/IStateManager";
-
-import { SimulationOrchestrator } from "./state/SimulationOrchestrator";
-
-import { ThreeGraphicsManager } from "./graphics/ThreeGraphicsManager";
+import { SimulationOrchestrator } from "./SimulationOrchestrator";
+import { IWorld } from "../core/ecs/IWorld";
+import { IPluginManager } from "../core/plugin/IPluginManager";
+import { ISimulationOrchestrator } from "./ISimulationOrchestrator";
+import { IStudio } from "./IStudio";
+import { IGraphicsManager } from "./IGraphicsManager";
+import { IPluginContext } from "./IPluginContext";
+import { Logger } from "../core/utils/Logger";
+import { RenderSystem } from "./systems/RenderSystem";
 
 export class Studio implements IStudio {
   private _world: IWorld;
@@ -12,16 +17,18 @@ export class Studio implements IStudio {
   private isPlaying = true;
   private selectedSimulation: ISelectedSimulationStateManager;
   private orchestrator: ISimulationOrchestrator;
+  private pluginContext: IPluginContext;
 
   public get world(): IWorld {
     return this._world;
   }
 
-  constructor(world: IWorld, pluginManager: IPluginManager, stateManager: IStateManager) {
+  constructor(world: IWorld, pluginManager: IPluginManager, stateManager: IStateManager, pluginContext: IPluginContext) {
     this._world = world;
     this.pluginManager = pluginManager;
     this.selectedSimulation = stateManager.selectedSimulation;
     this.orchestrator = new SimulationOrchestrator(world, pluginManager, this, this.selectedSimulation);
+    this.pluginContext = pluginContext;
   }
 
   public getWorld(): IWorld {
@@ -111,10 +118,14 @@ export class Studio implements IStudio {
     return Array.from(this.pluginManager.getAvailablePluginNames());
   }
 
-  public getGraphicsManager(): ThreeGraphicsManager {
+    public getGraphicsManager(): IGraphicsManager {
     if (!this.renderSystem) {
       throw new Error("RenderSystem is not set in Studio. Cannot get GraphicsManager.");
     }
     return this.renderSystem.getGraphicsManager();
+  }
+
+  public getPluginContext(): IPluginContext {
+    return this.pluginContext;
   }
 }

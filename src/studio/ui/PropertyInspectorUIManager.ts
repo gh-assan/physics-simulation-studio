@@ -21,7 +21,7 @@ export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
   /**
    * Clears all controls from the property inspector.
    */
-  public clearInspectorControls(): void {
+  public clearControls(): void {
     this.uiManager.clearControls();
   }
 
@@ -49,7 +49,7 @@ export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
       Logger.getInstance().log(
         `[PropertyInspectorUIManager] Using parameter panel for component '${displayName}'`
       );
-      parameterPanel.registerControls(this.uiManager, componentInstance);
+      parameterPanel.registerControls(this.uiManager as UIManager, componentInstance);
     } else {
       // Fall back to dynamically generating controls if no parameter panel component is found
       const properties = ComponentPropertyRegistry.getInstance().getComponentProperties(componentTypeKey);
@@ -82,7 +82,7 @@ export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
       `[PropertyInspectorUIManager] Registering ${parameterPanels.length} parameter panels.`
     );
     for (const panel of parameterPanels) {
-      panel.registerControls(this.uiManager);
+      panel.registerControls(this.uiManager as UIManager);
     }
   }
 }

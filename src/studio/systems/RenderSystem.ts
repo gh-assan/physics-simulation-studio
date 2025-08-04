@@ -3,7 +3,7 @@ import { System } from "../../core/ecs/System";
 import { World } from "../../core/ecs/World";
 import { PositionComponent } from "../../core/ecs/PositionComponent";
 import { RotationComponent } from "../../core/ecs/RotationComponent";
-import { RenderableComponent } from "../../core/components/RenderableComponent";
+import { RenderableComponent } from "../../core/ecs/RenderableComponent";
 
 import { WaterRenderer } from "../../plugins/water-simulation/WaterRenderer"; // Import WaterRenderer
 import { SelectableComponent } from "../../core/components/SelectableComponent"; // Import SelectableComponent
@@ -214,7 +214,7 @@ export class RenderSystem extends System {
    * Gets the graphics manager used by this render system
    * @returns The ThreeGraphicsManager instance
    */
-  public getGraphicsManager(): ThreeGraphicsManager {
+  public getGraphicsManager(): IGraphicsManager {
     if (!this.graphicsManager) {
       throw new Error("RenderSystem: graphicsManager is not initialized!");
     }

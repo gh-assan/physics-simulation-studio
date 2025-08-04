@@ -1,6 +1,8 @@
 import { System } from "./System";
 import { IComponent } from "./IComponent";
 import { ISystemManager } from "./ISystemManager";
+import { IEntityManager } from "./IEntityManager";
+import { IComponentManager } from "./IComponentManager";
 
 export interface IWorld {
   entityManager: IEntityManager;
@@ -16,6 +18,6 @@ export interface IWorld {
   getComponent<T extends IComponent>(entityId: number, componentName: string): T | undefined;
   hasComponent(entityId: number, componentName: string): boolean;
   getEntitiesWithComponents(componentTypes: (new (...args: any[]) => IComponent)[]): number[];
-  registerSystem(system: System): void;
-  removeSystem(system: System): boolean;
+  registerSystem(system: ISystem): void;
+    removeSystem(system: ISystem): boolean;
 }

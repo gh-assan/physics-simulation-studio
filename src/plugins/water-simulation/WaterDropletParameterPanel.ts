@@ -1,5 +1,5 @@
 import { ParameterPanelComponent } from "../../core/components/ParameterPanelComponent";
-import { UIManager } from "../../studio/uiManager";
+import { IUIManager } from "../../studio/IUIManager";
 import { IComponent } from "../../core/ecs/IComponent";
 import { WaterDropletComponent } from "./WaterComponents";
 import { ComponentControlProperty } from "../../studio/types";
@@ -20,14 +20,14 @@ export class WaterDropletParameterPanel extends ParameterPanelComponent {
   /**
    * The component type this panel is associated with
    */
-  readonly componentType: string = WaterDropletComponent.type;
+  readonly componentType: string = WaterDropletComponent.simulationType;
 
   /**
    * Register UI controls for this parameter panel
    * @param uiManager The UI manager to register controls with
    * @param component The component instance to bind controls to
    */
-  registerControls(uiManager: UIManager, component?: IComponent): void {
+  registerControls(uiManager: IUIManager, component?: IComponent): void {
     if (component && !(component instanceof WaterDropletComponent)) {
       Logger.getInstance().error(
         "WaterDropletParameterPanel: component is not a WaterDropletComponent"
@@ -36,12 +36,11 @@ export class WaterDropletParameterPanel extends ParameterPanelComponent {
     }
 
     if (!component) {
-      uiManager.addFolder('Water Droplet Settings', (folder) => {
-        folder.addBlade({
-            view: 'text',
-            value: 'No water droplet selected. Select a water droplet to see its properties.',
-            label: 'Info',
-        });
+      const panel = uiManager.createPanel('Water Droplet Settings');
+      panel.addBlade({
+        view: 'text',
+        value: 'No water droplet selected. Select a water droplet to see its properties.',
+        label: 'Info',
       });
       return;
     }
@@ -228,9 +227,5 @@ export class WaterDropletParameterPanel extends ParameterPanelComponent {
    * @param event The event to handle
    * @param component The component instance to update
    */
-  handleEvent(event: string, component: IComponent): void {
-    // This method would be called when an event is triggered from the UI
-    // For now, we don't need to do anything here as the UI is bound directly to the component
-    // and will update the component automatically when the UI changes
-  }
+  handleEvent(event: string, component: IComponent): void {}
 }
