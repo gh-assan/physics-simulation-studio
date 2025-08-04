@@ -3,6 +3,7 @@ import { IComponent } from "./IComponent";
 import { ComponentRegistry } from "./ComponentRegistry";
 import { IComponentManager } from "./IComponentManager";
 import { IWorld } from "./IWorld";
+import { SelectableComponent } from "../components/SelectableComponent";
 
 /**
  * Manages components for all entities in the ECS system.
@@ -383,5 +384,13 @@ export class ComponentManager implements IComponentManager {
 
     this.addComponent(entityID, componentType, component);
     return component;
+  }
+
+  /**
+   * Initializes the ComponentManager, registering default components.
+   */
+  public initialize(): void {
+    this.registerComponent(SelectableComponent);
+    // Register other components if needed
   }
 }

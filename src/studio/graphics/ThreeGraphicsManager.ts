@@ -235,4 +235,12 @@ export class ThreeGraphicsManager implements IGraphicsManager {
   public showControlInstructions(show: boolean): void {
     // No longer needed as controls will be managed through the UI panel
   }
+
+  public startRenderingLoop(): void {
+    const renderLoop = () => {
+      this.render();
+      requestAnimationFrame(renderLoop);
+    };
+    renderLoop();
+  }
 }

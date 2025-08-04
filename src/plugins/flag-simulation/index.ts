@@ -1,7 +1,7 @@
 import { IStudio } from "../../studio/IStudio";
 import { World } from "../../core/ecs/World";
 import { ISimulationPlugin } from "../../core/plugin/ISimulationPlugin";
-import { FlagComponent } from "../../core/ecs/FlagComponent";
+import { FlagComponent } from "./FlagComponent";
 import { PoleComponent } from "./PoleComponent"; // Add this import
 import { FlagSystem } from "./FlagSystem";
 import { FlagRenderSystem } from "./FlagRenderSystem";
@@ -16,11 +16,12 @@ import * as THREE from "three";
 import { flagComponentProperties } from "./flagComponentProperties";
 import { registerComponentProperties } from "../../studio/utils/ComponentPropertyRegistry";
 import { System } from "../../core/ecs/System";
-
-export { FlagComponent } from "./FlagComponent";
+import { Logger } from "../../core/utils/Logger";
+import { ThreeGraphicsManager } from "../../studio/graphics/ThreeGraphicsManager";
+import { ComponentPropertyRegistry } from "../../studio/utils/ComponentPropertyRegistry";
 
 export function registerFlagComponentProperties() {
-  ComponentPropertyRegistry.getInstance().registerComponentProperties(FlagComponent.simulationType, flagComponentProperties);
+  ComponentPropertyRegistry.getInstance().registerComponentProperties("flag-simulation", flagComponentProperties);
 }
 
 export class FlagSimulationPlugin implements ISimulationPlugin {
@@ -89,7 +90,18 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     this._parameterPanels = [];
   }
 
+  private configureCamera(studio: IStudio): void {
+    const graphicsManager = studio.getGraphicsManager() as ThreeGraphicsManager;
+    const camera = graphicsManager.getCamera();
+    camera.position.set(0, 30, 60); // Set a natural, angled view
+    camera.lookAt(0, 0, 0); // Focus on the origin
+    graphicsManager.getControlsManager().enable(); // Enable camera controls
+  }
+
   initializeEntities(world: World): void {
+    const studio = (world as any).studio as IStudio; // Assuming studio is accessible via world
+    this.configureCamera(studio);
+
     // Create a default pole entity
     const poleEntity = world.entityManager.createEntity();
     world.componentManager.addComponent(
@@ -108,7 +120,7 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     world.componentManager.addComponent(
       flagEntity,
       PositionComponent.type,
-      new PositionComponent(0, 15, 0) // Adjusted flag position to be near the top of the pole
+      new PositionComponent(0, 10, 0) // Adjusted flag position to ensure visibility
     );
     // Use a bright red color for better visibility against the default background
     world.componentManager.addComponent(
@@ -117,39 +129,11 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
       new RenderableComponent("plane", 0xff0000)
     );
     // Create a larger flag with more segments for better visibility
-    const initialFlagComponent = new FlagComponent(
-      30,
-      20,
-      30,
-      20,
-      0.1,
-      0.5,
-      0.05,
-      "",
-      0,
-      null,
-      null,
-      poleEntity,
-      "left"
-    );
+    const initialFlagComponent = new FlagComponent(10, 6, 10, 6, 0.1, 0.5, 0.05, "", 0, { x: 1, y: 0, z: 0 }, { x: 0, y: -9.81, z: 0 }, null, "left");
     world.componentManager.addComponent(
       flagEntity,
-      FlagComponent.type,
-      new FlagComponent(
-        30,
-        20,
-        30,
-        20,
-        0.1,
-        0.5,
-        0.05,
-        "",
-        5,
-        { x: 1, y: 0.5, z: 0.5 },
-        null,
-        poleEntity,
-        "left"
-      )
+      "FlagComponent",
+      initialFlagComponent
     );
 
     world.componentManager.addComponent(
