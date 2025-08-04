@@ -1,12 +1,15 @@
 import { System } from "./System";
 import { World } from "./World";
+import { IEventEmitter } from "../events/IEventEmitter";
 import { EventEmitter } from "../events/EventEmitter";
+import { ISystemManager } from "./ISystemManager";
+import { IWorld } from "./IWorld";
 
 /**
  * Manages all systems in the ECS architecture.
  * Responsible for registering, updating, and retrieving systems.
  */
-export class SystemManager {
+export class SystemManager implements ISystemManager {
   /**
    * The collection of registered systems.
    */
@@ -15,7 +18,7 @@ export class SystemManager {
   /**
    * Event emitter for system-related events.
    */
-  private eventEmitter: EventEmitter = new EventEmitter();
+  private eventEmitter: IEventEmitter = new EventEmitter();
 
   /**
    * Registers a system with the manager.
@@ -24,7 +27,7 @@ export class SystemManager {
    * @param system The system to register
    * @param world The world the system is being registered with
    */
-  public registerSystem(system: System, world?: World): void {
+  public registerSystem(system: System, world?: IWorld): void {
     this.systems.push(system);
 
     // Call the system's onRegister method if a world is provided
@@ -50,7 +53,8 @@ export class SystemManager {
    * @param world The world to update
    * @param deltaTime The time elapsed since the last update
    */
-  public updateAll(world: World, deltaTime: number): void {
+  public updateAll(world: IWorld, deltaTime: number): void {
+    this.systems.sort((a, b) => a.priority - b.priority);
     this.systems.forEach((system) => {
       system.update(world, deltaTime);
     });
@@ -76,7 +80,7 @@ export class SystemManager {
    * @param world The world the system is being removed from
    * @returns True if the system was removed, false if it wasn't found
    */
-  public removeSystem(system: System, world?: World): boolean {
+  public removeSystem(system: System, world?: IWorld): boolean {
     const index = this.systems.indexOf(system);
     if (index !== -1) {
       // Call the system's onRemove method if a world is provided
@@ -96,7 +100,7 @@ export class SystemManager {
    *
    * @param world The world the systems are being removed from
    */
-  public clear(world?: World): void {
+  public clear(world?: IWorld): void {
     if (world) {
       // Call onRemove for each system
       this.systems.forEach((system) => {

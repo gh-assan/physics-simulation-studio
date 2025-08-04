@@ -2,6 +2,8 @@ import { ISimulationPlugin } from "../../core/plugin";
 import { World } from "../../core/ecs";
 import { PhysicsSystem } from "./system";
 import { RigidBodyComponent } from "./components";
+import { System } from "../../core/ecs/System";
+import { IStudio } from "../../studio/IStudio";
 
 class RigidBodyPlugin implements ISimulationPlugin {
   public getName(): string {
@@ -17,10 +19,6 @@ class RigidBodyPlugin implements ISimulationPlugin {
 
     // 1. Register components with the ECS
     world.componentManager.registerComponent(RigidBodyComponent);
-
-    // 2. Register the system with the ECS
-    const physicsSystem = new PhysicsSystem();
-    world.systemManager.registerSystem(physicsSystem);
   }
 
   public unregister(): void {
@@ -30,6 +28,10 @@ class RigidBodyPlugin implements ISimulationPlugin {
 
   public initializeEntities(_world: World): void {
     // No initial entities for this plugin yet
+  }
+
+  public getSystems(studio: IStudio): System[] {
+    return [new PhysicsSystem()];
   }
 }
 

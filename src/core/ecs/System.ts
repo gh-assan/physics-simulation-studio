@@ -5,6 +5,12 @@ import { World } from "./World";
  * Systems contain the logic that operates on entities and their components.
  */
 export abstract class System {
+  public priority: number;
+
+  constructor(priority = 100) {
+    this.priority = priority;
+  }
+
   /**
    * Called once per frame to update the system.
    * This is where the system's logic should be implemented.

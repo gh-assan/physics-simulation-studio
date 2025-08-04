@@ -1,7 +1,7 @@
 import { System } from '@core/ecs/System';
 import { World } from '@core/ecs/World';
 import { OrbitComponent } from './components';
-import { PositionComponent } from '@core/components/PositionComponent';
+import { PositionComponent } from '../../core/ecs/PositionComponent';
 
 export class SolarSystem extends System {
   public update(world: World, deltaTime: number): void {
@@ -17,7 +17,7 @@ export class SolarSystem extends System {
       ) as OrbitComponent;
       const positionComponent = world.componentManager.getComponent(
         entityId,
-        PositionComponent.type
+        PositionComponent.name
       ) as PositionComponent;
 
       if (orbitComponent && positionComponent) {

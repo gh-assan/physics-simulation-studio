@@ -1,8 +1,10 @@
+import { IStudio } from "../../studio/IStudio";
 import { World } from "../../core/ecs/World";
 import { ISimulationPlugin } from "../../core/plugin/ISimulationPlugin";
 import { FlagComponent } from "./FlagComponent";
 import { PoleComponent } from "./PoleComponent"; // Add this import
 import { FlagSystem } from "./FlagSystem";
+import { FlagRenderSystem } from "./FlagRenderSystem";
 import { PositionComponent } from "../../core/components/PositionComponent";
 import { RenderableComponent } from "../../core/components/RenderableComponent";
 import { SelectableComponent } from "../../core/components/SelectableComponent";
@@ -13,13 +15,12 @@ import { ParameterPanelComponent } from "../../core/components/ParameterPanelCom
 import * as THREE from "three";
 import { flagComponentProperties } from "./flagComponentProperties";
 import { registerComponentProperties } from "../../studio/utils/ComponentPropertyRegistry";
+import { System } from "../../core/ecs/System";
 
 export { FlagComponent } from "./FlagComponent";
-export { FlagSystem } from "./FlagSystem";
-export { FlagParameterPanel } from "./FlagParameterPanel";
 
 export function registerFlagComponentProperties() {
-  registerComponentProperties("FlagComponent", flagComponentProperties);
+  ComponentPropertyRegistry.getInstance().registerComponentProperties("FlagComponent", flagComponentProperties);
 }
 
 export class FlagSimulationPlugin implements ISimulationPlugin {
@@ -35,20 +36,15 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
   getParameterPanels(): ParameterPanelComponent[] {
     return this._parameterPanels;
   }
+  getSystems(studio: IStudio): System[] {
+    return [new FlagSystem(), new FlagRenderSystem(studio.getGraphicsManager())];
+  }
+
   register(world: World): void {
     // Register components
     world.componentManager.registerComponent(FlagComponent);
     world.componentManager.registerComponent(PoleComponent);
     world.componentManager.registerComponent(FlagParameterPanel);
-    // ParameterPanelComponent registration is handled by the core system
-    // world.componentManager.registerComponent(
-    //   ParameterPanelComponent.type,
-    //   ParameterPanelComponent
-    // );
-
-    // Register systems
-    this._flagSystem = new FlagSystem();
-    world.systemManager.registerSystem(this._flagSystem);
 
     try {
       // Create parameter panel
@@ -70,14 +66,14 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
           flagParameterPanel
         );
 
-        console.log("FlagSimulationPlugin registered with parameter panel.");
+        Logger.getInstance().log("FlagSimulationPlugin registered with parameter panel.");
       } else {
-        console.log(
+        Logger.getInstance().log(
           "FlagSimulationPlugin registered without parameter panel (ParameterPanelComponent not registered)."
         );
       }
     } catch (error) {
-      console.warn(
+      Logger.getInstance().warn(
         "Failed to register parameter panel, but simulation will continue:",
         error
       );
@@ -96,7 +92,6 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
   initializeEntities(world: World): void {
     // Create a default pole entity
     const poleEntity = world.entityManager.createEntity();
-    console.log("[FlagSimulationPlugin] Created pole entity:", poleEntity);
     world.componentManager.addComponent(
       poleEntity,
       PositionComponent.type,
@@ -110,7 +105,6 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
 
     // Create flag entity
     const flagEntity = world.entityManager.createEntity();
-    console.log("[FlagSimulationPlugin] Created flag entity:", flagEntity);
     world.componentManager.addComponent(
       flagEntity,
       PositionComponent.type,
@@ -157,10 +151,6 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
         "left"
       )
     );
-    console.log(
-      "[FlagSimulationPlugin] Initial FlagComponent properties:",
-      initialFlagComponent
-    );
 
     world.componentManager.addComponent(
       flagEntity,
@@ -182,9 +172,6 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
         rotationQuat.w
       )
     );
-    // Log all components for this entity
-    const comps = world.componentManager.getAllComponentsForEntity(flagEntity);
-    console.log("[FlagSimulationPlugin] Components for flag entity:", comps);
 
     // Initialize the flag physics (points and springs) immediately
     const flagComponent = world.componentManager.getComponent(
@@ -201,17 +188,6 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
         flagComponent,
         positionComponent,
         world
-      );
-      console.log(
-        "[FlagSimulationPlugin] Flag physics initialized with",
-        flagComponent.points.length,
-        "points and",
-        flagComponent.springs.length,
-        "springs"
-      );
-      console.log(
-        "[FlagSimulationPlugin] First few flag points after init:",
-        flagComponent.points.slice(0, 5)
       );
     }
   }

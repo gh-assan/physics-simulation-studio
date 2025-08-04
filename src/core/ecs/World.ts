@@ -3,12 +3,13 @@ import { ComponentManager } from "./ComponentManager";
 import { SystemManager } from "./SystemManager";
 import { IComponent } from "./IComponent";
 import { System } from "./System";
+import { IWorld } from "./IWorld";
 
 /**
  * The central class of the ECS architecture.
  * Manages entities, components, and systems.
  */
-export class World {
+export class World implements IWorld {
   /**
    * Manages entity creation, destruction, and tracking.
    */
@@ -117,5 +118,25 @@ export class World {
    */
   public removeSystem(system: System): boolean {
     return this.systemManager.removeSystem(system, this);
+  }
+
+  public getComponent<T extends IComponent>(
+    entityId: number,
+    componentName: string
+  ): T | undefined {
+    return this.componentManager.getComponent(entityId, componentName) as T;
+  }
+
+  public hasComponent(
+    entityId: number,
+    componentName: string
+  ): boolean {
+    return this.componentManager.hasComponent(entityId, componentName);
+  }
+
+  public getEntitiesWithComponents(
+    componentTypes: (new (...args: any[]) => IComponent)[]
+  ): number[] {
+    return this.componentManager.getEntitiesWithComponents(componentTypes);
   }
 }

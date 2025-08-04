@@ -6,16 +6,14 @@ import { PositionComponent } from '@core/components/PositionComponent';
 import { RenderableComponent } from '@core/components/RenderableComponent';
 import { ParameterPanelComponent } from '@core/components/ParameterPanelComponent';
 import { SolarSystemParameterPanel } from './parameter-panel';
-import { registerComponentProperties } from '../../studio/utils/ComponentPropertyRegistry';
+import { ComponentPropertyRegistry } from '../../studio/utils/ComponentPropertyRegistry';
 import { positionComponentProperties, celestialBodyComponentProperties, orbitComponentProperties } from './solarSystemComponentProperties';
+import { System } from '@core/ecs/System';
+import { IStudio } from '../../studio/IStudio';
+import { IWorld } from '@core/ecs/IWorld';
 
 export class SolarSystemPlugin implements ISimulationPlugin {
   public name = 'solar-system';
-  private world: World; // Add this line
-
-  constructor(world: World) { // Add world to constructor
-    this.world = world; // Assign world
-  }
 
   public getName(): string {
     return 'solar-system';
@@ -25,24 +23,15 @@ export class SolarSystemPlugin implements ISimulationPlugin {
     return [];
   }
 
-  public register(world: World): void {
+  public register(world: IWorld): void {
 
-    world.componentManager.registerComponent(CelestialBodyComponent);
-    world.componentManager.registerComponent(OrbitComponent);
-    // Remove and re-add RenderSystem after SolarSystem to ensure correct order
-    const renderSystem = world.systemManager.getSystem((window as any).studio?.renderSystem?.constructor);
-    if (renderSystem) {
-      world.systemManager.removeSystem(renderSystem, world);
-    }
-    world.systemManager.registerSystem(new SolarSystem());
-    if (renderSystem) {
-      world.systemManager.registerSystem(renderSystem, world);
-    }
+    world.registerComponent(CelestialBodyComponent);
+    world.registerComponent(OrbitComponent);
 
     // Register component properties for UI
-    registerComponentProperties(PositionComponent.type, positionComponentProperties);
-    registerComponentProperties(CelestialBodyComponent.type, celestialBodyComponentProperties);
-    registerComponentProperties(OrbitComponent.type, orbitComponentProperties);
+    ComponentPropertyRegistry.getInstance().registerComponentProperties(PositionComponent.type, positionComponentProperties);
+    ComponentPropertyRegistry.getInstance().registerComponentProperties(CelestialBodyComponent.type, celestialBodyComponentProperties);
+    ComponentPropertyRegistry.getInstance().registerComponentProperties(OrbitComponent.type, orbitComponentProperties);
   }
 
   public unregister(): void {
@@ -52,7 +41,7 @@ export class SolarSystemPlugin implements ISimulationPlugin {
     // world.systemManager.unregisterSystem(SolarSystemRenderer);
   }
 
-  public initializeEntities(world: World): void {
+  public initializeEntities(world: IWorld): void {
 
     // Sun
     const sun = world.createEntity();
@@ -88,13 +77,13 @@ export class SolarSystemPlugin implements ISimulationPlugin {
     world.addComponent(mars, OrbitComponent.type, new OrbitComponent(40, 0.093, 0.015)); // Adjusted semiMajorAxis and orbitalSpeed
     world.addComponent(mars, RenderableComponent.type, new RenderableComponent('sphere', '#ff0000'));
 
-    // Trigger a render update after entities are initialized
-    if ((window as any).studio && (window as any).studio.renderSystem) {
-      (window as any).studio.renderSystem.update(world, 0);
-    }
   }
 
-  public getParameterPanels(): ParameterPanelComponent[] {
-    return [new SolarSystemParameterPanel(this.world)];
+  public getSystems(studio: IStudio): System[] {
+    return [new SolarSystem()];
+  }
+
+  public getParameterPanels(world: IWorld): ParameterPanelComponent[] {
+    return [new SolarSystemParameterPanel(world)];
   }
 }

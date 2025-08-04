@@ -1,7 +1,7 @@
-import { World } from '../core/ecs/World';
-import { PluginManager } from '../core/plugin/PluginManager';
+import { IPluginManager } from '../core/plugin/IPluginManager';
 import { Logger } from '../core/utils/Logger';
 import { RenderSystem } from './systems/RenderSystem';
+import { IStudio } from './IStudio';
 
 export interface ISimulationOrchestrator {
     loadSimulation(pluginName: string): Promise<void>;
@@ -12,13 +12,15 @@ export interface ISimulationOrchestrator {
 }
 
 export class SimulationOrchestrator implements ISimulationOrchestrator {
-    private world: World;
-    private pluginManager: PluginManager;
+    private world: IWorld;
+    private pluginManager: IPluginManager;
     private renderSystem: RenderSystem | null = null;
+    private studio: IStudio;
 
-    constructor(world: World, pluginManager: PluginManager, renderSystem?: RenderSystem | null) {
+    constructor(world: World, pluginManager: IPluginManager, studio: IStudio, renderSystem?: RenderSystem | null) {
         this.world = world;
         this.pluginManager = pluginManager;
+        this.studio = studio;
         this.renderSystem = renderSystem || null;
     }
 
@@ -26,13 +28,8 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
         this._deactivateCurrentSimulation(pluginName);
         this._clearWorldAndRenderSystem();
         try {
-            // Temporarily unregister RenderSystem if it exists
-            if (this.renderSystem) {
-                this.world.systemManager.removeSystem(this.renderSystem);
-            }
-
-            await this.pluginManager.activatePlugin(pluginName);
-            Logger.log(`Loaded simulation: ${pluginName}`);
+            await this.pluginManager.activatePlugin(pluginName, this.studio);
+            Logger.getInstance().log(`Loaded simulation: ${pluginName}`);
             const activePlugin = this.pluginManager.getPlugin(pluginName);
             if (activePlugin && activePlugin.initializeEntities) {
                 activePlugin.initializeEntities(this.world);
@@ -43,51 +40,47 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
                 }
             }
 
-            // Re-register RenderSystem to ensure it runs last
-            if (this.renderSystem) {
-                this.world.systemManager.registerSystem(this.renderSystem);
-            }
             const event = new CustomEvent("simulation-loaded", {
                 detail: { simulationName: pluginName }
             });
             window.dispatchEvent(event);
-            Logger.log(`Dispatched simulation-loaded event for ${pluginName}`);
+            Logger.getInstance().log(`Dispatched simulation-loaded event for ${pluginName}`);
         } catch (error: unknown) {
-            Logger.error(`Failed to load simulation:`, error);
+            Logger.getInstance().error(`Failed to load simulation:`, error);
         }
     }
 
     public unloadSimulation(activePluginName: string | null): void {
         this._deactivateCurrentSimulation(activePluginName);
         this._clearWorldAndRenderSystem();
-        Logger.log("No simulation loaded.");
+        Logger.getInstance().log("No simulation loaded.");
     }
 
     private _deactivateCurrentSimulation(activePluginName: string | null): void {
         if (!activePluginName) return;
         // Deactivate plugin (calls unregister internally)
-        this.pluginManager.deactivatePlugin(activePluginName);
+        this.pluginManager.deactivatePlugin(activePluginName, this.studio);
     }
 
     private _clearWorldAndRenderSystem(): void {
-        this.world.clear();
+        this.world.clear(true);
         if (this.renderSystem) {
             this.renderSystem.clear();
         }
     }
 
     public play(): void {
-        Logger.log('Simulation play');
+        Logger.getInstance().log('Simulation play');
         // Add play logic here
     }
 
     public pause(): void {
-        Logger.log('Simulation pause');
+        Logger.getInstance().log('Simulation pause');
         // Add pause logic here
     }
 
     public reset(): void {
-        Logger.log('Simulation reset');
+        Logger.getInstance().log('Simulation reset');
         // Add reset logic here
     }
 }

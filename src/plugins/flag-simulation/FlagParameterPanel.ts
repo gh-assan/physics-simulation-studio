@@ -37,7 +37,7 @@ export class FlagParameterPanel extends ParameterPanelComponent {
   registerControls(uiManager: UIManager, component?: IComponent): void {
     // If a component is provided, ensure it's a FlagComponent
     if (component && !(component instanceof FlagComponent)) {
-      Logger.error("FlagParameterPanel: provided component is not a FlagComponent");
+      Logger.getInstance().error("FlagParameterPanel: provided component is not a FlagComponent");
       return;
     }
 

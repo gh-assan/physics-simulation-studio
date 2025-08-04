@@ -29,7 +29,7 @@ export class WaterBodyParameterPanel extends ParameterPanelComponent {
    */
   registerControls(uiManager: UIManager, component?: IComponent): void {
     if (component && !(component instanceof WaterBodyComponent)) {
-      Logger.error(
+      Logger.getInstance().error(
         "WaterBodyParameterPanel: component is not a WaterBodyComponent"
       );
       return;

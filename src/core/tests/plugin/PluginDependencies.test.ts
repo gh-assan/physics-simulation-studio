@@ -1,6 +1,8 @@
 import { PluginManager } from "../../plugin/PluginManager";
 import { ISimulationPlugin } from "../../plugin/ISimulationPlugin";
 import { World } from "../../ecs";
+import { System } from "../../ecs/System";
+import { IStudio } from "../../../src/studio/IStudio";
 
 // Create a simple plugin class
 class TestPlugin implements ISimulationPlugin {
@@ -31,11 +33,16 @@ class TestPlugin implements ISimulationPlugin {
   initializeEntities(world: World): void {
     // No-op for this test
   }
+
+  getSystems(studio: IStudio): System[] {
+    return [];
+  }
 }
 
 describe("Plugin Dependencies", () => {
   let pluginManager: PluginManager;
   const mockWorld = {} as World;
+  const mockStudio = {} as IStudio;
 
   beforeEach(() => {
     pluginManager = new PluginManager(mockWorld);
@@ -55,7 +62,7 @@ describe("Plugin Dependencies", () => {
     pluginManager.registerPlugin(pluginD);
 
     // Activate plugin D, which should activate C, B, and A in the correct order
-    await pluginManager.activatePlugin("D");
+    await pluginManager.activatePlugin("D", mockStudio);
 
     // Verify all plugins are registered
     expect(pluginA.registered).toBe(true);

@@ -1,3 +1,4 @@
+import { IGraphicsManager } from "./IGraphicsManager";
 import * as THREE from "three";
 import { SceneBuilder } from "./SceneBuilder";
 import { RendererProvider } from "./RendererProvider";
@@ -14,7 +15,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
  * - Right Click + Drag: Pan camera
  * - Scroll Wheel: Zoom in/out
  */
-export class ThreeGraphicsManager {
+export class ThreeGraphicsManager implements IGraphicsManager {
   public scene: THREE.Scene;
   public camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   public renderer: THREE.WebGLRenderer;
@@ -22,16 +23,28 @@ export class ThreeGraphicsManager {
   private controlsEnabled = false;
   private resizeHandler: WindowResizeHandler;
 
-  constructor(container?: HTMLElement) {
+  constructor() {
     this.scene = SceneBuilder.buildScene();
     this.camera = this._initCamera();
-    this.renderer = this._initRenderer(container);
+    this.renderer = this._initRenderer();
     this.controlsManager = new OrbitControlsManager(
       this.camera,
       this.renderer.domElement
     );
     this.controlsManager.disable();
     this.resizeHandler = new WindowResizeHandler(this._handleResize.bind(this));
+  }
+
+  public initialize(container: HTMLElement): void {
+    RendererProvider.attachRendererDom(this.renderer, container);
+  }
+
+  public add(object: any): void {
+    this.scene.add(object);
+  }
+
+  public remove(object: any): void {
+    this.scene.remove(object);
   }
 
   /**
@@ -52,10 +65,8 @@ export class ThreeGraphicsManager {
   /**
    * Encapsulate renderer initialization
    */
-  private _initRenderer(container?: HTMLElement): THREE.WebGLRenderer {
-    const renderer = RendererProvider.createRenderer();
-    RendererProvider.attachRendererDom(renderer, container || document.body);
-    return renderer;
+  private _initRenderer(): THREE.WebGLRenderer {
+    return RendererProvider.createRenderer();
   }
 
   public render(): void {
@@ -104,7 +115,7 @@ export class ThreeGraphicsManager {
     ) {
       this.camera = camera;
     } else {
-      Logger.error("Unsupported camera type");
+      Logger.getInstance().error("Unsupported camera type");
     }
   }
 
@@ -166,7 +177,7 @@ export class ThreeGraphicsManager {
         }
       }
     } catch (e) {
-      Logger.error('Error disposing object:', e);
+      Logger.getInstance().error('Error disposing object:', e);
     }
   }
 

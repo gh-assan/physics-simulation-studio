@@ -1,7 +1,10 @@
+import { IWorld } from "./IWorld";
+import { IEntityManager } from "./IEntityManager";
+
 /**
  * Manages entity creation, destruction, and tracking in the ECS system.
  */
-export class EntityManager {
+export class EntityManager implements IEntityManager {
   /**
    * The next entity ID to assign.
    */
@@ -41,7 +44,7 @@ export class EntityManager {
    *
    * @param entityID The ID of the entity to destroy
    */
-  public destroyEntity(entityID: number, world?: any): void {
+  public destroyEntity(entityID: number, world: IWorld): void {
     this.availableEntityIDs.push(entityID);
     this.activeEntities.delete(entityID);
     // Call onEntityRemoved on all systems if world is provided
@@ -130,3 +133,4 @@ export class EntityManager {
     return this.nextEntityID++;
   }
 }
+

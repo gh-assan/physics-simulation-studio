@@ -1,30 +1,31 @@
-import { World } from "../core/ecs/World";
-import { PluginManager } from "../core/plugin/PluginManager";
-import { Logger } from "../core/utils/Logger";
-
-import { RenderSystem } from "./systems/RenderSystem";
-import { SelectedSimulationStateManager } from "./state/SelectedSimulationState";
-import { StateManager } from "./state/StateManager"; // Restoring the import
+import { ISelectedSimulationStateManager } from "./state/ISelectedSimulationStateManager";
+import { IStateManager } from "./state/IStateManager";
 
 import { SimulationOrchestrator } from "./state/SimulationOrchestrator";
 
-export class Studio {
-  private _world: World;
-  private pluginManager: PluginManager;
+import { ThreeGraphicsManager } from "./graphics/ThreeGraphicsManager";
+
+export class Studio implements IStudio {
+  private _world: IWorld;
+  private pluginManager: IPluginManager;
   private renderSystem: RenderSystem | null = null;
   private isPlaying = true;
-  private selectedSimulation: SelectedSimulationStateManager;
-  private orchestrator: SimulationOrchestrator;
+  private selectedSimulation: ISelectedSimulationStateManager;
+  private orchestrator: ISimulationOrchestrator;
 
-  public get world(): World {
+  public get world(): IWorld {
     return this._world;
   }
 
-  constructor(world: World, pluginManager: PluginManager, stateManager: StateManager) {
+  constructor(world: IWorld, pluginManager: IPluginManager, stateManager: IStateManager) {
     this._world = world;
     this.pluginManager = pluginManager;
     this.selectedSimulation = stateManager.selectedSimulation;
-    this.orchestrator = new SimulationOrchestrator(world, pluginManager, this.selectedSimulation);
+    this.orchestrator = new SimulationOrchestrator(world, pluginManager, this, this.selectedSimulation);
+  }
+
+  public getWorld(): IWorld {
+    return this._world;
   }
 
   public setRenderSystem(renderSystem: RenderSystem): void {
@@ -68,12 +69,16 @@ export class Studio {
     if (pluginName) {
       await this.orchestrator.loadSimulation(pluginName);
       this.selectedSimulation.setSimulation(pluginName);
+      // Ensure the render system updates after loading simulation
+      if (this.renderSystem) {
+        this.renderSystem.update(this.world, 0);
+      }
       // Dispatch event after state update so UI can react to correct state
       const event = new CustomEvent("simulation-loaded", {
         detail: { simulationName: pluginName }
       });
       window.dispatchEvent(event);
-      Logger.log(`Dispatched simulation-loaded event for ${pluginName}`);
+      Logger.getInstance().log(`Dispatched simulation-loaded event for ${pluginName}`);
     }
   }
 
@@ -104,5 +109,12 @@ export class Studio {
 
   public getAvailableSimulationNames(): string[] {
     return Array.from(this.pluginManager.getAvailablePluginNames());
+  }
+
+  public getGraphicsManager(): ThreeGraphicsManager {
+    if (!this.renderSystem) {
+      throw new Error("RenderSystem is not set in Studio. Cannot get GraphicsManager.");
+    }
+    return this.renderSystem.getGraphicsManager();
   }
 }

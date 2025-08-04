@@ -1,5 +1,7 @@
+import { IStudio } from "../../studio/IStudio";
 import { World } from "../ecs";
 import { ParameterPanelComponent } from "../components/ParameterPanelComponent";
+import { System } from "../ecs/System";
 
 /**
  * Interface for simulation plugins.
@@ -27,8 +29,7 @@ export interface ISimulationPlugin {
 
   /**
    * Called by the PluginManager to initialize the plugin.
-   * This is where the plugin registers its components, systems,
-   * and UI elements with the core application.
+   * This is where the plugin registers its components.
    *
    * @param world The central ECS World instance
    */
@@ -36,8 +37,7 @@ export interface ISimulationPlugin {
 
   /**
    * Called by the PluginManager when the plugin is being unloaded.
-   * This method should clean up all resources, unregister systems,
-   * and remove any UI elements created by the plugin.
+   * This method should clean up all resources created by the plugin.
    */
   unregister(): void;
 
@@ -48,6 +48,13 @@ export interface ISimulationPlugin {
    * @param world The central ECS World instance
    */
   initializeEntities(world: World): void;
+
+  /**
+   * Gets the systems provided by this plugin.
+   * @param studio The studio instance, providing context like the graphics manager.
+   * @returns An array of system instances
+   */
+  getSystems(studio: IStudio): System[];
 
   /**
    * Gets the custom renderer for this plugin, if any.
@@ -88,5 +95,5 @@ export interface ISimulationPlugin {
    *
    * @returns An array of parameter panel components
    */
-  getParameterPanels?(): ParameterPanelComponent[];
+  getParameterPanels?(world: World): ParameterPanelComponent[];
 }

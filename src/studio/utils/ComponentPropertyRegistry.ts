@@ -1,33 +1,45 @@
-// src/studio/utils/ComponentPropertyRegistry.ts
-
 import { ComponentControlProperty, ComponentPropertyMap } from "../types";
+import { IComponentPropertyRegistry } from "./IComponentPropertyRegistry";
+import { Logger } from "../../core/utils/Logger";
 
-const componentPropertyRegistry: ComponentPropertyMap = {};
+export class ComponentPropertyRegistry implements IComponentPropertyRegistry {
+  private static instance: ComponentPropertyRegistry;
+  private registry: ComponentPropertyMap = {};
 
-export function registerComponentProperties(
-  componentName: string,
-  properties: ComponentControlProperty[]
-): void {
-  console.log(
-    `[ComponentPropertyRegistry] Registering properties for component: '${componentName}'`,
-    properties
-  );
-  componentPropertyRegistry[componentName] = properties;
-}
+  private constructor() {}
 
-export function getComponentProperties(
-  componentName: string
-): ComponentControlProperty[] | undefined {
-  const properties = componentPropertyRegistry[componentName];
-  if (properties) {
-    console.log(
-      `[ComponentPropertyRegistry] Retrieving properties for component: '${componentName}'`,
+  public static getInstance(): ComponentPropertyRegistry {
+    if (!ComponentPropertyRegistry.instance) {
+      ComponentPropertyRegistry.instance = new ComponentPropertyRegistry();
+    }
+    return ComponentPropertyRegistry.instance;
+  }
+
+  public registerComponentProperties(
+    componentName: string,
+    properties: ComponentControlProperty[]
+  ): void {
+    Logger.getInstance().log(
+      `[ComponentPropertyRegistry] Registering properties for component: '${componentName}'`,
       properties
     );
-  } else {
-    console.warn(
-      `[ComponentPropertyRegistry] No properties found for component: '${componentName}'`
-    );
+    this.registry[componentName] = properties;
   }
-  return properties;
+
+  public getComponentProperties(
+    componentName: string
+  ): ComponentControlProperty[] | undefined {
+    const properties = this.registry[componentName];
+    if (properties) {
+      Logger.getInstance().log(
+        `[ComponentPropertyRegistry] Retrieving properties for component: '${componentName}'`,
+        properties
+      );
+    } else {
+      Logger.getInstance().warn(
+        `[ComponentPropertyRegistry] No properties found for component: '${componentName}'`
+      );
+    }
+    return properties;
+  }
 }

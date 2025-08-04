@@ -29,7 +29,7 @@ export class WaterDropletParameterPanel extends ParameterPanelComponent {
    */
   registerControls(uiManager: UIManager, component?: IComponent): void {
     if (component && !(component instanceof WaterDropletComponent)) {
-      Logger.error(
+      Logger.getInstance().error(
         "WaterDropletParameterPanel: component is not a WaterDropletComponent"
       );
       return;

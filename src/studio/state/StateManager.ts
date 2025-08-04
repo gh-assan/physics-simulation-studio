@@ -1,9 +1,11 @@
 import { AppState } from "./StateTypes";
 import { SelectedSimulationStateManager } from "./SelectedSimulationState";
+import { IStateManager } from "./IStateManager";
+import { ISelectedSimulationStateManager } from "./ISelectedSimulationStateManager";
 
-export class StateManager {
+export class StateManager implements IStateManager {
   private static _instance: StateManager;
-  public selectedSimulation: SelectedSimulationStateManager;
+  public selectedSimulation: ISelectedSimulationStateManager;
 
   private constructor() {
     this.selectedSimulation = new SelectedSimulationStateManager();

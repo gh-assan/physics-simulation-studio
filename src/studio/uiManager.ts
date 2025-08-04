@@ -3,8 +3,10 @@ import { ApplicationEventBus } from "./utils/ApplicationEventBus";
 import { ComponentPropertyPreparer } from "./utils/ComponentPropertyPreparer";
 import { Pane, FolderApi } from "tweakpane";
 import { ComponentControlProperty } from "./types";
+import { IUIManager } from "./IUIManager";
+import { IPanel } from "./IPanel";
 
-export class UIManager {
+export class UIManager implements IUIManager {
   private pane: Pane;
   private folders: Map<string, FolderApi> = new Map();
   private eventBus: ApplicationEventBus;
@@ -20,9 +22,18 @@ export class UIManager {
     this.propertyPreparer = propertyPreparer || ComponentPropertyPreparer;
   }
 
-  public addFolder(title: string, callback: (folder: FolderApi) => void): void {
+  public createPanel(title: string): IPanel {
     const folder = this.pane.addFolder({ title });
-    callback(folder);
+    this.folders.set(title, folder);
+    return folder;
+  }
+
+  public addButton(panel: IPanel, title: string, onClick: () => void): void {
+    (panel as FolderApi).addButton({ title }).on("click", onClick);
+  }
+
+  public addBinding(panel: IPanel, target: any, key: string, options: any): void {
+    (panel as FolderApi).addBinding(target, key, options);
   }
 
   public refresh(): void {
@@ -83,7 +94,7 @@ export class UIManager {
       if (parentData) {
         binding = folder.addBinding(parentData, lastKey, options);
       } else {
-        Logger.warn(
+        Logger.getInstance().warn(
           `[UIManager] Could not find parent object for property: ${prop.property}`
         );
       }
@@ -104,7 +115,7 @@ export class UIManager {
         window.dispatchEvent(event);
       });
     } else {
-      Logger.warn(
+      Logger.getInstance().warn(
         `[UIManager] Failed to create binding for property: ${prop.property}`
       );
     }

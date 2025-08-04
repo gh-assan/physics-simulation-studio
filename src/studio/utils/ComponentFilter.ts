@@ -16,7 +16,7 @@ export class ComponentFilter {
       componentName === "SelectableComponent" ||
       componentName === "RenderableComponent"
     ) {
-      Logger.log(
+      Logger.getInstance().log(
         `[ComponentFilter] Skipping component '${componentName}' as it is hidden from the UI`
       );
       return true;
@@ -40,7 +40,7 @@ export class ComponentFilter {
     }
 
     if (component.simulationType !== activeSimulationName) {
-      Logger.log(
+      Logger.getInstance().log(
         `[ComponentFilter] Skipping component (simulationType: ${component.simulationType}) as it does not match active simulation '${activeSimulationName}'`
       );
       return false;

@@ -1,7 +1,7 @@
 import { World } from "@core/ecs/World";
 import * as THREE from "three";
 import { WaterDropletComponent, WaterBodyComponent } from "./WaterComponents";
-import { PositionComponent } from "@core/components/PositionComponent";
+import { PositionComponent } from "../../core/ecs/PositionComponent";
 
 export class WaterRenderer {
   private instancedMesh: THREE.InstancedMesh | null = null;
@@ -20,7 +20,7 @@ export class WaterRenderer {
     if (waterEntities.length > 0) {
       const waterEntity = waterEntities[0];
       const waterBody = world.componentManager.getComponent(waterEntity, WaterBodyComponent.type) as WaterBodyComponent;
-      const positionComponent = world.componentManager.getComponent(waterEntity, PositionComponent.type) as PositionComponent;
+      const positionComponent = world.componentManager.getComponent(waterEntity, PositionComponent.name) as PositionComponent;
       if (!this.waterMesh) {
         const geometry = new THREE.PlaneGeometry(10, 10);
         const material = new THREE.MeshPhongMaterial({ color: 0x2196f3, transparent: true, opacity: 0.8 });
@@ -84,7 +84,7 @@ export class WaterRenderer {
       ) as WaterDropletComponent;
       const positionComponent = world.componentManager.getComponent(
         entityId,
-        PositionComponent.type
+        PositionComponent.name
       ) as PositionComponent;
       if (dropletComponent && positionComponent) {
         this.dummy.position.set(

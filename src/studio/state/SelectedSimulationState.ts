@@ -1,8 +1,10 @@
 import { EventEmitter } from "../../core/events/EventEmitter";
 import { SelectedSimulationState } from "./StateTypes";
 import { DEFAULT_SELECTED_SIMULATION_STATE } from "./SelectedSimulationDefaults";
+import { ISelectedSimulationStateManager } from "./ISelectedSimulationStateManager";
+import { IEventEmitter } from "../../core/events/IEventEmitter";
 
-export class SelectedSimulationStateManager extends EventEmitter {
+export class SelectedSimulationStateManager extends EventEmitter implements ISelectedSimulationStateManager {
   private _state: SelectedSimulationState = { ...DEFAULT_SELECTED_SIMULATION_STATE };
 
   constructor() {

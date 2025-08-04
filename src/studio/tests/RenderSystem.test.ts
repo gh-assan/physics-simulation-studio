@@ -97,7 +97,8 @@ describe("RenderSystem", () => {
       getActiveSimulationName: jest.fn(() => null),
       getAvailableSimulationNames: jest.fn(() => [])
     };
-    renderSystem = new RenderSystem(mockStudio);
+    const mockGraphicsManager = new ThreeGraphicsManager();
+    renderSystem = new RenderSystem(mockGraphicsManager, world);
   });
 
   it("should initialize Three.js components", () => {

@@ -4,7 +4,7 @@ import { World } from "../../core/ecs/World";
 import { FlagComponent } from "../../plugins/flag-simulation/FlagComponent";
 import { PositionComponent } from "../../core/components/PositionComponent";
 import { RenderableComponent } from "../../core/components/RenderableComponent";
-import { RotationComponent } from "../../core/components/RotationComponent";
+import { RotationComponent } from "../../core/ecs/RotationComponent";
 import { ThreeGraphicsManager } from "../graphics/ThreeGraphicsManager";
 
 export class FlagRenderer extends System {
