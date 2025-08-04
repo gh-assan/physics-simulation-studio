@@ -1,7 +1,10 @@
+import { IPluginManager } from "./IPluginManager";
+import { IWorld } from "../ecs/IWorld";
 import { Logger } from "../utils/Logger";
-import { World } from "../ecs";
 import { ISimulationPlugin } from "./ISimulationPlugin";
 import { EventEmitter } from "../events/EventEmitter";
+import { IEventEmitter } from "../events/IEventEmitter";
+import { IStudio } from "../../studio/IStudio";
 
 /**
  * Events emitted by the PluginManager
@@ -17,7 +20,7 @@ export enum PluginManagerEvent {
  * Manages the registration, activation, and deactivation of plugins.
  * Handles plugin dependencies and lifecycle.
  */
-export class PluginManager {
+export class PluginManager implements IPluginManager {
   /**
    * Map of available plugins by name.
    */
@@ -31,19 +34,19 @@ export class PluginManager {
   /**
    * The world instance that plugins will interact with.
    */
-  private world: World;
+  private world: IWorld;
 
   /**
    * Event emitter for plugin-related events.
    */
-  private eventEmitter = new EventEmitter();
+  private eventEmitter: IEventEmitter = new EventEmitter();
 
   /**
    * Creates a new PluginManager.
    *
    * @param world The world instance that plugins will interact with
    */
-  constructor(world: World) {
+  constructor(world: IWorld) {
     this.world = world;
   }
 
@@ -73,7 +76,7 @@ export class PluginManager {
    * @returns A promise that resolves when the plugin is activated
    * @throws Error if the plugin is not found
    */
-  public async activatePlugin(pluginName: string): Promise<void> {
+  public async activatePlugin(pluginName: string, studio: IStudio): Promise<void> {
     // Skip if already active
     if (this.isPluginActive(pluginName)) {
       return;
@@ -83,10 +86,16 @@ export class PluginManager {
 
     try {
       // Activate dependencies first
-      await this.activateDependencies(plugin);
+      await this.activateDependencies(plugin, studio);
 
       // Register the plugin with the world
       plugin.register(this.world);
+
+      // Register the plugin's systems
+      const systems = plugin.getSystems(studio);
+      for (const system of systems) {
+        this.world.registerSystem(system);
+      }
 
       // Mark as active
       this.activePlugins.set(pluginName, plugin);
@@ -94,7 +103,7 @@ export class PluginManager {
       // Emit event
       this.eventEmitter.emit(PluginManagerEvent.PLUGIN_ACTIVATED, plugin);
 
-      Logger.log(`Plugin "${pluginName}" activated.`);
+      Logger.getInstance().log(`Plugin "${pluginName}" activated.`);
     } catch (error) {
       this.handlePluginError(pluginName, "activation", error);
       throw error;
@@ -136,7 +145,7 @@ export class PluginManager {
    * @param pluginName The name of the plugin to deactivate
    * @returns True if the plugin was deactivated, false if it wasn't active
    */
-  public deactivatePlugin(pluginName: string): boolean {
+  public deactivatePlugin(pluginName: string, studio: IStudio): boolean {
     const plugin = this.activePlugins.get(pluginName);
 
     if (!plugin) {
@@ -144,12 +153,18 @@ export class PluginManager {
     }
 
     try {
+      // Unregister the plugin's systems
+      const systems = plugin.getSystems(studio);
+      for (const system of systems) {
+        this.world.removeSystem(system);
+      }
+
       plugin.unregister();
       this.activePlugins.delete(pluginName);
 
       this.eventEmitter.emit(PluginManagerEvent.PLUGIN_DEACTIVATED, plugin);
 
-      Logger.log(`Plugin "${pluginName}" deactivated.`);
+      Logger.getInstance().log(`Plugin "${pluginName}" deactivated.`);
       return true;
     } catch (error) {
       this.handlePluginError(pluginName, "deactivation", error);
@@ -226,12 +241,12 @@ export class PluginManager {
    * @returns A promise that resolves when all dependencies are activated
    * @private
    */
-  private async activateDependencies(plugin: ISimulationPlugin): Promise<void> {
+  private async activateDependencies(plugin: ISimulationPlugin, studio: IStudio): Promise<void> {
     const dependencies = plugin.getDependencies();
 
     // Activate dependencies sequentially to ensure proper dependency resolution
     for (const depName of dependencies) {
-      await this.activatePlugin(depName);
+      await this.activatePlugin(depName, studio);
     }
   }
 
@@ -249,7 +264,7 @@ export class PluginManager {
     operation: string,
     error: any
   ): void {
-    Logger.error(`Error during plugin "${pluginName}" ${operation}:`, error);
+    Logger.getInstance().error(`Error during plugin "${pluginName}" ${operation}:`, error);
 
     this.eventEmitter.emit(
       PluginManagerEvent.PLUGIN_ERROR,

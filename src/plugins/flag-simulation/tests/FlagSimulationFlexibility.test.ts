@@ -37,6 +37,24 @@ describe("FlagSimulationFlexibility", () => {
   beforeEach(() => {
     world = new World();
     flagPlugin = new FlagSimulationPlugin();
+
+    // Create mock studio and attach to world
+    const mockCamera = {
+      position: { set: jest.fn() },
+      lookAt: jest.fn()
+    };
+
+    const mockGraphicsManager = {
+      getCamera: jest.fn(() => mockCamera),
+      getControlsManager: jest.fn(() => ({ enable: jest.fn() }))
+    };
+
+    const mockStudio = {
+      getGraphicsManager: jest.fn(() => mockGraphicsManager)
+    };
+
+    // Attach studio to world
+    (world as any).studio = mockStudio;
   });
 
   test("Flag simulation works without ParameterPanelComponent registered", () => {

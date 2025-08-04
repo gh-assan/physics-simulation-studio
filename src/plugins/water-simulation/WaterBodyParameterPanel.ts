@@ -1,5 +1,5 @@
 import { ParameterPanelComponent } from "../../core/components/ParameterPanelComponent";
-import { UIManager } from "../../studio/uiManager";
+import { IUIManager } from "../../studio/IUIManager";
 import { IComponent } from "../../core/ecs/IComponent";
 import { WaterBodyComponent } from "./WaterComponents";
 import { ComponentControlProperty } from "../../studio/types";
@@ -27,21 +27,20 @@ export class WaterBodyParameterPanel extends ParameterPanelComponent {
    * @param uiManager The UI manager to register controls with
    * @param component The component instance to bind controls to
    */
-  registerControls(uiManager: UIManager, component?: IComponent): void {
+  registerControls(uiManager: IUIManager, component?: IComponent): void {
     if (component && !(component instanceof WaterBodyComponent)) {
-      Logger.error(
+      Logger.getInstance().error(
         "WaterBodyParameterPanel: component is not a WaterBodyComponent"
       );
       return;
     }
 
     if (!component) {
-      uiManager.addFolder('Water Body Settings', (folder) => {
-        folder.addBlade({
-            view: 'text',
-            value: 'No water body selected. Select a water body to see its properties.',
-            label: 'Info',
-        });
+      const panel = uiManager.createPanel('Water Body Settings');
+      panel.addBlade({
+        view: 'text',
+        value: 'No water body selected. Select a water body to see its properties.',
+        label: 'Info',
       });
       return;
     }
@@ -87,9 +86,5 @@ export class WaterBodyParameterPanel extends ParameterPanelComponent {
    * @param event The event to handle
    * @param component The component instance to update
    */
-  handleEvent(event: string, component: IComponent): void {
-    // This method would be called when an event is triggered from the UI
-    // For now, we don't need to do anything here as the UI is bound directly to the component
-    // and will update the component automatically when the UI changes
-  }
+  handleEvent(event: string, component: IComponent): void {}
 }

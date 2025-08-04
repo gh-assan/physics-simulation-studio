@@ -1,83 +1,84 @@
+import { IPluginManager } from '../core/plugin/IPluginManager';
+import { IWorld } from "../core/ecs/IWorld";
 import { World } from '../core/ecs/World';
-import { PluginManager } from '../core/plugin/PluginManager';
-import { Logger } from '../core/utils/Logger';
+import { Logger } from "../core/utils/Logger";
 import { RenderSystem } from './systems/RenderSystem';
-
-export interface ISimulationOrchestrator {
-    loadSimulation(pluginName: string): Promise<void>;
-    unloadSimulation(activePluginName: string | null): void;
-    play(): void;
-    pause(): void;
-    reset(): void;
-}
+import { IStudio } from './IStudio';
+import { ISimulationOrchestrator } from './ISimulationOrchestrator';
 
 export class SimulationOrchestrator implements ISimulationOrchestrator {
-    private world: World;
-    private pluginManager: PluginManager;
+    private world: IWorld;
+    private pluginManager: IPluginManager;
     private renderSystem: RenderSystem | null = null;
+    private studio: IStudio;
 
-    constructor(world: World, pluginManager: PluginManager, renderSystem?: RenderSystem | null) {
+    constructor(world: IWorld, pluginManager: IPluginManager, studio: IStudio) {
         this.world = world;
         this.pluginManager = pluginManager;
-        this.renderSystem = renderSystem || null;
+        this.studio = studio;
     }
 
-    async loadSimulation(pluginName: string): Promise<void> {
+    public async loadSimulation(pluginName: string): Promise<void> {
         this._deactivateCurrentSimulation(pluginName);
         this._clearWorldAndRenderSystem();
         try {
-            await this.pluginManager.activatePlugin(pluginName);
-            Logger.log(`Loaded simulation: ${pluginName}`);
+            await this.pluginManager.activatePlugin(pluginName, this.studio);
+            Logger.getInstance().log(`Loaded simulation: ${pluginName}`);
             const activePlugin = this.pluginManager.getPlugin(pluginName);
             if (activePlugin && activePlugin.initializeEntities) {
                 activePlugin.initializeEntities(this.world);
                 this.world.update(0);
                 this.world.systemManager.updateAll(this.world, 0);
                 if (this.renderSystem) {
-                    this.renderSystem.update(this.world, 0);
+                    this.renderSystem.update(this.world as World, 0);
                 }
-                const event = new CustomEvent("simulation-loaded", {
-                    detail: { simulationName: pluginName }
-                });
-                window.dispatchEvent(event);
-                Logger.log(`Dispatched simulation-loaded event for ${pluginName}`);
             }
-        } catch (error) {
-            Logger.error(`Failed to load simulation "${pluginName}":`, error);
+
+            const event = new CustomEvent("simulation-loaded", {
+                detail: { simulationName: pluginName }
+            });
+            window.dispatchEvent(event);
+            Logger.getInstance().log(`Dispatched simulation-loaded event for ${pluginName}`);
+        } catch (error: unknown) {
+            Logger.getInstance().error(`Failed to load simulation:`, error);
         }
     }
 
-    unloadSimulation(activePluginName: string | null): void {
+    public unloadSimulation(activePluginName: string | null): void {
         this._deactivateCurrentSimulation(activePluginName);
         this._clearWorldAndRenderSystem();
-        Logger.log("No simulation loaded.");
+        Logger.getInstance().log("No simulation loaded.");
     }
 
     private _deactivateCurrentSimulation(activePluginName: string | null): void {
         if (!activePluginName) return;
         // Deactivate plugin (calls unregister internally)
-        this.pluginManager.deactivatePlugin(activePluginName);
+        this.pluginManager.deactivatePlugin(activePluginName, this.studio);
     }
 
     private _clearWorldAndRenderSystem(): void {
-        this.world.clear();
+        this.world.clear(true);
         if (this.renderSystem) {
             this.renderSystem.clear();
         }
     }
 
-    play(): void {
-        Logger.log('Simulation play');
+    public play(): void {
+        Logger.getInstance().log('Simulation play');
         // Add play logic here
     }
 
-    pause(): void {
-        Logger.log('Simulation pause');
+    public pause(): void {
+        Logger.getInstance().log('Simulation pause');
         // Add pause logic here
     }
 
-    reset(): void {
-        Logger.log('Simulation reset');
+    public reset(): void {
+        Logger.getInstance().log('Simulation reset');
         // Add reset logic here
+    }
+
+    public setRenderSystem(renderSystem: RenderSystem): void {
+        this.renderSystem = renderSystem;
     }
 }

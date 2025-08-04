@@ -127,8 +127,12 @@ describe("PropertyInspectorSystem", () => {
     selectionSystem.getSelectedEntity.mockClear();
     selectionSystem.setSelectedEntity.mockClear();
     selectionSystem.update.mockClear();
-    selectionSystem.onRegister.mockClear();
-    selectionSystem.onRemove.mockClear();
+    if (selectionSystem.onRegister && typeof selectionSystem.onRegister === 'function' && 'mockClear' in selectionSystem.onRegister) {
+      (selectionSystem.onRegister as any).mockClear();
+    }
+    if (selectionSystem.onRemove && typeof selectionSystem.onRemove === 'function' && 'mockClear' in selectionSystem.onRemove) {
+      (selectionSystem.onRemove as any).mockClear();
+    }
     // Explicitly mock setDefaultSelectedEntity as it's private
     (selectionSystem as any).setDefaultSelectedEntity = jest.fn();
     // Explicitly mock setDefaultSelectedEntity as it's private
@@ -153,6 +157,7 @@ describe("PropertyInspectorSystem", () => {
         register: jest.fn(),
         unregister: jest.fn(),
         getDependencies: jest.fn().mockReturnValue([]),
+        getSystems: jest.fn().mockReturnValue([]),
       };
     });
 

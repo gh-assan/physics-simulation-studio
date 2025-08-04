@@ -10,7 +10,7 @@ export class SelectionSystem extends System {
   private world: World; // Add world property
 
   constructor(studio: Studio, world: World) { // Add world parameter
-    super();
+    super(500);
     this.studio = studio;
     this.world = world; // Store world
 
@@ -24,7 +24,7 @@ export class SelectionSystem extends System {
   }
 
   private onSimulationLoaded(event: CustomEvent): void {
-    Logger.log(
+    Logger.getInstance().log(
       `[SelectionSystem] Received simulation-loaded event for ${event.detail.simulationName}`
     );
     this.setDefaultSelectedEntity();
@@ -86,7 +86,7 @@ export class SelectionSystem extends System {
       }
     }
 
-    Logger.log(`[SelectionSystem] Selected entity: ${this.currentSelectedEntity}`);
+    Logger.getInstance().log(`[SelectionSystem] Selected entity: ${this.currentSelectedEntity}`);
   }
 
   public getSelectedEntity(): number | null {

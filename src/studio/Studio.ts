@@ -1,35 +1,46 @@
-import { World } from "../core/ecs/World";
-import { PluginManager } from "../core/plugin/PluginManager";
-import { Logger } from "../core/utils/Logger";
-
-import { RenderSystem } from "./systems/RenderSystem";
-import { SelectedSimulationStateManager } from "./state/SelectedSimulationState";
-import { StateManager } from "./state/StateManager";
+import { ISelectedSimulationStateManager } from "./state/ISelectedSimulationStateManager";
+import { IStateManager } from "./state/IStateManager";
 import { SimulationOrchestrator } from "./SimulationOrchestrator";
+import { IWorld } from "../core/ecs/IWorld";
+import { World } from "../core/ecs/World";
+import { IPluginManager } from "../core/plugin/IPluginManager";
+import { ISimulationOrchestrator } from "./ISimulationOrchestrator";
+import { IStudio } from "./IStudio";
+import { IGraphicsManager } from "./IGraphicsManager";
+import { IPluginContext } from "./IPluginContext";
+import { Logger } from "../core/utils/Logger";
+import { RenderSystem } from "./systems/RenderSystem";
 
-export class Studio {
-  private _world: World;
-  private pluginManager: PluginManager;
+export class Studio implements IStudio {
+  private _world: IWorld;
+  private pluginManager: IPluginManager;
   private renderSystem: RenderSystem | null = null;
   private isPlaying = true;
-  private selectedSimulation: SelectedSimulationStateManager;
-  private orchestrator: SimulationOrchestrator;
+  private selectedSimulation: ISelectedSimulationStateManager;
+  private orchestrator: ISimulationOrchestrator;
+  private pluginContext: IPluginContext;
 
-  public get world(): World {
+  public get world(): IWorld {
     return this._world;
   }
 
-  constructor(world: World, pluginManager: PluginManager, stateManager: StateManager) {
+  constructor(world: IWorld, pluginManager: IPluginManager, stateManager: IStateManager, pluginContext: IPluginContext) {
     this._world = world;
     this.pluginManager = pluginManager;
     this.selectedSimulation = stateManager.selectedSimulation;
-    this.orchestrator = new SimulationOrchestrator(world, pluginManager);
+    this.orchestrator = new SimulationOrchestrator(world, pluginManager, this);
+    this.pluginContext = pluginContext;
+  }
+
+  public getWorld(): IWorld {
+    return this._world;
   }
 
   public setRenderSystem(renderSystem: RenderSystem): void {
     this.renderSystem = renderSystem;
-    // Update orchestrator with renderSystem
-    this.orchestrator = new SimulationOrchestrator(this._world, this.pluginManager, renderSystem);
+    if (this.orchestrator && typeof this.orchestrator.setRenderSystem === 'function') {
+      this.orchestrator.setRenderSystem(renderSystem);
+    }
   }
 
   /**
@@ -45,18 +56,15 @@ export class Studio {
 
   public play(): void {
     this.isPlaying = true;
-    this.orchestrator.play();
     // Optionally, dispatch event via ApplicationEventBus in future
   }
 
   public pause(): void {
     this.isPlaying = false;
-    this.orchestrator.pause();
     // Optionally, dispatch event via ApplicationEventBus in future
   }
 
   public reset(): void {
-    this.orchestrator.reset();
     // Optionally, dispatch event via ApplicationEventBus in future
   }
 
@@ -69,12 +77,16 @@ export class Studio {
     if (pluginName) {
       await this.orchestrator.loadSimulation(pluginName);
       this.selectedSimulation.setSimulation(pluginName);
+      // Ensure the render system updates after loading simulation
+      if (this.renderSystem) {
+        this.renderSystem.update(this.world as any, 0);
+      }
       // Dispatch event after state update so UI can react to correct state
       const event = new CustomEvent("simulation-loaded", {
         detail: { simulationName: pluginName }
       });
       window.dispatchEvent(event);
-      Logger.log(`Dispatched simulation-loaded event for ${pluginName}`);
+      Logger.getInstance().log(`Dispatched simulation-loaded event for ${pluginName}`);
     }
   }
 
@@ -105,5 +117,16 @@ export class Studio {
 
   public getAvailableSimulationNames(): string[] {
     return Array.from(this.pluginManager.getAvailablePluginNames());
+  }
+
+    public getGraphicsManager(): IGraphicsManager {
+    if (!this.renderSystem) {
+      throw new Error("RenderSystem is not set in Studio. Cannot get GraphicsManager.");
+    }
+    return this.renderSystem.getGraphicsManager();
+  }
+
+  public getPluginContext(): IPluginContext {
+    return this.pluginContext;
   }
 }

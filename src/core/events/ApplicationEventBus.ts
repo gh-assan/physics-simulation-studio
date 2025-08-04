@@ -6,7 +6,9 @@ export enum ApplicationEvent {
   SIMULATION_LOADED = "simulation:loaded",
 }
 
-class ApplicationEventBus extends EventEmitter {
+import { IApplicationEventBus } from "./IApplicationEventBus";
+
+class ApplicationEventBus extends EventEmitter implements IApplicationEventBus {
   private static instance: ApplicationEventBus;
 
   private constructor() {

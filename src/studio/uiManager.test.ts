@@ -33,7 +33,11 @@ describe('UIManager', () => {
 
   it('registers component controls and dispatches event on change', () => {
     const data = { foo: 1, bar: 2 };
-    uiManager.registerComponentControls('TestComponent', data);
+    const properties = [
+      { property: 'foo', type: 'number', label: 'Foo' },
+      { property: 'bar', type: 'number', label: 'Bar' }
+    ];
+    uiManager.registerComponentControls('TestComponent', data, properties);
     const folder = ui.addFolder.mock.results[0].value;
     expect(folder.addBinding).toHaveBeenCalledWith(data, 'foo', expect.objectContaining({ label: expect.any(String) }));
     expect(folder.addBinding).toHaveBeenCalledWith(data, 'bar', expect.objectContaining({ label: expect.any(String) }));

@@ -1,3 +1,4 @@
+import { IPropertyInspectorUIManager } from "../ui/IPropertyInspectorUIManager";
 import { System } from "../../core/ecs/System";
 import { World } from "../../core/ecs/World";
 import { ParameterPanelComponent } from "../../core/components/ParameterPanelComponent";
@@ -9,7 +10,7 @@ import { PropertyInspectorUIManager } from "../ui/PropertyInspectorUIManager";
 import { ComponentFilter } from "../utils/ComponentFilter";
 
 export class PropertyInspectorSystem extends System {
-  private propertyInspectorUIManager: PropertyInspectorUIManager;
+  private propertyInspectorUIManager: IPropertyInspectorUIManager;
   private lastSelectedEntity: number | null = null;
   private lastActiveSimulationName: string | null = null;
   private world: World;
@@ -18,13 +19,13 @@ export class PropertyInspectorSystem extends System {
   private selectionSystem: SelectionSystem;
 
   constructor(
-    propertyInspectorUIManager: PropertyInspectorUIManager,
+    propertyInspectorUIManager: IPropertyInspectorUIManager,
     world: World,
     studio: Studio,
     pluginManager: PluginManager,
     selectionSystem: SelectionSystem
   ) {
-    super();
+    super(500);
     this.propertyInspectorUIManager = propertyInspectorUIManager;
     this.world = world;
     this.studio = studio;
@@ -39,7 +40,7 @@ export class PropertyInspectorSystem extends System {
   private getParameterPanelsFromActivePlugin(): ParameterPanelComponent[] {
     const activeSimulationName = this.studio.getActiveSimulationName();
     if (!activeSimulationName) {
-      Logger.log(
+      Logger.getInstance().log(
         `[PropertyInspectorSystem] No active simulation, returning empty parameter panels array`
       );
       return [];
@@ -47,20 +48,20 @@ export class PropertyInspectorSystem extends System {
 
     const activePlugin = this.pluginManager.getPlugin(activeSimulationName);
     if (!activePlugin) {
-      Logger.log(
+      Logger.getInstance().log(
         `[PropertyInspectorSystem] No active plugin found for simulation ${activeSimulationName}, returning empty parameter panels array`
       );
       return [];
     }
 
     if (activePlugin.getParameterPanels) {
-      const panels = activePlugin.getParameterPanels();
-      Logger.log(
+      const panels = activePlugin.getParameterPanels(this.world);
+      Logger.getInstance().log(
         `[PropertyInspectorSystem] Got ${panels.length} parameter panels from active plugin ${activeSimulationName}`
       );
       return panels;
     } else {
-      Logger.log(
+      Logger.getInstance().log(
         `[PropertyInspectorSystem] Active plugin ${activeSimulationName} does not implement getParameterPanels, returning empty parameter panels array`
       );
       return [];
@@ -124,7 +125,7 @@ export class PropertyInspectorSystem extends System {
           continue;
         }
 
-        Logger.log(
+        Logger.getInstance().log(
           `[PropertyInspectorSystem] Processing component: '${componentName}' for entity ${entityId}`
         );
 
@@ -132,7 +133,7 @@ export class PropertyInspectorSystem extends System {
         // as returned by ComponentManager.getAllComponentsForEntity.
         // We can directly use it as the registryKey.
         const registryKey = componentName;
-        Logger.log(
+        Logger.getInstance().log(
           `[PropertyInspectorSystem] Using registry key '${registryKey}' for component '${componentName}' from getAllComponentsForEntity result.`
         );
 

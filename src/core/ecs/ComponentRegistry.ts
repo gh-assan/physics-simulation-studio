@@ -1,12 +1,15 @@
+import { IComponent } from "./IComponent";
+import { IComponentRegistry } from "./IComponentRegistry";
+
 /**
  * A registry for component types in the ECS system.
  * Provides type-safe registration and retrieval of component constructors.
  */
-export class ComponentRegistry {
+export class ComponentRegistry implements IComponentRegistry {
   private static instance: ComponentRegistry;
   private componentConstructors = new Map<
     string,
-    new (...args: any[]) => any
+    new (...args: any[]) => IComponent
   >();
 
   /**
@@ -32,7 +35,7 @@ export class ComponentRegistry {
    * @param componentClass The component class to register
    * @throws Error if the component class doesn't have a type property
    */
-  public register<T>(componentClass: new (...args: any[]) => T): void {
+  public register<T extends IComponent>(componentClass: new (...args: any[]) => T): void {
     const type = (componentClass as any).type;
     if (!type) {
       throw new Error(
@@ -49,12 +52,8 @@ export class ComponentRegistry {
    * @param type The type of the component
    * @returns The component constructor or undefined if not found
    */
-  public getConstructor<T>(
-    type: string
-  ): (new (...args: any[]) => T) | undefined {
-    return this.componentConstructors.get(type) as
-      | (new (...args: any[]) => T)
-      | undefined;
+  public getConstructor(type: string): (new (...args: any[]) => IComponent) | undefined {
+    return this.componentConstructors.get(type);
   }
 
   /**
@@ -64,10 +63,10 @@ export class ComponentRegistry {
    * @param args Arguments to pass to the component constructor
    * @returns A new component instance or undefined if the type is not registered
    */
-  public createComponent<T>(type: string, ...args: any[]): T | undefined {
-    const constructor = this.getConstructor<T>(type);
+  public createComponent<T extends IComponent>(type: string, ...args: any[]): T | undefined {
+    const constructor = this.getConstructor(type);
     if (constructor) {
-      return new constructor(...args);
+      return new constructor(...args) as T;
     }
     return undefined;
   }

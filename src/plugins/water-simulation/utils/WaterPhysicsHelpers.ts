@@ -75,7 +75,7 @@ export function handleDropletCollision(
       createRipples(waterBodyComponent, dropletPosition.x, dropletPosition.z);
     }
 
-    world.entityManager.destroyEntity(dropletEntityId);
+    world.destroyEntity(dropletEntityId);
     return true;
   }
   return false;

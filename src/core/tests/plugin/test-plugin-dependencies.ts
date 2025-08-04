@@ -1,9 +1,12 @@
 import { PluginManager } from "../../plugin/PluginManager";
 import { ISimulationPlugin } from "../../plugin/ISimulationPlugin";
 import { World } from "../../ecs";
+import { System } from "../../ecs/System";
+import { IStudio } from "../../../studio/IStudio";
 
 // Create a mock World
 const mockWorld = {} as World;
+const mockStudio = {} as IStudio;
 
 // Create a simple plugin class
 class TestPlugin implements ISimulationPlugin {
@@ -31,6 +34,10 @@ class TestPlugin implements ISimulationPlugin {
   initializeEntities(world: World): void {
     // No-op for this test
   }
+
+  getSystems(studio: IStudio): System[] {
+    return [];
+  }
 }
 
 async function testPluginDependencies() {
@@ -52,7 +59,7 @@ async function testPluginDependencies() {
   try {
     // Activate plugin D, which should activate C, B, and A in the correct order
     console.log("Activating plugin D...");
-    await pluginManager.activatePlugin("D");
+    await pluginManager.activatePlugin("D", mockStudio);
     console.log("All plugins activated successfully!");
   } catch (error) {
     console.error("Error activating plugins:", error);

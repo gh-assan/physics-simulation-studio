@@ -11,8 +11,8 @@ class MockPlugin {
 }
 class MockPluginManager {
   plugins: Record<string, any> = {};
-  activatePlugin = jest.fn(async (name: string) => {});
-  deactivatePlugin = jest.fn((name: string) => {});
+  activatePlugin = jest.fn(async (name: string, studio: any) => {});
+  deactivatePlugin = jest.fn((name: string, studio: any) => {});
   getPlugin = jest.fn((name: string) => this.plugins[name]);
   getAvailablePluginNames = jest.fn(() => Object.keys(this.plugins));
 }
@@ -40,7 +40,17 @@ describe('Studio', () => {
     pluginManager = new MockPluginManager();
     stateManager = new MockStateManager();
     renderSystem = new MockRenderSystem();
-    studio = new Studio(world, pluginManager as any, stateManager as any);
+
+    // Create mock plugin context
+    const mockPluginContext = {
+      studio: undefined as any, // will be set after Studio is constructed
+      world: world,
+      eventBus: undefined,
+      getStateManager: () => stateManager as any,
+    };
+
+    studio = new Studio(world, pluginManager as any, stateManager as any, mockPluginContext as any);
+    mockPluginContext.studio = studio;
     studio.setRenderSystem(renderSystem as any);
     pluginManager.plugins['simA'] = new MockPlugin();
     stateManager.selectedSimulation.getSimulationName = jest.fn(() => null);
@@ -50,7 +60,7 @@ describe('Studio', () => {
     const eventSpy = jest.fn();
     window.addEventListener('simulation-loaded', eventSpy);
     await studio.loadSimulation('simA');
-    expect(pluginManager.activatePlugin).toHaveBeenCalledWith('simA');
+    expect(pluginManager.activatePlugin).toHaveBeenCalledWith('simA', studio);
     expect(stateManager.selectedSimulation.setSimulation).toHaveBeenCalledWith('simA');
     expect(eventSpy).toHaveBeenCalled();
     window.removeEventListener('simulation-loaded', eventSpy);
@@ -59,8 +69,8 @@ describe('Studio', () => {
   it('unloads previous simulation before loading new one', async () => {
     stateManager.selectedSimulation.getSimulationName = jest.fn(() => 'simA');
     await studio.loadSimulation('simB');
-    expect(pluginManager.deactivatePlugin).toHaveBeenCalledWith('simA');
-    expect(pluginManager.activatePlugin).toHaveBeenCalledWith('simB');
+    expect(pluginManager.deactivatePlugin).toHaveBeenCalledWith('simA', studio);
+    expect(pluginManager.activatePlugin).toHaveBeenCalledWith('simB', studio);
   });
 
   it('returns renderer from active plugin', async () => {

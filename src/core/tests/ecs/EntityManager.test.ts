@@ -15,7 +15,8 @@ describe("EntityManager", () => {
 
   it("should reuse destroyed entity IDs", () => {
     const entity1 = entityManager.createEntity();
-    entityManager.destroyEntity(entity1);
+    const mockWorld = { systemManager: { getAllSystems: () => [] } } as any;
+    entityManager.destroyEntity(entity1, mockWorld);
     const entity2 = entityManager.createEntity();
     expect(entity1).toBe(entity2);
   });

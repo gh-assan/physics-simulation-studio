@@ -1,8 +1,10 @@
+import { IUIManager } from "../IUIManager";
 import { UIManager } from "../uiManager";
 import { IComponent } from "../../core/ecs/IComponent";
-import { getComponentProperties } from "../utils/ComponentPropertyRegistry";
+import { ComponentPropertyRegistry } from "../utils/ComponentPropertyRegistry";
 import { ParameterPanelComponent } from "../../core/components/ParameterPanelComponent";
 import { Logger } from "../../core/utils/Logger";
+import { IPropertyInspectorUIManager } from "./IPropertyInspectorUIManager";
 
 /**
  * Manages the rendering of properties in the Property Inspector UI.
@@ -10,17 +12,24 @@ import { Logger } from "../../core/utils/Logger";
  * component properties, either via a dedicated ParameterPanelComponent
  * or by dynamically generating controls from the ComponentPropertyRegistry.
  */
-export class PropertyInspectorUIManager {
-  private uiManager: UIManager;
+export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
+  /**
+   * Required by IPropertyInspectorUIManager interface. Clears inspector controls.
+   */
+  public clearInspectorControls(): void {
+    // Stub implementation: delegate to clearControls or add custom logic if needed
+    this.clearControls();
+  }
+  private uiManager: IUIManager;
 
-  constructor(uiManager: UIManager) {
+  constructor(uiManager: IUIManager) {
     this.uiManager = uiManager;
   }
 
   /**
    * Clears all controls from the property inspector.
    */
-  public clearInspectorControls(): void {
+  public clearControls(): void {
     this.uiManager.clearControls();
   }
 
@@ -45,20 +54,20 @@ export class PropertyInspectorUIManager {
     );
 
     if (parameterPanel) {
-      Logger.log(
+      Logger.getInstance().log(
         `[PropertyInspectorUIManager] Using parameter panel for component '${displayName}'`
       );
-      parameterPanel.registerControls(this.uiManager, componentInstance);
+      parameterPanel.registerControls(this.uiManager as UIManager, componentInstance);
     } else {
       // Fall back to dynamically generating controls if no parameter panel component is found
-      const properties = getComponentProperties(componentTypeKey);
+      const properties = ComponentPropertyRegistry.getInstance().getComponentProperties(componentTypeKey);
 
       if (properties) {
-        Logger.log(
+        Logger.getInstance().log(
           `[PropertyInspectorUIManager] Found ${properties.length} properties for component '${displayName}' using key '${componentTypeKey}'`
         );
       } else {
-        Logger.warn(
+        Logger.getInstance().warn(
           `[PropertyInspectorUIManager] No properties found for component '${displayName}' using key '${componentTypeKey}'`
         );
       }
@@ -77,11 +86,11 @@ export class PropertyInspectorUIManager {
    * @param parameterPanels An array of ParameterPanelComponents to register.
    */
   public registerParameterPanels(parameterPanels: ParameterPanelComponent[]): void {
-    Logger.log(
+    Logger.getInstance().log(
       `[PropertyInspectorUIManager] Registering ${parameterPanels.length} parameter panels.`
     );
     for (const panel of parameterPanels) {
-      panel.registerControls(this.uiManager);
+      panel.registerControls(this.uiManager as UIManager);
     }
   }
 }

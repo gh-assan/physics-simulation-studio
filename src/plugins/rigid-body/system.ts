@@ -35,8 +35,8 @@ export class PhysicsSystem extends System {
         RotationComponent.name
       )!;
 
-      const translation = rigidBodyComp.body.translation();
-      const rotation = rigidBodyComp.body.rotation();
+      const translation = rigidBodyComp.body.getPosition();
+      const rotation = rigidBodyComp.body.getRotation();
 
       posComp.x = translation.x;
       posComp.y = translation.y;

@@ -1,16 +1,10 @@
-import { Studio } from "./Studio";
-import { World } from "../core/ecs/World";
-import { PluginManager } from "../core/plugin/PluginManager";
-import { RenderSystem } from "./systems/RenderSystem";
-import { StateManager } from "./state/StateManager";
-import { PropertyInspectorSystem } from "./systems/PropertyInspectorSystem";
-import { UIManager } from "./uiManager";
 import { PropertyInspectorUIManager } from "./ui/PropertyInspectorUIManager";
 import { SceneSerializer } from "./systems/SceneSerializer";
 import { FlagSimulationPlugin } from "@plugins/flag-simulation";
 import { WaterSimulationPlugin } from "@plugins/water-simulation";
-import { registerFlagComponentProperties } from "@plugins/flag-simulation";
-import { registerWaterComponentProperties } from "@plugins/water-simulation";
+import { SolarSystemPlugin } from "@plugins/solar-system";
+import { flagComponentProperties } from "../plugins/flag-simulation/flagComponentProperties";
+import { waterBodyComponentProperties, waterDropletComponentProperties } from "../plugins/water-simulation/waterComponentProperties";
 import { PositionComponent } from "../core/components/PositionComponent";
 import { RenderableComponent } from "../core/components/RenderableComponent";
 import { SelectableComponent } from "../core/components/SelectableComponent";
@@ -19,16 +13,41 @@ import { Pane } from "tweakpane";
 import { ViewportToolbar } from "./ui/ViewportToolbar";
 import { SelectionSystem } from "./systems/SelectionSystem";
 import { Logger } from "../core/utils/Logger";
+import { IWorld } from "../core/ecs/IWorld";
+import { IPluginManager } from "../core/plugin/IPluginManager";
+import { IStateManager } from "./state/IStateManager";
+import { IStudio } from "./IStudio";
+import { World } from "../core/ecs/World";
+import { PluginManager } from "../core/plugin/PluginManager";
+import { StateManager } from "./state/StateManager";
+import { Studio } from "./Studio";
+import { IUIManager } from "./IUIManager";
+import { UIManager } from "./uiManager";
+import { RenderSystem } from "./systems/RenderSystem";
+import { PropertyInspectorSystem } from "./systems/PropertyInspectorSystem";
+import { ComponentPropertyRegistry } from "./utils/ComponentPropertyRegistry";
+import { FlagComponent } from "../plugins/flag-simulation/FlagComponent";
+import { WaterBodyComponent } from "../plugins/water-simulation/WaterComponents";
+import { IPluginContext } from "./IPluginContext";
+import { ThreeGraphicsManager } from "./graphics/ThreeGraphicsManager";
 
 // Import styles
 import "./styles/studio.css";
 import "./styles/toolbar.css";
 
-function setupCoreSystems() {
-  const world = new World();
-  const pluginManager = new PluginManager(world);
-  const stateManager = StateManager.getInstance();
-  const studio = new Studio(world, pluginManager, stateManager);
+function setupCoreSystems(): { world: World; pluginManager: PluginManager; stateManager: StateManager; studio: Studio } {
+  const world: World = new World();
+  const pluginManager: PluginManager = new PluginManager(world);
+  const stateManager: StateManager = StateManager.getInstance();
+  // Studio expects pluginContext as 4th argument
+  const pluginContext: IPluginContext = {
+    studio: undefined as any, // will be set after Studio is constructed
+    world: world,
+    eventBus: (window as any).ApplicationEventBus ? (window as any).ApplicationEventBus.getInstance() : undefined,
+    getStateManager: () => stateManager,
+  };
+  const studio = new Studio(world, pluginManager, stateManager, pluginContext);
+  pluginContext.studio = studio;
   const sceneSerializer = new SceneSerializer();
 
   // Expose for debugging
@@ -41,7 +60,7 @@ function setupCoreSystems() {
   return { world, pluginManager, stateManager, studio };
 }
 
-function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager) {
+function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager): { uiManager: UIManager; propertyInspectorUIManager: PropertyInspectorUIManager } {
   const pane = new Pane();
   const uiManager = new UIManager(pane);
   const propertyInspectorUIManager = new PropertyInspectorUIManager(uiManager);
@@ -57,14 +76,25 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
 
   function updateSimulationSelector() {
     simulationSelectionFolder.children.forEach((child: any) => child.dispose());
+    const options = studio.getAvailableSimulationNames().map((name: string) => ({ text: name, value: name }));
+    if (options.length === 0) {
+      // Show a disabled selector or message if no simulations are available
+      simulationSelectionFolder.addButton({ title: "No simulations available" }).disabled = true;
+      stateManager.selectedSimulation.state.name = null;
+      return;
+    }
+    // Ensure the state is always a valid plugin name
+    if (!options.some((opt: { text: string; value: string; }) => opt.value === stateManager.selectedSimulation.state.name)) {
+      stateManager.selectedSimulation.state.name = options[0].value;
+    }
     simulationSelectionFolder
       .addBinding(stateManager.selectedSimulation.state, "name", {
         label: "Select Simulation",
-        options: studio
-          .getAvailableSimulationNames()
-          .map((name) => ({ text: name, value: name })),
+        options,
       })
       .on("change", (ev: { value: string | null }) => {
+        // Always set the state to the plugin name
+        stateManager.selectedSimulation.state.name = ev.value;
         void studio.loadSimulation(ev.value);
       });
   }
@@ -72,46 +102,58 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
   // Initial population
   updateSimulationSelector();
 
-  pluginManager.onPluginRegistered(() => {
-    updateSimulationSelector();
-  });
+  // If pluginManager has an event emitter, listen for plugin registration events
+  if (typeof (pluginManager as any).on === "function") {
+    (pluginManager as any).on("plugin:registered", updateSimulationSelector);
+  }
 
   return { uiManager, propertyInspectorUIManager };
 }
 
 function registerComponentsAndSystems(world: World, studio: Studio, propertyInspectorUIManager: PropertyInspectorUIManager, pluginManager: PluginManager) {
   // Register Component Properties
-  registerFlagComponentProperties();
-  registerWaterComponentProperties();
+  ComponentPropertyRegistry.getInstance().registerComponentProperties(
+    (FlagComponent as any).type || "FlagComponent",
+    flagComponentProperties
+  );
+  ComponentPropertyRegistry.getInstance().registerComponentProperties(
+    (WaterBodyComponent as any).type || "WaterBodyComponent",
+    waterBodyComponentProperties
+  );
 
   // Register Core Components
-  world.componentManager.registerComponent(PositionComponent);
-  world.componentManager.registerComponent(RenderableComponent);
-  world.componentManager.registerComponent(SelectableComponent);
-  world.componentManager.registerComponent(RotationComponent);
+  // Ensure static 'type' property is present for each component
+  world.registerComponent((PositionComponent as any).type ? PositionComponent : class extends PositionComponent { static type = "PositionComponent"; });
+  world.registerComponent((RenderableComponent as any).type ? RenderableComponent : class extends RenderableComponent { static type = "RenderableComponent"; });
+  world.registerComponent((SelectableComponent as any).type ? SelectableComponent : class extends SelectableComponent { static type = "SelectableComponent"; });
+  world.registerComponent((RotationComponent as any).type ? RotationComponent : class extends RotationComponent { static type = "RotationComponent"; });
 
   // Register Systems
-  const renderSystem = new RenderSystem(studio);
-  world.systemManager.registerSystem(renderSystem);
+  const graphicsManager = new ThreeGraphicsManager();
+  graphicsManager.initialize(document.body);
+  const renderSystem = new RenderSystem(graphicsManager, world);
+  world.registerSystem(renderSystem);
 
-  const selectionSystem = new SelectionSystem(studio, world); // Create a single instance
-  world.systemManager.registerSystem(selectionSystem);
+  const selectionSystem = new SelectionSystem(studio, world as World); // Ensure correct type
+  world.registerSystem(selectionSystem);
 
-  world.systemManager.registerSystem(
-    new PropertyInspectorSystem(propertyInspectorUIManager, world, studio, pluginManager, selectionSystem)
+  world.registerSystem(
+    new PropertyInspectorSystem(propertyInspectorUIManager, world as World, studio, pluginManager, selectionSystem)
   );
   studio.setRenderSystem(renderSystem);
 
   // Create viewport toolbar
   const viewportToolbar = new ViewportToolbar({
-    graphicsManager: renderSystem.getGraphicsManager(),
+    graphicsManager: renderSystem.getGraphicsManager() as ThreeGraphicsManager,
   });
   (window as any).viewportToolbar = viewportToolbar;
 }
 
 function registerPlugins(pluginManager: PluginManager) {
-  pluginManager.registerPlugin(new FlagSimulationPlugin());
-  pluginManager.registerPlugin(new WaterSimulationPlugin());
+  const flagPlugin = new FlagSimulationPlugin();
+  Logger.getInstance().log("Registering plugin:", flagPlugin.getName());
+  pluginManager.registerPlugin(flagPlugin);
+  Logger.getInstance().log("Available plugins after registration:", pluginManager.getAvailablePluginNames());
 }
 
 function startApplication(studio: Studio) {
@@ -127,28 +169,36 @@ function startApplication(studio: Studio) {
 }
 
 async function main() {
-  Logger.log("Initializing Physics Simulation Studio...");
+  // Enable logging for debugging
+  Logger.getInstance().enable();
+  Logger.getInstance().log("Initializing Physics Simulation Studio...");
 
   const { world, pluginManager, stateManager, studio } = setupCoreSystems();
   const { uiManager, propertyInspectorUIManager } = setupUI(studio, stateManager, pluginManager);
-  registerComponentsAndSystems(world, studio, propertyInspectorUIManager, pluginManager);
+  registerComponentsAndSystems(world as World, studio, propertyInspectorUIManager, pluginManager as PluginManager);
   registerPlugins(pluginManager);
+
+  // Set render system before loading simulation
+  const renderSystem = (world as World).systemManager.getSystem(RenderSystem);
+  if (renderSystem) {
+    studio.setRenderSystem(renderSystem);
+  }
 
   // Load Initial Simulation
   const defaultSimulationName = studio.getAvailableSimulationNames()[0] || null;
   if (defaultSimulationName) {
-    Logger.log(`Loading default simulation: ${defaultSimulationName}`);
+    Logger.getInstance().log(`Loading default simulation: ${defaultSimulationName}`);
     await studio.loadSimulation(defaultSimulationName);
   } else {
-    Logger.warn("No default simulation found to load.");
+    Logger.getInstance().warn("No default simulation found to load.");
   }
 
   startApplication(studio);
 
-  Logger.log("Physics Simulation Studio Initialized");
+  Logger.getInstance().log("Physics Simulation Studio Initialized");
 }
 
 // Run the main initialization function
 main().catch((error) => {
-  Logger.error("Failed to initialize the studio:", error);
+  Logger.getInstance().error("Failed to initialize the studio:", error);
 });

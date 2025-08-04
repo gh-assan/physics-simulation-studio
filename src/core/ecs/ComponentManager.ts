@@ -1,12 +1,15 @@
 import { Logger } from "../utils/Logger";
 import { IComponent } from "./IComponent";
 import { ComponentRegistry } from "./ComponentRegistry";
+import { IComponentManager } from "./IComponentManager";
+import { IWorld } from "./IWorld";
+import { SelectableComponent } from "../components/SelectableComponent";
 
 /**
  * Manages components for all entities in the ECS system.
  * Provides methods for adding, removing, and querying components.
  */
-export class ComponentManager {
+export class ComponentManager implements IComponentManager {
   private componentStores = new Map<string, Map<number, IComponent>>();
   private registry = ComponentRegistry.getInstance();
 
@@ -19,7 +22,7 @@ export class ComponentManager {
   public registerComponent<T extends IComponent>(
     componentClass: new (...args: any[]) => T
   ): void {
-    Logger.log(
+    Logger.getInstance().log(
       `[ComponentManager] Registering component: ${componentClass.name}`
     );
 
@@ -46,14 +49,14 @@ export class ComponentManager {
     componentType: string,
     component: T
   ): void {
-    Logger.log(
+    Logger.getInstance().log(
       `[ComponentManager] Adding component '${componentType}' to entity ${entityID}`
     );
     const store = this.getComponentStore(componentType);
     if (store) {
       store.set(entityID, component);
     } else {
-      Logger.error(
+      Logger.getInstance().error(
         `[ComponentManager] Component type '${componentType}' is not registered. Entity: ${entityID}`
       );
       throw new Error(`Component type '${componentType}' is not registered`);
@@ -71,14 +74,14 @@ export class ComponentManager {
     entityID: number,
     componentType: string
   ): T | undefined {
-    Logger.log(
+    Logger.getInstance().log(
       `[ComponentManager] Getting component '${componentType}' for entity ${entityID}`
     );
     const component = this.componentStores
       .get(componentType)
       ?.get(entityID) as T;
     if (!component) {
-      Logger.warn(
+      Logger.getInstance().warn(
         `[ComponentManager] Component '${componentType}' not found for entity ${entityID}`
       );
     }
@@ -91,15 +94,23 @@ export class ComponentManager {
    * @param entityID The ID of the entity
    * @param componentType The type of the component
    */
-  public removeComponent(entityID: number, componentType: string): void {
-    Logger.log(
+  public removeComponent(entityID: number, componentType: string, world?: IWorld): void {
+    Logger.getInstance().log(
       `[ComponentManager] Removing component '${componentType}' from entity ${entityID}`
     );
     const store = this.getComponentStore(componentType);
     if (store) {
       store.delete(entityID);
+      // Call onComponentRemoved on all systems if world is provided
+      if (world && world.systemManager && world.systemManager.getAllSystems) {
+        for (const system of world.systemManager.getAllSystems()) {
+          if (typeof system.onComponentRemoved === 'function') {
+            system.onComponentRemoved(entityID, componentType, world);
+          }
+        }
+      }
     } else {
-      Logger.warn(
+      Logger.getInstance().warn(
         `[ComponentManager] Attempted to remove unregistered component type '${componentType}' from entity ${entityID}`
       );
     }
@@ -138,11 +149,11 @@ export class ComponentManager {
     }
 
     const componentTypes = componentClasses.map(
-      (c) => (c as any).type || c.name
+      (c) => (c as any).simulationType || c.name
     );
 
     const entities = this.getEntitiesWithComponentTypes(componentTypes);
-    Logger.log(
+    Logger.getInstance().log(
       `[ComponentManager] getEntitiesWithComponents returning: ${entities.length} entities for types: ${componentTypes.join(", ")}`
     );
     return entities;
@@ -157,7 +168,7 @@ export class ComponentManager {
   public getAllComponentsForEntity(entityID: number): {
     [key: string]: IComponent;
   } {
-    Logger.log(
+    Logger.getInstance().log(
       `[ComponentManager] Getting all components for entity ${entityID}`
     );
     const components: { [key: string]: IComponent } = {};
@@ -169,7 +180,7 @@ export class ComponentManager {
       }
     });
 
-    Logger.log(
+    Logger.getInstance().log(
       `[ComponentManager] Found ${Object.keys(components).length} components for entity ${entityID}:`,
       components
     );
@@ -188,14 +199,14 @@ export class ComponentManager {
     componentType: string,
     newComponent: T
   ): void {
-    Logger.log(
+    Logger.getInstance().log(
       `[ComponentManager] Updating component '${componentType}' for entity ${entityID}`
     );
     const store = this.getComponentStore(componentType);
     if (store) {
       store.set(entityID, newComponent);
     } else {
-      Logger.error(
+      Logger.getInstance().error(
         `[ComponentManager] Component type '${componentType}' is not registered. Entity: ${entityID}`
       );
       throw new Error(`Component type '${componentType}' is not registered`);
@@ -235,8 +246,8 @@ export class ComponentManager {
     this.registry.getRegisteredTypes().forEach((type: string) => {
       const constructor = this.registry.getConstructor(type);
       if (constructor) {
-        // @ts-ignore
-        constructors.set(type, constructor);
+        // Type assertion is needed because the registry returns a generic constructor
+        constructors.set(type, constructor as unknown as new (...args: any[]) => IComponent);
       }
     });
 
@@ -335,7 +346,7 @@ export class ComponentManager {
    * @param entityID The ID of the entity
    * @param componentTypes An array of component types to remove
    */
-  public removeComponents(entityID: number, componentTypes: string[]): void {
+  private removeComponents(entityID: number, componentTypes: string[]): void {
     for (const componentType of componentTypes) {
       this.removeComponent(entityID, componentType);
     }
@@ -346,7 +357,7 @@ export class ComponentManager {
    *
    * @param entityID The ID of the entity
    */
-  public removeAllComponentsForEntity(entityID: number): void {
+  private removeAllComponentsForEntity(entityID: number): void {
     this.componentStores.forEach((store) => {
       store.delete(entityID);
     });
@@ -373,5 +384,13 @@ export class ComponentManager {
 
     this.addComponent(entityID, componentType, component);
     return component;
+  }
+
+  /**
+   * Initializes the ComponentManager, registering default components.
+   */
+  public initialize(): void {
+    this.registerComponent(SelectableComponent);
+    // Register other components if needed
   }
 }

@@ -1,8 +1,10 @@
+import { IEventEmitter } from "./IEventEmitter";
+
 /**
  * A simple event emitter for implementing the observer pattern.
  * Allows objects to subscribe to events and be notified when those events occur.
  */
-export class EventEmitter {
+export class EventEmitter implements IEventEmitter {
   /**
    * Map of event names to arrays of listener functions.
    */
@@ -130,3 +132,4 @@ export class EventEmitter {
     }
   }
 }
+

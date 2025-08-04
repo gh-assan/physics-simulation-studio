@@ -1,28 +1,25 @@
 import { EntityManager } from "./EntityManager";
 import { ComponentManager } from "./ComponentManager";
 import { SystemManager } from "./SystemManager";
+import { IEntityManager } from "./IEntityManager";
+import { IComponentManager } from "./IComponentManager";
+import { ISystemManager } from "./ISystemManager";
+import { ISystem } from "./ISystem";
+import { IECSManager } from "./IECSManager";
+import { IWorld } from "./IWorld";
 import { IComponent } from "./IComponent";
-import { System } from "./System";
 
 /**
  * The central class of the ECS architecture.
  * Manages entities, components, and systems.
  */
-export class World {
-  /**
-   * Manages entity creation, destruction, and tracking.
-   */
-  public entityManager = new EntityManager();
+export class World implements IWorld, IECSManager {
+  public entityManager: IEntityManager = new EntityManager();
+  public componentManager: IComponentManager = new ComponentManager();
+  public systemManager: ISystemManager = new SystemManager();
 
-  /**
-   * Manages component registration, addition, and retrieval.
-   */
-  public componentManager = new ComponentManager();
-
-  /**
-   * Manages system registration and execution.
-   */
-  public systemManager = new SystemManager();
+  constructor() {
+  }
 
   /**
    * Updates all systems in the world.
@@ -64,8 +61,12 @@ export class World {
    * @param entityId The ID of the entity to destroy
    */
   public destroyEntity(entityId: number): void {
-    this.entityManager.destroyEntity(entityId);
-    this.componentManager.removeAllComponentsForEntity(entityId);
+    this.entityManager.destroyEntity(entityId, this);
+    // Remove all components and trigger hooks
+    const allComponents = Object.keys(this.componentManager.getAllComponentsForEntity(entityId));
+    for (const componentType of allComponents) {
+      this.componentManager.removeComponent(entityId, componentType, this);
+    }
   }
 
   /**
@@ -100,7 +101,7 @@ export class World {
    *
    * @param system The system to register
    */
-  public registerSystem(system: System): void {
+  public registerSystem(system: ISystem): void {
     this.systemManager.registerSystem(system, this);
   }
 
@@ -111,7 +112,51 @@ export class World {
    * @param system The system to remove
    * @returns True if the system was removed, false if it wasn't found
    */
-  public removeSystem(system: System): boolean {
+  public removeSystem(system: ISystem): boolean {
     return this.systemManager.removeSystem(system, this);
+  }
+
+  public getComponent<T extends IComponent>(
+    entityId: number,
+    componentName: string
+  ): T | undefined {
+    return this.componentManager.getComponent(entityId, componentName) as T;
+  }
+
+  public hasEntity(entityId: number): boolean {
+    return this.entityManager.hasEntity(entityId);
+  }
+
+  public removeComponent(entityID: number, componentType: string): void {
+    this.componentManager.removeComponent(entityID, componentType, this);
+  }
+
+  public getEntitiesWithComponentTypes(componentTypes: string[]): number[] {
+    return this.componentManager.getEntitiesWithComponentTypes(componentTypes);
+  }
+
+  public getAllComponentsForEntity(entityID: number): { [key: string]: IComponent; } {
+    return this.componentManager.getAllComponentsForEntity(entityID);
+  }
+
+  public updateComponent<T extends IComponent>(entityID: number, componentType: string, newComponent: T): void {
+    this.componentManager.updateComponent(entityID, componentType, newComponent);
+  }
+
+  public getComponentConstructors(): Map<string, new (...args: any[]) => IComponent> {
+    return this.componentManager.getComponentConstructors();
+  }
+
+  public hasComponent(
+    entityId: number,
+    componentName: string
+  ): boolean {
+    return this.componentManager.hasComponent(entityId, componentName);
+  }
+
+  public getEntitiesWithComponents(
+    componentTypes: (new (...args: any[]) => IComponent)[]
+  ): number[] {
+    return this.componentManager.getEntitiesWithComponents(componentTypes);
   }
 }

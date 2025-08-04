@@ -4,24 +4,24 @@ import { WaterBodyComponent, WaterDropletComponent } from "./WaterComponents";
 import { WaterSystem } from "./WaterSystem";
 import { WaterRenderer } from "./WaterRenderer";
 import { PositionComponent } from "@core/components/PositionComponent";
-import { RenderableComponent } from "@core/components/RenderableComponent";
+import { RenderableComponent } from "../../core/ecs/RenderableComponent";
 import { SelectableComponent } from "@core/components/SelectableComponent";
-import { RotationComponent } from "@core/components/RotationComponent"; // Import RotationComponent
+import { RotationComponent } from "../../core/ecs/RotationComponent";
 import { ParameterPanelComponent } from "@core/components/ParameterPanelComponent";
 import { WaterBodyParameterPanel } from "./WaterBodyParameterPanel";
 import { WaterDropletParameterPanel } from "./WaterDropletParameterPanel";
 import { Vector3 } from "./utils/Vector3"; // Add this import
 import { waterBodyComponentProperties, waterDropletComponentProperties } from "./waterComponentProperties";
-import { registerComponentProperties } from "../../studio/utils/ComponentPropertyRegistry";
+import { ComponentPropertyRegistry } from "../../studio/utils/ComponentPropertyRegistry";
+import { IStudio } from "../../studio/IStudio";
+import { ISystem } from "../../core/ecs/ISystem";
 
 export { WaterBodyComponent, WaterDropletComponent } from "./WaterComponents";
 export { WaterBodyParameterPanel } from "./WaterBodyParameterPanel";
 export { WaterDropletParameterPanel } from "./WaterDropletParameterPanel";
 
-export function registerWaterComponentProperties() {
-  registerComponentProperties("WaterBodyComponent", waterBodyComponentProperties);
-  registerComponentProperties("WaterDropletComponent", waterDropletComponentProperties);
-}
+ComponentPropertyRegistry.getInstance().registerComponentProperties("WaterBodyComponent", waterBodyComponentProperties);
+ComponentPropertyRegistry.getInstance().registerComponentProperties("WaterDropletComponent", waterDropletComponentProperties);
 
 export class WaterSimulationPlugin implements ISimulationPlugin {
   public getName(): string {
@@ -45,7 +45,7 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
     return this._parameterPanels;
   }
 
-  register(world: World): void {
+  register(world: World, studio?: any): void {
     // Register components
     world.componentManager.registerComponent(WaterBodyComponent);
     world.componentManager.registerComponent(WaterDropletComponent);
@@ -127,8 +127,8 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
     );
     world.componentManager.addComponent(
       waterBody,
-      RenderableComponent.type,
-      new RenderableComponent("plane", "blue")
+      RenderableComponent.name,
+      new RenderableComponent("plane", 0x0000ff)
     );
     world.componentManager.addComponent(
       waterBody,
@@ -137,7 +137,7 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
     );
     world.componentManager.addComponent(
       waterBody,
-      RotationComponent.type,
+      RotationComponent.name,
       new RotationComponent(0, 0, 0, 1)
     ); // Add RotationComponent
 
@@ -162,8 +162,8 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
 
     world.componentManager.addComponent(
       droplet,
-      RenderableComponent.type,
-      new RenderableComponent("sphere", "lightblue")
+      RenderableComponent.name,
+      new RenderableComponent("sphere", 0x87ceeb)
     );
     world.componentManager.addComponent(
       droplet,
@@ -172,12 +172,17 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
     );
     world.componentManager.addComponent(
       droplet,
-      RotationComponent.type,
+      RotationComponent.name,
       new RotationComponent(0, 0, 0, 1) // Add RotationComponent
     );
   }
 
   getRenderer(): WaterRenderer {
     return this.waterRenderer;
+  }
+
+  getSystems(studio: IStudio): ISystem[] {
+    // Return an empty array or appropriate systems for the plugin
+    return [];
   }
 }

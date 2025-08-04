@@ -1,14 +1,16 @@
 // src/studio/utils/ComponentPropertyDefinitions.ts
 
-import { registerComponentProperties } from "./ComponentPropertyRegistry";
+import { ComponentPropertyRegistry } from "./ComponentPropertyRegistry";
 import { FlagComponent } from "../../plugins/flag-simulation/FlagComponent";
-import {
-  WaterBodyComponent,
-  WaterDropletComponent
-} from "../../plugins/water-simulation/WaterComponents";
+import { WaterBodyComponent, WaterDropletComponent } from "../../plugins/water-simulation/WaterComponents";
+import { PositionComponent } from "../../core/components/PositionComponent";
+import { RotationComponent } from "../../core/components/RotationComponent";
+
+// Get the registry instance
+const registry = ComponentPropertyRegistry.getInstance();
 
 // Register properties for FlagComponent
-registerComponentProperties(FlagComponent.type, [
+registry.registerComponentProperties(FlagComponent.type, [
   {
     property: "width",
     type: "number",
@@ -131,7 +133,7 @@ registerComponentProperties(FlagComponent.type, [
 ]);
 
 // Register properties for WaterBodyComponent
-registerComponentProperties(WaterBodyComponent.type, [
+registry.registerComponentProperties(WaterBodyComponent.type, [
   {
     property: "viscosity",
     type: "number",
@@ -151,7 +153,7 @@ registerComponentProperties(WaterBodyComponent.type, [
 ]);
 
 // Register properties for WaterDropletComponent
-registerComponentProperties(WaterDropletComponent.type, [
+registry.registerComponentProperties(WaterDropletComponent.type, [
   {
     property: "size",
     type: "number",
@@ -195,7 +197,7 @@ registerComponentProperties(WaterDropletComponent.type, [
 ]);
 
 // Register properties for PositionComponent
-registerComponentProperties("PositionComponent", [
+registry.registerComponentProperties("PositionComponent", [
   {
     property: "x",
     type: "number",
@@ -223,7 +225,7 @@ registerComponentProperties("PositionComponent", [
 ]);
 
 // Register properties for RotationComponent
-registerComponentProperties("RotationComponent", [
+ComponentPropertyRegistry.getInstance().registerComponentProperties("RotationComponent", [
   {
     property: "x",
     type: "number",

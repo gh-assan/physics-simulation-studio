@@ -299,7 +299,7 @@ export class WaterSystem extends System {
         }
         // Animate ripple for a few frames, then remove droplet
         setTimeout(() => {
-          world.entityManager.destroyEntity(entityId);
+          world.destroyEntity(entityId);
         }, 300); // 300ms splash duration
         // Move droplet below surface to hide
         positionComponent.y = -1;

@@ -3,6 +3,7 @@ import { World } from "@core/ecs";
 import { PositionComponent, RotationComponent } from "@core/components";
 import { RigidBodyComponent } from "../components";
 import RAPIER from "@dimforge/rapier3d-compat";
+import { IRigidBody } from "../../../core/physics/IRigidBody";
 jest.mock("@dimforge/rapier3d-compat", () => ({
   __esModule: true,
   default: {
@@ -36,10 +37,11 @@ describe("PhysicsSystem", () => {
     const mockTranslation = new RAPIER.Vector3(10, 20, 30);
     const mockRotation = new RAPIER.Quaternion(0.1, 0.2, 0.3, 0.4);
 
-    const mockRigidBody = {
-      translation: () => mockTranslation,
-      rotation: () => mockRotation
-    } as RAPIER.RigidBody;
+    const mockRigidBody: IRigidBody = {
+      getPosition: () => mockTranslation,
+      getRotation: () => mockRotation,
+      applyImpulse: jest.fn()
+    };
 
     const rigidBodyComp = new RigidBodyComponent(mockRigidBody);
     const posComp = new PositionComponent(0, 0, 0);

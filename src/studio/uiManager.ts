@@ -3,8 +3,41 @@ import { ApplicationEventBus } from "./utils/ApplicationEventBus";
 import { ComponentPropertyPreparer } from "./utils/ComponentPropertyPreparer";
 import { Pane, FolderApi } from "tweakpane";
 import { ComponentControlProperty } from "./types";
+import { IUIManager } from "./ui/IUIManager";
+import { IPanel } from "./ui/IPanel";
 
-export class UIManager {
+export class UIManager implements IUIManager {
+  public createPanel(title: string): IPanel {
+    const folder = this.pane.addFolder({ title });
+    return folder as IPanel;
+  }
+  public registerComponentControls(
+    componentName: string,
+    data: any,
+    properties?: ComponentControlProperty[]
+  ): void {
+    // Remove any existing controls for this component
+    this.removeComponentControls(componentName);
+    // Create a new folder for the component controls
+    const folder = this.pane.addFolder({ title: componentName });
+    this.folders.set(componentName, folder);
+    // Add bindings for each property
+    if (properties) {
+      for (const prop of properties) {
+        this._addBindingForProperty(folder, data, prop);
+      }
+    } else {
+      // Auto-detect properties when not explicitly provided
+      for (const key in data) {
+        if (Object.prototype.hasOwnProperty.call(data, key)) {
+          const value = data[key];
+          if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'string') {
+            folder.addBinding(data, key, { label: key });
+          }
+        }
+      }
+    }
+  }
   private pane: Pane;
   private folders: Map<string, FolderApi> = new Map();
   private eventBus: ApplicationEventBus;
@@ -20,32 +53,21 @@ export class UIManager {
     this.propertyPreparer = propertyPreparer || ComponentPropertyPreparer;
   }
 
-  public addFolder(title: string, callback: (folder: FolderApi) => void): void {
-    const folder = this.pane.addFolder({ title });
-    callback(folder);
+
+
+  public addButton(panel: IPanel, title: string, onClick: () => void): void {
+    (panel as FolderApi).addButton({ title }).on("click", onClick);
+  }
+
+  public addBinding(panel: IPanel, target: any, key: string, options: any): void {
+    (panel as FolderApi).addBinding(target, key, options);
   }
 
   public refresh(): void {
     this.pane.refresh();
   }
 
-  public registerComponentControls(
-    componentName: string,
-    data: any,
-    properties?: ComponentControlProperty[]
-  ) {
-    const displayName = data.constructor
-      ? `${data.constructor.name} (${componentName})`
-      : componentName;
-    const folder = this.pane.addFolder({ title: displayName });
-    this.folders.set(componentName, folder);
 
-    // Use provided properties, or prepare them if not provided
-    const props = properties || this.propertyPreparer.filterProperties(data);
-    props.forEach((prop) => {
-      this._addBindingForProperty(folder, data, prop);
-    });
-  }
 
   private _addBindingForProperty(
     folder: FolderApi,
@@ -83,7 +105,7 @@ export class UIManager {
       if (parentData) {
         binding = folder.addBinding(parentData, lastKey, options);
       } else {
-        Logger.warn(
+        Logger.getInstance().warn(
           `[UIManager] Could not find parent object for property: ${prop.property}`
         );
       }
@@ -104,7 +126,7 @@ export class UIManager {
         window.dispatchEvent(event);
       });
     } else {
-      Logger.warn(
+      Logger.getInstance().warn(
         `[UIManager] Failed to create binding for property: ${prop.property}`
       );
     }
@@ -142,7 +164,7 @@ export class UIManager {
 
   // Future extensibility: allow switching UI frameworks
   // This method can be expanded to support other UI libraries
-  public setUIPane(newPane: Pane): void {
+  public setUIPane(newPane: any): void {
     this.pane = newPane;
     this.clearControls(); // Clear old controls when switching UI
   }
