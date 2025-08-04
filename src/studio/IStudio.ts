@@ -19,3 +19,4 @@ export interface IStudio {
   getAvailableSimulationNames(): string[];
   getPluginContext(): IPluginContext;
 }
+

@@ -98,3 +98,4 @@ export interface ISimulationPlugin {
    */
   getParameterPanels?(world: IWorld): ParameterPanelComponent[];
 }
+

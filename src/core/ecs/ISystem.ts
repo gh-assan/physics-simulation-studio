@@ -8,3 +8,4 @@ export interface ISystem {
   onRegister?(world: IWorld): void;
   onRemove?(world: IWorld): void;
 }
+

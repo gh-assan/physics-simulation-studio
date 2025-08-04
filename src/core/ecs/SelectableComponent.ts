@@ -4,7 +4,7 @@ export class SelectableComponent implements IComponent<SelectableComponent> {
   simulationType?: string;
   selected: boolean;
 
-  constructor(selected: boolean = false, simulationType?: string) {
+  constructor(selected = false, simulationType?: string) {
     this.selected = selected;
     this.simulationType = simulationType;
   }

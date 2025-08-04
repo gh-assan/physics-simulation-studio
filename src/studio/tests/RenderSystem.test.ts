@@ -158,11 +158,11 @@ describe("RenderSystem", () => {
 
     // Update again to ensure mesh is updated, not recreated
     position.x = 10;
-    
+
     // We know the mesh will be called again but that's fine - in a real app the meshes are cached
     // We're validating that position is updated correctly
     renderSystem.update(world, 0.16);
-    
+
     // Skip checking mesh creation count - just verify position is updated with any values
     expect(meshInstance.position.set).toHaveBeenCalled();
   });

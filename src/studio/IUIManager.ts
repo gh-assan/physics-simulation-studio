@@ -16,3 +16,4 @@ export interface IUIManager {
   removeComponentControls(componentName: string): void;
   setUIPane(newPane: any): void;
 }
+

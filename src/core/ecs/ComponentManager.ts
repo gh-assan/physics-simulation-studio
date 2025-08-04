@@ -246,8 +246,8 @@ export class ComponentManager implements IComponentManager {
     this.registry.getRegisteredTypes().forEach((type: string) => {
       const constructor = this.registry.getConstructor(type);
       if (constructor) {
-        // @ts-ignore
-        constructors.set(type, constructor);
+        // Type assertion is needed because the registry returns a generic constructor
+        constructors.set(type, constructor as unknown as new (...args: any[]) => IComponent);
       }
     });
 

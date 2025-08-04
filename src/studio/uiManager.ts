@@ -29,7 +29,7 @@ export class UIManager implements IUIManager {
     } else {
       // Auto-detect properties when not explicitly provided
       for (const key in data) {
-        if (data.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(data, key)) {
           const value = data[key];
           if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'string') {
             folder.addBinding(data, key, { label: key });
@@ -53,7 +53,7 @@ export class UIManager implements IUIManager {
     this.propertyPreparer = propertyPreparer || ComponentPropertyPreparer;
   }
 
-  
+
 
   public addButton(panel: IPanel, title: string, onClick: () => void): void {
     (panel as FolderApi).addButton({ title }).on("click", onClick);
@@ -67,7 +67,7 @@ export class UIManager implements IUIManager {
     this.pane.refresh();
   }
 
-  
+
 
   private _addBindingForProperty(
     folder: FolderApi,

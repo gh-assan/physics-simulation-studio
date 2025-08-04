@@ -40,7 +40,7 @@ describe('Studio', () => {
     pluginManager = new MockPluginManager();
     stateManager = new MockStateManager();
     renderSystem = new MockRenderSystem();
-    
+
     // Create mock plugin context
     const mockPluginContext = {
       studio: undefined as any, // will be set after Studio is constructed
@@ -48,7 +48,7 @@ describe('Studio', () => {
       eventBus: undefined,
       getStateManager: () => stateManager as any,
     };
-    
+
     studio = new Studio(world, pluginManager as any, stateManager as any, mockPluginContext as any);
     mockPluginContext.studio = studio;
     studio.setRenderSystem(renderSystem as any);

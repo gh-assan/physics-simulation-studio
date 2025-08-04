@@ -4,7 +4,7 @@ export class FlagComponent implements IComponent<FlagComponent> {
   simulationType?: string;
   isAttached: boolean;
 
-  constructor(isAttached: boolean = false, simulationType?: string) {
+  constructor(isAttached = false, simulationType?: string) {
     this.isAttached = isAttached;
     this.simulationType = simulationType;
   }
