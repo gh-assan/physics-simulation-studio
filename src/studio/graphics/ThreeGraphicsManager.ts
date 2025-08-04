@@ -1,5 +1,6 @@
 import { IGraphicsManager } from "./IGraphicsManager";
 import * as THREE from "three";
+import { CameraManager } from "../../core/graphics/CameraManager";
 import { SceneBuilder } from "./SceneBuilder";
 import { RendererProvider } from "./RendererProvider";
 import { OrbitControlsManager } from "./OrbitControlsManager";
@@ -22,17 +23,48 @@ export class ThreeGraphicsManager implements IGraphicsManager {
   public controlsManager: OrbitControlsManager;
   private controlsEnabled = false;
   private resizeHandler: WindowResizeHandler;
+  private cameraManager: CameraManager;
 
   constructor() {
     this.scene = SceneBuilder.buildScene();
     this.camera = this._initCamera();
     this.renderer = this._initRenderer();
+    this.cameraManager = new CameraManager();
+    // Sync initial camera state
+    this.camera.position.set(
+      this.cameraManager.getPosition().x,
+      this.cameraManager.getPosition().y,
+      this.cameraManager.getPosition().z
+    );
+    this.camera.lookAt(
+      this.cameraManager.getTarget().x,
+      this.cameraManager.getTarget().y,
+      this.cameraManager.getTarget().z
+    );
+    if (this.camera instanceof THREE.PerspectiveCamera) {
+      this.camera.zoom = this.cameraManager.getZoom();
+      this.camera.updateProjectionMatrix();
+    }
     this.controlsManager = new OrbitControlsManager(
       this.camera,
       this.renderer.domElement
     );
     this.controlsManager.disable();
     this.resizeHandler = new WindowResizeHandler(this._handleResize.bind(this));
+    // Listen for camera changes
+    this.cameraManager.onCameraChanged((state) => {
+      this.camera.position.set(state.position.x, state.position.y, state.position.z);
+      this.camera.lookAt(state.target.x, state.target.y, state.target.z);
+      if (this.camera instanceof THREE.PerspectiveCamera) {
+        this.camera.zoom = state.zoom;
+        this.camera.updateProjectionMatrix();
+      }
+      this.render();
+    });
+  }
+
+  public getCameraManager(): CameraManager {
+    return this.cameraManager;
   }
 
   public initialize(container: HTMLElement): void {

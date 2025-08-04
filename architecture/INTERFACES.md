@@ -60,6 +60,16 @@ This document presents the optimal set of interfaces for the Physics Simulation 
 #### 3. Rendering & Graphics
 * `IGraphicsManager` — Abstracts the 3D rendering library. Manages scene, camera, and rendering operations.
 
+* `ICameraManager` — Abstracts camera control and state.
+  * **Key Methods:**
+    * `setPosition(position: { x: number, y: number, z: number }): void`
+    * `setTarget(target: { x: number, y: number, z: number }): void`
+    * `setZoom(distance: number): void`
+    * `getPosition(): { x: number, y: number, z: number }`
+    * `getTarget(): { x: number, y: number, z: number }`
+    * `getZoom(): number`
+    * `onCameraChanged(callback: (cameraState: any) => void): void`
+
 #### 4. Physics
 * `IPhysicsEngine` — Abstracts physics calculations, enables engine swapping and testability.
 * `IRigidBody` — Abstracts rigid body representation.

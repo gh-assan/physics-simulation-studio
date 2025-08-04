@@ -97,4 +97,3 @@ export class ComponentRegistry implements IComponentRegistry {
     this.componentConstructors.clear();
   }
 }
-

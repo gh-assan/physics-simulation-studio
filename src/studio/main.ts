@@ -204,4 +204,3 @@ async function main() {
 main().catch((error) => {
   Logger.getInstance().error("Failed to initialize the studio:", error);
 });
-
