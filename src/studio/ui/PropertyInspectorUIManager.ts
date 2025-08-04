@@ -12,6 +12,13 @@ import { IPropertyInspectorUIManager } from "./IPropertyInspectorUIManager";
  * or by dynamically generating controls from the ComponentPropertyRegistry.
  */
 export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
+  /**
+   * Required by IPropertyInspectorUIManager interface. Clears inspector controls.
+   */
+  public clearInspectorControls(): void {
+    // Stub implementation: delegate to clearControls or add custom logic if needed
+    this.clearControls();
+  }
   private uiManager: IUIManager;
 
   constructor(uiManager: IUIManager) {

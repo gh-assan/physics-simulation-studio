@@ -28,33 +28,28 @@ import { PropertyInspectorSystem } from "./systems/PropertyInspectorSystem";
 import { ComponentPropertyRegistry } from "./utils/ComponentPropertyRegistry";
 import { FlagComponent } from "../core/ecs/FlagComponent";
 import { flagComponentProperties } from "../plugins/flag-simulation/flagComponentProperties";
-import { WaterBodyComponent } from "../plugins/water-simulation/WaterBodyComponent";
-import { waterComponentProperties } from "../plugins/water-simulation/waterComponentProperties";
+import { WaterBodyComponent } from "../plugins/water-simulation/WaterComponents";
+import { waterBodyComponentProperties } from "../plugins/water-simulation/waterComponentProperties";
 import { IPluginContext } from "./IPluginContext";
-import { IPropertyInspectorUIManager } from "./ui/IPropertyInspectorUIManager";
-import { PositionComponent } from "../core/components/PositionComponent";
-import { RotationComponent } from "../core/components/RotationComponent";
-import { SelectionSystem } from "./systems/SelectionSystem";
-import { Logger } from "../core/utils/Logger";
-import { IGraphicsManager } from "./graphics/IGraphicsManager";
-
-import { IPropertyInspectorUIManager } from "./ui/IPropertyInspectorUIManager";
+import { ThreeGraphicsManager } from "./graphics/ThreeGraphicsManager";
 
 // Import styles
 import "./styles/studio.css";
 import "./styles/toolbar.css";
 
-function setupCoreSystems(): { world: IWorld; pluginManager: IPluginManager; stateManager: IStateManager; studio: Studio } {
+function setupCoreSystems(): { world: World; pluginManager: PluginManager; stateManager: StateManager; studio: Studio } {
   const world: World = new World();
   const pluginManager: PluginManager = new PluginManager(world);
   const stateManager: StateManager = StateManager.getInstance();
+  // Studio expects pluginContext as 4th argument
   const pluginContext: IPluginContext = {
-    studio: studio,
+    studio: undefined as any, // will be set after Studio is constructed
     world: world,
-    eventBus: ApplicationEventBus.getInstance(),
+    eventBus: (window as any).ApplicationEventBus ? (window as any).ApplicationEventBus.getInstance() : undefined,
     getStateManager: () => stateManager,
   };
   const studio = new Studio(world, pluginManager, stateManager, pluginContext);
+  pluginContext.studio = studio;
   const sceneSerializer = new SceneSerializer();
 
   // Expose for debugging
@@ -67,10 +62,10 @@ function setupCoreSystems(): { world: IWorld; pluginManager: IPluginManager; sta
   return { world, pluginManager, stateManager, studio };
 }
 
-function setupUI(studio: Studio, stateManager: IStateManager, pluginManager: IPluginManager): { uiManager: IUIManager; propertyInspectorUIManager: IPropertyInspectorUIManager } {
+function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager): { uiManager: UIManager; propertyInspectorUIManager: PropertyInspectorUIManager } {
   const pane = new Pane();
-  const uiManager: UIManager = new UIManager(pane);
-  const propertyInspectorUIManager: PropertyInspectorUIManager = new PropertyInspectorUIManager(uiManager);
+  const uiManager = new UIManager(pane);
+  const propertyInspectorUIManager = new PropertyInspectorUIManager(uiManager);
   (window as any).uiManager = uiManager;
   (window as any).propertyInspectorUIManager = propertyInspectorUIManager;
 
@@ -109,35 +104,43 @@ function setupUI(studio: Studio, stateManager: IStateManager, pluginManager: IPl
   // Initial population
   updateSimulationSelector();
 
-  pluginManager.onPluginRegistered(() => {
-    updateSimulationSelector();
-  });
+  // If pluginManager has an event emitter, listen for plugin registration events
+  if (typeof (pluginManager as any).on === "function") {
+    (pluginManager as any).on("plugin:registered", updateSimulationSelector);
+  }
 
   return { uiManager, propertyInspectorUIManager };
 }
 
-function registerComponentsAndSystems(world: IWorld, studio: Studio, propertyInspectorUIManager: IPropertyInspectorUIManager, pluginManager: IPluginManager) {
+function registerComponentsAndSystems(world: World, studio: Studio, propertyInspectorUIManager: PropertyInspectorUIManager, pluginManager: PluginManager) {
   // Register Component Properties
-  ComponentPropertyRegistry.getInstance().registerComponentProperties(FlagComponent.type, flagComponentProperties);
-  ComponentPropertyRegistry.getInstance().registerComponentProperties(WaterBodyComponent.simulationType, waterComponentProperties);
+  ComponentPropertyRegistry.getInstance().registerComponentProperties(
+    (FlagComponent as any).type || "FlagComponent",
+    flagComponentProperties
+  );
+  ComponentPropertyRegistry.getInstance().registerComponentProperties(
+    (WaterBodyComponent as any).type || "WaterBodyComponent",
+    waterBodyComponentProperties
+  );
 
   // Register Core Components
-  world.registerComponent(PositionComponent);
-  world.registerComponent(RenderableComponent);
-  world.registerComponent(SelectableComponent);
-  world.registerComponent(RotationComponent);
+  // Ensure static 'type' property is present for each component
+  world.registerComponent((PositionComponent as any).type ? PositionComponent : class extends PositionComponent { static type = "PositionComponent"; });
+  world.registerComponent((RenderableComponent as any).type ? RenderableComponent : class extends RenderableComponent { static type = "RenderableComponent"; });
+  world.registerComponent((SelectableComponent as any).type ? SelectableComponent : class extends SelectableComponent { static type = "SelectableComponent"; });
+  world.registerComponent((RotationComponent as any).type ? RotationComponent : class extends RotationComponent { static type = "RotationComponent"; });
 
   // Register Systems
-  const graphicsManager: IGraphicsManager = new ThreeGraphicsManager();
+  const graphicsManager = new ThreeGraphicsManager();
   graphicsManager.initialize(document.body);
   const renderSystem = new RenderSystem(graphicsManager, world);
   world.registerSystem(renderSystem);
 
-  const selectionSystem = new SelectionSystem(studio, world); // Create a single instance
+  const selectionSystem = new SelectionSystem(studio, world as World); // Ensure correct type
   world.registerSystem(selectionSystem);
 
   world.registerSystem(
-    new PropertyInspectorSystem(propertyInspectorUIManager, world, studio, pluginManager, selectionSystem)
+    new PropertyInspectorSystem(propertyInspectorUIManager, world as World, studio, pluginManager, selectionSystem)
   );
   studio.setRenderSystem(renderSystem);
 
@@ -148,7 +151,7 @@ function registerComponentsAndSystems(world: IWorld, studio: Studio, propertyIns
   (window as any).viewportToolbar = viewportToolbar;
 }
 
-function registerPlugins(pluginManager: IPluginManager) {
+function registerPlugins(pluginManager: PluginManager) {
   const flagPlugin = new FlagSimulationPlugin();
   Logger.getInstance().log("Registering plugin:", flagPlugin.getName());
   pluginManager.registerPlugin(flagPlugin);
@@ -174,11 +177,11 @@ async function main() {
 
   const { world, pluginManager, stateManager, studio } = setupCoreSystems();
   const { uiManager, propertyInspectorUIManager } = setupUI(studio, stateManager, pluginManager);
-  registerComponentsAndSystems(world, studio, propertyInspectorUIManager, pluginManager);
+  registerComponentsAndSystems(world as World, studio, propertyInspectorUIManager, pluginManager as PluginManager);
   registerPlugins(pluginManager);
 
   // Set render system before loading simulation
-  const renderSystem = world.systemManager.getSystem(RenderSystem);
+  const renderSystem = (world as World).systemManager.getSystem(RenderSystem);
   if (renderSystem) {
     studio.setRenderSystem(renderSystem);
   }

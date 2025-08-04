@@ -70,7 +70,7 @@ export class Studio implements IStudio {
   public async loadSimulation(pluginName: string | null): Promise<void> {
     const currentSimulation = this.selectedSimulation.getSimulationName();
     if (currentSimulation) {
-      this.orchestrator.unloadCurrentSimulation();
+      this.orchestrator.unloadSimulation(currentSimulation);
       this.selectedSimulation.setSimulation(null);
     }
     if (pluginName) {

@@ -3,10 +3,31 @@ import { ApplicationEventBus } from "./utils/ApplicationEventBus";
 import { ComponentPropertyPreparer } from "./utils/ComponentPropertyPreparer";
 import { Pane, FolderApi } from "tweakpane";
 import { ComponentControlProperty } from "./types";
-import { IUIManager } from "./IUIManager";
-import { IPanel } from "./IPanel";
+import { IUIManager } from "./ui/IUIManager";
+import { IPanel } from "./ui/IPanel";
 
 export class UIManager implements IUIManager {
+  public createPanel(title: string): IPanel {
+    const folder = this.pane.addFolder({ title });
+    return folder as IPanel;
+  }
+  public registerComponentControls(
+    componentName: string,
+    data: any,
+    properties?: ComponentControlProperty[]
+  ): void {
+    // Remove any existing controls for this component
+    this.removeComponentControls(componentName);
+    // Create a new folder for the component controls
+    const folder = this.pane.addFolder({ title: componentName });
+    this.folders.set(componentName, folder);
+    // Add bindings for each property
+    if (properties) {
+      for (const prop of properties) {
+        this._addBindingForProperty(folder, data, prop);
+      }
+    }
+  }
   private pane: Pane;
   private folders: Map<string, FolderApi> = new Map();
   private eventBus: ApplicationEventBus;

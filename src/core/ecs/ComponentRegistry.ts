@@ -36,7 +36,7 @@ export class ComponentRegistry implements IComponentRegistry {
    * @throws Error if the component class doesn't have a type property
    */
   public register<T extends IComponent>(componentClass: new (...args: any[]) => T): void {
-    const type = (componentClass as any).simulationType;
+    const type = (componentClass as any).type;
     if (!type) {
       throw new Error(
         `Component class ${componentClass.name} must have a static 'type' property`
