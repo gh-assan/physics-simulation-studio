@@ -20,7 +20,7 @@ export class FlagRenderSystem extends System implements IRenderable {
     this.graphicsManager = graphicsManager;
   }
 
-  public update(world: World, _deltaTime: number): void {
+  public update(world: IWorld, _deltaTime: number): void {
     // Render FlagComponents
     const flagEntities = world.componentManager.getEntitiesWithComponents([
       FlagComponent,
@@ -114,7 +114,7 @@ export class FlagRenderSystem extends System implements IRenderable {
     }
   }
 
-  public render(world: World, scene: THREE.Scene, camera: THREE.Camera): void {
+  public render(world: IWorld, scene: THREE.Scene, camera: THREE.Camera): void {
     // Call update to perform rendering logic
     this.update(world, 0);
   }

@@ -1,4 +1,4 @@
-import { World } from '@core/ecs/World';
+import { IWorld } from '@core/ecs/IWorld';
 import { CelestialBodyComponent, OrbitComponent } from './components';
 import { ParameterPanelComponent } from '@core/components/ParameterPanelComponent';
 import { IUIManager } from "../../studio/IUIManager";
@@ -7,7 +7,7 @@ import { IComponent } from '@core/ecs/IComponent';
 export class SolarSystemParameterPanel extends ParameterPanelComponent {
   public readonly componentType: string = 'SolarSystem'; // Placeholder
 
-  constructor(private world: World) {
+  constructor(private world: IWorld) {
     super();
   }
 

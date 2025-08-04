@@ -144,7 +144,7 @@ describe("Plugin Parameter Panel Integration", () => {
     pluginManager.getPlugin.mockReturnValue(flagPlugin);
 
     // Activate the flag simulation plugin
-    await pluginManager.activatePlugin("flag-simulation");
+    await pluginManager.activatePlugin("flag-simulation", studio);
 
     // Get parameter panels from the active plugin
     const panels = (
@@ -164,7 +164,7 @@ describe("Plugin Parameter Panel Integration", () => {
     pluginManager.getPlugin.mockReturnValue(waterPlugin);
 
     // Activate the water simulation plugin
-    await pluginManager.activatePlugin("water-simulation");
+    await pluginManager.activatePlugin("water-simulation", studio);
 
     // Get parameter panels from the active plugin
     const panels = (
@@ -216,7 +216,7 @@ describe("Plugin Parameter Panel Integration", () => {
     // Activate the flag simulation plugin
     studio.getActiveSimulationName.mockReturnValue("flag-simulation");
     pluginManager.getPlugin.mockReturnValue(flagPlugin);
-    await pluginManager.activatePlugin("flag-simulation");
+    await pluginManager.activatePlugin("flag-simulation", studio);
 
     // Dispatch a simulation-loaded event
     const flagEvent = new CustomEvent("simulation-loaded", {
@@ -244,7 +244,7 @@ describe("Plugin Parameter Panel Integration", () => {
     if (flagSelectable) {
       flagSelectable.isSelected = false;
     }
-    await pluginManager.activatePlugin("water-simulation");
+    await pluginManager.activatePlugin("water-simulation", studio);
 
     // Select the water droplet entity
     const waterDropletSelectable = world.componentManager.getComponent(
@@ -286,7 +286,7 @@ describe("Plugin Parameter Panel Integration", () => {
     // Activate the flag simulation plugin
     studio.getActiveSimulationName.mockReturnValue("flag-simulation");
     pluginManager.getPlugin.mockReturnValue(flagPlugin);
-    await pluginManager.activatePlugin("flag-simulation");
+    await pluginManager.activatePlugin("flag-simulation", studio);
 
     // Dispatch a simulation-play event
     const playEvent = new CustomEvent("simulation-play", {
@@ -324,7 +324,7 @@ describe("Plugin Parameter Panel Integration", () => {
     // Activate the flag simulation plugin
     studio.getActiveSimulationName.mockReturnValue("flag-simulation");
     pluginManager.getPlugin.mockReturnValue(flagPlugin);
-    await pluginManager.activatePlugin("flag-simulation");
+    await pluginManager.activatePlugin("flag-simulation", studio);
 
     // Dispatch a simulation-pause event
     const pauseEvent = new CustomEvent("simulation-pause", {

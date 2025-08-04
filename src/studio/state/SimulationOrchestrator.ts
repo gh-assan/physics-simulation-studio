@@ -1,22 +1,27 @@
+import { IWorld } from "../../core/ecs/IWorld";
 import { World } from "../../core/ecs/World";
-import { PluginManager } from "../../core/plugin/PluginManager";
+import { IPluginManager } from "../../core/plugin/IPluginManager";
 import { Logger } from "../../core/utils/Logger";
 import { RenderSystem } from "../systems/RenderSystem";
 import { SelectedSimulationStateManager } from "./SelectedSimulationState";
+import { IStudio } from "../IStudio";
 
 export class SimulationOrchestrator {
-  private world: World;
-  private pluginManager: PluginManager;
+  private world: IWorld;
+  private pluginManager: IPluginManager;
   private renderSystem: RenderSystem | null = null;
   private selectedSimulation: SelectedSimulationStateManager;
+  private studio: IStudio;
 
   constructor(
-    world: World,
-    pluginManager: PluginManager,
+    world: IWorld,
+    pluginManager: IPluginManager,
+    studio: IStudio,
     selectedSimulation: SelectedSimulationStateManager
   ) {
     this.world = world;
     this.pluginManager = pluginManager;
+    this.studio = studio;
     this.selectedSimulation = selectedSimulation;
   }
 
@@ -31,7 +36,7 @@ export class SimulationOrchestrator {
     }
 
     if (this.selectedSimulation.getSimulationName() === pluginName) {
-      Logger.log(`Simulation "${pluginName}" is already active.`);
+      Logger.getInstance().log(`Simulation "${pluginName}" is already active.`);
       return;
     }
 
@@ -41,7 +46,7 @@ export class SimulationOrchestrator {
     try {
       await this.activateAndInitializePlugin(pluginName);
     } catch (error) {
-      Logger.error(`Failed to load simulation "${pluginName}":`, error);
+      Logger.getInstance().error(`Failed to load simulation "${pluginName}":`, error);
       this.selectedSimulation.setSimulation(null);
     }
   }
@@ -50,7 +55,7 @@ export class SimulationOrchestrator {
     this.deactivateCurrentSimulation();
     this.clearWorldAndRenderSystem();
     this.selectedSimulation.setSimulation(null);
-    Logger.log("No simulation loaded.");
+    Logger.getInstance().log("No simulation loaded.");
   }
 
   private clearWorldAndRenderSystem(): void {
@@ -63,19 +68,19 @@ export class SimulationOrchestrator {
   private deactivateCurrentSimulation(): void {
     const activePluginName = this.selectedSimulation.getSimulationName();
     if (activePluginName) {
-      this.pluginManager.deactivatePlugin(activePluginName);
+      this.pluginManager.deactivatePlugin(activePluginName, this.studio);
     }
   }
 
   private async activateAndInitializePlugin(pluginName: string): Promise<void> {
-    await this.pluginManager.activatePlugin(pluginName);
-    Logger.log(`Loaded simulation: ${pluginName}`);
+    await this.pluginManager.activatePlugin(pluginName, this.studio);
+    Logger.getInstance().log(`Loaded simulation: ${pluginName}`);
     const activePlugin = this.pluginManager.getPlugin(pluginName);
     if (activePlugin && activePlugin.initializeEntities) {
       activePlugin.initializeEntities(this.world);
       this.world.update(0);
       if (this.renderSystem) {
-        this.renderSystem.update(this.world, 0);
+        this.renderSystem.update(this.world as World, 0);
       }
 
       this.selectedSimulation.setSimulation(pluginName);

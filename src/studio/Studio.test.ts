@@ -40,7 +40,17 @@ describe('Studio', () => {
     pluginManager = new MockPluginManager();
     stateManager = new MockStateManager();
     renderSystem = new MockRenderSystem();
-    studio = new Studio(world, pluginManager as any, stateManager as any);
+    
+    // Create mock plugin context
+    const mockPluginContext = {
+      studio: undefined as any, // will be set after Studio is constructed
+      world: world,
+      eventBus: undefined,
+      getStateManager: () => stateManager as any,
+    };
+    
+    studio = new Studio(world, pluginManager as any, stateManager as any, mockPluginContext as any);
+    mockPluginContext.studio = studio;
     studio.setRenderSystem(renderSystem as any);
     pluginManager.plugins['simA'] = new MockPlugin();
     stateManager.selectedSimulation.getSimulationName = jest.fn(() => null);

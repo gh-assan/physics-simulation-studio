@@ -3,8 +3,8 @@ import { SceneSerializer } from "./systems/SceneSerializer";
 import { FlagSimulationPlugin } from "@plugins/flag-simulation";
 import { WaterSimulationPlugin } from "@plugins/water-simulation";
 import { SolarSystemPlugin } from "@plugins/solar-system";
-import { registerFlagComponentProperties } from "@plugins/flag-simulation";
-import { registerWaterComponentProperties } from "@plugins/water-simulation";
+import { flagComponentProperties } from "../plugins/flag-simulation/flagComponentProperties";
+import { waterBodyComponentProperties, waterDropletComponentProperties } from "../plugins/water-simulation/waterComponentProperties";
 import { PositionComponent } from "../core/components/PositionComponent";
 import { RenderableComponent } from "../core/components/RenderableComponent";
 import { SelectableComponent } from "../core/components/SelectableComponent";
@@ -26,10 +26,8 @@ import { UIManager } from "./uiManager";
 import { RenderSystem } from "./systems/RenderSystem";
 import { PropertyInspectorSystem } from "./systems/PropertyInspectorSystem";
 import { ComponentPropertyRegistry } from "./utils/ComponentPropertyRegistry";
-import { FlagComponent } from "../core/ecs/FlagComponent";
-import { flagComponentProperties } from "../plugins/flag-simulation/flagComponentProperties";
+import { FlagComponent } from "../plugins/flag-simulation/FlagComponent";
 import { WaterBodyComponent } from "../plugins/water-simulation/WaterComponents";
-import { waterBodyComponentProperties } from "../plugins/water-simulation/waterComponentProperties";
 import { IPluginContext } from "./IPluginContext";
 import { ThreeGraphicsManager } from "./graphics/ThreeGraphicsManager";
 
@@ -146,7 +144,7 @@ function registerComponentsAndSystems(world: World, studio: Studio, propertyInsp
 
   // Create viewport toolbar
   const viewportToolbar = new ViewportToolbar({
-    graphicsManager: renderSystem.getGraphicsManager(),
+    graphicsManager: renderSystem.getGraphicsManager() as ThreeGraphicsManager,
   });
   (window as any).viewportToolbar = viewportToolbar;
 }

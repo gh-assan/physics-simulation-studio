@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { System } from "../../core/ecs/System";
 import { World } from "../../core/ecs/World";
-import { FlagComponent } from "../../core/ecs/FlagComponent";
+import { FlagComponent } from "../../plugins/flag-simulation/FlagComponent";
 import { PositionComponent } from "../../core/components/PositionComponent";
 import { RenderableComponent } from "../../core/ecs/RenderableComponent";
 import { RotationComponent } from "../../core/ecs/RotationComponent";

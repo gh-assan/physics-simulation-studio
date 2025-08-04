@@ -1,7 +1,5 @@
-import { IPluginManager, PluginManagerEvent } from "./IPluginManager";
+import { IPluginManager } from "./IPluginManager";
 import { IWorld } from "../ecs/IWorld";
-import { Logger } from "../utils/Logger";
-import { Logger } from "../utils/Logger";
 import { Logger } from "../utils/Logger";
 import { ISimulationPlugin } from "./ISimulationPlugin";
 import { EventEmitter } from "../events/EventEmitter";

@@ -20,7 +20,7 @@ export class WaterDropletParameterPanel extends ParameterPanelComponent {
   /**
    * The component type this panel is associated with
    */
-  readonly componentType: string = WaterDropletComponent.simulationType;
+  readonly componentType: string = WaterDropletComponent.type;
 
   /**
    * Register UI controls for this parameter panel

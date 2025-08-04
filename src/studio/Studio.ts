@@ -2,6 +2,7 @@ import { ISelectedSimulationStateManager } from "./state/ISelectedSimulationStat
 import { IStateManager } from "./state/IStateManager";
 import { SimulationOrchestrator } from "./SimulationOrchestrator";
 import { IWorld } from "../core/ecs/IWorld";
+import { World } from "../core/ecs/World";
 import { IPluginManager } from "../core/plugin/IPluginManager";
 import { ISimulationOrchestrator } from "./ISimulationOrchestrator";
 import { IStudio } from "./IStudio";
@@ -27,7 +28,7 @@ export class Studio implements IStudio {
     this._world = world;
     this.pluginManager = pluginManager;
     this.selectedSimulation = stateManager.selectedSimulation;
-    this.orchestrator = new SimulationOrchestrator(world, pluginManager, this, this.selectedSimulation);
+    this.orchestrator = new SimulationOrchestrator(world, pluginManager, this);
     this.pluginContext = pluginContext;
   }
 
@@ -78,7 +79,7 @@ export class Studio implements IStudio {
       this.selectedSimulation.setSimulation(pluginName);
       // Ensure the render system updates after loading simulation
       if (this.renderSystem) {
-        this.renderSystem.update(this.world, 0);
+        this.renderSystem.update(this.world as any, 0);
       }
       // Dispatch event after state update so UI can react to correct state
       const event = new CustomEvent("simulation-loaded", {

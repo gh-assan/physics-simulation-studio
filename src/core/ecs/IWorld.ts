@@ -1,4 +1,4 @@
-import { System } from "./System";
+import { ISystem } from "./ISystem";
 import { IComponent } from "./IComponent";
 import { ISystemManager } from "./ISystemManager";
 import { IEntityManager } from "./IEntityManager";
@@ -19,5 +19,5 @@ export interface IWorld {
   hasComponent(entityId: number, componentName: string): boolean;
   getEntitiesWithComponents(componentTypes: (new (...args: any[]) => IComponent)[]): number[];
   registerSystem(system: ISystem): void;
-    removeSystem(system: ISystem): boolean;
+  removeSystem(system: ISystem): boolean;
 }

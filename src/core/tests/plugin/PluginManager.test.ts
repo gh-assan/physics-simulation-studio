@@ -2,7 +2,7 @@ import { PluginManager } from "../../plugin/PluginManager";
 import { ISimulationPlugin } from "../../plugin/ISimulationPlugin";
 import { World } from "../../ecs";
 import { System } from "../../ecs/System";
-import { IStudio } from "../../../src/studio/IStudio";
+import { IStudio } from "../../../studio/IStudio";
 
 // Mocks
 const mockWorld = {} as World;

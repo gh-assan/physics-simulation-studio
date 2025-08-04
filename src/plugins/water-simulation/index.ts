@@ -12,16 +12,16 @@ import { WaterBodyParameterPanel } from "./WaterBodyParameterPanel";
 import { WaterDropletParameterPanel } from "./WaterDropletParameterPanel";
 import { Vector3 } from "./utils/Vector3"; // Add this import
 import { waterBodyComponentProperties, waterDropletComponentProperties } from "./waterComponentProperties";
-import { registerComponentProperties } from "../../studio/utils/ComponentPropertyRegistry";
+import { ComponentPropertyRegistry } from "../../studio/utils/ComponentPropertyRegistry";
+import { IStudio } from "../../studio/IStudio";
+import { ISystem } from "../../core/ecs/ISystem";
 
 export { WaterBodyComponent, WaterDropletComponent } from "./WaterComponents";
 export { WaterBodyParameterPanel } from "./WaterBodyParameterPanel";
 export { WaterDropletParameterPanel } from "./WaterDropletParameterPanel";
 
-export function registerWaterComponentProperties() {
-  registerComponentProperties("WaterBodyComponent", waterBodyComponentProperties);
-  registerComponentProperties("WaterDropletComponent", waterDropletComponentProperties);
-}
+ComponentPropertyRegistry.getInstance().registerComponentProperties("WaterBodyComponent", waterBodyComponentProperties);
+ComponentPropertyRegistry.getInstance().registerComponentProperties("WaterDropletComponent", waterDropletComponentProperties);
 
 export class WaterSimulationPlugin implements ISimulationPlugin {
   public getName(): string {
@@ -179,5 +179,10 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
 
   getRenderer(): WaterRenderer {
     return this.waterRenderer;
+  }
+
+  getSystems(studio: IStudio): ISystem[] {
+    // Return an empty array or appropriate systems for the plugin
+    return [];
   }
 }

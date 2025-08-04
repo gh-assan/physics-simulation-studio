@@ -14,15 +14,12 @@ import { FlagParameterPanel } from "./FlagParameterPanel";
 import { ParameterPanelComponent } from "../../core/components/ParameterPanelComponent";
 import * as THREE from "three";
 import { flagComponentProperties } from "./flagComponentProperties";
-import { registerComponentProperties } from "../../studio/utils/ComponentPropertyRegistry";
+import { ComponentPropertyRegistry } from "../../studio/utils/ComponentPropertyRegistry";
 import { System } from "../../core/ecs/System";
 import { Logger } from "../../core/utils/Logger";
 import { ThreeGraphicsManager } from "../../studio/graphics/ThreeGraphicsManager";
-import { ComponentPropertyRegistry } from "../../studio/utils/ComponentPropertyRegistry";
 
-export function registerFlagComponentProperties() {
-  ComponentPropertyRegistry.getInstance().registerComponentProperties("flag-simulation", flagComponentProperties);
-}
+ComponentPropertyRegistry.getInstance().registerComponentProperties("flag-simulation", flagComponentProperties);
 
 export class FlagSimulationPlugin implements ISimulationPlugin {
   private _flagSystem: FlagSystem | null = null;

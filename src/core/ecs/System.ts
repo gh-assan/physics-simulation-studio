@@ -44,10 +44,7 @@ export abstract class System implements ISystem {
    *
    * @param world The world the system is being registered with
    */
-  public onRegister(world: IWorld): void {
-    // Default implementation does nothing
-    // Subclasses can override this method to perform initialization
-  }
+  public onRegister?(world: IWorld): void;
 
   /**
    * Called when the system is removed from a world.
@@ -55,8 +52,5 @@ export abstract class System implements ISystem {
    *
    * @param world The world the system is being removed from
    */
-  public onRemove(world: IWorld): void {
-    // Default implementation does nothing
-    // Subclasses can override this method to perform cleanup
-  }
+  public onRemove?(world: IWorld): void;
 }

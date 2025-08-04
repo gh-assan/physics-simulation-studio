@@ -20,7 +20,7 @@ export class WaterBodyParameterPanel extends ParameterPanelComponent {
   /**
    * The component type this panel is associated with
    */
-  readonly componentType: string = WaterBodyComponent.simulationType;
+  readonly componentType: string = WaterBodyComponent.type;
 
   /**
    * Register UI controls for this parameter panel

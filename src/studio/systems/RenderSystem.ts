@@ -1,9 +1,10 @@
 import * as THREE from "three";
 import { System } from "../../core/ecs/System";
 import { World } from "../../core/ecs/World";
-import { PositionComponent } from "../../core/ecs/PositionComponent";
+import { PositionComponent } from "../../core/components/PositionComponent";
 import { RotationComponent } from "../../core/ecs/RotationComponent";
 import { RenderableComponent } from "../../core/ecs/RenderableComponent";
+import { IGraphicsManager } from "../IGraphicsManager";
 
 import { WaterRenderer } from "../../plugins/water-simulation/WaterRenderer"; // Import WaterRenderer
 import { SelectableComponent } from "../../core/components/SelectableComponent"; // Import SelectableComponent
@@ -158,7 +159,7 @@ export class RenderSystem extends System {
 
       const position = world.componentManager.getComponent(
         entityId,
-        PositionComponent.name
+        PositionComponent.type
       ) as PositionComponent;
       const rotation = world.componentManager.getComponent(
         entityId,
@@ -172,7 +173,8 @@ export class RenderSystem extends System {
 
       let mesh = this.meshes.get(entityId);
       if (!mesh) {
-        const geometry = createGeometry(renderable.geometry);
+        const geometryType = renderable.geometry as "box" | "sphere" | "cylinder" | "cone" | "plane";
+        const geometry = createGeometry(geometryType);
         const material = new THREE.MeshBasicMaterial({ color: renderable.color });
         mesh = new THREE.Mesh(geometry, material);
         // Scale mesh by radius if CelestialBodyComponent is present

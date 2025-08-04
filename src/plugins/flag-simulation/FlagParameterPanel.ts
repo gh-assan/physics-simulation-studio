@@ -1,7 +1,7 @@
 import { ParameterPanelComponent } from "../../core/components/ParameterPanelComponent";
 import { IUIManager } from "../../studio/IUIManager";
 import { IComponent } from "../../core/ecs/IComponent";
-import { FlagComponent } from "../../core/ecs/FlagComponent";
+import { FlagComponent } from "./FlagComponent";
 import { ComponentControlProperty } from "../../studio/types";
 import { World } from "../../core/ecs/World";
 import { PoleComponent } from "./PoleComponent";
@@ -20,7 +20,7 @@ export class FlagParameterPanel extends ParameterPanelComponent {
   /**
    * The component type this panel is associated with
    */
-  readonly componentType: string = FlagComponent.simulationType;
+  readonly componentType: string = new FlagComponent().simulationType;
 
   private world: World;
 

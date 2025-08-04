@@ -1,17 +1,10 @@
 import { IPluginManager } from '../core/plugin/IPluginManager';
 import { IWorld } from "../core/ecs/IWorld";
-import { IWorld } from "../core/ecs/IWorld";
+import { World } from '../core/ecs/World';
 import { Logger } from "../core/utils/Logger";
 import { RenderSystem } from './systems/RenderSystem';
 import { IStudio } from './IStudio';
-
-export interface ISimulationOrchestrator {
-    loadSimulation(pluginName: string): Promise<void>;
-    unloadSimulation(activePluginName: string | null): void;
-    play(): void;
-    pause(): void;
-    reset(): void;
-}
+import { ISimulationOrchestrator } from './ISimulationOrchestrator';
 
 export class SimulationOrchestrator implements ISimulationOrchestrator {
     private world: IWorld;
@@ -37,7 +30,7 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
                 this.world.update(0);
                 this.world.systemManager.updateAll(this.world, 0);
                 if (this.renderSystem) {
-                    this.renderSystem.update(this.world, 0);
+                    this.renderSystem.update(this.world as World, 0);
                 }
             }
 
@@ -83,5 +76,9 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
     public reset(): void {
         Logger.getInstance().log('Simulation reset');
         // Add reset logic here
+    }
+
+    public setRenderSystem(renderSystem: RenderSystem): void {
+        this.renderSystem = renderSystem;
     }
 }

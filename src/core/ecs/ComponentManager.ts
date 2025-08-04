@@ -314,7 +314,7 @@ export class ComponentManager implements IComponentManager {
    * @param entityIds An array of entity IDs
    * @param operation The operation to perform on each entity
    */
-  private batchOperation(
+  public batchOperation(
     entityIds: number[],
     operation: (entityId: number) => void
   ): void {
@@ -331,7 +331,7 @@ export class ComponentManager implements IComponentManager {
    * @param components An object mapping component types to component instances
    * @throws Error if any component type is not registered
    */
-  private addComponents(
+  public addComponents(
     entityID: number,
     components: Record<string, IComponent>
   ): void {
@@ -372,7 +372,7 @@ export class ComponentManager implements IComponentManager {
    * @returns The created component instance
    * @throws Error if the component type is not registered
    */
-  private createAndAddComponent<T extends IComponent>(
+  public createAndAddComponent<T extends IComponent>(
     entityID: number,
     componentType: string,
     ...args: any[]

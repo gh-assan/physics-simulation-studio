@@ -91,7 +91,17 @@ describe("PropertyInspectorSystem", () => {
     // Create mock instances for Studio and PluginManager
     const mockWorld = new World();
     const mockPluginManager = new PluginManager(mockWorld);
-    const mockStudio = new Studio(mockWorld, mockPluginManager, StateManager.getInstance());
+    
+    // Create mock plugin context
+    const mockPluginContext = {
+      studio: undefined as any, // will be set after Studio is constructed
+      world: mockWorld,
+      eventBus: { emit: jest.fn(), on: jest.fn(), off: jest.fn() } as any,
+      getStateManager: () => StateManager.getInstance(),
+    };
+    
+    const mockStudio = new Studio(mockWorld, mockPluginManager, StateManager.getInstance(), mockPluginContext);
+    mockPluginContext.studio = mockStudio;
 
     // Mock the getActiveSimulationName method
     jest.spyOn(mockStudio, "getActiveSimulationName").mockReturnValue(null);

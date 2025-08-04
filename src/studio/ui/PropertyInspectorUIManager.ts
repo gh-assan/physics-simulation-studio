@@ -1,4 +1,5 @@
-import { IUIManager } from "./IUIManager";
+import { IUIManager } from "../IUIManager";
+import { UIManager } from "../uiManager";
 import { IComponent } from "../../core/ecs/IComponent";
 import { ComponentPropertyRegistry } from "../utils/ComponentPropertyRegistry";
 import { ParameterPanelComponent } from "../../core/components/ParameterPanelComponent";
