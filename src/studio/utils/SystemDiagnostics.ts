@@ -53,8 +53,8 @@ export class SystemDiagnostics {
 
     Logger.getInstance().log(`[SystemDiagnostics] Registered components: ${componentTypes.join(", ")}`);
 
-    // Check for critical components
-    const criticalComponents = ["FlagComponent", "PositionComponent", "RenderableComponent", "SelectableComponent"];
+    // Check for critical core components only
+    const criticalComponents = ["PositionComponent", "RenderableComponent", "SelectableComponent"];
     const missingComponents = criticalComponents.filter(name => !componentTypes.includes(name));
 
     if (missingComponents.length > 0) {

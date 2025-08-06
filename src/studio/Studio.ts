@@ -2,7 +2,6 @@ import { ISelectedSimulationStateManager } from "./state/ISelectedSimulationStat
 import { IStateManager } from "./state/IStateManager";
 import { SimulationOrchestrator } from "./SimulationOrchestrator";
 import { IWorld } from "../core/ecs/IWorld";
-import { World } from "../core/ecs/World";
 import { IPluginManager } from "../core/plugin/IPluginManager";
 import { ISimulationOrchestrator } from "./ISimulationOrchestrator";
 import { IStudio } from "./IStudio";
@@ -113,9 +112,7 @@ export class Studio implements IStudio {
   }
 
   public getActiveSimulationName(): string {
-    const simulationName = this.selectedSimulation.getSimulationName();
-    console.log(`[Studio] getActiveSimulationName returning: ${simulationName}`);
-    return simulationName;
+    return this.selectedSimulation.getSimulationName();
   }
 
   public getRenderer(): any {

@@ -3,8 +3,6 @@ import { SceneSerializer } from "./systems/SceneSerializer";
 import { FlagSimulationPlugin } from "@plugins/flag-simulation";
 import { WaterSimulationPlugin } from "@plugins/water-simulation";
 import { SolarSystemPlugin } from "@plugins/solar-system";
-import { flagComponentProperties } from "../plugins/flag-simulation/flagComponentProperties";
-import { waterBodyComponentProperties, waterDropletComponentProperties } from "../plugins/water-simulation/waterComponentProperties";
 import { PositionComponent } from "../core/components/PositionComponent";
 import { RenderableComponent } from "../core/components/RenderableComponent";
 import { SelectableComponent } from "../core/components/SelectableComponent";
@@ -25,14 +23,11 @@ import { IUIManager } from "./IUIManager";
 import { UIManager } from "./uiManager";
 import { PropertyInspectorSystem } from "./systems/PropertyInspectorSystem";
 import { ComponentPropertyRegistry } from "./utils/ComponentPropertyRegistry";
-import { FlagComponent } from "../plugins/flag-simulation/FlagComponent";
-import { WaterBodyComponent } from "../plugins/water-simulation/WaterComponents";
 import { IPluginContext } from "./IPluginContext";
 import { ThreeGraphicsManager } from "./graphics/ThreeGraphicsManager";
 import { VisibilityManager } from "./ui/VisibilityManager";
 import { SystemDiagnostics } from "./utils/SystemDiagnostics";
 import { RenderOrchestrator } from "./rendering/RenderOrchestrator";
-import { FlagRenderer } from "./rendering/FlagRenderer";
 import { VisibilityOrchestrator } from "./orchestration/VisibilityOrchestrator";
 
 // Import styles
@@ -185,17 +180,7 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
 }
 
 function registerComponentsAndSystems(world: World, studio: Studio, propertyInspectorUIManager: PropertyInspectorUIManager, pluginManager: PluginManager) {
-  // Register Component Properties
-  ComponentPropertyRegistry.getInstance().registerComponentProperties(
-    (FlagComponent as any).type || "FlagComponent",
-    flagComponentProperties
-  );
-  ComponentPropertyRegistry.getInstance().registerComponentProperties(
-    (WaterBodyComponent as any).type || "WaterBodyComponent",
-    waterBodyComponentProperties
-  );
-
-  // Register Core Components
+  // Register Core Components Only - Plugin components are registered by plugins themselves
   world.registerComponent((PositionComponent as any).type ? PositionComponent : class extends PositionComponent { static type = "PositionComponent"; });
   world.registerComponent((RenderableComponent as any).type ? RenderableComponent : class extends RenderableComponent { static type = "RenderableComponent"; });
   world.registerComponent((SelectableComponent as any).type ? SelectableComponent : class extends SelectableComponent { static type = "SelectableComponent"; });
@@ -216,9 +201,7 @@ function registerComponentsAndSystems(world: World, studio: Studio, propertyInsp
     // Create centralized render orchestrator
     const renderOrchestrator = new RenderOrchestrator(graphicsManager);
 
-    // Register the flag renderer with the orchestrator
-    const flagRenderer = new FlagRenderer(graphicsManager);
-    renderOrchestrator.registerRenderer("flag", flagRenderer);
+    // NOTE: No default renderers are registered - renderers are added only when simulations load
 
     // Register the render orchestrator as a system
     world.registerSystem(renderOrchestrator);

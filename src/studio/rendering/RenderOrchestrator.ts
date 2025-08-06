@@ -99,6 +99,15 @@ export class RenderOrchestrator extends System {
    * Main update loop - orchestrates all rendering
    */
   public update(world: IWorld, deltaTime: number): void {
+    // Only render if there are active renderers or explicit requests
+    const hasActiveRenderers = this.renderers.size > 0;
+    const hasRenderRequests = this.sceneState.renderRequests.size > 0;
+
+    if (!hasActiveRenderers && !hasRenderRequests) {
+      // No active simulation rendering needed - keep scene static
+      return;
+    }
+
     // Update all registered renderers
     for (const [rendererId, renderer] of this.renderers) {
       try {
@@ -109,7 +118,7 @@ export class RenderOrchestrator extends System {
     }
 
     // Render if requested or if any renderer has updates
-    if (this.sceneState.renderRequests.size > 0 || this.hasRenderUpdates()) {
+    if (hasRenderRequests || this.hasRenderUpdates()) {
       this.graphicsManager.render();
       this.sceneState.renderRequests.clear();
     }
