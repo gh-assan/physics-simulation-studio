@@ -126,25 +126,20 @@ export class RenderSystem extends System {
     // Always use the current world from the studio
     this.clear();
 
-    // --- Water droplet debug rendering (unchanged) ---
+    // --- Water droplet debug rendering ---
     const dropletEntities = world.componentManager.getEntitiesWithComponents([
       WaterDropletComponent
     ]);
+
     for (const entityId of dropletEntities) {
       const position = world.componentManager.getComponent(
         entityId,
         PositionComponent.type
       ) as PositionComponent;
-      if (!position) continue;
-      let debugBox = this.graphicsManager.getScene().getObjectByName(`debugBox_${entityId}`);
-      if (!debugBox) {
-        const geometry = new THREE.BoxGeometry(2, 2, 2);
-        const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
-        debugBox = new THREE.Mesh(geometry, material);
-        debugBox.name = `debugBox_${entityId}`;
-        this.graphicsManager.getScene().add(debugBox);
+
+      if (position) {
+        this.updateDebugBox(entityId, position);
       }
-      debugBox.position.set(position.x, position.y, position.z);
     }
 
     // --- Generic mesh rendering for other entities ---
@@ -153,63 +148,20 @@ export class RenderSystem extends System {
       RotationComponent,
       RenderableComponent
     ]);
+
     for (const entityId of entities) {
       // Skip if already handled as water droplet
       if (world.componentManager.hasComponent(entityId, WaterDropletComponent.type)) continue;
 
-      const position = world.componentManager.getComponent(
-        entityId,
-        PositionComponent.type
-      ) as PositionComponent;
-      const rotation = world.componentManager.getComponent(
-        entityId,
-        RotationComponent.name
-      ) as RotationComponent;
-      const renderable = world.componentManager.getComponent(
-        entityId,
-        RenderableComponent.name
-      ) as RenderableComponent;
-      if (!position || !rotation || !renderable) continue;
+      const components = this.getEntityComponents(world, entityId);
+      if (!components) continue;
 
-      let mesh = this.meshes.get(entityId);
-      if (!mesh) {
-        const geometryType = renderable.geometry as "box" | "sphere" | "cylinder" | "cone" | "plane";
-        const geometry = createGeometry(geometryType);
-        const material = new THREE.MeshBasicMaterial({ color: renderable.color });
-        mesh = new THREE.Mesh(geometry, material);
-        // Scale mesh by radius if CelestialBodyComponent is present
-        const celestialBody = world.componentManager.getComponent(
-          entityId,
-          'CelestialBodyComponent'
-        ) as any;
-        if (celestialBody && typeof celestialBody.radius === 'number') {
-          const VISUALIZATION_RADIUS_SCALE = 0.01;
-          const scaledRadius = Math.max(0.1, celestialBody.radius * VISUALIZATION_RADIUS_SCALE);
-          mesh.scale.set(scaledRadius, scaledRadius, scaledRadius);
-        }
-        this.graphicsManager.getScene().add(mesh);
-        this.meshes.set(entityId, mesh);
-      }
-      mesh.position.set(position.x, position.y, position.z);
-      mesh.rotation.setFromQuaternion(
-        new THREE.Quaternion(rotation.x, rotation.y, rotation.z, rotation.w)
-      );
-      const selectable = world.componentManager.getComponent(
-        entityId,
-        SelectableComponent.name
-      ) as SelectableComponent;
-      if (selectable) {
-        const material = mesh.material as THREE.MeshBasicMaterial;
-        if (selectable.isSelected) {
-          material.color.set(0xffff00);
-        } else {
-          material.color.set(renderable.color);
-        }
-      }
+      const mesh = this.getOrCreateMesh(world, entityId, components.renderable);
+      this.updateMeshTransform(mesh, components.position, components.rotation);
+      this.updateMeshSelection(world, entityId, mesh);
     }
 
     this.graphicsManager.render();
-
   }
 
   /**
@@ -258,5 +210,62 @@ export class RenderSystem extends System {
           child.name !== "waterDropletMesh" &&
           child.name !== "waterRipple"
       );
+  }
+
+  private updateDebugBox(entityId: number, position: PositionComponent): void {
+    let debugBox = this.graphicsManager.getScene().getObjectByName(`debugBox_${entityId}`);
+    if (!debugBox) {
+      const geometry = new THREE.BoxGeometry(2, 2, 2);
+      const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+      debugBox = new THREE.Mesh(geometry, material);
+      debugBox.name = `debugBox_${entityId}`;
+      this.graphicsManager.getScene().add(debugBox);
+    }
+    debugBox.position.set(position.x, position.y, position.z);
+  }
+
+  private getEntityComponents(world: World, entityId: number) {
+    const position = world.componentManager.getComponent(entityId, PositionComponent.type) as PositionComponent;
+    const rotation = world.componentManager.getComponent(entityId, RotationComponent.name) as RotationComponent;
+    const renderable = world.componentManager.getComponent(entityId, RenderableComponent.name) as RenderableComponent;
+
+    if (!position || !rotation || !renderable) return null;
+
+    return { position, rotation, renderable };
+  }
+
+  private getOrCreateMesh(world: World, entityId: number, renderable: RenderableComponent): THREE.Mesh {
+    let mesh = this.meshes.get(entityId);
+    if (mesh) return mesh;
+
+    const geometryType = renderable.geometry as "box" | "sphere" | "cylinder" | "cone" | "plane";
+    const geometry = createGeometry(geometryType);
+    const material = new THREE.MeshBasicMaterial({ color: renderable.color });
+    mesh = new THREE.Mesh(geometry, material);
+
+    // Scale mesh by radius if CelestialBodyComponent is present
+    const celestialBody = world.componentManager.getComponent(entityId, 'CelestialBodyComponent') as any;
+    if (celestialBody?.radius) {
+      const VISUALIZATION_RADIUS_SCALE = 0.01;
+      const scaledRadius = Math.max(0.1, celestialBody.radius * VISUALIZATION_RADIUS_SCALE);
+      mesh.scale.set(scaledRadius, scaledRadius, scaledRadius);
+    }
+
+    this.graphicsManager.getScene().add(mesh);
+    this.meshes.set(entityId, mesh);
+    return mesh;
+  }
+
+  private updateMeshTransform(mesh: THREE.Mesh, position: PositionComponent, rotation: RotationComponent): void {
+    mesh.position.set(position.x, position.y, position.z);
+    mesh.rotation.setFromQuaternion(new THREE.Quaternion(rotation.x, rotation.y, rotation.z, rotation.w));
+  }
+
+  private updateMeshSelection(world: World, entityId: number, mesh: THREE.Mesh): void {
+    const selectable = world.componentManager.getComponent(entityId, SelectableComponent.name) as SelectableComponent;
+    if (!selectable) return;
+
+    const material = mesh.material as THREE.MeshBasicMaterial;
+    material.color.setHex(selectable.isSelected ? 0xff0000 : 0x00ff00);
   }
 }

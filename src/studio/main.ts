@@ -99,7 +99,7 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
 
   // Function to update button states based on simulation selection
   function updateControlButtonStates() {
-    const hasSimulation = stateManager.selectedSimulation.state.name !== "" && stateManager.selectedSimulation.state.name.length > 0;
+    const hasSimulation = !!stateManager.selectedSimulation.state.name?.length;
     playButton.disabled = !hasSimulation;
     pauseButton.disabled = !hasSimulation;
     resetButton.disabled = !hasSimulation;

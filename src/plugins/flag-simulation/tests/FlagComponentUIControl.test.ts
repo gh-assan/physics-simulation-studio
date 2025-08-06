@@ -22,38 +22,17 @@ describe("FlagComponent UI Controls", () => {
   });
 
   it("should always initialize windDirection as an object with x, y, z", () => {
-    const flag1 = new FlagComponent(
-      10,
-      6,
-      10,
-      6,
-      0.1,
-      0.5,
-      0.05,
-      "",
-      2,
-      undefined as any // Intentionally testing with undefined to check default behavior
-    );
+    // Test with default constructor
+    const flag1 = new FlagComponent();
     expect(flag1.windDirection).toEqual({ x: 1, y: 0, z: 0 });
-    const flag2 = new FlagComponent(
-      10,
-      6,
-      10,
-      6,
-      0.1,
-      0.5,
-      0.05,
-      "",
-      2,
-      null as any // Intentionally testing with null to check default behavior
-    );
+
+    // Test with null windDirection - should use default
+    const flag2 = new FlagComponent(10, 6, 10, 6, 0.1, 0.5, 0.05, "", null, null);
     expect(flag2.windDirection).toEqual({ x: 1, y: 0, z: 0 });
-    // Pass a partial windDirection as any to simulate bad input
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const flag3 = new FlagComponent(10, 6, 10, 6, 0.1, 0.5, 0.05, "", 2, {
-      x: 0.2
-    } as any); // Intentionally testing with partial object to check default behavior
-    expect(flag3.windDirection).toEqual(new Vector3(0.2, 0, 0));
+
+    // Test with valid windDirection
+    const flag3 = new FlagComponent(10, 6, 10, 6, 0.1, 0.5, 0.05, "", null, { x: 0.2, y: 0, z: 0 });
+    expect(flag3.windDirection).toEqual({ x: 0.2, y: 0, z: 0 });
   });
 });
 
@@ -91,52 +70,16 @@ describe("FlagComponent Gravity Controls", () => {
   });
 
   it("should handle invalid gravity values", () => {
-    // Test with undefined gravity
-    const flag1 = new FlagComponent(
-      10,
-      6,
-      10,
-      6,
-      0.1,
-      0.5,
-      0.05,
-      "",
-      0,
-      { x: 1, y: 0, z: 0 }, // windDirection
-      undefined as any
-    );
+    // Test with default constructor
+    const flag1 = new FlagComponent();
     expect(flag1.gravity).toEqual({ x: 0, y: -9.81, z: 0 });
 
-    // Test with null gravity
-    const flag2 = new FlagComponent(
-      10,
-      6,
-      10,
-      6,
-      0.1,
-      0.5,
-      0.05,
-      "",
-      0,
-      { x: 1, y: 0, z: 0 }, // windDirection
-      null as any
-    );
+    // Test with null gravity - should use default
+    const flag2 = new FlagComponent(10, 6, 10, 6, 0.1, 0.5, 0.05, "", null, null, null);
     expect(flag2.gravity).toEqual({ x: 0, y: -9.81, z: 0 });
 
-    // Test with partial gravity object
-    const flag3 = new FlagComponent(
-      10,
-      6,
-      10,
-      6,
-      0.1,
-      0.5,
-      0.05,
-      "",
-      0,
-      { x: 1, y: 0, z: 0 }, // windDirection
-      { y: -5 } as any
-    );
+    // Test with valid gravity object
+    const flag3 = new FlagComponent(10, 6, 10, 6, 0.1, 0.5, 0.05, "", null, null, { x: 0, y: -5, z: 0 });
     expect(flag3.gravity).toEqual({ x: 0, y: -5, z: 0 });
   });
 

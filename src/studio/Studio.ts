@@ -74,16 +74,14 @@ export class Studio implements IStudio {
 
     // Unload current simulation if one exists
     const currentSimulation = this.selectedSimulation.getSimulationName();
-    if (currentSimulation && currentSimulation !== "") {
+    if (currentSimulation) {
       this.orchestrator.unloadSimulation(currentSimulation);
     }
 
     await this.orchestrator.loadSimulation(pluginName);
     this.selectedSimulation.setSimulation(pluginName);
 
-    if (this.renderSystem) {
-      this.renderSystem.update(this.world as any, 0);
-    }
+    this.renderSystem?.update(this.world as any, 0);
 
     const event = new CustomEvent("simulation-loaded", {
       detail: { simulationName: pluginName }
@@ -94,7 +92,7 @@ export class Studio implements IStudio {
 
   public unloadSimulation(): void {
     const currentSimulation = this.selectedSimulation.getSimulationName();
-    if (currentSimulation && currentSimulation !== "") {
+    if (currentSimulation) {
       this.orchestrator.unloadSimulation(currentSimulation);
       this.selectedSimulation.setSimulation("");
       Logger.getInstance().log("Simulation unloaded");
@@ -117,13 +115,16 @@ export class Studio implements IStudio {
 
   public getRenderer(): any {
     const pluginName = this.selectedSimulation.getSimulationName();
-    if (pluginName && pluginName !== "") {
-      const activePlugin = this.pluginManager.getPlugin(pluginName);
-      if (activePlugin && activePlugin.getRenderer) {
-        return activePlugin.getRenderer();
-      }
+    if (!pluginName) {
+      throw new Error("No active simulation");
     }
-    throw new Error("No active simulation or renderer available");
+
+    const activePlugin = this.pluginManager.getPlugin(pluginName);
+    if (!activePlugin?.getRenderer) {
+      throw new Error("No renderer available for active simulation");
+    }
+
+    return activePlugin.getRenderer();
   }
 
   public getAvailableSimulationNames(): string[] {

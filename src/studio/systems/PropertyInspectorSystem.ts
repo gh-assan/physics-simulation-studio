@@ -37,22 +37,12 @@ export class PropertyInspectorSystem extends System {
    */
   private getParameterPanelsFromActivePlugin(): ParameterPanelComponent[] {
     const activeSimulationName = this.studio.getActiveSimulationName();
-
-    if (!activeSimulationName) {
-      return [];
-    }
+    if (!activeSimulationName) return [];
 
     const activePlugin = this.pluginManager.getPlugin(activeSimulationName);
+    if (!activePlugin || !activePlugin.getParameterPanels) return [];
 
-    if (!activePlugin) {
-      return [];
-    }
-
-    if (activePlugin.getParameterPanels) {
-      return activePlugin.getParameterPanels(this.world);
-    } else {
-      return [];
-    }
+    return activePlugin.getParameterPanels(this.world);
   }
 
   /**
@@ -61,29 +51,24 @@ export class PropertyInspectorSystem extends System {
    * @param _deltaTime The time elapsed since the last update
    */
   public update(world: World, _deltaTime: number): void {
-
     const currentSelectedEntity = this.selectionSystem.getSelectedEntity();
     const currentActiveSimulation = this.studio.getActiveSimulationName();
 
-    // Check if the selected entity has changed OR if the active simulation has changed
-    if (
-      currentSelectedEntity !== this.lastSelectedEntity ||
-      currentActiveSimulation !== this.lastActiveSimulationName
-    ) {
-      this.lastSelectedEntity = currentSelectedEntity;
-      this.lastActiveSimulationName = currentActiveSimulation; // Update last active simulation
-      this.propertyInspectorUIManager.clearInspectorControls(); // Clear previous inspector content
+    // Early return if nothing changed
+    if (currentSelectedEntity === this.lastSelectedEntity &&
+        currentActiveSimulation === this.lastActiveSimulationName) {
+      return;
+    }
 
-      if (this.selectionSystem.hasSelection()) {
-        this.updateInspectorForEntity(world, currentSelectedEntity);
-      } else {
-        // If no entity is selected, display the parameter panels from the active plugin
-        this.propertyInspectorUIManager.clearInspectorControls(); // Clear previous inspector content
-        if (currentActiveSimulation && currentActiveSimulation !== "") {
-          const parameterPanels = this.getParameterPanelsFromActivePlugin();
-          this.propertyInspectorUIManager.registerParameterPanels(parameterPanels);
-        }
-      }
+    this.lastSelectedEntity = currentSelectedEntity;
+    this.lastActiveSimulationName = currentActiveSimulation;
+    this.propertyInspectorUIManager.clearInspectorControls();
+
+    if (this.selectionSystem.hasSelection()) {
+      this.updateInspectorForEntity(world, currentSelectedEntity);
+    } else if (currentActiveSimulation) {
+      const parameterPanels = this.getParameterPanelsFromActivePlugin();
+      this.propertyInspectorUIManager.registerParameterPanels(parameterPanels);
     }
   }
 
