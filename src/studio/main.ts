@@ -23,13 +23,17 @@ import { StateManager } from "./state/StateManager";
 import { Studio } from "./Studio";
 import { IUIManager } from "./IUIManager";
 import { UIManager } from "./uiManager";
-import { RenderSystem } from "./systems/RenderSystem";
 import { PropertyInspectorSystem } from "./systems/PropertyInspectorSystem";
 import { ComponentPropertyRegistry } from "./utils/ComponentPropertyRegistry";
 import { FlagComponent } from "../plugins/flag-simulation/FlagComponent";
 import { WaterBodyComponent } from "../plugins/water-simulation/WaterComponents";
 import { IPluginContext } from "./IPluginContext";
 import { ThreeGraphicsManager } from "./graphics/ThreeGraphicsManager";
+import { VisibilityManager } from "./ui/VisibilityManager";
+import { SystemDiagnostics } from "./utils/SystemDiagnostics";
+import { RenderOrchestrator } from "./rendering/RenderOrchestrator";
+import { FlagRenderer } from "./rendering/FlagRenderer";
+import { VisibilityOrchestrator } from "./orchestration/VisibilityOrchestrator";
 
 // Import styles
 import "./styles/studio.css";
@@ -57,24 +61,70 @@ function setupCoreSystems(): { world: World; pluginManager: PluginManager; state
   (window as any).studio = studio;
   (window as any).sceneSerializer = sceneSerializer;
 
-  Logger.getInstance().log("Core systems initialized."); // Consolidated log
-
   return { world, pluginManager, stateManager, studio };
 }
 
-function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager): { uiManager: UIManager; propertyInspectorUIManager: PropertyInspectorUIManager } {
-  const pane = new Pane();
+function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager): { uiManager: UIManager; propertyInspectorUIManager: PropertyInspectorUIManager; visibilityOrchestrator: VisibilityOrchestrator } {
+  // Initialize core UI and ensure left panel exists
+  const visibilityManager = new VisibilityManager();
+  visibilityManager.initializeCoreUI();
+
+  const leftPanel = document.getElementById("left-panel");
+  if (!leftPanel) {
+    throw new Error("Left panel not found");
+  }
+
+  // Create Tweakpane with the container option
+  const pane = new Pane({ container: leftPanel });
+
   const uiManager = new UIManager(pane);
-  const propertyInspectorUIManager = new PropertyInspectorUIManager(uiManager);
+  const propertyInspectorUIManager = new PropertyInspectorUIManager(uiManager, visibilityManager);
+
+  // Create a placeholder render orchestrator for now (will be replaced in registerComponentsAndSystems)
+  const placeholderGraphicsManager = new ThreeGraphicsManager();
+  const renderOrchestrator = new RenderOrchestrator(placeholderGraphicsManager);
+
+  // Create centralized visibility orchestrator
+  const visibilityOrchestrator = new VisibilityOrchestrator(visibilityManager, renderOrchestrator);
+  visibilityOrchestrator.initialize();
+
+  // Expose for debugging
   (window as any).uiManager = uiManager;
   (window as any).propertyInspectorUIManager = propertyInspectorUIManager;
+  (window as any).visibilityManager = visibilityManager;
+  (window as any).visibilityOrchestrator = visibilityOrchestrator;
 
   const globalControlsFolder = pane.addFolder({ title: "Global Controls" });
-  globalControlsFolder.addButton({ title: "Play" }).on("click", () => studio.play());
-  globalControlsFolder.addButton({ title: "Pause" }).on("click", () => studio.pause());
-  globalControlsFolder.addButton({ title: "Reset" }).on("click", () => studio.reset());
+  globalControlsFolder.addButton({ title: "Play" }).on("click", () => {
+    console.log('Play button clicked');
+    studio.play();
+  });
+  globalControlsFolder.addButton({ title: "Pause" }).on("click", () => {
+    console.log('Pause button clicked');
+    studio.pause();
+  });
+  globalControlsFolder.addButton({ title: "Reset" }).on("click", () => {
+    console.log('Reset button clicked');
+    studio.reset();
+  });
+
+  // Register Global Controls panel with VisibilityOrchestrator
+  visibilityOrchestrator.getVisibilityManager().registerGlobalPanel(
+    'global-controls',
+    globalControlsFolder,
+    leftPanel,
+    { isGlobalControl: true, priority: 1 }
+  );
 
   const simulationSelectionFolder = pane.addFolder({ title: "Simulations" });
+
+  // Register Simulations panel with VisibilityOrchestrator
+  visibilityOrchestrator.getVisibilityManager().registerGlobalPanel(
+    'simulation-selector',
+    simulationSelectionFolder,
+    leftPanel,
+    { isSimulationSelector: true, priority: 2 }
+  );
 
   function updateSimulationSelector() {
     simulationSelectionFolder.children.forEach((child: any) => child.dispose());
@@ -104,9 +154,8 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
   if (typeof (pluginManager as any).on === "function") {
     (pluginManager as any).on("plugin:registered", updateSimulationSelector);
   }
-  Logger.getInstance().log("UI setup completed."); // Consolidated log
 
-  return { uiManager, propertyInspectorUIManager };
+  return { uiManager, propertyInspectorUIManager, visibilityOrchestrator };
 }
 
 function registerComponentsAndSystems(world: World, studio: Studio, propertyInspectorUIManager: PropertyInspectorUIManager, pluginManager: PluginManager) {
@@ -121,38 +170,60 @@ function registerComponentsAndSystems(world: World, studio: Studio, propertyInsp
   );
 
   // Register Core Components
-  // Ensure static 'type' property is present for each component
   world.registerComponent((PositionComponent as any).type ? PositionComponent : class extends PositionComponent { static type = "PositionComponent"; });
   world.registerComponent((RenderableComponent as any).type ? RenderableComponent : class extends RenderableComponent { static type = "RenderableComponent"; });
   world.registerComponent((SelectableComponent as any).type ? SelectableComponent : class extends SelectableComponent { static type = "SelectableComponent"; });
   world.registerComponent((RotationComponent as any).type ? RotationComponent : class extends RotationComponent { static type = "RotationComponent"; });
 
-  // Register Systems
-  const graphicsManager = new ThreeGraphicsManager();
-  graphicsManager.initialize(document.body);
-  const renderSystem = new RenderSystem(graphicsManager, world);
-  world.registerSystem(renderSystem);
+  // Register Systems with Centralized Orchestration
+  try {
+    // Create graphics manager and initialize canvas
+    const graphicsManager = new ThreeGraphicsManager();
 
-  const selectionSystem = new SelectionSystem(studio, world as World); // Ensure correct type
-  world.registerSystem(selectionSystem);
+    // Initialize graphics manager with the main content container
+    const mainContent = document.getElementById("main-content");
+    if (!mainContent) {
+      throw new Error("Main content container not found");
+    }
+    graphicsManager.initialize(mainContent);
 
-  world.registerSystem(
-    new PropertyInspectorSystem(propertyInspectorUIManager, world as World, studio, pluginManager, selectionSystem)
-  );
-  studio.setRenderSystem(renderSystem);
+    // Create centralized render orchestrator
+    const renderOrchestrator = new RenderOrchestrator(graphicsManager);
 
-  // Create viewport toolbar
-  const viewportToolbar = new ViewportToolbar({
-    graphicsManager: renderSystem.getGraphicsManager() as ThreeGraphicsManager,
-  });
-  (window as any).viewportToolbar = viewportToolbar;
+    // Register the flag renderer with the orchestrator
+    const flagRenderer = new FlagRenderer(graphicsManager);
+    renderOrchestrator.registerRenderer("flag", flagRenderer);
+
+    // Register the render orchestrator as a system
+    world.registerSystem(renderOrchestrator);
+
+    const selectionSystem = new SelectionSystem(studio, world as World);
+    world.registerSystem(selectionSystem);
+
+    const propertyInspectorSystem = new PropertyInspectorSystem(propertyInspectorUIManager, world as World, studio, pluginManager, selectionSystem);
+    world.registerSystem(propertyInspectorSystem);
+
+    // Store graphics manager for later use
+    (window as any).graphicsManager = graphicsManager;
+
+    // Create viewport toolbar
+    const viewportToolbar = new ViewportToolbar({
+      graphicsManager: graphicsManager,
+    });
+    (window as any).viewportToolbar = viewportToolbar;
+
+    // Expose for debugging
+    (window as any).renderOrchestrator = renderOrchestrator;
+
+  } catch (error) {
+    Logger.getInstance().error("Error during system registration:", error);
+    throw error;
+  }
 }
 
 function registerPlugins(pluginManager: PluginManager) {
   const flagPlugin = new FlagSimulationPlugin();
-  Logger.getInstance().log("Registering plugin:", flagPlugin.getName());
   pluginManager.registerPlugin(flagPlugin);
-  Logger.getInstance().log("Available plugins after registration:", pluginManager.getAvailablePluginNames());
 }
 
 function startApplication(studio: Studio) {
@@ -172,29 +243,30 @@ async function main() {
   Logger.getInstance().enable();
   Logger.getInstance().log("Initializing Physics Simulation Studio...");
 
-  const { world, pluginManager, stateManager, studio } = setupCoreSystems();
-  const { uiManager, propertyInspectorUIManager } = setupUI(studio, stateManager, pluginManager);
-  registerComponentsAndSystems(world as World, studio, propertyInspectorUIManager, pluginManager as PluginManager);
-  registerPlugins(pluginManager);
+  try {
+    const { world, pluginManager, stateManager, studio } = setupCoreSystems();
+    const { uiManager, propertyInspectorUIManager, visibilityOrchestrator } = setupUI(studio, stateManager, pluginManager);
+    registerComponentsAndSystems(world as World, studio, propertyInspectorUIManager, pluginManager as PluginManager);
+    registerPlugins(pluginManager);
 
-  // Set render system before loading simulation
-  const renderSystem = (world as World).systemManager.getSystem(RenderSystem);
-  if (renderSystem) {
-    studio.setRenderSystem(renderSystem);
+    // Load Initial Simulation - this should NOT clear systems
+    const defaultSimulationName = studio.getAvailableSimulationNames()[0] || null;
+    if (defaultSimulationName) {
+      await studio.loadSimulation(defaultSimulationName);
+    }
+
+    // Run system diagnostics to ensure everything is working
+    const diagnostics = new SystemDiagnostics(world as World);
+    diagnostics.diagnoseAndFix();
+
+    startApplication(studio);
+
+    Logger.getInstance().log("Physics Simulation Studio Initialized");
+  } catch (error) {
+    console.error("Error during initialization:", error);
+    Logger.getInstance().error("Failed to initialize the studio:", error);
+    throw error;
   }
-
-  // Load Initial Simulation
-  const defaultSimulationName = studio.getAvailableSimulationNames()[0] || null;
-  if (defaultSimulationName) {
-    Logger.getInstance().log(`Loading default simulation: ${defaultSimulationName}`);
-    await studio.loadSimulation(defaultSimulationName);
-  } else {
-    Logger.getInstance().warn("No default simulation found to load.");
-  }
-
-  startApplication(studio);
-
-  Logger.getInstance().log("Physics Simulation Studio Initialized");
 }
 
 // Run the main initialization function

@@ -57,7 +57,9 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
     }
 
     private _clearWorldAndRenderSystem(): void {
-        this.world.clear(true);
+        // Only clear entities and components, NOT systems
+        // Core systems (RenderSystem, SelectionSystem, PropertyInspectorSystem) should persist
+        this.world.clear(false); // Changed from clear(true) to clear(false)
         if (this.renderSystem) {
             this.renderSystem.clear();
         }

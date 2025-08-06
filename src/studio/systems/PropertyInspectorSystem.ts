@@ -39,6 +39,8 @@ export class PropertyInspectorSystem extends System {
    */
   private getParameterPanelsFromActivePlugin(): ParameterPanelComponent[] {
     const activeSimulationName = this.studio.getActiveSimulationName();
+    console.log(`[PropertyInspectorSystem] Active simulation name: ${activeSimulationName}`);
+
     if (!activeSimulationName) {
       Logger.getInstance().log(
         `[PropertyInspectorSystem] No active simulation.` // Simplified log
@@ -47,6 +49,8 @@ export class PropertyInspectorSystem extends System {
     }
 
     const activePlugin = this.pluginManager.getPlugin(activeSimulationName);
+    console.log(`[PropertyInspectorSystem] Active plugin:`, activePlugin);
+
     if (!activePlugin) {
       Logger.getInstance().log(
         `[PropertyInspectorSystem] No active plugin for simulation ${activeSimulationName}.` // Simplified log
@@ -56,11 +60,13 @@ export class PropertyInspectorSystem extends System {
 
     if (activePlugin.getParameterPanels) {
       const panels = activePlugin.getParameterPanels(this.world);
+      console.log(`[PropertyInspectorSystem] Parameter panels from plugin:`, panels);
       Logger.getInstance().log(
         `[PropertyInspectorSystem] Retrieved ${panels.length} parameter panels for ${activeSimulationName}.` // Simplified log
       );
       return panels;
     } else {
+      console.log(`[PropertyInspectorSystem] Plugin ${activeSimulationName} does not have getParameterPanels method`);
       Logger.getInstance().log(
         `[PropertyInspectorSystem] Plugin ${activeSimulationName} does not provide parameter panels.` // Simplified log
       );
@@ -74,8 +80,13 @@ export class PropertyInspectorSystem extends System {
    * @param _deltaTime The time elapsed since the last update
    */
   public update(world: World, _deltaTime: number): void {
+    console.log(`[PropertyInspectorSystem] update() called`);
+
     const currentSelectedEntity = this.selectionSystem.getSelectedEntity();
     const currentActiveSimulation = this.studio.getActiveSimulationName();
+
+    // Debug logging
+    console.log(`[PropertyInspectorSystem] Selected entity: ${currentSelectedEntity}, Active simulation: ${currentActiveSimulation}`);
 
     // Check if the selected entity has changed OR if the active simulation has changed
     if (
@@ -87,11 +98,14 @@ export class PropertyInspectorSystem extends System {
       this.propertyInspectorUIManager.clearInspectorControls(); // Clear previous inspector content
 
       if (currentSelectedEntity !== null) {
+        console.log(`[PropertyInspectorSystem] Updating inspector for entity ${currentSelectedEntity}`);
         this.updateInspectorForEntity(world, currentSelectedEntity);
       } else {
         // If no entity is selected, display the parameter panels from the active plugin
+        console.log(`[PropertyInspectorSystem] No entity selected, showing parameter panels for simulation: ${currentActiveSimulation}`);
         this.propertyInspectorUIManager.clearInspectorControls(); // Clear previous inspector content
         const parameterPanels = this.getParameterPanelsFromActivePlugin();
+        console.log(`[PropertyInspectorSystem] Found ${parameterPanels.length} parameter panels`);
         this.propertyInspectorUIManager.registerParameterPanels(parameterPanels);
       }
     }

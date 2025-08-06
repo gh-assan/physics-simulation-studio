@@ -99,7 +99,9 @@ export class Studio implements IStudio {
   }
 
   public getActiveSimulationName(): string | null {
-    return this.selectedSimulation.getSimulationName();
+    const simulationName = this.selectedSimulation.getSimulationName();
+    console.log(`[Studio] getActiveSimulationName returning: ${simulationName}`);
+    return simulationName;
   }
 
   public getRenderer(): any | null {
