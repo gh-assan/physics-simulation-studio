@@ -42,8 +42,8 @@ describe("FlagSystem", () => {
       0.05,
       "",
       0,
-      null,
-      null,
+      undefined, // windDirection - use default
+      undefined, // gravity - use default
       poleEntity,
       "left"
     ); // Link flag to pole
@@ -87,7 +87,7 @@ describe("FlagSystem", () => {
   it("should apply gravity and wind forces to non-fixed points", () => {
     const entity = world.entityManager.createEntity();
     // Use 3x3 segments and no pole to ensure non-fixed points
-    const flagComponent = new FlagComponent(10, 6, 3, 3, 0.1, 0.5, 0.05, "", 0, null, null, null, "left");
+    const flagComponent = new FlagComponent(10, 6, 3, 3, 0.1, 0.5, 0.05, "", 0);
     const positionComponent = new PositionComponent(0, 0, 0);
 
     world.componentManager.addComponent(
@@ -113,11 +113,10 @@ describe("FlagSystem", () => {
     // Find a non-fixed point
     const nonFixedPoint = flagComponent.points.find(p => !p.isFixed);
     expect(nonFixedPoint).toBeDefined();
-    if (nonFixedPoint) {
-      // Expect forces to have changed due to gravity and wind only (no spring force yet)
-      const expectedForceY = flagComponent.gravity.y * nonFixedPoint.mass + (flagComponent.wind.y || 0);
-      expect(nonFixedPoint.forces.y).toBeCloseTo(expectedForceY, 0); // relax: allow up to 0.5 difference
-    }
+
+    // Simplified assertion - no more if checks
+    const expectedForceY = flagComponent.gravity.y * nonFixedPoint!.mass + flagComponent.wind.y;
+    expect(nonFixedPoint!.forces.y).toBeCloseTo(expectedForceY, 0);
   });
 
   it("should integrate point mass positions using Verlet integration", () => {
@@ -141,21 +140,21 @@ describe("FlagSystem", () => {
     // Find a non-fixed point
     const nonFixedPoint = flagComponent.points.find(p => !p.isFixed);
     expect(nonFixedPoint).toBeDefined();
-    if (nonFixedPoint) {
-      console.log(
-        `Before second update: nonFixedPoint.position.y = ${nonFixedPoint.position.y}, nonFixedPoint.previousPosition.y = ${nonFixedPoint.previousPosition.y}, nonFixedPoint.forces.y = ${nonFixedPoint.forces.y}`
-      );
 
-      flagSystem.update(world, 0.5); // Integrate for 0.5 seconds
+    // Simplified - no defensive if check
+    console.log(
+      `Before second update: nonFixedPoint.position.y = ${nonFixedPoint!.position.y}, nonFixedPoint.previousPosition.y = ${nonFixedPoint!.previousPosition.y}, nonFixedPoint.forces.y = ${nonFixedPoint!.forces.y}`
+    );
 
-      console.log(
-        `After second update: nonFixedPoint.position.y = ${nonFixedPoint.position.y}`
-      );
+    flagSystem.update(world, 0.5); // Integrate for 0.5 seconds
 
-      // Expect position to have changed due to integration
-      // Note: In this simulation, the point moves downward due to gravity
-      expect(nonFixedPoint.position.y).toBeLessThan(0);
-    }
+    console.log(
+      `After second update: nonFixedPoint.position.y = ${nonFixedPoint!.position.y}`
+    );
+
+    // Expect position to have changed due to integration
+    // Note: In this simulation, the point moves downward due to gravity
+    expect(nonFixedPoint!.position.y).toBeLessThan(0);
   });
 
   it("should satisfy constraints and maintain spring rest lengths (approximately)", () => {
@@ -190,15 +189,13 @@ describe("FlagSystem", () => {
         (s.p1 === flagComponent.points[5] && s.p2 === flagComponent.points[4])
     );
 
-    if (springToCheck) {
-      const dx = springToCheck.p2.position.x - springToCheck.p1.position.x;
-      const dy = springToCheck.p2.position.y - springToCheck.p1.position.y;
-      const dz = springToCheck.p2.position.z - springToCheck.p1.position.z;
-      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-      // Relax tolerance: expect within 0.5 of restLength (precision 0)
-      expect(distance).toBeCloseTo(springToCheck.restLength, 0); // 0 decimals = within 0.5
-    } else {
-      fail("Spring not found for testing constraint satisfaction.");
-    }
+    // Simplified - expect spring to exist since we control the setup
+    expect(springToCheck).toBeDefined();
+
+    const dx = springToCheck!.p2.position.x - springToCheck!.p1.position.x;
+    const dy = springToCheck!.p2.position.y - springToCheck!.p1.position.y;
+    const dz = springToCheck!.p2.position.z - springToCheck!.p1.position.z;
+    const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    expect(distance).toBeCloseTo(springToCheck!.restLength, 0);
   });
 });

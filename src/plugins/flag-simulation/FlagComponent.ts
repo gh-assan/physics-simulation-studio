@@ -51,8 +51,8 @@ export class FlagComponent implements IComponent {
     damping = 0.05,
     textureUrl = "",
     windStrength = 0,
-    windDirection?: { x: number; y: number; z: number } | null,
-    gravity?: { x: number; y: number; z: number } | null,
+    windDirection = { x: 1, y: 0, z: 0 },
+    gravity = { x: 0, y: -9.81, z: 0 },
     poleEntityId: number | null = null,
     attachedEdge: "left" | "right" | "top" | "bottom" = "left"
   ) {
@@ -71,28 +71,8 @@ export class FlagComponent implements IComponent {
     this.windStrength = windStrength;
     this.poleEntityId = poleEntityId;
     this.attachedEdge = attachedEdge;
-
-    // Defensive: always ensure windDirection is an object with x/y/z
-    if (!windDirection || typeof windDirection !== "object") {
-      this.windDirection = { x: 1, y: 0, z: 0 };
-    } else {
-      this.windDirection = {
-        x: typeof windDirection.x === "number" ? windDirection.x : 1,
-        y: typeof windDirection.y === "number" ? windDirection.y : 0,
-        z: typeof windDirection.z === "number" ? windDirection.z : 0
-      };
-    }
-
-    // Set default gravity (same as previously in FlagSystem)
-    if (!gravity || typeof gravity !== "object") {
-      this.gravity = { x: 0, y: -9.81, z: 0 };
-    } else {
-      this.gravity = {
-        x: typeof gravity.x === "number" ? gravity.x : 0,
-        y: typeof gravity.y === "number" ? gravity.y : -9.81,
-        z: typeof gravity.z === "number" ? gravity.z : 0
-      };
-    }
+    this.windDirection = windDirection;
+    this.gravity = gravity;
   }
 
   // Add setters to keep wind vector in sync

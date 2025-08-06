@@ -20,100 +20,119 @@ export class FlagPhysicsInitializer {
     const segmentWidth = flagComponent.width / flagComponent.segmentsX;
     const segmentHeight = flagComponent.height / flagComponent.segmentsY;
 
-    let polePosition: Vector3 | null = null;
-    let poleHeight = 0; // Initialize poleHeight
-
-    if (flagComponent.poleEntityId !== null) {
-      const poleEntity = world.entityManager.getEntityById(
-        flagComponent.poleEntityId
-      );
-      if (poleEntity !== undefined) {
-        const poleComp = world.componentManager.getComponent(
-          poleEntity,
-          PoleComponent.type
-        ) as PoleComponent;
-        if (poleComp) {
-          polePosition = poleComp.position;
-          poleHeight = poleComp.height;
-        }
-      }
-    }
+    const poleInfo = this.getPoleInfo(flagComponent, world);
 
     // Create PointMass objects
     for (let y = 0; y < numRows; y++) {
       for (let x = 0; x < numCols; x++) {
-        let isFixed = false;
-        let finalPointX = 0; // Initialize
-        let finalPointY = 0; // Initialize
-        let finalPointZ = 0; // Initialize
+        const pointInfo = this.createPoint(
+          x, y, numCols, numRows,
+          flagComponent, positionComponent,
+          poleInfo, segmentWidth, segmentHeight
+        );
 
-        // Determine if this point is one of the two fixed corners
-        const isTopRow = y === numRows - 1;
-        const isBottomRow = y === 0;
-        const isLeftCol = x === 0;
-        const isRightCol = x === numCols - 1;
-
-        if (polePosition) {
-          // Only consider fixing if a pole exists
-          switch (flagComponent.attachedEdge) {
-            case "left":
-              isFixed = isLeftCol && (isTopRow || isBottomRow);
-              break;
-            case "right":
-              isFixed = isRightCol && (isTopRow || isBottomRow);
-              break;
-            case "top":
-              isFixed = isTopRow && (isLeftCol || isRightCol);
-              break;
-            case "bottom":
-              isFixed = isBottomRow && (isLeftCol || isRightCol);
-              break;
-          }
-        }
-
-        if (isFixed && polePosition) {
-          // Set position directly to pole attachment point
-          finalPointZ = polePosition.z; // Assume flag is in the same Z plane as pole
-
-          if (
-            flagComponent.attachedEdge === "left" ||
-            flagComponent.attachedEdge === "right"
-          ) {
-            finalPointX = polePosition.x;
-            if (isBottomRow) {
-              finalPointY = polePosition.y; // Bottom of pole
-            } else {
-              // isTopRow
-              finalPointY = polePosition.y + poleHeight; // Top of pole
-            }
-          } else {
-            // 'top' or 'bottom' attachedEdge
-            finalPointY = polePosition.y; // Assume horizontal attachment at pole's base Y
-            if (isLeftCol) {
-              finalPointX = polePosition.x - flagComponent.width / 2; // Left end of flag
-            } else {
-              // isRightCol
-              finalPointX = polePosition.x + flagComponent.width / 2; // Right end of flag
-            }
-          }
-          console.log(
-            `[FlagPhysicsInitializer] Fixed point (${x},${y}) - Adjusted to Pole: (${finalPointX}, ${finalPointY}, ${finalPointZ})`
-          );
-        } else {
-          // Calculate initial position relative to flag's positionComponent
-          finalPointX =
-            positionComponent.x + x * segmentWidth - flagComponent.width / 2;
-          finalPointY = positionComponent.y + y * segmentHeight;
-          finalPointZ = positionComponent.z;
-        }
-
-        const position = new Vector3(finalPointX, finalPointY, finalPointZ);
-        const pointMass = new PointMass(position, flagComponent.mass, isFixed);
+        const position = new Vector3(pointInfo.x, pointInfo.y, pointInfo.z);
+        const pointMass = new PointMass(position, flagComponent.mass, pointInfo.isFixed);
         flagComponent.points.push(pointMass);
       }
     }
 
-    // Create springs
+    this.createSprings(flagComponent, numRows, numCols, segmentWidth, segmentHeight);
+  }
+
+  private static getPoleInfo(flagComponent: FlagComponent, world: World) {
+    if (flagComponent.poleEntityId === null) {
+      return null;
+    }
+
+    const poleEntity = world.entityManager.getEntityById(flagComponent.poleEntityId);
+    if (poleEntity === undefined) {
+      return null;
+    }
+
+    const poleComp = world.componentManager.getComponent(poleEntity, PoleComponent.type) as PoleComponent;
+    if (!poleComp) {
+      return null;
+    }
+
+    return {
+      position: poleComp.position,
+      height: poleComp.height
+    };
+  }
+
+  private static createPoint(
+    x: number, y: number, numCols: number, numRows: number,
+    flagComponent: FlagComponent, positionComponent: PositionComponent,
+    poleInfo: any, segmentWidth: number, segmentHeight: number
+  ) {
+    const isTopRow = y === numRows - 1;
+    const isBottomRow = y === 0;
+    const isLeftCol = x === 0;
+    const isRightCol = x === numCols - 1;
+
+    const isFixed = poleInfo && this.shouldPointBeFixed(
+      flagComponent.attachedEdge, isTopRow, isBottomRow, isLeftCol, isRightCol
+    );
+
+    if (isFixed) {
+      return this.calculatePoleAttachmentPosition(
+        flagComponent.attachedEdge, poleInfo,
+        isTopRow, isBottomRow, isLeftCol, isRightCol,
+        flagComponent.width
+      );
+    }
+
+    // Standard grid position
+    return {
+      x: positionComponent.x + x * segmentWidth - flagComponent.width / 2,
+      y: positionComponent.y + y * segmentHeight,
+      z: positionComponent.z,
+      isFixed: false
+    };
+  }
+
+  private static shouldPointBeFixed(
+    attachedEdge: string,
+    isTopRow: boolean, isBottomRow: boolean, isLeftCol: boolean, isRightCol: boolean
+  ): boolean {
+    switch (attachedEdge) {
+      case "left": return isLeftCol && (isTopRow || isBottomRow);
+      case "right": return isRightCol && (isTopRow || isBottomRow);
+      case "top": return isTopRow && (isLeftCol || isRightCol);
+      case "bottom": return isBottomRow && (isLeftCol || isRightCol);
+      default: return false;
+    }
+  }
+
+  private static calculatePoleAttachmentPosition(
+    attachedEdge: string, poleInfo: any,
+    isTopRow: boolean, isBottomRow: boolean, isLeftCol: boolean, isRightCol: boolean,
+    flagWidth: number
+  ) {
+    const result = {
+      x: poleInfo.position.x,
+      y: poleInfo.position.y,
+      z: poleInfo.position.z,
+      isFixed: true
+    };
+
+    if (attachedEdge === "left" || attachedEdge === "right") {
+      result.y = isBottomRow ? poleInfo.position.y : poleInfo.position.y + poleInfo.height;
+    } else {
+      result.x = isLeftCol
+        ? poleInfo.position.x - flagWidth / 2
+        : poleInfo.position.x + flagWidth / 2;
+    }
+
+    return result;
+  }
+
+  private static createSprings(
+    flagComponent: FlagComponent,
+    numRows: number, numCols: number,
+    segmentWidth: number, segmentHeight: number
+  ): void {
     for (let y = 0; y < numRows; y++) {
       for (let x = 0; x < numCols; x++) {
         const p1Index = y * numCols + x;
