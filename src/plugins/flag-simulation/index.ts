@@ -20,8 +20,6 @@ import { System } from "../../core/ecs/System";
 import { Logger } from '../../core/utils/Logger';
 import { ThreeGraphicsManager } from "../../studio/graphics/ThreeGraphicsManager";
 
-ComponentPropertyRegistry.getInstance().registerComponentProperties("flag-simulation", flagComponentProperties);
-
 export class FlagSimulationPlugin implements ISimulationPlugin {
   private _flagSystem: FlagSystem | null = null;
   private _parameterPanels: ParameterPanelComponent[] = [];
@@ -43,6 +41,12 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
   }
 
   register(world: World): void {
+    // Register component properties first
+    ComponentPropertyRegistry.getInstance().registerComponentProperties(
+      FlagComponent.type,
+      flagComponentProperties
+    );
+
     // Register components
     world.componentManager.registerComponent(FlagComponent);
     world.componentManager.registerComponent(PoleComponent);

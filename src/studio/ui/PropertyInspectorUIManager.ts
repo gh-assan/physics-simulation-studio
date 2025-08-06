@@ -153,13 +153,21 @@ export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
   private extractPluginNameFromPanel(panel: ParameterPanelComponent): string {
     const componentType = panel.componentType;
 
-    // Map component types to plugin names based on known patterns
+    // Try to extract plugin name from component type patterns
+    // This is a fallback - ideally panels should include plugin metadata
     if (componentType.includes('Flag') || componentType.includes('Pole')) {
       return 'flag-simulation';
     } else if (componentType.includes('Water')) {
       return 'water-simulation';
     } else if (componentType.includes('Solar') || componentType.includes('Celestial')) {
       return 'solar-system';
+    }
+
+    // For unknown types, try to infer from component type naming convention
+    // e.g., "MyPluginComponent" -> "my-plugin"
+    const match = componentType.match(/^(\w+?)(?:Component|Panel)?$/);
+    if (match) {
+      return match[1].toLowerCase().replace(/([A-Z])/g, '-$1').replace(/^-/, '');
     }
 
     return 'unknown';

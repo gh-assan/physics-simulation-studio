@@ -104,11 +104,13 @@ describe("PropertyInspectorSystem", () => {
     mockPluginContext.studio = mockStudio;
 
     // Mock the getActiveSimulationName method
-    jest.spyOn(mockStudio, "getActiveSimulationName").mockReturnValue(null);
+    jest.spyOn(mockStudio, "getActiveSimulationName").mockReturnValue("");
 
     selectionSystem = {
-      getSelectedEntity: jest.fn(() => null),
+      getSelectedEntity: jest.fn(() => -1),
       setSelectedEntity: jest.fn(),
+      clearSelection: jest.fn(),
+      hasSelection: jest.fn(() => false),
       update: jest.fn(),
       setDefaultSelectedEntity: jest.fn()
     } as unknown as SelectionSystem;

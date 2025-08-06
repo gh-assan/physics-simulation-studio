@@ -14,13 +14,53 @@ export class FlagRenderSystem extends System implements IRenderable {
   private graphicsManager: ThreeGraphicsManager;
   private meshes: Map<number, THREE.Mesh> = new Map();
   private poleMeshes: Map<number, THREE.Mesh> = new Map();
+  private renderOrchestrator: any; // Will be set when system is initialized
 
   constructor(graphicsManager: ThreeGraphicsManager) {
     super();
     this.graphicsManager = graphicsManager;
   }
 
-  public update(world: IWorld, _deltaTime: number): void {
+  /**
+   * Called when the system is registered with the world
+   */
+  public onRegister(world: IWorld): void {
+    // Find the render orchestrator in the world's systems
+    const systems = (world as any).systemManager.systems;
+    for (const system of systems) {
+      if (system.constructor.name === 'RenderOrchestrator') {
+        this.renderOrchestrator = system;
+        // Register this system as a renderer
+        this.renderOrchestrator.registerRenderer('flag-renderer', {
+          update: this.renderEntities.bind(this),
+          clear: this.clear.bind(this)
+        });
+        console.log('[FlagRenderSystem] Registered with RenderOrchestrator');
+        break;
+      }
+    }
+  }
+
+  /**
+   * Called when the system is removed from the world
+   */
+  public onRemove(world: IWorld): void {
+    if (this.renderOrchestrator) {
+      this.renderOrchestrator.unregisterRenderer('flag-renderer');
+      console.log('[FlagRenderSystem] Unregistered from RenderOrchestrator');
+    }
+    this.clear();
+  }
+
+  public update(world: IWorld, deltaTime: number): void {
+    // This method is called by the ECS system manager
+    // The actual rendering is handled by renderEntities which is called by RenderOrchestrator
+  }
+
+  /**
+   * Render flag and pole entities - called by RenderOrchestrator
+   */
+  public renderEntities(world: IWorld, _deltaTime: number): void {
     // Render FlagComponents
     const flagEntities = world.componentManager.getEntitiesWithComponents([
       FlagComponent,
@@ -115,8 +155,8 @@ export class FlagRenderSystem extends System implements IRenderable {
   }
 
   public render(world: IWorld, scene: THREE.Scene, camera: THREE.Camera): void {
-    // Call update to perform rendering logic
-    this.update(world, 0);
+    // Call renderEntities to perform rendering logic
+    this.renderEntities(world, 0);
   }
 
   public onEntityRemoved(entityId: number, world: IWorld): void {

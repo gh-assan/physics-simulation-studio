@@ -1,10 +1,5 @@
 import { PropertyInspectorUIManager } from "./ui/PropertyInspectorUIManager";
 import { SceneSerializer } from "./systems/SceneSerializer";
-import { FlagSimulationPlugin } from "@plugins/flag-simulation";
-import { WaterSimulationPlugin } from "@plugins/water-simulation";
-import { SolarSystemPlugin } from "@plugins/solar-system";
-import { flagComponentProperties } from "../plugins/flag-simulation/flagComponentProperties";
-import { waterBodyComponentProperties, waterDropletComponentProperties } from "../plugins/water-simulation/waterComponentProperties";
 import { PositionComponent } from "../core/components/PositionComponent";
 import { RenderableComponent } from "../core/components/RenderableComponent";
 import { SelectableComponent } from "../core/components/SelectableComponent";
@@ -18,31 +13,33 @@ import { IPluginManager } from "../core/plugin/IPluginManager";
 import { IStateManager } from "./state/IStateManager";
 import { IStudio } from "./IStudio";
 import { World } from "../core/ecs/World";
-import { PluginManager } from "../core/plugin/PluginManager";
+import { PluginManager, PluginManagerEvent } from "../core/plugin/PluginManager";
 import { StateManager } from "./state/StateManager";
 import { Studio } from "./Studio";
 import { IUIManager } from "./IUIManager";
 import { UIManager } from "./uiManager";
 import { PropertyInspectorSystem } from "./systems/PropertyInspectorSystem";
 import { ComponentPropertyRegistry } from "./utils/ComponentPropertyRegistry";
-import { FlagComponent } from "../plugins/flag-simulation/FlagComponent";
-import { WaterBodyComponent } from "../plugins/water-simulation/WaterComponents";
 import { IPluginContext } from "./IPluginContext";
 import { ThreeGraphicsManager } from "./graphics/ThreeGraphicsManager";
 import { VisibilityManager } from "./ui/VisibilityManager";
 import { SystemDiagnostics } from "./utils/SystemDiagnostics";
 import { RenderOrchestrator } from "./rendering/RenderOrchestrator";
-import { FlagRenderer } from "./rendering/FlagRenderer";
 import { VisibilityOrchestrator } from "./orchestration/VisibilityOrchestrator";
+import { PluginDiscoveryService } from "./plugins/PluginDiscoveryService";
 
 // Import styles
 import "./styles/studio.css";
 import "./styles/toolbar.css";
 
-function setupCoreSystems(): { world: World; pluginManager: PluginManager; stateManager: StateManager; studio: Studio } {
+function setupCoreSystems(): { world: World; pluginManager: PluginManager; stateManager: StateManager; studio: Studio; pluginDiscovery: PluginDiscoveryService } {
   const world: World = new World();
   const pluginManager: PluginManager = new PluginManager(world);
   const stateManager: StateManager = StateManager.getInstance();
+
+  // Create plugin discovery service for dynamic plugin loading
+  const pluginDiscovery = new PluginDiscoveryService(pluginManager);
+
   // Studio expects pluginContext as 4th argument
   const pluginContext: IPluginContext = {
     studio: undefined as any, // will be set after Studio is constructed
@@ -60,11 +57,12 @@ function setupCoreSystems(): { world: World; pluginManager: PluginManager; state
   (window as any).stateManager = stateManager;
   (window as any).studio = studio;
   (window as any).sceneSerializer = sceneSerializer;
+  (window as any).pluginDiscovery = pluginDiscovery;
 
-  return { world, pluginManager, stateManager, studio };
+  return { world, pluginManager, stateManager, studio, pluginDiscovery };
 }
 
-function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager): { uiManager: UIManager; propertyInspectorUIManager: PropertyInspectorUIManager; visibilityOrchestrator: VisibilityOrchestrator } {
+function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager): { uiManager: UIManager; propertyInspectorUIManager: PropertyInspectorUIManager; visibilityManager: VisibilityManager } {
   // Initialize core UI and ensure left panel exists
   const visibilityManager = new VisibilityManager();
   visibilityManager.initializeCoreUI();
@@ -80,36 +78,38 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
   const uiManager = new UIManager(pane);
   const propertyInspectorUIManager = new PropertyInspectorUIManager(uiManager, visibilityManager);
 
-  // Create a placeholder render orchestrator for now (will be replaced in registerComponentsAndSystems)
-  const placeholderGraphicsManager = new ThreeGraphicsManager();
-  const renderOrchestrator = new RenderOrchestrator(placeholderGraphicsManager);
-
-  // Create centralized visibility orchestrator
-  const visibilityOrchestrator = new VisibilityOrchestrator(visibilityManager, renderOrchestrator);
-  visibilityOrchestrator.initialize();
-
   // Expose for debugging
   (window as any).uiManager = uiManager;
   (window as any).propertyInspectorUIManager = propertyInspectorUIManager;
   (window as any).visibilityManager = visibilityManager;
-  (window as any).visibilityOrchestrator = visibilityOrchestrator;
 
   const globalControlsFolder = pane.addFolder({ title: "Global Controls" });
-  globalControlsFolder.addButton({ title: "Play" }).on("click", () => {
+  const playButton = globalControlsFolder.addButton({ title: "Play" }).on("click", () => {
     console.log('Play button clicked');
     studio.play();
   });
-  globalControlsFolder.addButton({ title: "Pause" }).on("click", () => {
+  const pauseButton = globalControlsFolder.addButton({ title: "Pause" }).on("click", () => {
     console.log('Pause button clicked');
     studio.pause();
   });
-  globalControlsFolder.addButton({ title: "Reset" }).on("click", () => {
+  const resetButton = globalControlsFolder.addButton({ title: "Reset" }).on("click", () => {
     console.log('Reset button clicked');
     studio.reset();
   });
 
-  // Register Global Controls panel with VisibilityOrchestrator
-  visibilityOrchestrator.getVisibilityManager().registerGlobalPanel(
+  // Function to update button states based on simulation selection
+  function updateControlButtonStates() {
+    const hasSimulation = stateManager.selectedSimulation.state.name !== "" && stateManager.selectedSimulation.state.name.length > 0;
+    playButton.disabled = !hasSimulation;
+    pauseButton.disabled = !hasSimulation;
+    resetButton.disabled = !hasSimulation;
+  }
+
+  // Initialize button states
+  updateControlButtonStates();
+
+  // Register Global Controls panel with VisibilityManager
+  visibilityManager.registerGlobalPanel(
     'global-controls',
     globalControlsFolder,
     leftPanel,
@@ -118,8 +118,8 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
 
   const simulationSelectionFolder = pane.addFolder({ title: "Simulations" });
 
-  // Register Simulations panel with VisibilityOrchestrator
-  visibilityOrchestrator.getVisibilityManager().registerGlobalPanel(
+  // Register Simulations panel with VisibilityManager
+  visibilityManager.registerGlobalPanel(
     'simulation-selector',
     simulationSelectionFolder,
     leftPanel,
@@ -131,45 +131,50 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
     const options = studio.getAvailableSimulationNames().map((name: string) => ({ text: name, value: name }));
     if (options.length === 0) {
       simulationSelectionFolder.addButton({ title: "No simulations available" }).disabled = true;
-      stateManager.selectedSimulation.state.name = null;
+      stateManager.selectedSimulation.state.name = "";
+      updateControlButtonStates();
       return;
     }
-    if (!options.some((opt: { text: string; value: string; }) => opt.value === stateManager.selectedSimulation.state.name)) {
-      stateManager.selectedSimulation.state.name = options[0].value;
-    }
+
+    // Add an "Unload" option to allow deselecting simulations
+    const optionsWithUnload = [{ text: "Unload Simulation", value: "" }, ...options];
+
+    // Don't auto-select a simulation - keep it as empty unless explicitly set
+    console.log('Creating simulation selector with state:', stateManager.selectedSimulation.state.name);
+    console.log('Available options:', optionsWithUnload);
     simulationSelectionFolder
       .addBinding(stateManager.selectedSimulation.state, "name", {
         label: "Select Simulation",
-        options,
+        options: optionsWithUnload,
       })
-      .on("change", (ev: { value: string | null }) => {
+      .on("change", (ev: { value: string }) => {
+        console.log('Simulation selector changed to:', ev.value);
         stateManager.selectedSimulation.state.name = ev.value;
-        void studio.loadSimulation(ev.value);
+        if (ev.value && ev.value !== "") {
+          void studio.loadSimulation(ev.value);
+        } else {
+          studio.unloadSimulation();
+        }
+        updateControlButtonStates();
       });
   }
 
   // Initial population
   updateSimulationSelector();
 
-  if (typeof (pluginManager as any).on === "function") {
-    (pluginManager as any).on("plugin:registered", updateSimulationSelector);
-  }
+  // Listen for simulation state changes to update button states
+  stateManager.selectedSimulation.onChange(() => {
+    updateControlButtonStates();
+  });
 
-  return { uiManager, propertyInspectorUIManager, visibilityOrchestrator };
+  // Listen for plugin registration to update simulation selector
+  pluginManager.on(PluginManagerEvent.PLUGIN_REGISTERED, updateSimulationSelector);
+
+  return { uiManager, propertyInspectorUIManager, visibilityManager };
 }
 
-function registerComponentsAndSystems(world: World, studio: Studio, propertyInspectorUIManager: PropertyInspectorUIManager, pluginManager: PluginManager) {
-  // Register Component Properties
-  ComponentPropertyRegistry.getInstance().registerComponentProperties(
-    (FlagComponent as any).type || "FlagComponent",
-    flagComponentProperties
-  );
-  ComponentPropertyRegistry.getInstance().registerComponentProperties(
-    (WaterBodyComponent as any).type || "WaterBodyComponent",
-    waterBodyComponentProperties
-  );
-
-  // Register Core Components
+function registerComponentsAndSystems(world: World, studio: Studio, propertyInspectorUIManager: PropertyInspectorUIManager, pluginManager: PluginManager, visibilityManager: VisibilityManager): VisibilityOrchestrator {
+  // Register Core Components Only - Plugin components are registered by plugins themselves
   world.registerComponent((PositionComponent as any).type ? PositionComponent : class extends PositionComponent { static type = "PositionComponent"; });
   world.registerComponent((RenderableComponent as any).type ? RenderableComponent : class extends RenderableComponent { static type = "RenderableComponent"; });
   world.registerComponent((SelectableComponent as any).type ? SelectableComponent : class extends SelectableComponent { static type = "SelectableComponent"; });
@@ -190,9 +195,11 @@ function registerComponentsAndSystems(world: World, studio: Studio, propertyInsp
     // Create centralized render orchestrator
     const renderOrchestrator = new RenderOrchestrator(graphicsManager);
 
-    // Register the flag renderer with the orchestrator
-    const flagRenderer = new FlagRenderer(graphicsManager);
-    renderOrchestrator.registerRenderer("flag", flagRenderer);
+    // Create centralized visibility orchestrator with proper render orchestrator
+    const visibilityOrchestrator = new VisibilityOrchestrator(visibilityManager, renderOrchestrator);
+    visibilityOrchestrator.initialize();
+
+    // NOTE: No default renderers are registered - renderers are added only when simulations load
 
     // Register the render orchestrator as a system
     world.registerSystem(renderOrchestrator);
@@ -214,16 +221,14 @@ function registerComponentsAndSystems(world: World, studio: Studio, propertyInsp
 
     // Expose for debugging
     (window as any).renderOrchestrator = renderOrchestrator;
+    (window as any).visibilityOrchestrator = visibilityOrchestrator;
+
+    return visibilityOrchestrator;
 
   } catch (error) {
     Logger.getInstance().error("Error during system registration:", error);
     throw error;
   }
-}
-
-function registerPlugins(pluginManager: PluginManager) {
-  const flagPlugin = new FlagSimulationPlugin();
-  pluginManager.registerPlugin(flagPlugin);
 }
 
 function startApplication(studio: Studio) {
@@ -244,16 +249,13 @@ async function main() {
   Logger.getInstance().log("Initializing Physics Simulation Studio...");
 
   try {
-    const { world, pluginManager, stateManager, studio } = setupCoreSystems();
-    const { uiManager, propertyInspectorUIManager, visibilityOrchestrator } = setupUI(studio, stateManager, pluginManager);
-    registerComponentsAndSystems(world as World, studio, propertyInspectorUIManager, pluginManager as PluginManager);
-    registerPlugins(pluginManager);
+    const { world, pluginManager, stateManager, studio, pluginDiscovery } = setupCoreSystems();
+    const { uiManager, propertyInspectorUIManager, visibilityManager } = setupUI(studio, stateManager, pluginManager);
+    const visibilityOrchestrator = registerComponentsAndSystems(world as World, studio, propertyInspectorUIManager, pluginManager as PluginManager, visibilityManager);
 
-    // Load Initial Simulation - this should NOT clear systems
-    const defaultSimulationName = studio.getAvailableSimulationNames()[0] || null;
-    if (defaultSimulationName) {
-      await studio.loadSimulation(defaultSimulationName);
-    }
+    // Load available plugins dynamically
+    const loadedPlugins = await pluginDiscovery.loadAllPlugins();
+    Logger.getInstance().log(`Physics Simulation Studio ready with ${loadedPlugins.length} plugins loaded`);
 
     // Run system diagnostics to ensure everything is working
     const diagnostics = new SystemDiagnostics(world as World);

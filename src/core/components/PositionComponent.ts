@@ -1,6 +1,6 @@
 
 import { IComponent } from "../ecs/IComponent";
-import { Vector3 } from "../../plugins/water-simulation/utils/Vector3";
+import { Vector3 } from "../utils/Vector3";
 
 export class PositionComponent implements IComponent<PositionComponent> {
   static readonly type: string = "PositionComponent";
