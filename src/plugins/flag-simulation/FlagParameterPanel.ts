@@ -44,12 +44,11 @@ export class FlagParameterPanel extends ParameterPanelComponent {
     // If no component is provided, we can't register controls for it.
     // In a future implementation, we could show global simulation settings here.
     if (!component) {
-      // For now, we'll just add a folder indicating the active simulation.
+      // Ensure the panel is visible even if no flag is selected
       const panel = uiManager.createPanel('Flag Simulation Settings');
       panel.addBlade({
         view: 'text',
         value: 'No flag selected. Select a flag to see its properties.',
-        label: 'Info',
       });
       return;
     }

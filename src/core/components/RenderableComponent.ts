@@ -20,6 +20,11 @@ export class RenderableComponent extends Component<RenderableComponent> {
   public color: string;
 
   /**
+   * Whether the renderable is visible.
+   */
+  public isVisible = true;
+
+  /**
    * Creates a new RenderableComponent.
    *
    * @param geometry The geometry type of the renderable

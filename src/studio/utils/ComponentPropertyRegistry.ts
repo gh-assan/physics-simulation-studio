@@ -20,8 +20,7 @@ export class ComponentPropertyRegistry implements IComponentPropertyRegistry {
     properties: ComponentControlProperty[]
   ): void {
     Logger.getInstance().log(
-      `[ComponentPropertyRegistry] Registering properties for component: '${componentName}'`,
-      properties
+      `[ComponentPropertyRegistry] Registered properties for '${componentName}'.`
     );
     this.registry[componentName] = properties;
   }
@@ -32,12 +31,11 @@ export class ComponentPropertyRegistry implements IComponentPropertyRegistry {
     const properties = this.registry[componentName];
     if (properties) {
       Logger.getInstance().log(
-        `[ComponentPropertyRegistry] Retrieving properties for component: '${componentName}'`,
-        properties
+        `[ComponentPropertyRegistry] Retrieved properties for '${componentName}'.`
       );
     } else {
       Logger.getInstance().warn(
-        `[ComponentPropertyRegistry] No properties found for component: '${componentName}'`
+        `[ComponentPropertyRegistry] No properties found for '${componentName}'.`
       );
     }
     return properties;

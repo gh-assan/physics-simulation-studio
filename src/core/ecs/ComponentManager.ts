@@ -22,6 +22,7 @@ export class ComponentManager implements IComponentManager {
   public registerComponent<T extends IComponent>(
     componentClass: new (...args: any[]) => T
   ): void {
+    // Reduced log verbosity
     Logger.getInstance().log(
       `[ComponentManager] Registering component: ${componentClass.name}`
     );
@@ -49,9 +50,7 @@ export class ComponentManager implements IComponentManager {
     componentType: string,
     component: T
   ): void {
-    Logger.getInstance().log(
-      `[ComponentManager] Adding component '${componentType}' to entity ${entityID}`
-    );
+    // Removed redundant log
     const store = this.getComponentStore(componentType);
     if (store) {
       store.set(entityID, component);
@@ -74,9 +73,7 @@ export class ComponentManager implements IComponentManager {
     entityID: number,
     componentType: string
   ): T | undefined {
-    Logger.getInstance().log(
-      `[ComponentManager] Getting component '${componentType}' for entity ${entityID}`
-    );
+    // Removed redundant log
     const component = this.componentStores
       .get(componentType)
       ?.get(entityID) as T;
@@ -95,6 +92,7 @@ export class ComponentManager implements IComponentManager {
    * @param componentType The type of the component
    */
   public removeComponent(entityID: number, componentType: string, world?: IWorld): void {
+    // Reduced log verbosity
     Logger.getInstance().log(
       `[ComponentManager] Removing component '${componentType}' from entity ${entityID}`
     );
@@ -153,9 +151,9 @@ export class ComponentManager implements IComponentManager {
     );
 
     const entities = this.getEntitiesWithComponentTypes(componentTypes);
-    Logger.getInstance().log(
-      `[ComponentManager] getEntitiesWithComponents returning: ${entities.length} entities for types: ${componentTypes.join(", ")}`
-    );
+
+
+
     return entities;
   }
 

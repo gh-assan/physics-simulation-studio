@@ -54,4 +54,13 @@ export abstract class ParameterPanelComponent
    * @param component The component instance to update
    */
   abstract handleEvent(event: string, component: IComponent): void;
+
+  /**
+   * Determines if the parameter panel is visible.
+   * @returns True if the panel is visible, false otherwise.
+   */
+  public isVisible(): boolean {
+    // Placeholder logic for visibility; update as needed
+    return true;
+  }
 }

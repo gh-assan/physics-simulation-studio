@@ -48,7 +48,6 @@ export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
   ): void {
     const displayName = componentTypeKey;
 
-    // First, try to find a parameter panel component for this component type
     const parameterPanel = parameterPanels.find(
       (panel) => panel.componentType === componentTypeKey
     );
@@ -59,16 +58,15 @@ export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
       );
       parameterPanel.registerControls(this.uiManager as UIManager, componentInstance);
     } else {
-      // Fall back to dynamically generating controls if no parameter panel component is found
       const properties = ComponentPropertyRegistry.getInstance().getComponentProperties(componentTypeKey);
 
       if (properties) {
         Logger.getInstance().log(
-          `[PropertyInspectorUIManager] Found ${properties.length} properties for component '${displayName}' using key '${componentTypeKey}'`
+          `[PropertyInspectorUIManager] Found ${properties.length} properties for component '${displayName}'`
         );
       } else {
         Logger.getInstance().warn(
-          `[PropertyInspectorUIManager] No properties found for component '${displayName}' using key '${componentTypeKey}'`
+          `[PropertyInspectorUIManager] No properties found for component '${displayName}'`
         );
       }
 

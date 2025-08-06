@@ -69,14 +69,17 @@ export class ThreeGraphicsManager implements IGraphicsManager {
 
   public initialize(container: HTMLElement): void {
     RendererProvider.attachRendererDom(this.renderer, container);
+    Logger.getInstance().log("ThreeGraphicsManager initialized."); // Added concise log
   }
 
   public add(object: any): void {
     this.scene.add(object);
+    Logger.getInstance().log("Object added to the scene."); // Simplified log
   }
 
   public remove(object: any): void {
     this.scene.remove(object);
+    Logger.getInstance().log("Object removed from the scene."); // Simplified log
   }
 
   /**

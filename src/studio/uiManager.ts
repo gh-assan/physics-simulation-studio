@@ -16,18 +16,17 @@ export class UIManager implements IUIManager {
     data: any,
     properties?: ComponentControlProperty[]
   ): void {
-    // Remove any existing controls for this component
     this.removeComponentControls(componentName);
-    // Create a new folder for the component controls
     const folder = this.pane.addFolder({ title: componentName });
     this.folders.set(componentName, folder);
-    // Add bindings for each property
     if (properties) {
       for (const prop of properties) {
         this._addBindingForProperty(folder, data, prop);
       }
+      Logger.getInstance().log(
+        `[UIManager] Registered ${properties.length} properties for '${componentName}'.` // Simplified log
+      );
     } else {
-      // Auto-detect properties when not explicitly provided
       for (const key in data) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
           const value = data[key];
@@ -36,6 +35,9 @@ export class UIManager implements IUIManager {
           }
         }
       }
+      Logger.getInstance().log(
+        `[UIManager] Auto-detected and registered properties for '${componentName}'.` // Simplified log
+      );
     }
   }
   private pane: Pane;
@@ -167,5 +169,9 @@ export class UIManager implements IUIManager {
   public setUIPane(newPane: any): void {
     this.pane = newPane;
     this.clearControls(); // Clear old controls when switching UI
+  }
+
+  public getPanels(): FolderApi[] {
+    return Array.from(this.folders.values());
   }
 }

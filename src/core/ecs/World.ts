@@ -116,11 +116,28 @@ export class World implements IWorld, IECSManager {
     return this.systemManager.removeSystem(system, this);
   }
 
+  /**
+   * Registers a plugin in the world.
+   *
+   * @param plugin The plugin to register
+   */
+  public registerPlugin(plugin: any): void {
+    if (plugin && typeof plugin.initialize === "function") {
+      plugin.initialize(this);
+    } else {
+      throw new Error("Invalid plugin: Missing initialize method");
+    }
+  }
+
   public getComponent<T extends IComponent>(
     entityId: number,
     componentName: string
   ): T | undefined {
-    return this.componentManager.getComponent(entityId, componentName) as T;
+    const component = this.componentManager.getComponent(entityId, componentName);
+    if (component) {
+      return component as T;
+    }
+    return undefined;
   }
 
   public hasEntity(entityId: number): boolean {
