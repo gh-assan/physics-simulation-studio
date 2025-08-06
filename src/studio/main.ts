@@ -57,6 +57,8 @@ function setupCoreSystems(): { world: World; pluginManager: PluginManager; state
   (window as any).studio = studio;
   (window as any).sceneSerializer = sceneSerializer;
 
+  Logger.getInstance().log("Core systems initialized."); // Consolidated log
+
   return { world, pluginManager, stateManager, studio };
 }
 
@@ -78,12 +80,10 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
     simulationSelectionFolder.children.forEach((child: any) => child.dispose());
     const options = studio.getAvailableSimulationNames().map((name: string) => ({ text: name, value: name }));
     if (options.length === 0) {
-      // Show a disabled selector or message if no simulations are available
       simulationSelectionFolder.addButton({ title: "No simulations available" }).disabled = true;
       stateManager.selectedSimulation.state.name = null;
       return;
     }
-    // Ensure the state is always a valid plugin name
     if (!options.some((opt: { text: string; value: string; }) => opt.value === stateManager.selectedSimulation.state.name)) {
       stateManager.selectedSimulation.state.name = options[0].value;
     }
@@ -93,19 +93,12 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
         options,
       })
       .on("change", (ev: { value: string | null }) => {
-        // Always set the state to the plugin name
         stateManager.selectedSimulation.state.name = ev.value;
         void studio.loadSimulation(ev.value);
       });
   }
 
-  // Initial population
-  updateSimulationSelector();
-
-  // If pluginManager has an event emitter, listen for plugin registration events
-  if (typeof (pluginManager as any).on === "function") {
-    (pluginManager as any).on("plugin:registered", updateSimulationSelector);
-  }
+  Logger.getInstance().log("UI setup completed."); // Consolidated log
 
   return { uiManager, propertyInspectorUIManager };
 }

@@ -41,7 +41,7 @@ export class PropertyInspectorSystem extends System {
     const activeSimulationName = this.studio.getActiveSimulationName();
     if (!activeSimulationName) {
       Logger.getInstance().log(
-        `[PropertyInspectorSystem] No active simulation, returning empty parameter panels array`
+        `[PropertyInspectorSystem] No active simulation.` // Simplified log
       );
       return [];
     }
@@ -49,7 +49,7 @@ export class PropertyInspectorSystem extends System {
     const activePlugin = this.pluginManager.getPlugin(activeSimulationName);
     if (!activePlugin) {
       Logger.getInstance().log(
-        `[PropertyInspectorSystem] No active plugin found for simulation ${activeSimulationName}, returning empty parameter panels array`
+        `[PropertyInspectorSystem] No active plugin for simulation ${activeSimulationName}.` // Simplified log
       );
       return [];
     }
@@ -57,12 +57,12 @@ export class PropertyInspectorSystem extends System {
     if (activePlugin.getParameterPanels) {
       const panels = activePlugin.getParameterPanels(this.world);
       Logger.getInstance().log(
-        `[PropertyInspectorSystem] Got ${panels.length} parameter panels from active plugin ${activeSimulationName}`
+        `[PropertyInspectorSystem] Retrieved ${panels.length} parameter panels for ${activeSimulationName}.` // Simplified log
       );
       return panels;
     } else {
       Logger.getInstance().log(
-        `[PropertyInspectorSystem] Active plugin ${activeSimulationName} does not implement getParameterPanels, returning empty parameter panels array`
+        `[PropertyInspectorSystem] Plugin ${activeSimulationName} does not provide parameter panels.` // Simplified log
       );
       return [];
     }

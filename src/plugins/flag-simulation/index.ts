@@ -127,7 +127,8 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     // Initialize entities
     this.initializeEntities(world);
 
-    Logger.getInstance().log("FlagSimulationPlugin initialized successfully.");
+    // Consolidated log for initialization
+    Logger.getInstance().log("FlagSimulationPlugin initialized with components and entities.");
   }
 
   initializeEntities(world: World): void {

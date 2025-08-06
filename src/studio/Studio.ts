@@ -77,16 +77,14 @@ export class Studio implements IStudio {
     if (pluginName) {
       await this.orchestrator.loadSimulation(pluginName);
       this.selectedSimulation.setSimulation(pluginName);
-      // Ensure the render system updates after loading simulation
       if (this.renderSystem) {
         this.renderSystem.update(this.world as any, 0);
       }
-      // Dispatch event after state update so UI can react to correct state
       const event = new CustomEvent("simulation-loaded", {
         detail: { simulationName: pluginName }
       });
       window.dispatchEvent(event);
-      Logger.getInstance().log(`Dispatched simulation-loaded event for ${pluginName}`);
+      Logger.getInstance().log(`Simulation loaded: ${pluginName}`); // Simplified log
     }
   }
 
