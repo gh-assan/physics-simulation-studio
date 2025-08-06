@@ -76,10 +76,10 @@ describe('Application Initialization', () => {
     world.registerSystem(selectionSystem);
 
     propertyInspectorSystem = new PropertyInspectorSystem(
-      propertyInspectorUIManager, 
-      world, 
-      studio, 
-      pluginManager, 
+      propertyInspectorUIManager,
+      world,
+      studio,
+      pluginManager,
       selectionSystem
     );
     world.registerSystem(propertyInspectorSystem);

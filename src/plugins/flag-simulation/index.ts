@@ -47,7 +47,7 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     world.componentManager.registerComponent(FlagComponent);
     world.componentManager.registerComponent(PoleComponent);
     world.componentManager.registerComponent(FlagParameterPanel);
-    
+
     // Register core components needed by this plugin
     world.componentManager.registerComponent(PositionComponent);
     world.componentManager.registerComponent(RenderableComponent);
@@ -67,7 +67,7 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
       const flagParameterPanel = new FlagParameterPanel(world);
 
       // Store it in the parameter panels array
-      panels.push(parameterPanelComponent);
+      this._parameterPanels.push(flagParameterPanel);
 
       // Create and register parameter panel entity if ParameterPanelComponent is registered
       if (
@@ -185,7 +185,7 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
       new RotationComponent(
         0.7071067811865475, // x: sin(45°)
         0,                  // y
-        0,                  // z  
+        0,                  // z
         0.7071067811865476  // w: cos(45°)
       )
     );
