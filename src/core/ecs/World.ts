@@ -124,11 +124,11 @@ export class World implements IWorld, IECSManager {
    * @param plugin The plugin to register
    */
   public registerPlugin(plugin: any): void {
-    if (plugin && typeof plugin.initialize === "function") {
-      plugin.initialize(this);
-    } else {
+    if (!plugin || typeof plugin.initialize !== "function") {
       throw new Error("Invalid plugin: Missing initialize method");
     }
+
+    plugin.initialize(this);
   }
 
   public getComponent<T extends IComponent>(

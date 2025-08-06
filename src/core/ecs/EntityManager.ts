@@ -27,13 +27,9 @@ export class EntityManager implements IEntityManager {
    * @returns The ID of the created entity
    */
   public createEntity(id?: number): number {
-    let entityId: number;
-
-    if (id !== undefined) {
-      entityId = this.handleSpecificIdCreation(id);
-    } else {
-      entityId = this.getNextAvailableId();
-    }
+    const entityId = id !== undefined
+      ? this.handleSpecificIdCreation(id)
+      : this.getNextAvailableId();
 
     this.activeEntities.add(entityId);
     return entityId;

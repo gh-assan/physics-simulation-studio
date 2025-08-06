@@ -77,8 +77,11 @@ export class ToolbarButton {
 
     if (this._disabled) {
       this.element.classList.add("disabled");
-    } else {
-      // Add click handler if not disabled
+      // Don't add click handler when disabled
+    }
+
+    if (!this._disabled) {
+      // Add click handler when enabled
       this.element.addEventListener("click", this._handleClick.bind(this));
     }
 

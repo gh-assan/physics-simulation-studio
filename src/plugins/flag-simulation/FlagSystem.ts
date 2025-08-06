@@ -4,6 +4,7 @@ import { FlagComponent } from "./FlagComponent";
 import { FlagPhysicsInitializer } from "./utils/FlagPhysicsInitializer";
 import { PositionComponent } from "../../core/components/PositionComponent";
 import { PoleComponent } from "./PoleComponent"; // Add this import
+import { FlagAttachmentStrategyFactory } from "./strategies/FlagAttachmentStrategy";
 
 import { PointMass } from "./utils/PointMass";
 import { Spring } from "./utils/Spring";
@@ -81,60 +82,17 @@ export class FlagSystem extends System {
                 const point = flagComponent.points[p1Index];
 
                 if (point.isFixed) {
-                  let pointX = point.position.x;
-                  let pointY = point.position.y;
-                  let pointZ = point.position.z;
+                  // Use strategy pattern for flag attachment
+                  const strategy = FlagAttachmentStrategyFactory.create(flagComponent.attachedEdge);
+                  const newPosition = strategy.calculatePosition(
+                    poleComp.position,
+                    poleComp.height,
+                    flagComponent.width,
+                    x, y, numCols, numRows
+                  );
 
-                  // Recalculate position based on pole and attached edge
-                  // Only the two fixed corners should be constrained
-                  const isTopRow = y === numRows - 1;
-                  const isBottomRow = y === 0;
-                  const isLeftCol = x === 0;
-                  const isRightCol = x === numCols - 1;
-
-                  if (flagComponent.attachedEdge === "left") {
-                    if (isLeftCol && isBottomRow) {
-                      pointX = poleComp.position.x;
-                      pointY = poleComp.position.y;
-                      pointZ = poleComp.position.z;
-                    } else if (isLeftCol && isTopRow) {
-                      pointX = poleComp.position.x;
-                      pointY = poleComp.position.y + poleComp.height;
-                      pointZ = poleComp.position.z;
-                    }
-                  } else if (flagComponent.attachedEdge === "right") {
-                    if (isRightCol && isBottomRow) {
-                      pointX = poleComp.position.x;
-                      pointY = poleComp.position.y;
-                      pointZ = poleComp.position.z;
-                    } else if (isRightCol && isTopRow) {
-                      pointX = poleComp.position.x;
-                      pointY = poleComp.position.y + poleComp.height;
-                      pointZ = poleComp.position.z;
-                    }
-                  } else if (flagComponent.attachedEdge === "top") {
-                    if (isTopRow && isLeftCol) {
-                      pointX = poleComp.position.x - flagComponent.width / 2;
-                      pointY = poleComp.position.y;
-                      pointZ = poleComp.position.z;
-                    } else if (isTopRow && isRightCol) {
-                      pointX = poleComp.position.x + flagComponent.width / 2;
-                      pointY = poleComp.position.y;
-                      pointZ = poleComp.position.z;
-                    }
-                  } else if (flagComponent.attachedEdge === "bottom") {
-                    if (isBottomRow && isLeftCol) {
-                      pointX = poleComp.position.x - flagComponent.width / 2;
-                      pointY = poleComp.position.y;
-                      pointZ = poleComp.position.z;
-                    } else if (isBottomRow && isRightCol) {
-                      pointX = poleComp.position.x + flagComponent.width / 2;
-                      pointY = poleComp.position.y;
-                      pointZ = poleComp.position.z;
-                    }
-                  }
-                  point.position.set(pointX, pointY, pointZ);
-                  point.previousPosition.set(pointX, pointY, pointZ);
+                  point.position.set(newPosition.x, newPosition.y, newPosition.z);
+                  point.previousPosition.set(newPosition.x, newPosition.y, newPosition.z);
                 }
               }
             }

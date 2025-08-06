@@ -52,14 +52,14 @@ export class ComponentManager implements IComponentManager {
   ): void {
     // Removed redundant log
     const store = this.getComponentStore(componentType);
-    if (store) {
-      store.set(entityID, component);
-    } else {
+    if (!store) {
       Logger.getInstance().error(
         `[ComponentManager] Component type '${componentType}' is not registered. Entity: ${entityID}`
       );
       throw new Error(`Component type '${componentType}' is not registered`);
     }
+
+    store.set(entityID, component);
   }
 
   /**
@@ -199,14 +199,14 @@ export class ComponentManager implements IComponentManager {
       `[ComponentManager] Updating component '${componentType}' for entity ${entityID}`
     );
     const store = this.getComponentStore(componentType);
-    if (store) {
-      store.set(entityID, newComponent);
-    } else {
+    if (!store) {
       Logger.getInstance().error(
         `[ComponentManager] Component type '${componentType}' is not registered. Entity: ${entityID}`
       );
       throw new Error(`Component type '${componentType}' is not registered`);
     }
+
+    store.set(entityID, newComponent);
   }
 
   /**

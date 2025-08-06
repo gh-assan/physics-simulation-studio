@@ -19,21 +19,23 @@ export class UIManager implements IUIManager {
     this.removeComponentControls(componentName);
     const folder = this.pane.addFolder({ title: componentName });
     this.folders.set(componentName, folder);
-    if (properties) {
-      for (const prop of properties) {
-        this._addBindingForProperty(folder, data, prop);
-      }
-      Logger.getInstance().log(
-        `[UIManager] Registered ${properties.length} properties for '${componentName}'.` // Simplified log
-      );
-    } else {
+
+    if (!properties) {
       // Auto-detect bindable properties
       Object.entries(data)
         .filter(([_, value]) => this.isBindableValue(value))
         .forEach(([key]) => folder.addBinding(data, key, { label: key }));
 
       Logger.getInstance().log(`[UIManager] Auto-detected properties for '${componentName}'.`);
+      return;
     }
+
+    for (const prop of properties) {
+      this._addBindingForProperty(folder, data, prop);
+    }
+    Logger.getInstance().log(
+      `[UIManager] Registered ${properties.length} properties for '${componentName}'.` // Simplified log
+    );
   }
   private pane: Pane;
   private folders: Map<string, FolderApi> = new Map();
