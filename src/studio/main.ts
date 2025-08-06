@@ -30,6 +30,8 @@ import { FlagComponent } from "../plugins/flag-simulation/FlagComponent";
 import { WaterBodyComponent } from "../plugins/water-simulation/WaterComponents";
 import { IPluginContext } from "./IPluginContext";
 import { ThreeGraphicsManager } from "./graphics/ThreeGraphicsManager";
+import { VisibilityManager } from "./ui/VisibilityManager";
+import { SystemDiagnostics } from "./utils/SystemDiagnostics";
 
 // Import styles
 import "./styles/studio.css";
@@ -63,16 +65,39 @@ function setupCoreSystems(): { world: World; pluginManager: PluginManager; state
 }
 
 function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager): { uiManager: UIManager; propertyInspectorUIManager: PropertyInspectorUIManager } {
-  const pane = new Pane();
+  // Initialize core UI and ensure left panel exists
+  const visibilityManager = new VisibilityManager();
+  visibilityManager.initializeCoreUI();
+
+  const leftPanel = document.getElementById("left-panel");
+  if (!leftPanel) {
+    throw new Error("Left panel not found");
+  }
+
+  // Create Tweakpane with the container option
+  const pane = new Pane({ container: leftPanel });
+
   const uiManager = new UIManager(pane);
   const propertyInspectorUIManager = new PropertyInspectorUIManager(uiManager);
+
+  // Expose for debugging
   (window as any).uiManager = uiManager;
   (window as any).propertyInspectorUIManager = propertyInspectorUIManager;
+  (window as any).visibilityManager = visibilityManager;
 
   const globalControlsFolder = pane.addFolder({ title: "Global Controls" });
-  globalControlsFolder.addButton({ title: "Play" }).on("click", () => studio.play());
-  globalControlsFolder.addButton({ title: "Pause" }).on("click", () => studio.pause());
-  globalControlsFolder.addButton({ title: "Reset" }).on("click", () => studio.reset());
+  globalControlsFolder.addButton({ title: "Play" }).on("click", () => {
+    console.log('Play button clicked');
+    studio.play();
+  });
+  globalControlsFolder.addButton({ title: "Pause" }).on("click", () => {
+    console.log('Pause button clicked');
+    studio.pause();
+  });
+  globalControlsFolder.addButton({ title: "Reset" }).on("click", () => {
+    console.log('Reset button clicked');
+    studio.reset();
+  });
 
   const simulationSelectionFolder = pane.addFolder({ title: "Simulations" });
 
@@ -129,7 +154,14 @@ function registerComponentsAndSystems(world: World, studio: Studio, propertyInsp
 
   // Register Systems
   const graphicsManager = new ThreeGraphicsManager();
-  graphicsManager.initialize(document.body);
+  
+  // Initialize graphics manager with the main content container
+  const mainContent = document.getElementById("main-content");
+  if (!mainContent) {
+    throw new Error("Main content container not found");
+  }
+  graphicsManager.initialize(mainContent);
+
   const renderSystem = new RenderSystem(graphicsManager, world);
   world.registerSystem(renderSystem);
 
@@ -191,6 +223,11 @@ async function main() {
   } else {
     Logger.getInstance().warn("No default simulation found to load.");
   }
+
+  // Run system diagnostics to ensure everything is working
+  const diagnostics = new SystemDiagnostics(world as World);
+  diagnostics.diagnoseAndFix();
+  Logger.getInstance().log("System diagnostics report:", diagnostics.getReport());
 
   startApplication(studio);
 
