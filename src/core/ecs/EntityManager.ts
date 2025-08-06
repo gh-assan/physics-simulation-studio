@@ -130,4 +130,3 @@ export class EntityManager implements IEntityManager {
     return this.nextEntityID++;
   }
 }
-

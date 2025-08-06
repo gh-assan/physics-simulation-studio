@@ -7,5 +7,8 @@
     "vite.config.ts",
     ".eslintrc.json",
     ".prettierrc.js"
+  ],
+  "exclude": [
+    "REFACTORING_EXAMPLES.ts"
   ]
 }

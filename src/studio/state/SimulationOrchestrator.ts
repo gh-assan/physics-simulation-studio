@@ -9,7 +9,7 @@ import { IStudio } from "../IStudio";
 export class SimulationOrchestrator {
   private world: IWorld;
   private pluginManager: IPluginManager;
-  private renderSystem: RenderSystem | null = null;
+  private renderSystem?: RenderSystem;
   private selectedSimulation: SelectedSimulationStateManager;
   private studio: IStudio;
 
@@ -29,8 +29,8 @@ export class SimulationOrchestrator {
     this.renderSystem = renderSystem;
   }
 
-  public async loadSimulation(pluginName: string | null): Promise<void> {
-    if (pluginName === null) {
+  public async loadSimulation(pluginName: string): Promise<void> {
+    if (!pluginName) {
       this.unloadCurrentSimulation();
       return;
     }

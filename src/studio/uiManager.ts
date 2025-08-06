@@ -89,6 +89,8 @@ export class UIManager implements IUIManager {
         return String(v);
       }
     };
+
+    // Use nullish coalescing instead of undefined checks
     if (prop.min !== undefined) options.min = prop.min;
     if (prop.max !== undefined) options.max = prop.max;
     if (prop.step !== undefined) options.step = prop.step;
@@ -152,10 +154,7 @@ export class UIManager implements IUIManager {
   private _getNestedProperty(data: any, path: string): any {
     return path
       .split(".")
-      .reduce(
-        (obj, key) => (obj && obj[key] !== undefined ? obj[key] : undefined),
-        data
-      );
+      .reduce((obj, key) => obj?.[key], data);
   }
 
   public clearControls(): void {

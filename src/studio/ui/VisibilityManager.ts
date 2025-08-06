@@ -592,17 +592,16 @@ export class VisibilityManager {
   /**
    * Toggles all panels for a specific plugin
    * @param pluginName The plugin name
-   * @param visible Whether to show or hide the panels
+   * @param visible Whether to show or hide the panels (toggles if not specified)
    */
   public togglePluginPanels(pluginName: string, visible?: boolean): void {
     const pluginPanels = this.getPanelsByPlugin(pluginName);
     for (const [panelId] of pluginPanels) {
       if (visible === undefined) {
         this.togglePanel(panelId);
-        continue;
+      } else {
+        visible ? this.showPanel(panelId) : this.hidePanel(panelId);
       }
-
-      visible ? this.showPanel(panelId) : this.hidePanel(panelId);
     }
   }
 

@@ -15,15 +15,6 @@ import { ComponentTypeRegistry } from "../utils/ComponentTypeRegistry";
  * or by dynamically generating controls from the ComponentPropertyRegistry.
  */
 export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
-  /**
-   * Required by IPropertyInspectorUIManager interface. Clears inspector controls.
-   */
-  public clearInspectorControls(): void {
-    // Clear traditional controls
-    this.clearControls();
-    // Clear parameter panels from VisibilityManager
-    this.clearParameterPanels();
-  }
   private uiManager: IUIManager;
   private visibilityManager?: VisibilityManager;
   private componentTypeRegistry: ComponentTypeRegistry;
@@ -32,6 +23,14 @@ export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
     this.uiManager = uiManager;
     this.visibilityManager = visibilityManager;
     this.componentTypeRegistry = new ComponentTypeRegistry();
+  }
+
+  /**
+   * Required by IPropertyInspectorUIManager interface. Clears inspector controls.
+   */
+  public clearInspectorControls(): void {
+    this.clearControls();
+    this.clearParameterPanels();
   }
 
   /**
@@ -55,7 +54,6 @@ export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
     parameterPanels: ParameterPanelComponent[]
   ): void {
     const displayName = componentTypeKey;
-
     const parameterPanel = parameterPanels.find(
       (panel) => panel.componentType === componentTypeKey
     );
@@ -69,19 +67,16 @@ export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
     }
 
     const properties = ComponentPropertyRegistry.getInstance().getComponentProperties(componentTypeKey);
-
     const logMessage = properties
       ? `Found ${properties.length} properties for component '${displayName}'`
       : `No properties found for component '${displayName}'`;
 
-    const logMethod = properties ? Logger.getInstance().log : Logger.getInstance().warn;
-    logMethod.call(Logger.getInstance(), `[PropertyInspectorUIManager] ${logMessage}`);
-
-    this.uiManager.registerComponentControls(
-      displayName,
-      componentInstance,
-      properties
+    (properties ? Logger.getInstance().log : Logger.getInstance().warn).call(
+      Logger.getInstance(),
+      `[PropertyInspectorUIManager] ${logMessage}`
     );
+
+    this.uiManager.registerComponentControls(displayName, componentInstance, properties);
   }
 
   /**
@@ -98,52 +93,58 @@ export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
     for (const panel of parameterPanels) {
       console.log(`[PropertyInspectorUIManager] Registering panel for component type: ${panel.componentType}`);
 
-      // Register controls with UIManager as before
       panel.registerControls(this.uiManager as UIManager);
       console.log(`[PropertyInspectorUIManager] Controls registered for ${panel.componentType}`);
 
-      // If VisibilityManager is available, register plugin panel for centralized management
-      if (!this.visibilityManager) {
-        console.log(`[PropertyInspectorUIManager] No VisibilityManager available`);
-        continue;
-      }
-
-      const leftPanel = document.getElementById("left-panel");
-      if (!leftPanel) {
-        console.error(`[PropertyInspectorUIManager] left-panel element not found!`);
-        continue;
-      }
-
-      const panelId = `plugin-panel-${panel.componentType}`;
-      const pluginName = this.extractPluginNameFromPanel(panel);
-
-      console.log(`[PropertyInspectorUIManager] Registering with VisibilityManager: ${panelId}`);
-      const success = this.visibilityManager.registerPluginPanel(
-        panelId,
-        panel,
-        leftPanel,
-        {
-          pluginName,
-          componentType: panel.componentType,
-          priority: this.calculatePanelPriority(panel)
-        }
-      );
-
-      console.log(`[PropertyInspectorUIManager] VisibilityManager registration ${success ? 'succeeded' : 'failed'} for ${panelId}`);
-      Logger.getInstance().log(
-        `[PropertyInspectorUIManager] Registered parameter panel '${panelId}' with VisibilityManager`
-      );
+      // Register with VisibilityManager if available
+      this.registerWithVisibilityManager(panel);
     }
+  }
+
+  /**
+   * Registers a panel with VisibilityManager if available
+   */
+  private registerWithVisibilityManager(panel: ParameterPanelComponent): void {
+    if (!this.visibilityManager) {
+      console.log(`[PropertyInspectorUIManager] No VisibilityManager available`);
+      return;
+    }
+
+    const leftPanel = document.getElementById("left-panel");
+    if (!leftPanel) {
+      console.error(`[PropertyInspectorUIManager] left-panel element not found!`);
+      return;
+    }
+
+    const panelId = `plugin-panel-${panel.componentType}`;
+    const pluginName = this.extractPluginNameFromPanel(panel);
+
+    console.log(`[PropertyInspectorUIManager] Registering with VisibilityManager: ${panelId}`);
+    const success = this.visibilityManager.registerPluginPanel(
+      panelId,
+      panel,
+      leftPanel,
+      {
+        pluginName,
+        componentType: panel.componentType,
+        priority: this.calculatePanelPriority(panel)
+      }
+    );
+
+    console.log(`[PropertyInspectorUIManager] VisibilityManager registration ${success ? 'succeeded' : 'failed'} for ${panelId}`);
+    Logger.getInstance().log(
+      `[PropertyInspectorUIManager] Registered parameter panel '${panelId}' with VisibilityManager`
+    );
   }
 
   /**
    * Clears parameter panels from VisibilityManager
    */
   public clearParameterPanels(): void {
-    if (this.visibilityManager) {
-      const pluginPanels = this.visibilityManager.getPanelsByType('plugin');
+    const pluginPanels = this.visibilityManager?.getPanelsByType('plugin');
+    if (pluginPanels) {
       for (const [panelId] of pluginPanels) {
-        this.visibilityManager.unregisterPanel(panelId);
+        this.visibilityManager!.unregisterPanel(panelId);
       }
     }
   }

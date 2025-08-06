@@ -40,4 +40,3 @@ export class ComponentPropertyRegistry implements IComponentPropertyRegistry {
     return properties;
   }
 }
-

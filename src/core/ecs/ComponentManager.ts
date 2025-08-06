@@ -73,15 +73,14 @@ export class ComponentManager implements IComponentManager {
     entityID: number,
     componentType: string
   ): T | undefined {
-    // Removed redundant log
-    const component = this.componentStores
-      .get(componentType)
-      ?.get(entityID) as T;
+    const component = this.componentStores.get(componentType)?.get(entityID) as T;
+
     if (!component) {
       Logger.getInstance().warn(
         `[ComponentManager] Component '${componentType}' not found for entity ${entityID}`
       );
     }
+
     return component;
   }
 
