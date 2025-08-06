@@ -118,7 +118,7 @@ export class ThreeGraphicsManager implements IGraphicsManager {
    * @returns The current enabled state after toggling
    */
   public toggleControls(enabled?: boolean): boolean {
-    this.controlsEnabled = enabled !== undefined ? enabled : !this.controlsEnabled;
+    this.controlsEnabled = enabled ?? !this.controlsEnabled;
 
     this.updateControlsState();
     return this.controlsEnabled;

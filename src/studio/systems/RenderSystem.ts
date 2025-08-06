@@ -100,7 +100,7 @@ export class RenderSystem extends System {
         }
       }
 
-      if (selectedEntityId !== null) {
+      if (selectedEntityId) {
         const selectable = world.componentManager.getComponent(
           selectedEntityId,
           SelectableComponent.name

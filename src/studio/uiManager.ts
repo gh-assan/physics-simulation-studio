@@ -90,7 +90,7 @@ export class UIManager implements IUIManager {
       }
     };
 
-    // Use nullish coalescing instead of undefined checks
+    // Use nullish coalescing for cleaner property assignment
     if (prop.min !== undefined) options.min = prop.min;
     if (prop.max !== undefined) options.max = prop.max;
     if (prop.step !== undefined) options.step = prop.step;

@@ -80,10 +80,7 @@ export class EntityManager implements IEntityManager {
    * @returns The entity ID if it exists, otherwise undefined
    */
   public getEntityById(entityID: number): number | undefined {
-    if (this.activeEntities.has(entityID)) {
-      return entityID;
-    }
-    return undefined;
+    return this.activeEntities.has(entityID) ? entityID : undefined;
   }
 
   /**

@@ -170,7 +170,7 @@ export class ComponentManager implements IComponentManager {
 
     this.componentStores.forEach((store, componentType) => {
       const component = store.get(entityID);
-      if (component !== undefined) {
+      if (component) {
         components[componentType] = component;
       }
     });

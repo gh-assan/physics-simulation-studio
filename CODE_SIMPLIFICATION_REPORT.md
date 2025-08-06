@@ -86,6 +86,73 @@ console.log(
 - ✅ Unified console logging with template literals
 - ✅ Removed early returns and duplicate logging
 
+## Additional ECS and Core Improvements
+
+### EntityManager.ts
+**Before:**
+```typescript
+public getEntityById(entityID: number): number | undefined {
+  if (this.activeEntities.has(entityID)) {
+    return entityID;
+  }
+  return undefined;
+}
+```
+
+**After:**
+```typescript
+public getEntityById(entityID: number): number | undefined {
+  return this.activeEntities.has(entityID) ? entityID : undefined;
+}
+```
+
+### ComponentManager.ts  
+**Before:**
+```typescript
+this.componentStores.forEach((store, componentType) => {
+  const component = store.get(entityID);
+  if (component !== undefined) {
+    components[componentType] = component;
+  }
+});
+```
+
+**After:**
+```typescript
+this.componentStores.forEach((store, componentType) => {
+  const component = store.get(entityID);
+  if (component) {
+    components[componentType] = component;
+  }
+});
+```
+
+### OrbitControlsManager.ts & ThreeGraphicsManager.ts
+**Before:**
+```typescript
+this.controlsEnabled = enabled !== undefined ? enabled : !this.controlsEnabled;
+```
+
+**After:**
+```typescript
+this.controlsEnabled = enabled ?? !this.controlsEnabled;
+```
+
+### RenderSystem.ts
+**Before:**
+```typescript
+if (selectedEntityId !== null) {
+  // handle selection
+}
+```
+
+**After:**
+```typescript
+if (selectedEntityId) {
+  // handle selection  
+}
+```
+
 ## Updated Summary Statistics
 
 | Metric | Before | After | Improvement |

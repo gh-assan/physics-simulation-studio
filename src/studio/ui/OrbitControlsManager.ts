@@ -17,7 +17,7 @@ export class OrbitControlsManager {
   }
 
   public toggleControls(enabled?: boolean): boolean {
-    this.controlsEnabled = enabled !== undefined ? enabled : !this.controlsEnabled;
+    this.controlsEnabled = enabled ?? !this.controlsEnabled;
     this.controls.enabled = this.controlsEnabled;
     return this.controlsEnabled;
   }
