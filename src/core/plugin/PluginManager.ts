@@ -96,10 +96,14 @@ export class PluginManager implements IPluginManager {
       for (const system of systems) {
         this.world.registerSystem(system);
       }
+      this.activePlugins.set(pluginName, plugin);
+
+      this.eventEmitter.emit(PluginManagerEvent.PLUGIN_ACTIVATED, plugin);
 
       Logger.getInstance().log(`Plugin "${pluginName}" activated.`);
     } catch (error) {
       Logger.getInstance().error(`Error activating plugin "${pluginName}":`, error);
+      throw error;
     }
   }
 

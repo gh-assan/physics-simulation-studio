@@ -98,6 +98,12 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
       });
   }
 
+  // Initial population
+  updateSimulationSelector();
+
+  if (typeof (pluginManager as any).on === "function") {
+    (pluginManager as any).on("plugin:registered", updateSimulationSelector);
+  }
   Logger.getInstance().log("UI setup completed."); // Consolidated log
 
   return { uiManager, propertyInspectorUIManager };

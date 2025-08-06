@@ -152,7 +152,7 @@ export class ComponentManager implements IComponentManager {
 
     const entities = this.getEntitiesWithComponentTypes(componentTypes);
 
-    
+
 
     return entities;
   }
