@@ -36,7 +36,7 @@ function setupCoreSystems(): { world: World; pluginManager: PluginManager; state
   const world: World = new World();
   const pluginManager: PluginManager = new PluginManager(world);
   const stateManager: StateManager = StateManager.getInstance();
-  
+
   // Create plugin discovery service for dynamic plugin loading
   const pluginDiscovery = new PluginDiscoveryService(pluginManager);
 

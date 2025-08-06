@@ -70,7 +70,7 @@ export class PluginDiscoveryService {
    */
   public async loadAllPlugins(): Promise<string[]> {
     const loadedPlugins: string[] = [];
-    
+
     for (const [pluginName] of this.discoveredPlugins) {
       const loaded = await this.loadPlugin(pluginName);
       if (loaded) {

@@ -4,7 +4,7 @@ import { Vector3 as CoreVector3 } from "../../../core/utils/Vector3";
  * Water simulation Vector3 class that extends the core Vector3 with additional methods
  */
 export class Vector3 extends CoreVector3 {
-  constructor(x: number = 0, y: number = 0, z: number = 0) {
+  constructor(x = 0, y = 0, z = 0) {
     super(x, y, z);
   }
 
