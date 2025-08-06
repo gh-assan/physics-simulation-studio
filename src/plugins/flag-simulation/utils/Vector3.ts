@@ -1,37 +1,33 @@
-export class Vector3 {
-  constructor(
-    public x: number,
-    public y: number,
-    public z: number
-  ) {}
+import { Vector3 as CoreVector3 } from "../../../core/utils/Vector3";
 
-  add(other: Vector3): Vector3 {
-    return new Vector3(this.x + other.x, this.y + other.y, this.z + other.z);
+/**
+ * Flag simulation Vector3 class that extends the core Vector3 with additional methods
+ */
+export class Vector3 extends CoreVector3 {
+  constructor(x: number = 0, y: number = 0, z: number = 0) {
+    super(x, y, z);
   }
 
-  subtract(other: Vector3): Vector3 {
-    return new Vector3(this.x - other.x, this.y - other.y, this.z - other.z);
+  // Override methods to return flag simulation Vector3
+  clone(): Vector3 {
+    return new Vector3(this.x, this.y, this.z);
   }
 
+  // Additional methods specific to flag simulation
   scale(scalar: number): Vector3 {
     return new Vector3(this.x * scalar, this.y * scalar, this.z * scalar);
   }
 
-  magnitude(): number {
-    return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+  cross(other: Vector3 | CoreVector3): Vector3 {
+    return new Vector3(
+      this.y * other.z - this.z * other.y,
+      this.z * other.x - this.x * other.z,
+      this.x * other.y - this.y * other.x
+    );
   }
 
-  normalize(): Vector3 {
-    const mag = this.magnitude();
-    return mag === 0 ? new Vector3(0, 0, 0) : this.scale(1 / mag);
-  }
-
-  dot(other: Vector3): number {
+  dot(other: Vector3 | CoreVector3): number {
     return this.x * other.x + this.y * other.y + this.z * other.z;
-  }
-
-  clone(): Vector3 {
-    return new Vector3(this.x, this.y, this.z);
   }
 
   set(x: number, y: number, z: number): Vector3 {

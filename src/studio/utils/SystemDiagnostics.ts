@@ -35,8 +35,8 @@ export class SystemDiagnostics {
 
     Logger.getInstance().log(`[SystemDiagnostics] Registered systems: ${systemNames.join(", ")}`);
 
-    // Check for critical systems
-    const criticalSystems = ["FlagSystem", "FlagRenderSystem", "PropertyInspectorSystem", "RenderSystem"];
+    // Check for critical core systems only - plugin systems are optional
+    const criticalSystems = ["PropertyInspectorSystem", "RenderOrchestrator"];
     const missingSystems = criticalSystems.filter(name => !systemNames.includes(name));
 
     if (missingSystems.length > 0) {
