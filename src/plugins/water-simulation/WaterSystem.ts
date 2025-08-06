@@ -162,12 +162,9 @@ export class WaterSystem extends System {
 
       // Total Force
       const totalForce = pressureForce.add(viscosityForce).add(externalForce);
-      let acceleration: Vector3;
-      if (dropletComponent.mass.value === 0) {
-        acceleration = new Vector3(0, 0, 0);
-      } else {
-        acceleration = totalForce.scale(1 / dropletComponent.mass.value);
-      }
+      const acceleration = dropletComponent.mass.value === 0
+        ? new Vector3(0, 0, 0)
+        : totalForce.scale(1 / dropletComponent.mass.value);
 
       // Step 3: Integrate (Verlet Integration)
       const currentPosition = new Vector3(

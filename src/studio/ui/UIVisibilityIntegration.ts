@@ -60,11 +60,13 @@ export class UIVisibilityIntegration {
 
     // Register the main UI panel with the visibility manager
     const success = this.visibilityManager.registerPanel("main-ui", paneElement, leftPanel);
-    if (success) {
-      Logger.getInstance().log("[UIVisibilityIntegration] Main UI panel mounted successfully");
-    } else {
-      Logger.getInstance().warn("[UIVisibilityIntegration] Main UI panel already registered");
-    }
+
+    const logMessage = success
+      ? "Main UI panel mounted successfully"
+      : "Main UI panel already registered";
+
+    const logMethod = success ? Logger.getInstance().log : Logger.getInstance().warn;
+    logMethod.call(Logger.getInstance(), `[UIVisibilityIntegration] ${logMessage}`);
   }
 
   /**

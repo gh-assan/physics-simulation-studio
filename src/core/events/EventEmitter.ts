@@ -55,13 +55,14 @@ export class EventEmitter implements IEventEmitter {
    * @param event The name of the event
    */
   public removeAllListeners(event?: string): void {
-    if (event) {
-      // Remove all listeners for the specified event
-      delete this.listeners[event];
-    } else {
+    if (!event) {
       // Remove all listeners for all events
       this.listeners = {};
+      return;
     }
+
+    // Remove all listeners for the specified event
+    delete this.listeners[event];
   }
 
   /**

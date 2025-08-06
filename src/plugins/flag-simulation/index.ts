@@ -87,11 +87,12 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
         );
 
         Logger.getInstance().log("FlagSimulationPlugin registered with parameter panel.");
-      } else {
-        Logger.getInstance().log(
-          "FlagSimulationPlugin registered without parameter panel (ParameterPanelComponent not registered)."
-        );
+        return;
       }
+
+      Logger.getInstance().log(
+        "FlagSimulationPlugin registered without parameter panel (ParameterPanelComponent not registered)."
+      );
     } catch (error) {
       Logger.getInstance().warn(
         "Failed to register parameter panel, but simulation will continue:",
@@ -204,18 +205,19 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
       PositionComponent.type
     ) as PositionComponent;
 
-    if (flagComponent && positionComponent) {
-      try {
-        FlagPhysicsInitializer.initializeFlag(
-          flagComponent,
-          positionComponent,
-          world
-        );
-      } catch (error) {
-        Logger.getInstance().error("Failed to initialize flag physics:", error);
-      }
-    } else {
+    if (!flagComponent || !positionComponent) {
       Logger.getInstance().error("FlagComponent or PositionComponent is missing for the flag entity.");
+      return;
+    }
+
+    try {
+      FlagPhysicsInitializer.initializeFlag(
+        flagComponent,
+        positionComponent,
+        world
+      );
+    } catch (error) {
+      Logger.getInstance().error("Failed to initialize flag physics:", error);
     }
   }
 }

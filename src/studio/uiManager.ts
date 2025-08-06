@@ -107,9 +107,9 @@ export class UIManager implements IUIManager {
         );
         return; // Skip this property
       }
-      
+
       binding = folder.addBinding(parentData, lastKey, options);
-      
+
       // Add binding check and event handling for nested properties
       if (!binding) {
         Logger.getInstance().warn(

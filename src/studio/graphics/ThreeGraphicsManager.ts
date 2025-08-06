@@ -118,18 +118,22 @@ export class ThreeGraphicsManager implements IGraphicsManager {
    * @returns The current enabled state after toggling
    */
   public toggleControls(enabled?: boolean): boolean {
-    if (enabled !== undefined) {
-      this.controlsEnabled = enabled;
-    } else {
-      this.controlsEnabled = !this.controlsEnabled;
-    }
+    this.controlsEnabled = enabled !== undefined ? enabled : !this.controlsEnabled;
+
+    this.updateControlsState();
+    return this.controlsEnabled;
+  }
+
+  /**
+   * Updates the controls based on current enabled state
+   */
+  private updateControlsState(): void {
     if (this.controlsEnabled) {
       this.controlsManager.enable();
-    } else {
-      this.controlsManager.disable();
+      return;
     }
 
-    return this.controlsEnabled;
+    this.controlsManager.disable();
   }
 
   public getScene(): THREE.Scene {
@@ -145,14 +149,12 @@ export class ThreeGraphicsManager implements IGraphicsManager {
    * @param camera The camera to set
    */
   public setCamera(camera: THREE.Camera): void {
-    if (
-      camera instanceof THREE.PerspectiveCamera ||
-      camera instanceof THREE.OrthographicCamera
-    ) {
-      this.camera = camera;
-    } else {
+    if (!(camera instanceof THREE.PerspectiveCamera || camera instanceof THREE.OrthographicCamera)) {
       Logger.getInstance().error("Unsupported camera type");
+      return;
     }
+
+    this.camera = camera;
   }
 
   public getRenderer(): THREE.WebGLRenderer {

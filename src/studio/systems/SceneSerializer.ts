@@ -54,23 +54,25 @@ export class SceneSerializer {
           const componentConstructor = world.componentManager
             .getComponentConstructors()
             .get(componentName);
-          if (componentConstructor) {
-            const componentInstance = new componentConstructor();
-            // Fix: Only assign once
-            Object.assign(
-              componentInstance,
-              entityData.components[componentName]
-            );
-            world.componentManager.addComponent(
-              entityId,
-              componentName,
-              componentInstance
-            );
-          } else {
+
+          if (!componentConstructor) {
             console.warn(
               `Unknown component type during deserialization: ${componentName}`
             );
+            continue;
           }
+
+          const componentInstance = new componentConstructor();
+          // Fix: Only assign once
+          Object.assign(
+            componentInstance,
+            entityData.components[componentName]
+          );
+          world.componentManager.addComponent(
+            entityId,
+            componentName,
+            componentInstance
+          );
         }
       }
     }

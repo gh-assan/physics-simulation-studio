@@ -119,11 +119,12 @@ export class FlagPhysicsInitializer {
 
     if (attachedEdge === "left" || attachedEdge === "right") {
       result.y = isBottomRow ? poleInfo.position.y : poleInfo.position.y + poleInfo.height;
-    } else {
-      result.x = isLeftCol
-        ? poleInfo.position.x - flagWidth / 2
-        : poleInfo.position.x + flagWidth / 2;
+      return result;
     }
+
+    result.x = isLeftCol
+      ? poleInfo.position.x - flagWidth / 2
+      : poleInfo.position.x + flagWidth / 2;
 
     return result;
   }

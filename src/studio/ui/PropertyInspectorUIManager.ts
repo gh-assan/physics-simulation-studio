@@ -70,15 +70,12 @@ export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
 
     const properties = ComponentPropertyRegistry.getInstance().getComponentProperties(componentTypeKey);
 
-    if (properties) {
-      Logger.getInstance().log(
-        `[PropertyInspectorUIManager] Found ${properties.length} properties for component '${displayName}'`
-      );
-    } else {
-      Logger.getInstance().warn(
-        `[PropertyInspectorUIManager] No properties found for component '${displayName}'`
-      );
-    }
+    const logMessage = properties
+      ? `Found ${properties.length} properties for component '${displayName}'`
+      : `No properties found for component '${displayName}'`;
+
+    const logMethod = properties ? Logger.getInstance().log : Logger.getInstance().warn;
+    logMethod.call(Logger.getInstance(), `[PropertyInspectorUIManager] ${logMessage}`);
 
     this.uiManager.registerComponentControls(
       displayName,

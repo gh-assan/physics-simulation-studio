@@ -98,18 +98,10 @@ export class FlagRenderSystem extends System implements IRenderable {
         flagMesh = createFlagMesh(flagComponent);
         this.graphicsManager.getScene().add(flagMesh);
         this.meshes.set(entityId, flagMesh);
-      } else {
-        // Update existing flag mesh positions
-        const positions = flagMesh.geometry.attributes.position
-          .array as Float32Array;
-        flagComponent.points.forEach((p: any, i: number) => {
-          positions[i * 3] = p.position.x;
-          positions[i * 3 + 1] = p.position.y;
-          positions[i * 3 + 2] = p.position.z;
-        });
-        flagMesh.geometry.attributes.position.needsUpdate = true;
-        flagMesh.geometry.computeVertexNormals();
+        return;
       }
+
+      this.updateFlagMeshPositions(flagMesh, flagComponent);
 
       // Update mesh position and rotation
       flagMesh.position.set(position.x, position.y, position.z);
@@ -175,6 +167,22 @@ export class FlagRenderSystem extends System implements IRenderable {
       MaterialDisposer.dispose(poleMesh.material);
       this.poleMeshes.delete(entityId);
     }
+  }
+
+  /**
+   * Updates existing flag mesh positions from flag component points
+   * @param flagMesh The flag mesh to update
+   * @param flagComponent The flag component containing point data
+   */
+  private updateFlagMeshPositions(flagMesh: THREE.Mesh, flagComponent: FlagComponent): void {
+    const positions = flagMesh.geometry.attributes.position.array as Float32Array;
+    flagComponent.points.forEach((p: any, i: number) => {
+      positions[i * 3] = p.position.x;
+      positions[i * 3 + 1] = p.position.y;
+      positions[i * 3 + 2] = p.position.z;
+    });
+    flagMesh.geometry.attributes.position.needsUpdate = true;
+    flagMesh.geometry.computeVertexNormals();
   }
 
   public clear(): void {

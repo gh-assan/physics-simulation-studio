@@ -90,11 +90,12 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
         console.log(
           "Water Simulation Plugin registered with parameter panels."
         );
-      } else {
-        console.log(
-          "Water Simulation Plugin registered without parameter panels (ParameterPanelComponent not registered)."
-        );
+        return;
       }
+
+      console.log(
+        "Water Simulation Plugin registered without parameter panels (ParameterPanelComponent not registered)."
+      );
     } catch (error) {
       console.warn(
         "Failed to register parameter panels, but simulation will continue:",

@@ -2,6 +2,7 @@
 
 import * as THREE from "three";
 import { RenderableComponent } from "@core/components/RenderableComponent";
+import { MaterialDisposer } from "./MaterialDisposer";
 
 export function createGeometry(
   geometryType: RenderableComponent["geometry"]
@@ -28,11 +29,7 @@ export function disposeThreeJsObject(object: THREE.Object3D): void {
       object.geometry.dispose();
     }
     if (object.material) {
-      if (Array.isArray(object.material)) {
-        object.material.forEach((material) => material.dispose());
-      } else {
-        object.material.dispose();
-      }
+      MaterialDisposer.dispose(object.material);
     }
   }
 }
