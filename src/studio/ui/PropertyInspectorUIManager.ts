@@ -105,14 +105,10 @@ export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
    * Registers a panel with VisibilityManager if available
    */
   private registerWithVisibilityManager(panel: ParameterPanelComponent): void {
-    if (!this.visibilityManager) {
-      console.log(`[PropertyInspectorUIManager] No VisibilityManager available`);
-      return;
-    }
-
     const leftPanel = document.getElementById("left-panel");
-    if (!leftPanel) {
-      console.error(`[PropertyInspectorUIManager] left-panel element not found!`);
+
+    if (!this.visibilityManager || !leftPanel) {
+      console.log(`[PropertyInspectorUIManager] ${!this.visibilityManager ? 'No VisibilityManager available' : 'left-panel element not found!'}`);
       return;
     }
 
@@ -142,11 +138,9 @@ export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
    */
   public clearParameterPanels(): void {
     const pluginPanels = this.visibilityManager?.getPanelsByType('plugin');
-    if (pluginPanels) {
-      for (const [panelId] of pluginPanels) {
-        this.visibilityManager!.unregisterPanel(panelId);
-      }
-    }
+    pluginPanels?.forEach((_, panelId) => {
+      this.visibilityManager?.unregisterPanel(panelId);
+    });
   }
 
   /**
