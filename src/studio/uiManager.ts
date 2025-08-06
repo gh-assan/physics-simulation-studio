@@ -101,34 +101,52 @@ export class UIManager implements IUIManager {
       const parentPath = parts.join("."); // Join the rest of the path
       const parentData = this._getNestedProperty(data, parentPath);
 
-      if (parentData) {
-        binding = folder.addBinding(parentData, lastKey, options);
-      } else {
+      if (!parentData) {
         Logger.getInstance().warn(
           `[UIManager] Could not find parent object for property: ${prop.property}`
         );
+        return; // Skip this property
       }
-    } else {
-      binding = folder.addBinding(data, prop.property, options);
-    }
+      
+      binding = folder.addBinding(parentData, lastKey, options);
+      
+      // Add binding check and event handling for nested properties
+      if (!binding) {
+        Logger.getInstance().warn(
+          `[UIManager] Failed to create binding for property: ${prop.property}`
+        );
+        return;
+      }
 
-    // Prevent parameter changes from triggering simulation to play
-    // This ensures that only the play button can start the simulation
-    if (binding) {
       binding.on("change", () => {
-        // Force a render update without starting the simulation
-        // This allows users to see the effect of parameter changes in the UI
-        // without triggering the simulation to play
         const event = new CustomEvent("parameter-changed", {
           detail: { property: prop.property }
         });
         window.dispatchEvent(event);
       });
-    } else {
+      return; // Early return for nested properties
+    }
+
+    binding = folder.addBinding(data, prop.property, options);
+
+    // Prevent parameter changes from triggering simulation to play
+    // This ensures that only the play button can start the simulation
+    if (!binding) {
       Logger.getInstance().warn(
         `[UIManager] Failed to create binding for property: ${prop.property}`
       );
+      return; // Skip this property
     }
+
+    binding.on("change", () => {
+      // Force a render update without starting the simulation
+      // This allows users to see the effect of parameter changes in the UI
+      // without triggering the simulation to play
+      const event = new CustomEvent("parameter-changed", {
+        detail: { property: prop.property }
+      });
+      window.dispatchEvent(event);
+    });
   }
 
   private _getNestedProperty(data: any, path: string): any {

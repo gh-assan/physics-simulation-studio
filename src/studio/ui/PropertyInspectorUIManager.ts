@@ -65,25 +65,26 @@ export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
         `[PropertyInspectorUIManager] Using parameter panel for component '${displayName}'`
       );
       parameterPanel.registerControls(this.uiManager as UIManager, componentInstance);
+      return;
+    }
+
+    const properties = ComponentPropertyRegistry.getInstance().getComponentProperties(componentTypeKey);
+
+    if (properties) {
+      Logger.getInstance().log(
+        `[PropertyInspectorUIManager] Found ${properties.length} properties for component '${displayName}'`
+      );
     } else {
-      const properties = ComponentPropertyRegistry.getInstance().getComponentProperties(componentTypeKey);
-
-      if (properties) {
-        Logger.getInstance().log(
-          `[PropertyInspectorUIManager] Found ${properties.length} properties for component '${displayName}'`
-        );
-      } else {
-        Logger.getInstance().warn(
-          `[PropertyInspectorUIManager] No properties found for component '${displayName}'`
-        );
-      }
-
-      this.uiManager.registerComponentControls(
-        displayName,
-        componentInstance,
-        properties
+      Logger.getInstance().warn(
+        `[PropertyInspectorUIManager] No properties found for component '${displayName}'`
       );
     }
+
+    this.uiManager.registerComponentControls(
+      displayName,
+      componentInstance,
+      properties
+    );
   }
 
   /**
@@ -105,34 +106,36 @@ export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
       console.log(`[PropertyInspectorUIManager] Controls registered for ${panel.componentType}`);
 
       // If VisibilityManager is available, register plugin panel for centralized management
-      if (this.visibilityManager) {
-        const leftPanel = document.getElementById("left-panel");
-        if (leftPanel) {
-          const panelId = `plugin-panel-${panel.componentType}`;
-          const pluginName = this.extractPluginNameFromPanel(panel);
-
-          console.log(`[PropertyInspectorUIManager] Registering with VisibilityManager: ${panelId}`);
-          const success = this.visibilityManager.registerPluginPanel(
-            panelId,
-            panel,
-            leftPanel,
-            {
-              pluginName,
-              componentType: panel.componentType,
-              priority: this.calculatePanelPriority(panel)
-            }
-          );
-
-          console.log(`[PropertyInspectorUIManager] VisibilityManager registration ${success ? 'succeeded' : 'failed'} for ${panelId}`);
-          Logger.getInstance().log(
-            `[PropertyInspectorUIManager] Registered parameter panel '${panelId}' with VisibilityManager`
-          );
-        } else {
-          console.error(`[PropertyInspectorUIManager] left-panel element not found!`);
-        }
-      } else {
+      if (!this.visibilityManager) {
         console.log(`[PropertyInspectorUIManager] No VisibilityManager available`);
+        continue;
       }
+
+      const leftPanel = document.getElementById("left-panel");
+      if (!leftPanel) {
+        console.error(`[PropertyInspectorUIManager] left-panel element not found!`);
+        continue;
+      }
+
+      const panelId = `plugin-panel-${panel.componentType}`;
+      const pluginName = this.extractPluginNameFromPanel(panel);
+
+      console.log(`[PropertyInspectorUIManager] Registering with VisibilityManager: ${panelId}`);
+      const success = this.visibilityManager.registerPluginPanel(
+        panelId,
+        panel,
+        leftPanel,
+        {
+          pluginName,
+          componentType: panel.componentType,
+          priority: this.calculatePanelPriority(panel)
+        }
+      );
+
+      console.log(`[PropertyInspectorUIManager] VisibilityManager registration ${success ? 'succeeded' : 'failed'} for ${panelId}`);
+      Logger.getInstance().log(
+        `[PropertyInspectorUIManager] Registered parameter panel '${panelId}' with VisibilityManager`
+      );
     }
   }
 

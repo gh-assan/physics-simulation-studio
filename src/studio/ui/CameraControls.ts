@@ -290,11 +290,10 @@ export class CameraControls {
    * Toggles between perspective and orthographic camera modes
    */
   public toggleCameraMode(): void {
-    if (this.currentMode === CameraMode.PERSPECTIVE) {
-      this.setCameraMode(CameraMode.ORTHOGRAPHIC);
-    } else {
-      this.setCameraMode(CameraMode.PERSPECTIVE);
-    }
+    const newMode = this.currentMode === CameraMode.PERSPECTIVE
+      ? CameraMode.ORTHOGRAPHIC
+      : CameraMode.PERSPECTIVE;
+    this.setCameraMode(newMode);
   }
 
   /**
@@ -306,29 +305,9 @@ export class CameraControls {
     const position = this.camera.position.clone();
     const target = (this.controls as any).target.clone();
 
-    if (mode === CameraMode.PERSPECTIVE) {
-      // Switch to perspective camera
-      this.camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000
-      );
-      this.currentMode = CameraMode.PERSPECTIVE;
-    } else {
-      // Switch to orthographic camera
-      const aspectRatio = window.innerWidth / window.innerHeight;
-      const frustumSize = 20;
-      this.camera = new THREE.OrthographicCamera(
-        (frustumSize * aspectRatio) / -2,
-        (frustumSize * aspectRatio) / 2,
-        frustumSize / 2,
-        frustumSize / -2,
-        0.1,
-        1000
-      );
-      this.currentMode = CameraMode.ORTHOGRAPHIC;
-    }
+    // Create the appropriate camera type
+    this.camera = this.createCamera(mode);
+    this.currentMode = mode;
 
     // Restore camera position and target
     this.camera.position.copy(position);
@@ -345,6 +324,34 @@ export class CameraControls {
     this.configureControls();
     (this.controls as any).target.copy(target);
     this.controls.update();
+  }
+
+  /**
+   * Creates a camera of the specified type
+   * @param mode The camera mode to create
+   * @returns The created camera
+   */
+  private createCamera(mode: CameraMode): THREE.PerspectiveCamera | THREE.OrthographicCamera {
+    if (mode === CameraMode.PERSPECTIVE) {
+      return new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+    }
+
+    // Orthographic camera
+    const aspectRatio = window.innerWidth / window.innerHeight;
+    const frustumSize = 20;
+    return new THREE.OrthographicCamera(
+      (frustumSize * aspectRatio) / -2,
+      (frustumSize * aspectRatio) / 2,
+      frustumSize / 2,
+      frustumSize / -2,
+      0.1,
+      1000
+    );
   }
 
   /**

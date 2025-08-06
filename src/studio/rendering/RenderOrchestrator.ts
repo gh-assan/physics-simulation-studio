@@ -2,6 +2,7 @@ import { System } from "../../core/ecs/System";
 import { IWorld } from "../../core/ecs/IWorld";
 import { ThreeGraphicsManager } from "../graphics/ThreeGraphicsManager";
 import { Logger } from "../../core/utils/Logger";
+import { MaterialDisposer } from "../utils/MaterialDisposer";
 import * as THREE from "three";
 
 /**
@@ -166,15 +167,7 @@ export class RenderOrchestrator extends System {
 
       // Dispose material(s)
       if ((object as any).material) {
-        if (Array.isArray((object as any).material)) {
-          (object as any).material.forEach((mat: any) => {
-            if (mat && typeof mat.dispose === 'function') {
-              mat.dispose();
-            }
-          });
-        } else if (typeof (object as any).material.dispose === 'function') {
-          (object as any).material.dispose();
-        }
+        MaterialDisposer.dispose((object as any).material);
       }
     } catch (error) {
       Logger.getInstance().error('[RenderOrchestrator] Error disposing object:', error);
