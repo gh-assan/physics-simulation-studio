@@ -168,4 +168,8 @@ export class UIManager implements IUIManager {
     this.pane = newPane;
     this.clearControls(); // Clear old controls when switching UI
   }
+
+  public getPanels(): FolderApi[] {
+    return Array.from(this.folders.values());
+  }
 }

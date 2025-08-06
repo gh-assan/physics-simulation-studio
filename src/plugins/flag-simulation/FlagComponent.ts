@@ -2,6 +2,7 @@ import { IComponent } from "../../core/ecs/IComponent";
 import { PointMass } from "./utils/PointMass";
 import { Spring } from "./utils/Spring";
 import { Vector3 } from "./utils/Vector3";
+import { RenderableComponent } from "../../core/ecs/RenderableComponent";
 
 export class FlagComponent implements IComponent {
   public static readonly type = "FlagComponent";
@@ -38,6 +39,8 @@ export class FlagComponent implements IComponent {
   windStrength: number;
   windDirection: { x: number; y: number; z: number };
 
+  public renderable: RenderableComponent;
+
   constructor(
     width = 10,
     height = 6,
@@ -53,6 +56,7 @@ export class FlagComponent implements IComponent {
     poleEntityId: number | null = null,
     attachedEdge: "left" | "right" | "top" | "bottom" = "left"
   ) {
+    this.renderable = new RenderableComponent("plane", 0xffffff);
     this.width = width;
     this.height = height;
     this.segmentsX = segmentsX;
@@ -120,6 +124,15 @@ export class FlagComponent implements IComponent {
       }
     }
     return points;
+  }
+
+  /**
+   * Determines if the flag is visible.
+   * @returns True if the flag is visible, false otherwise.
+   */
+  public isVisible(): boolean {
+    // Placeholder logic for visibility; update as needed
+    return true;
   }
 
   clone(): FlagComponent {
