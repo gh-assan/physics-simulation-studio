@@ -11,11 +11,12 @@ export interface IStudio {
   play(): void;
   pause(): void;
   reset(): void;
-  loadSimulation(pluginName: string | null): Promise<void>;
+  loadSimulation(pluginName: string): Promise<void>;
+  unloadSimulation(): void;
   update(deltaTime: number): void;
   getIsPlaying(): boolean;
-  getActiveSimulationName(): string | null;
-  getRenderer(): any | null;
+  getActiveSimulationName(): string;
+  getRenderer(): any;
   getAvailableSimulationNames(): string[];
   getPluginContext(): IPluginContext;
 }

@@ -44,14 +44,19 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
         }
     }
 
-    public unloadSimulation(activePluginName: string | null): void {
+    public unloadSimulation(activePluginName: string): void {
+        if (!activePluginName) {
+            throw new Error("Cannot unload simulation: plugin name is required");
+        }
         this._deactivateCurrentSimulation(activePluginName);
         this._clearWorldAndRenderSystem();
-        Logger.getInstance().log("No simulation loaded.");
+        Logger.getInstance().log(`Simulation ${activePluginName} unloaded.`);
     }
 
-    private _deactivateCurrentSimulation(activePluginName: string | null): void {
-        if (!activePluginName) return;
+    private _deactivateCurrentSimulation(activePluginName: string): void {
+        if (!activePluginName || activePluginName === "") {
+            throw new Error("Cannot deactivate simulation: plugin name is required");
+        }
         // Deactivate plugin (calls unregister internally)
         this.pluginManager.deactivatePlugin(activePluginName, this.studio);
     }

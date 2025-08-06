@@ -87,12 +87,14 @@ describe("PropertyInspectorSystem", () => {
       world: world,
     } as any;
 
-    let selectedEntityId: number | null = null;
+    let selectedEntityId = -1;
     selectionSystem = {
-      currentSelectedEntity: null,
+      currentSelectedEntity: -1,
       onSimulationLoaded: jest.fn(),
       getSelectedEntity: jest.fn(() => selectedEntityId),
-      setSelectedEntity: jest.fn((id: number | null) => { selectedEntityId = id; }),
+      setSelectedEntity: jest.fn((id: number) => { selectedEntityId = id; }),
+      clearSelection: jest.fn(() => { selectedEntityId = -1; }),
+      hasSelection: jest.fn(() => selectedEntityId !== -1),
       update: jest.fn(),
       setDefaultSelectedEntity: jest.fn(),
       world: world,
@@ -237,7 +239,7 @@ describe("PropertyInspectorSystem", () => {
     propertyInspectorUIManager.clearInspectorControls.mockClear(); // Clear initial call
 
     // Deselect entity to avoid double clearControls
-    selectionSystem.setSelectedEntity(null);
+    selectionSystem.clearSelection();
 
     // Simulate changing active simulation
     studio.getActiveSimulationName.mockReturnValue("water-simulation");
@@ -261,7 +263,7 @@ describe("PropertyInspectorSystem", () => {
 
   it("should display general simulation settings when no entity is selected", () => {
     // Ensure no entity is selected
-    selectionSystem.setSelectedEntity(null);
+    selectionSystem.clearSelection();
     propertyInspectorSystem.update(world, 0);
 
     expect(propertyInspectorUIManager.clearInspectorControls).toHaveBeenCalled();

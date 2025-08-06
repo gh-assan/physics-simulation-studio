@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Panel Test</title>
+    <style>
+        body {
+            margin: 0;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        #left-panel {
+            background: #252526;
+            padding: 10px;
+            color: white;
+        }
+        #main-content {
+            background: #1a1a1a;
+        }
+    </style>
+</head>
+<body>
+    <div id="left-panel">
+        <h3>Left Panel</h3>
+        <p>This should be visible</p>
+        <div id="tweakpane-container"></div>
+    </div>
+    <div id="main-content">
+        <h3 style="color: white; padding: 20px;">Main Content</h3>
+    </div>
+
+    <script type="module">
+        import { Pane } from 'https://cdn.skypack.dev/tweakpane';
+        
+        const container = document.getElementById('tweakpane-container');
+        const pane = new Pane({ container });
+        
+        const params = { 
+            value: 50,
+            flag: true,
+            text: 'Hello'
+        };
+        
+        pane.addBinding(params, 'value', { min: 0, max: 100 });
+        pane.addBinding(params, 'flag');
+        pane.addBinding(params, 'text');
+        
+        console.log('Pane created and mounted');
+    </script>
+</body>
+</html>

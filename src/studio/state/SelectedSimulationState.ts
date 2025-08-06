@@ -15,15 +15,14 @@ export class SelectedSimulationStateManager extends EventEmitter implements ISel
     return this._state;
   }
 
-  public setSimulation(name: string | null): void {
-    const newName = name || DEFAULT_SELECTED_SIMULATION_STATE.name;
-    if (this._state.name !== newName) {
-      this._state.name = newName;
+  public setSimulation(name: string): void {
+    if (this._state.name !== name) {
+      this._state.name = name;
       this.emit("change", this._state);
     }
   }
 
-  public getSimulationName(): string | null {
+  public getSimulationName(): string {
     return this._state.name;
   }
 

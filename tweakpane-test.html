@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tweakpane Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #container {
+            width: 300px;
+            height: 400px;
+            border: 2px solid #ccc;
+            background: #f0f0f0;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Tweakpane Container Test</h2>
+    <div id="container">
+        <p>Tweakpane should appear here</p>
+    </div>
+
+    <script type="module">
+        import { Pane } from 'https://cdn.skypack.dev/tweakpane';
+        
+        const pane = new Pane();
+        const container = document.getElementById('container');
+        
+        console.log('Pane element:', pane.element);
+        console.log('Container:', container);
+        
+        // Try to move the pane to our container
+        if (pane.element) {
+            container.appendChild(pane.element);
+            console.log('Pane moved to container');
+        }
+        
+        // Add some controls to make sure it works
+        const params = { value: 50 };
+        pane.addBinding(params, 'value', { min: 0, max: 100 });
+    </script>
+</body>
+</html>

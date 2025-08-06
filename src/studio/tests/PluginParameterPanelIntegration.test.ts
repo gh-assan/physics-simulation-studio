@@ -95,6 +95,8 @@ describe("Plugin Parameter Panel Integration", () => {
       onSimulationLoaded: jest.fn(),
       getSelectedEntity: jest.fn(() => 0), // Always return the first entity ID
       setSelectedEntity: jest.fn(),
+      clearSelection: jest.fn(),
+      hasSelection: jest.fn(() => true), // Default to having a selection
       update: jest.fn(),
       setDefaultSelectedEntity: jest.fn(),
       world: world,

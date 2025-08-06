@@ -18,7 +18,7 @@ import { IPluginManager } from "../core/plugin/IPluginManager";
 import { IStateManager } from "./state/IStateManager";
 import { IStudio } from "./IStudio";
 import { World } from "../core/ecs/World";
-import { PluginManager } from "../core/plugin/PluginManager";
+import { PluginManager, PluginManagerEvent } from "../core/plugin/PluginManager";
 import { StateManager } from "./state/StateManager";
 import { Studio } from "./Studio";
 import { IUIManager } from "./IUIManager";
@@ -95,18 +95,29 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
   (window as any).visibilityOrchestrator = visibilityOrchestrator;
 
   const globalControlsFolder = pane.addFolder({ title: "Global Controls" });
-  globalControlsFolder.addButton({ title: "Play" }).on("click", () => {
+  const playButton = globalControlsFolder.addButton({ title: "Play" }).on("click", () => {
     console.log('Play button clicked');
     studio.play();
   });
-  globalControlsFolder.addButton({ title: "Pause" }).on("click", () => {
+  const pauseButton = globalControlsFolder.addButton({ title: "Pause" }).on("click", () => {
     console.log('Pause button clicked');
     studio.pause();
   });
-  globalControlsFolder.addButton({ title: "Reset" }).on("click", () => {
+  const resetButton = globalControlsFolder.addButton({ title: "Reset" }).on("click", () => {
     console.log('Reset button clicked');
     studio.reset();
   });
+
+  // Function to update button states based on simulation selection
+  function updateControlButtonStates() {
+    const hasSimulation = stateManager.selectedSimulation.state.name !== "" && stateManager.selectedSimulation.state.name.length > 0;
+    playButton.disabled = !hasSimulation;
+    pauseButton.disabled = !hasSimulation;
+    resetButton.disabled = !hasSimulation;
+  }
+
+  // Initialize button states
+  updateControlButtonStates();
 
   // Register Global Controls panel with VisibilityOrchestrator
   visibilityOrchestrator.getVisibilityManager().registerGlobalPanel(
@@ -131,29 +142,44 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
     const options = studio.getAvailableSimulationNames().map((name: string) => ({ text: name, value: name }));
     if (options.length === 0) {
       simulationSelectionFolder.addButton({ title: "No simulations available" }).disabled = true;
-      stateManager.selectedSimulation.state.name = null;
+      stateManager.selectedSimulation.state.name = "";
+      updateControlButtonStates();
       return;
     }
-    if (!options.some((opt: { text: string; value: string; }) => opt.value === stateManager.selectedSimulation.state.name)) {
-      stateManager.selectedSimulation.state.name = options[0].value;
-    }
+
+    // Add an "Unload" option to allow deselecting simulations
+    const optionsWithUnload = [{ text: "Unload Simulation", value: "" }, ...options];
+
+    // Don't auto-select a simulation - keep it as empty unless explicitly set
+    console.log('Creating simulation selector with state:', stateManager.selectedSimulation.state.name);
+    console.log('Available options:', optionsWithUnload);
     simulationSelectionFolder
       .addBinding(stateManager.selectedSimulation.state, "name", {
         label: "Select Simulation",
-        options,
+        options: optionsWithUnload,
       })
-      .on("change", (ev: { value: string | null }) => {
+      .on("change", (ev: { value: string }) => {
+        console.log('Simulation selector changed to:', ev.value);
         stateManager.selectedSimulation.state.name = ev.value;
-        void studio.loadSimulation(ev.value);
+        if (ev.value && ev.value !== "") {
+          void studio.loadSimulation(ev.value);
+        } else {
+          studio.unloadSimulation();
+        }
+        updateControlButtonStates();
       });
   }
 
   // Initial population
   updateSimulationSelector();
 
-  if (typeof (pluginManager as any).on === "function") {
-    (pluginManager as any).on("plugin:registered", updateSimulationSelector);
-  }
+  // Listen for simulation state changes to update button states
+  stateManager.selectedSimulation.onChange(() => {
+    updateControlButtonStates();
+  });
+
+  // Listen for plugin registration to update simulation selector
+  pluginManager.on(PluginManagerEvent.PLUGIN_REGISTERED, updateSimulationSelector);
 
   return { uiManager, propertyInspectorUIManager, visibilityOrchestrator };
 }
@@ -249,11 +275,7 @@ async function main() {
     registerComponentsAndSystems(world as World, studio, propertyInspectorUIManager, pluginManager as PluginManager);
     registerPlugins(pluginManager);
 
-    // Load Initial Simulation - this should NOT clear systems
-    const defaultSimulationName = studio.getAvailableSimulationNames()[0] || null;
-    if (defaultSimulationName) {
-      await studio.loadSimulation(defaultSimulationName);
-    }
+    // No default simulation is loaded - users must explicitly select a simulation
 
     // Run system diagnostics to ensure everything is working
     const diagnostics = new SystemDiagnostics(world as World);

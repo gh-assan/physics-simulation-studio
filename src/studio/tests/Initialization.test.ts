@@ -92,7 +92,7 @@ describe('Application Initialization', () => {
     await studio.loadSimulation('flag-simulation');
   });
 
-  it('should load the flag simulation by default and populate the UI and world', async () => {
+  it('should load the flag simulation when explicitly requested and populate the UI and world', async () => {
     expect(loadSimulationSpy).toHaveBeenCalledWith('flag-simulation');
     expect(orchestratorLoadSimulationSpy).toHaveBeenCalledWith('flag-simulation');
 
@@ -108,9 +108,9 @@ describe('Application Initialization', () => {
     // Call update directly on PropertyInspectorSystem to trigger parameter panel registration
     propertyInspectorSystem.update(world, 0);
 
-    // Verify the panels are visible
+    // Verify that no panels are visible by default (no auto-selection of entities)
     const panels = uiManager.getPanels(); // Assuming getPanels() returns the list of panels
-    expect(panels.length).toBeGreaterThan(0);
+    expect(panels.length).toBe(0); // No panels should be visible without entity selection
 
     // Verify the flag is rendered
     const flagEntity = flagEntities[0];

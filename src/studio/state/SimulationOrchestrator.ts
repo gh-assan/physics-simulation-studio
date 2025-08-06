@@ -47,14 +47,14 @@ export class SimulationOrchestrator {
       await this.activateAndInitializePlugin(pluginName);
     } catch (error) {
       Logger.getInstance().error(`Failed to load simulation "${pluginName}":`, error);
-      this.selectedSimulation.setSimulation(null);
+      this.selectedSimulation.setSimulation("");
     }
   }
 
   public unloadCurrentSimulation(): void {
     this.deactivateCurrentSimulation();
     this.clearWorldAndRenderSystem();
-    this.selectedSimulation.setSimulation(null);
+    this.selectedSimulation.setSimulation("");
     Logger.getInstance().log("No simulation loaded.");
   }
 

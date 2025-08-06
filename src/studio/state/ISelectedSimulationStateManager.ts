@@ -1,5 +1,8 @@
+import { SelectedSimulationState } from "./StateTypes";
+
 export interface ISelectedSimulationStateManager {
-  getSimulationName(): string | null;
-  setSimulation(name: string | null): void;
-  state: { name: string | null };
+  getSimulationName(): string;
+  setSimulation(name: string): void;
+  state: { name: string };
+  onChange(callback: (state: SelectedSimulationState) => void): void;
 }
