@@ -40,7 +40,7 @@ export class PropertyInspectorSystem extends System {
   private getParameterPanelsFromActivePlugin(): ParameterPanelComponent[] {
     const activeSimulationName = this.studio.getActiveSimulationName();
     console.log(`[PropertyInspectorSystem] Active simulation name: ${activeSimulationName}`);
-    
+
     if (!activeSimulationName) {
       Logger.getInstance().log(
         `[PropertyInspectorSystem] No active simulation.` // Simplified log
@@ -50,7 +50,7 @@ export class PropertyInspectorSystem extends System {
 
     const activePlugin = this.pluginManager.getPlugin(activeSimulationName);
     console.log(`[PropertyInspectorSystem] Active plugin:`, activePlugin);
-    
+
     if (!activePlugin) {
       Logger.getInstance().log(
         `[PropertyInspectorSystem] No active plugin for simulation ${activeSimulationName}.` // Simplified log
@@ -81,7 +81,7 @@ export class PropertyInspectorSystem extends System {
    */
   public update(world: World, _deltaTime: number): void {
     console.log(`[PropertyInspectorSystem] update() called`);
-    
+
     const currentSelectedEntity = this.selectionSystem.getSelectedEntity();
     const currentActiveSimulation = this.studio.getActiveSimulationName();
 

@@ -37,18 +37,18 @@ export class WaterDropletParameterPanel extends ParameterPanelComponent {
 
     if (!component) {
       const panel = uiManager.createPanel('Water Droplet Settings');
-      
+
       // Create a simple object to bind to for displaying the message
       const messageObject = {
         message: 'No water droplet selected. Select a water droplet to see its properties.'
       };
-      
+
       // Use addBinding to display the message
-      uiManager.addBinding(panel, messageObject, 'message', { 
+      uiManager.addBinding(panel, messageObject, 'message', {
         readonly: true,
         label: 'Info'
       });
-      
+
       return;
     }
 

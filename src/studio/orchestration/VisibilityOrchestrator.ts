@@ -137,13 +137,13 @@ export class VisibilityOrchestrator {
    */
   public isHealthy(): boolean {
     const state = this.getVisibilityState();
-    
+
     // System is healthy if:
     // 1. It's initialized
     // 2. Has some panels registered
     // 3. Scene is accessible
-    return state.initialized && 
-           state.ui.panelCount > 0 && 
+    return state.initialized &&
+           state.ui.panelCount > 0 &&
            state.scene !== null;
   }
 
@@ -179,11 +179,11 @@ export class VisibilityOrchestrator {
    */
   public dispose(): void {
     Logger.getInstance().log("[VisibilityOrchestrator] Disposing...");
-    
+
     this.renderOrchestrator.dispose();
     this.visibilityManager.destroy();
     this.initialized = false;
-    
+
     Logger.getInstance().log("[VisibilityOrchestrator] Disposed");
   }
 }

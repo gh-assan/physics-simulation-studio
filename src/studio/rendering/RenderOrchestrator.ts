@@ -189,7 +189,7 @@ export class RenderOrchestrator extends System {
         renderer.dispose();
       }
     }
-    
+
     this.renderers.clear();
     this.clearScene();
   }

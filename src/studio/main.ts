@@ -83,7 +83,7 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
   // Create a placeholder render orchestrator for now (will be replaced in registerComponentsAndSystems)
   const placeholderGraphicsManager = new ThreeGraphicsManager();
   const renderOrchestrator = new RenderOrchestrator(placeholderGraphicsManager);
-  
+
   // Create centralized visibility orchestrator
   const visibilityOrchestrator = new VisibilityOrchestrator(visibilityManager, renderOrchestrator);
   visibilityOrchestrator.initialize();
@@ -189,32 +189,32 @@ function registerComponentsAndSystems(world: World, studio: Studio, propertyInsp
 
     // Create centralized render orchestrator
     const renderOrchestrator = new RenderOrchestrator(graphicsManager);
-    
+
     // Register the flag renderer with the orchestrator
     const flagRenderer = new FlagRenderer(graphicsManager);
     renderOrchestrator.registerRenderer("flag", flagRenderer);
-    
+
     // Register the render orchestrator as a system
     world.registerSystem(renderOrchestrator);
-    
+
     const selectionSystem = new SelectionSystem(studio, world as World);
     world.registerSystem(selectionSystem);
 
     const propertyInspectorSystem = new PropertyInspectorSystem(propertyInspectorUIManager, world as World, studio, pluginManager, selectionSystem);
     world.registerSystem(propertyInspectorSystem);
-    
+
     // Store graphics manager for later use
     (window as any).graphicsManager = graphicsManager;
-    
+
     // Create viewport toolbar
     const viewportToolbar = new ViewportToolbar({
       graphicsManager: graphicsManager,
     });
     (window as any).viewportToolbar = viewportToolbar;
-    
+
     // Expose for debugging
     (window as any).renderOrchestrator = renderOrchestrator;
-    
+
   } catch (error) {
     Logger.getInstance().error("Error during system registration:", error);
     throw error;

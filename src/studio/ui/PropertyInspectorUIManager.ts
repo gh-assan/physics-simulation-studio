@@ -96,7 +96,7 @@ export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
 
     for (const panel of parameterPanels) {
       console.log(`[PropertyInspectorUIManager] Registering panel for component type: ${panel.componentType}`);
-      
+
       // Register controls with UIManager as before
       panel.registerControls(this.uiManager as UIManager);
       console.log(`[PropertyInspectorUIManager] Controls registered for ${panel.componentType}`);

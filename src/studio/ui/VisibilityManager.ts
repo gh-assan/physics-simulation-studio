@@ -60,7 +60,7 @@ export class VisibilityManager {
     metadata?: PanelRegistration['metadata']
   ): boolean {
     console.log(`[VisibilityManager] registerPanel called:`, { panelId, element, container, type });
-    
+
     if (this.panels.has(panelId)) {
       console.warn(`Panel with ID '${panelId}' is already registered`);
       return false;
@@ -392,30 +392,30 @@ export class VisibilityManager {
     metadata?: { pluginName?: string; componentType?: string; priority?: number }
   ): boolean {
     console.log(`[VisibilityManager] registerPluginPanel called:`, { panelId, parameterPanel, container, metadata });
-    
+
     // Get the panel element - may need to be created or found
     const element = this.getOrCreatePanelElement(panelId, parameterPanel);
     console.log(`[VisibilityManager] Got panel element:`, element);
-    
+
     const success = this.registerPanel(panelId, element, container, 'plugin', {
       ...metadata,
       parameterPanel
     });
-    
+
     console.log(`[VisibilityManager] registerPanel returned:`, success);
-    
+
     // Ensure plugin panels are visible by default
     if (success) {
       console.log(`[VisibilityManager] Showing panel ${panelId}`);
       this.showPanel(panelId);
-      
+
       // Force the element to be visible with inline styles as a debug measure
       element.style.display = 'block';
       element.style.visibility = 'visible';
       element.style.opacity = '1';
       console.log(`[VisibilityManager] Forced visibility styles on element`);
     }
-    
+
     return success;
   }
 
@@ -426,7 +426,7 @@ export class VisibilityManager {
    */
   private getOrCreatePanelElement(panelId: string, parameterPanel: any): HTMLElement {
     console.log(`[VisibilityManager] getOrCreatePanelElement called for ${panelId}`, parameterPanel);
-    
+
     // If the parameter panel has an element, use it
     if (parameterPanel.element) {
       console.log(`[VisibilityManager] Using parameterPanel.element`);
@@ -437,7 +437,7 @@ export class VisibilityManager {
     // The componentType is used as the folder title in UIManager.registerComponentControls
     if (parameterPanel.componentType) {
       console.log(`[VisibilityManager] Looking for component type: ${parameterPanel.componentType}`);
-      
+
       // Look for existing Tweakpane folder with this component type
       const existingFolder = document.querySelector(`[data-tp-folder-title="${parameterPanel.componentType}"]`);
       if (existingFolder) {
@@ -456,13 +456,13 @@ export class VisibilityManager {
           return element.parentElement as HTMLElement;
         }
       }
-      
+
       // Also try looking for the panel title that was created by createPanel
       // FlagParameterPanel creates a panel with title 'Flag Simulation Settings'
       const panelTitleElements = document.querySelectorAll('.tp-fldv_t');
       for (let i = 0; i < panelTitleElements.length; i++) {
         const element = panelTitleElements[i];
-        if (element.textContent?.includes('Flag Simulation Settings') || 
+        if (element.textContent?.includes('Flag Simulation Settings') ||
             element.textContent?.includes('Water Droplet Settings') ||
             element.textContent?.includes('Water Body Settings')) {
           console.log(`[VisibilityManager] Found panel by title: "${element.textContent}"`);
