@@ -38,9 +38,7 @@ export class RenderOrchestrator extends System {
    */
   public unregisterRenderer(rendererId: string): void {
     const renderer = this.renderers.get(rendererId);
-    if (renderer && renderer.dispose) {
-      renderer.dispose();
-    }
+    renderer?.dispose?.();
     this.renderers.delete(rendererId);
   }
 

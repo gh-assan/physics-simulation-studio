@@ -231,13 +231,13 @@ export class RenderSystem extends System {
   }
 
   private getOrCreateMesh(world: World, entityId: number, renderable: RenderableComponent): THREE.Mesh {
-    let mesh = this.meshes.get(entityId);
-    if (mesh) return mesh;
+    const existingMesh = this.meshes.get(entityId);
+    if (existingMesh) return existingMesh;
 
     const geometryType = renderable.geometry as "box" | "sphere" | "cylinder" | "cone" | "plane";
     const geometry = createGeometry(geometryType);
     const material = new THREE.MeshBasicMaterial({ color: renderable.color });
-    mesh = new THREE.Mesh(geometry, material);
+    const mesh = new THREE.Mesh(geometry, material);
 
     // Scale mesh by radius if CelestialBodyComponent is present
     const celestialBody = world.componentManager.getComponent(entityId, 'CelestialBodyComponent') as any;

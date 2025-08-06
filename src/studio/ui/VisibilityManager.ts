@@ -462,8 +462,7 @@ export class VisibilityManager {
       // Also try looking by the component type in the DOM
       const folderElements = document.querySelectorAll('.tp-fldv_t');
       console.log(`[VisibilityManager] Found ${folderElements.length} tp-fldv_t elements`);
-      for (let i = 0; i < folderElements.length; i++) {
-        const element = folderElements[i];
+      for (const [i, element] of Array.from(folderElements).entries()) {
         console.log(`[VisibilityManager] Checking element ${i}: "${element.textContent}"`);
         if (element.textContent?.includes(parameterPanel.componentType)) {
           console.log(`[VisibilityManager] Found matching element by text content`);
@@ -501,8 +500,7 @@ export class VisibilityManager {
     ];
 
     const panelTitleElements = document.querySelectorAll('.tp-fldv_t');
-    for (let i = 0; i < panelTitleElements.length; i++) {
-      const element = panelTitleElements[i];
+    for (const element of Array.from(panelTitleElements)) {
       const textContent = element.textContent || '';
 
       for (const title of knownTitles) {

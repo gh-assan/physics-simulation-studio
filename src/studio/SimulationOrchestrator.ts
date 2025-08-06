@@ -25,7 +25,7 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
             await this.pluginManager.activatePlugin(pluginName, this.studio);
             Logger.getInstance().log(`Loaded simulation: ${pluginName}`);
             const activePlugin = this.pluginManager.getPlugin(pluginName);
-            if (activePlugin && activePlugin.initializeEntities) {
+            if (activePlugin?.initializeEntities) {
                 activePlugin.initializeEntities(this.world);
                 this.world.update(0);
                 this.world.systemManager.updateAll(this.world, 0);
@@ -54,7 +54,7 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
     }
 
     private _deactivateCurrentSimulation(activePluginName: string): void {
-        if (!activePluginName || activePluginName === "") {
+        if (!activePluginName) {
             throw new Error("Cannot deactivate simulation: plugin name is required");
         }
         // Deactivate plugin (calls unregister internally)

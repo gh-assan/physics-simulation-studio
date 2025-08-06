@@ -172,10 +172,8 @@ export class UIManager implements IUIManager {
   // Utility: remove a specific component's controls
   public removeComponentControls(componentName: string): void {
     const folder = this.folders.get(componentName);
-    if (folder) {
-      folder.dispose();
-      this.folders.delete(componentName);
-    }
+    folder?.dispose();
+    this.folders.delete(componentName);
   }
 
   // Future extensibility: allow switching UI frameworks

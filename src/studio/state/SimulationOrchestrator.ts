@@ -76,14 +76,9 @@ export class SimulationOrchestrator {
     await this.pluginManager.activatePlugin(pluginName, this.studio);
     Logger.getInstance().log(`Loaded simulation: ${pluginName}`);
     const activePlugin = this.pluginManager.getPlugin(pluginName);
-    if (activePlugin && activePlugin.initializeEntities) {
-      activePlugin.initializeEntities(this.world);
-      this.world.update(0);
-      if (this.renderSystem) {
-        this.renderSystem.update(this.world as World, 0);
-      }
-
-      this.selectedSimulation.setSimulation(pluginName);
-    }
+    activePlugin?.initializeEntities?.(this.world);
+    this.world.update(0);
+    this.renderSystem?.update(this.world as World, 0);
+    this.selectedSimulation.setSimulation(pluginName);
   }
 }

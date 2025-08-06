@@ -30,11 +30,9 @@ export class ComponentTypeRegistry {
     // For unknown types, try to infer from component type naming convention
     // e.g., "MyPluginComponent" -> "my-plugin"
     const match = componentType.match(/^(\w+?)(?:Component|Panel)?$/);
-    if (match) {
-      return match[1].toLowerCase().replace(/([A-Z])/g, '-$1').replace(/^-/, '');
-    }
-
-    return 'unknown';
+    return match
+      ? match[1].toLowerCase().replace(/([A-Z])/g, '-$1').replace(/^-/, '')
+      : 'unknown';
   }
 
   /**
