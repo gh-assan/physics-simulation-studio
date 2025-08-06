@@ -23,7 +23,6 @@ import { StateManager } from "./state/StateManager";
 import { Studio } from "./Studio";
 import { IUIManager } from "./IUIManager";
 import { UIManager } from "./uiManager";
-import { RenderSystem } from "./systems/RenderSystem";
 import { PropertyInspectorSystem } from "./systems/PropertyInspectorSystem";
 import { ComponentPropertyRegistry } from "./utils/ComponentPropertyRegistry";
 import { FlagComponent } from "../plugins/flag-simulation/FlagComponent";
@@ -32,6 +31,9 @@ import { IPluginContext } from "./IPluginContext";
 import { ThreeGraphicsManager } from "./graphics/ThreeGraphicsManager";
 import { VisibilityManager } from "./ui/VisibilityManager";
 import { SystemDiagnostics } from "./utils/SystemDiagnostics";
+import { RenderOrchestrator } from "./rendering/RenderOrchestrator";
+import { FlagRenderer } from "./rendering/FlagRenderer";
+import { VisibilityOrchestrator } from "./orchestration/VisibilityOrchestrator";
 
 // Import styles
 import "./styles/studio.css";
@@ -59,12 +61,10 @@ function setupCoreSystems(): { world: World; pluginManager: PluginManager; state
   (window as any).studio = studio;
   (window as any).sceneSerializer = sceneSerializer;
 
-  Logger.getInstance().log("Core systems initialized."); // Consolidated log
-
   return { world, pluginManager, stateManager, studio };
 }
 
-function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager): { uiManager: UIManager; propertyInspectorUIManager: PropertyInspectorUIManager } {
+function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager): { uiManager: UIManager; propertyInspectorUIManager: PropertyInspectorUIManager; visibilityOrchestrator: VisibilityOrchestrator } {
   // Initialize core UI and ensure left panel exists
   const visibilityManager = new VisibilityManager();
   visibilityManager.initializeCoreUI();
@@ -80,10 +80,19 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
   const uiManager = new UIManager(pane);
   const propertyInspectorUIManager = new PropertyInspectorUIManager(uiManager, visibilityManager);
 
+  // Create a placeholder render orchestrator for now (will be replaced in registerComponentsAndSystems)
+  const placeholderGraphicsManager = new ThreeGraphicsManager();
+  const renderOrchestrator = new RenderOrchestrator(placeholderGraphicsManager);
+  
+  // Create centralized visibility orchestrator
+  const visibilityOrchestrator = new VisibilityOrchestrator(visibilityManager, renderOrchestrator);
+  visibilityOrchestrator.initialize();
+
   // Expose for debugging
   (window as any).uiManager = uiManager;
   (window as any).propertyInspectorUIManager = propertyInspectorUIManager;
   (window as any).visibilityManager = visibilityManager;
+  (window as any).visibilityOrchestrator = visibilityOrchestrator;
 
   const globalControlsFolder = pane.addFolder({ title: "Global Controls" });
   globalControlsFolder.addButton({ title: "Play" }).on("click", () => {
@@ -99,8 +108,8 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
     studio.reset();
   });
 
-  // Register Global Controls panel with VisibilityManager
-  visibilityManager.registerGlobalPanel(
+  // Register Global Controls panel with VisibilityOrchestrator
+  visibilityOrchestrator.getVisibilityManager().registerGlobalPanel(
     'global-controls',
     globalControlsFolder,
     leftPanel,
@@ -109,8 +118,8 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
 
   const simulationSelectionFolder = pane.addFolder({ title: "Simulations" });
 
-  // Register Simulations panel with VisibilityManager
-  visibilityManager.registerGlobalPanel(
+  // Register Simulations panel with VisibilityOrchestrator
+  visibilityOrchestrator.getVisibilityManager().registerGlobalPanel(
     'simulation-selector',
     simulationSelectionFolder,
     leftPanel,
@@ -145,14 +154,11 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
   if (typeof (pluginManager as any).on === "function") {
     (pluginManager as any).on("plugin:registered", updateSimulationSelector);
   }
-  Logger.getInstance().log("UI setup completed."); // Consolidated log
 
-  return { uiManager, propertyInspectorUIManager };
+  return { uiManager, propertyInspectorUIManager, visibilityOrchestrator };
 }
 
 function registerComponentsAndSystems(world: World, studio: Studio, propertyInspectorUIManager: PropertyInspectorUIManager, pluginManager: PluginManager) {
-  Logger.getInstance().log("[main.ts] registerComponentsAndSystems function called");
-  
   // Register Component Properties
   ComponentPropertyRegistry.getInstance().registerComponentProperties(
     (FlagComponent as any).type || "FlagComponent",
@@ -164,18 +170,12 @@ function registerComponentsAndSystems(world: World, studio: Studio, propertyInsp
   );
 
   // Register Core Components
-  // Ensure static 'type' property is present for each component
-  Logger.getInstance().log("[main.ts] Registering core components...");
   world.registerComponent((PositionComponent as any).type ? PositionComponent : class extends PositionComponent { static type = "PositionComponent"; });
   world.registerComponent((RenderableComponent as any).type ? RenderableComponent : class extends RenderableComponent { static type = "RenderableComponent"; });
   world.registerComponent((SelectableComponent as any).type ? SelectableComponent : class extends SelectableComponent { static type = "SelectableComponent"; });
   world.registerComponent((RotationComponent as any).type ? RotationComponent : class extends RotationComponent { static type = "RotationComponent"; });
-  Logger.getInstance().log("[main.ts] Core components registered, now registering systems...");
 
-  // Register Systems
-  Logger.getInstance().log("[main.ts] Starting system registration...");
-  
-  let renderSystem: RenderSystem;
+  // Register Systems with Centralized Orchestration
   try {
     // Create graphics manager and initialize canvas
     const graphicsManager = new ThreeGraphicsManager();
@@ -187,44 +187,43 @@ function registerComponentsAndSystems(world: World, studio: Studio, propertyInsp
     }
     graphicsManager.initialize(mainContent);
 
-    // Register core RenderSystem (this provides the canvas and basic rendering)
-    Logger.getInstance().log("[main.ts] Creating RenderSystem...");
-    renderSystem = new RenderSystem(graphicsManager, world);
-    Logger.getInstance().log("[main.ts] Registering RenderSystem...");
-    world.registerSystem(renderSystem);
+    // Create centralized render orchestrator
+    const renderOrchestrator = new RenderOrchestrator(graphicsManager);
     
-    Logger.getInstance().log("[main.ts] Creating SelectionSystem...");
+    // Register the flag renderer with the orchestrator
+    const flagRenderer = new FlagRenderer(graphicsManager);
+    renderOrchestrator.registerRenderer("flag", flagRenderer);
+    
+    // Register the render orchestrator as a system
+    world.registerSystem(renderOrchestrator);
+    
     const selectionSystem = new SelectionSystem(studio, world as World);
-    Logger.getInstance().log("[main.ts] Registering SelectionSystem...");
     world.registerSystem(selectionSystem);
 
-    Logger.getInstance().log("[main.ts] Creating PropertyInspectorSystem...");
     const propertyInspectorSystem = new PropertyInspectorSystem(propertyInspectorUIManager, world as World, studio, pluginManager, selectionSystem);
-    Logger.getInstance().log("[main.ts] Registering PropertyInspectorSystem...");
     world.registerSystem(propertyInspectorSystem);
     
-    Logger.getInstance().log("[main.ts] System registration completed.");
-    studio.setRenderSystem(renderSystem);
+    // Store graphics manager for later use
+    (window as any).graphicsManager = graphicsManager;
+    
+    // Create viewport toolbar
+    const viewportToolbar = new ViewportToolbar({
+      graphicsManager: graphicsManager,
+    });
+    (window as any).viewportToolbar = viewportToolbar;
+    
+    // Expose for debugging
+    (window as any).renderOrchestrator = renderOrchestrator;
+    
   } catch (error) {
-    Logger.getInstance().error("[main.ts] Error during system registration:", error);
+    Logger.getInstance().error("Error during system registration:", error);
     throw error;
   }
-
-  // Note: RenderSystem provides the canvas, plugin systems add to it
-  Logger.getInstance().log("[main.ts] Core systems registered - RenderSystem provides canvas, plugins add content");
-
-  // Create viewport toolbar
-  const viewportToolbar = new ViewportToolbar({
-    graphicsManager: renderSystem.getGraphicsManager() as ThreeGraphicsManager,
-  });
-  (window as any).viewportToolbar = viewportToolbar;
 }
 
 function registerPlugins(pluginManager: PluginManager) {
   const flagPlugin = new FlagSimulationPlugin();
-  Logger.getInstance().log("Registering plugin:", flagPlugin.getName());
   pluginManager.registerPlugin(flagPlugin);
-  Logger.getInstance().log("Available plugins after registration:", pluginManager.getAvailablePluginNames());
 }
 
 function startApplication(studio: Studio) {
@@ -242,55 +241,29 @@ function startApplication(studio: Studio) {
 async function main() {
   // Enable logging for debugging
   Logger.getInstance().enable();
-  Logger.getInstance().log("=== MAIN FUNCTION STARTED ===");
   Logger.getInstance().log("Initializing Physics Simulation Studio...");
 
   try {
-    Logger.getInstance().log("[main.ts] Starting setupCoreSystems...");
     const { world, pluginManager, stateManager, studio } = setupCoreSystems();
-    Logger.getInstance().log("[main.ts] setupCoreSystems completed");
-
-    Logger.getInstance().log("[main.ts] Starting setupUI...");
-    const { uiManager, propertyInspectorUIManager } = setupUI(studio, stateManager, pluginManager);
-    Logger.getInstance().log("[main.ts] setupUI completed");
-
-    Logger.getInstance().log("[main.ts] Starting registerComponentsAndSystems...");
+    const { uiManager, propertyInspectorUIManager, visibilityOrchestrator } = setupUI(studio, stateManager, pluginManager);
     registerComponentsAndSystems(world as World, studio, propertyInspectorUIManager, pluginManager as PluginManager);
-    Logger.getInstance().log("[main.ts] registerComponentsAndSystems completed");
-
-    Logger.getInstance().log("[main.ts] Starting registerPlugins...");
     registerPlugins(pluginManager);
-    Logger.getInstance().log("[main.ts] registerPlugins completed");
 
     // Load Initial Simulation - this should NOT clear systems
     const defaultSimulationName = studio.getAvailableSimulationNames()[0] || null;
     if (defaultSimulationName) {
-      Logger.getInstance().log(`Loading default simulation: ${defaultSimulationName}`);
       await studio.loadSimulation(defaultSimulationName);
-      Logger.getInstance().log("Simulation loaded successfully");
-    } else {
-      Logger.getInstance().warn("No default simulation found to load.");
-    }
-
-    // Set render system after systems are registered
-    const renderSystem = (world as World).systemManager.getSystem(RenderSystem);
-    if (renderSystem) {
-      studio.setRenderSystem(renderSystem);
-      Logger.getInstance().log("RenderSystem set on studio");
-    } else {
-      Logger.getInstance().warn("RenderSystem not found after registration");
     }
 
     // Run system diagnostics to ensure everything is working
     const diagnostics = new SystemDiagnostics(world as World);
     diagnostics.diagnoseAndFix();
-    Logger.getInstance().log("System diagnostics report:", diagnostics.getReport());
 
     startApplication(studio);
 
     Logger.getInstance().log("Physics Simulation Studio Initialized");
   } catch (error) {
-    console.error("[main.ts] Error during initialization:", error);
+    console.error("Error during initialization:", error);
     Logger.getInstance().error("Failed to initialize the studio:", error);
     throw error;
   }

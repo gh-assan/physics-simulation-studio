@@ -23,7 +23,6 @@ export class RenderOrchestrator extends System {
   constructor(graphicsManager: ThreeGraphicsManager) {
     super();
     this.graphicsManager = graphicsManager;
-    Logger.getInstance().log("[RenderOrchestrator] Initialized");
   }
 
   /**
@@ -31,7 +30,6 @@ export class RenderOrchestrator extends System {
    */
   public registerRenderer(rendererId: string, renderer: IRenderer): void {
     this.renderers.set(rendererId, renderer);
-    Logger.getInstance().log(`[RenderOrchestrator] Registered renderer: ${rendererId}`);
   }
 
   /**
@@ -43,15 +41,12 @@ export class RenderOrchestrator extends System {
       renderer.dispose();
     }
     this.renderers.delete(rendererId);
-    Logger.getInstance().log(`[RenderOrchestrator] Unregistered renderer: ${rendererId}`);
   }
 
   /**
    * Clear all non-persistent objects from the scene
    */
   public clearScene(): void {
-    Logger.getInstance().log("[RenderOrchestrator] Clearing scene...");
-    
     // Dispose all renderer-managed objects
     for (const [rendererId, renderer] of this.renderers) {
       if (renderer.clear) {
@@ -66,8 +61,6 @@ export class RenderOrchestrator extends System {
 
     // Remove non-persistent objects from Three.js scene
     this.clearThreeScene();
-    
-    Logger.getInstance().log("[RenderOrchestrator] Scene cleared");
   }
 
   /**
@@ -190,8 +183,6 @@ export class RenderOrchestrator extends System {
    * Dispose the orchestrator and all renderers
    */
   public dispose(): void {
-    Logger.getInstance().log("[RenderOrchestrator] Disposing...");
-    
     // Dispose all renderers
     for (const [rendererId, renderer] of this.renderers) {
       if (renderer.dispose) {
@@ -201,8 +192,6 @@ export class RenderOrchestrator extends System {
     
     this.renderers.clear();
     this.clearScene();
-    
-    Logger.getInstance().log("[RenderOrchestrator] Disposed");
   }
 }
 
