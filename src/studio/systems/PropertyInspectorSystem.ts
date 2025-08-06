@@ -75,7 +75,6 @@ export class PropertyInspectorSystem extends System {
       this.propertyInspectorUIManager.clearInspectorControls(); // Clear previous inspector content
 
       if (this.selectionSystem.hasSelection()) {
-        console.log(`[PropertyInspectorSystem] Updating inspector for entity ${currentSelectedEntity}`);
         this.updateInspectorForEntity(world, currentSelectedEntity);
       } else {
         // If no entity is selected, display the parameter panels from the active plugin
