@@ -10,6 +10,7 @@ import { WaterRenderer } from "../../plugins/water-simulation/WaterRenderer"; //
 import { SelectableComponent } from "../../core/components/SelectableComponent"; // Import SelectableComponent
 import { createGeometry, disposeThreeJsObject } from "../utils/ThreeJsUtils";
 import { ThreeGraphicsManager } from "../graphics/ThreeGraphicsManager";
+import { MaterialDisposer } from "../utils/MaterialDisposer";
 
 import { WaterDropletComponent } from "../../plugins/water-simulation/WaterComponents"; // Import WaterDropletComponent
 
@@ -46,8 +47,7 @@ export class RenderSystem extends System {
     if (mesh) {
       this.graphicsManager.getScene().remove(mesh);
       mesh.geometry.dispose();
-      if (mesh.material instanceof THREE.Material) mesh.material.dispose();
-      else if (Array.isArray(mesh.material)) mesh.material.forEach((m: any) => m.dispose());
+      MaterialDisposer.dispose(mesh.material);
       this.meshes.delete(entityId);
     }
   }
@@ -179,11 +179,7 @@ export class RenderSystem extends System {
     this.meshes.forEach((mesh) => {
       this.graphicsManager.getScene().remove(mesh);
       mesh.geometry.dispose();
-      if (mesh.material instanceof THREE.Material) {
-        mesh.material.dispose();
-      } else if (Array.isArray(mesh.material)) {
-        mesh.material.forEach((material) => material.dispose());
-      }
+      MaterialDisposer.dispose(mesh.material);
     });
     this.meshes.clear();
 

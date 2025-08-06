@@ -9,6 +9,7 @@ import { ThreeGraphicsManager } from "../../studio/graphics/ThreeGraphicsManager
 import { FlagComponent } from "./FlagComponent";
 import { PoleComponent } from "./PoleComponent";
 import { createFlagMesh, createPoleMesh } from "./FlagRenderer";
+import { MaterialDisposer } from "../../studio/utils/MaterialDisposer";
 
 export class FlagRenderSystem extends System implements IRenderable {
   private graphicsManager: ThreeGraphicsManager;
@@ -164,16 +165,14 @@ export class FlagRenderSystem extends System implements IRenderable {
     if (mesh) {
       this.graphicsManager.getScene().remove(mesh);
       mesh.geometry.dispose();
-      if (mesh.material instanceof THREE.Material) mesh.material.dispose();
-      else if (Array.isArray(mesh.material)) mesh.material.forEach((m: any) => m.dispose());
+      MaterialDisposer.dispose(mesh.material);
       this.meshes.delete(entityId);
     }
     const poleMesh = this.poleMeshes.get(entityId);
     if (poleMesh) {
       this.graphicsManager.getScene().remove(poleMesh);
       poleMesh.geometry.dispose();
-      if (poleMesh.material instanceof THREE.Material) poleMesh.material.dispose();
-      else if (Array.isArray(poleMesh.material)) poleMesh.material.forEach((m: any) => m.dispose());
+      MaterialDisposer.dispose(poleMesh.material);
       this.poleMeshes.delete(entityId);
     }
   }
@@ -182,22 +181,14 @@ export class FlagRenderSystem extends System implements IRenderable {
     this.meshes.forEach((mesh) => {
       this.graphicsManager.getScene().remove(mesh);
       mesh.geometry.dispose();
-      if (mesh.material instanceof THREE.Material) {
-        mesh.material.dispose();
-      } else if (Array.isArray(mesh.material)) {
-        mesh.material.forEach((material) => material.dispose());
-      }
+      MaterialDisposer.dispose(mesh.material);
     });
     this.meshes.clear();
 
     this.poleMeshes.forEach((mesh) => {
       this.graphicsManager.getScene().remove(mesh);
       mesh.geometry.dispose();
-      if (mesh.material instanceof THREE.Material) {
-        mesh.material.dispose();
-      } else if (Array.isArray(mesh.material)) {
-        mesh.material.forEach((material) => material.dispose());
-      }
+      MaterialDisposer.dispose(mesh.material);
     });
     this.poleMeshes.clear();
   }

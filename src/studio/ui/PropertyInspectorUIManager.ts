@@ -6,6 +6,7 @@ import { ParameterPanelComponent } from "../../core/components/ParameterPanelCom
 import { Logger } from "../../core/utils/Logger";
 import { IPropertyInspectorUIManager } from "./IPropertyInspectorUIManager";
 import { VisibilityManager } from "./VisibilityManager";
+import { ComponentTypeRegistry } from "../utils/ComponentTypeRegistry";
 
 /**
  * Manages the rendering of properties in the Property Inspector UI.
@@ -25,10 +26,12 @@ export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
   }
   private uiManager: IUIManager;
   private visibilityManager?: VisibilityManager;
+  private componentTypeRegistry: ComponentTypeRegistry;
 
   constructor(uiManager: IUIManager, visibilityManager?: VisibilityManager) {
     this.uiManager = uiManager;
     this.visibilityManager = visibilityManager;
+    this.componentTypeRegistry = new ComponentTypeRegistry();
   }
 
   /**
@@ -151,26 +154,7 @@ export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
    * @returns The plugin name or 'unknown'
    */
   private extractPluginNameFromPanel(panel: ParameterPanelComponent): string {
-    const componentType = panel.componentType;
-
-    // Try to extract plugin name from component type patterns
-    // This is a fallback - ideally panels should include plugin metadata
-    if (componentType.includes('Flag') || componentType.includes('Pole')) {
-      return 'flag-simulation';
-    } else if (componentType.includes('Water')) {
-      return 'water-simulation';
-    } else if (componentType.includes('Solar') || componentType.includes('Celestial')) {
-      return 'solar-system';
-    }
-
-    // For unknown types, try to infer from component type naming convention
-    // e.g., "MyPluginComponent" -> "my-plugin"
-    const match = componentType.match(/^(\w+?)(?:Component|Panel)?$/);
-    if (match) {
-      return match[1].toLowerCase().replace(/([A-Z])/g, '-$1').replace(/^-/, '');
-    }
-
-    return 'unknown';
+    return this.componentTypeRegistry.getPluginName(panel.componentType);
   }
 
   /**
@@ -179,16 +163,7 @@ export class PropertyInspectorUIManager implements IPropertyInspectorUIManager {
    * @returns Priority number (lower = higher priority)
    */
   private calculatePanelPriority(panel: ParameterPanelComponent): number {
-    const componentType = panel.componentType;
-
-    // Core components get higher priority
-    if (componentType.includes('Flag') || componentType.includes('Water')) {
-      return 10;
-    } else if (componentType.includes('Pole') || componentType.includes('Body')) {
-      return 20;
-    }
-
-    return 30; // Default priority
+    return this.componentTypeRegistry.getPriority(panel.componentType);
   }
 
   /**

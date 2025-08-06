@@ -40,13 +40,14 @@ export class ToolbarButton {
       // Check if the icon is an SVG string or a URL
       if (options.icon.trim().startsWith("<svg")) {
         this.iconElement.innerHTML = options.icon;
-      } else {
-        const img = document.createElement("img");
-        img.src = options.icon;
-        img.alt = options.label || "";
-        this.iconElement.appendChild(img);
+        this.element.appendChild(this.iconElement);
+        return;
       }
 
+      const img = document.createElement("img");
+      img.src = options.icon;
+      img.alt = options.label || "";
+      this.iconElement.appendChild(img);
       this.element.appendChild(this.iconElement);
     }
 
@@ -138,12 +139,7 @@ export class ToolbarButton {
    */
   public setActive(active: boolean): void {
     this._active = active;
-
-    if (active) {
-      this.element.classList.add("active");
-    } else {
-      this.element.classList.remove("active");
-    }
+    this.element.classList.toggle("active", active);
   }
 
   /**
@@ -162,10 +158,11 @@ export class ToolbarButton {
     if (disabled) {
       this.element.classList.add("disabled");
       this.element.removeEventListener("click", this._handleClick.bind(this));
-    } else {
-      this.element.classList.remove("disabled");
-      this.element.addEventListener("click", this._handleClick.bind(this));
+      return;
     }
+
+    this.element.classList.remove("disabled");
+    this.element.addEventListener("click", this._handleClick.bind(this));
   }
 
   /**
@@ -185,12 +182,13 @@ export class ToolbarButton {
     if (options.icon && this.iconElement) {
       if (options.icon.trim().startsWith("<svg")) {
         this.iconElement.innerHTML = options.icon;
-      } else {
-        const img = this.iconElement.querySelector("img");
-        if (img) {
-          img.src = options.icon;
-          img.alt = this.options.label || "";
-        }
+        return;
+      }
+
+      const img = this.iconElement.querySelector("img");
+      if (img) {
+        img.src = options.icon;
+        img.alt = this.options.label || "";
       }
     }
 

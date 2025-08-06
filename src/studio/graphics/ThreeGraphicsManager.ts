@@ -7,6 +7,7 @@ import { OrbitControlsManager } from "./OrbitControlsManager";
 import { WindowResizeHandler } from "./WindowResizeHandler";
 import { Logger } from "../../core/utils/Logger";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { MaterialDisposer } from "../utils/MaterialDisposer";
 
 /**
  * Manages the Three.js graphics rendering, including scene, camera, and controls.
@@ -203,13 +204,7 @@ export class ThreeGraphicsManager implements IGraphicsManager {
         (obj as any).geometry.dispose();
       }
       if ((obj as any).material) {
-        if (Array.isArray((obj as any).material)) {
-          (obj as any).material.forEach((mat: any) => {
-            if (mat && typeof mat.dispose === 'function') mat.dispose();
-          });
-        } else if (typeof (obj as any).material.dispose === 'function') {
-          (obj as any).material.dispose();
-        }
+        MaterialDisposer.dispose((obj as any).material);
       }
     } catch (e) {
       Logger.getInstance().error('Error disposing object:', e);
