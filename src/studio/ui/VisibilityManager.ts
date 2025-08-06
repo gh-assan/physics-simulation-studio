@@ -8,14 +8,26 @@ export interface PanelRegistration {
   element: HTMLElement;
   container: HTMLElement;
   visible: boolean;
+  type: 'global' | 'plugin' | 'system';
+  metadata?: {
+    pluginName?: string;
+    componentType?: string;
+    priority?: number;
+    isGlobalControl?: boolean;
+    isSimulationSelector?: boolean;
+    tweakpaneFolder?: any; // Tweakpane FolderApi
+    parameterPanel?: any; // ParameterPanelComponent instance
+  };
 }
 
-export type VisibilityEventType = "visibilityChanged" | "panelRegistered" | "panelUnregistered";
+export type VisibilityEventType = "visibilityChanged" | "panelRegistered" | "panelUnregistered" | "globalPanelToggled" | "pluginPanelToggled";
 
 export interface VisibilityEventData {
   panelId: string;
   visible: boolean;
   element: HTMLElement;
+  type?: 'global' | 'plugin' | 'system';
+  metadata?: any;
 }
 
 /**
@@ -36,9 +48,19 @@ export class VisibilityManager {
    * @param panelId Unique identifier for the panel
    * @param element The panel element
    * @param container The container to mount the panel in
+   * @param type The type of panel (global, plugin, or system)
+   * @param metadata Optional metadata for the panel
    * @returns true if registration successful, false if panel already exists
    */
-  public registerPanel(panelId: string, element: HTMLElement, container: HTMLElement): boolean {
+  public registerPanel(
+    panelId: string,
+    element: HTMLElement,
+    container: HTMLElement,
+    type: 'global' | 'plugin' | 'system' = 'system',
+    metadata?: PanelRegistration['metadata']
+  ): boolean {
+    console.log(`[VisibilityManager] registerPanel called:`, { panelId, element, container, type });
+    
     if (this.panels.has(panelId)) {
       console.warn(`Panel with ID '${panelId}' is already registered`);
       return false;
@@ -46,15 +68,22 @@ export class VisibilityManager {
 
     // Mount the element to the container if not already mounted
     if (!container.contains(element)) {
+      console.log(`[VisibilityManager] Appending element to container`);
       container.appendChild(element);
+    } else {
+      console.log(`[VisibilityManager] Element already in container`);
     }
 
     // Register the panel
     this.panels.set(panelId, {
       element,
       container,
-      visible: true // Default to visible
+      visible: true, // Default to visible
+      type,
+      metadata
     });
+
+    console.log(`[VisibilityManager] Panel registered. Total panels:`, this.panels.size);
 
     // Apply initial responsive layout
     this.applyResponsiveLayout(element);
@@ -63,7 +92,9 @@ export class VisibilityManager {
     this.emit("panelRegistered", {
       panelId,
       visible: true,
-      element
+      element,
+      type,
+      metadata
     });
 
     return true;
@@ -86,7 +117,9 @@ export class VisibilityManager {
     this.emit("panelUnregistered", {
       panelId,
       visible: false,
-      element: panel.element
+      element: panel.element,
+      type: panel.type,
+      metadata: panel.metadata
     });
 
     this.panels.delete(panelId);
@@ -109,8 +142,29 @@ export class VisibilityManager {
     this.emit("visibilityChanged", {
       panelId,
       visible: true,
-      element: panel.element
+      element: panel.element,
+      type: panel.type,
+      metadata: panel.metadata
     });
+
+    // Emit specific event based on panel type
+    if (panel.type === 'global') {
+      this.emit("globalPanelToggled", {
+        panelId,
+        visible: true,
+        element: panel.element,
+        type: panel.type,
+        metadata: panel.metadata
+      });
+    } else if (panel.type === 'plugin') {
+      this.emit("pluginPanelToggled", {
+        panelId,
+        visible: true,
+        element: panel.element,
+        type: panel.type,
+        metadata: panel.metadata
+      });
+    }
   }
 
   /**
@@ -130,8 +184,29 @@ export class VisibilityManager {
     this.emit("visibilityChanged", {
       panelId,
       visible: false,
-      element: panel.element
+      element: panel.element,
+      type: panel.type,
+      metadata: panel.metadata
     });
+
+    // Emit specific event based on panel type
+    if (panel.type === 'global') {
+      this.emit("globalPanelToggled", {
+        panelId,
+        visible: false,
+        element: panel.element,
+        type: panel.type,
+        metadata: panel.metadata
+      });
+    } else if (panel.type === 'plugin') {
+      this.emit("pluginPanelToggled", {
+        panelId,
+        visible: false,
+        element: panel.element,
+        type: panel.type,
+        metadata: panel.metadata
+      });
+    }
   }
 
   /**
@@ -281,6 +356,223 @@ export class VisibilityManager {
    */
   public getRegisteredPanelIds(): string[] {
     return Array.from(this.panels.keys());
+  }
+
+  /**
+   * Registers a global panel (Global Controls, Simulations dropdown, etc.)
+   * @param panelId The panel ID
+   * @param tweakpaneFolder The Tweakpane folder instance
+   * @param container The container element
+   * @param metadata Additional metadata
+   */
+  public registerGlobalPanel(
+    panelId: string,
+    tweakpaneFolder: any,
+    container: HTMLElement,
+    metadata?: { isGlobalControl?: boolean; isSimulationSelector?: boolean; priority?: number }
+  ): boolean {
+    const element = tweakpaneFolder.element || tweakpaneFolder.view?.element || container;
+    return this.registerPanel(panelId, element, container, 'global', {
+      ...metadata,
+      tweakpaneFolder
+    });
+  }
+
+  /**
+   * Registers a plugin parameter panel
+   * @param panelId The panel ID
+   * @param parameterPanel The ParameterPanelComponent instance
+   * @param container The container element
+   * @param metadata Additional metadata including plugin info
+   */
+  public registerPluginPanel(
+    panelId: string,
+    parameterPanel: any,
+    container: HTMLElement,
+    metadata?: { pluginName?: string; componentType?: string; priority?: number }
+  ): boolean {
+    console.log(`[VisibilityManager] registerPluginPanel called:`, { panelId, parameterPanel, container, metadata });
+    
+    // Get the panel element - may need to be created or found
+    const element = this.getOrCreatePanelElement(panelId, parameterPanel);
+    console.log(`[VisibilityManager] Got panel element:`, element);
+    
+    const success = this.registerPanel(panelId, element, container, 'plugin', {
+      ...metadata,
+      parameterPanel
+    });
+    
+    console.log(`[VisibilityManager] registerPanel returned:`, success);
+    
+    // Ensure plugin panels are visible by default
+    if (success) {
+      console.log(`[VisibilityManager] Showing panel ${panelId}`);
+      this.showPanel(panelId);
+      
+      // Force the element to be visible with inline styles as a debug measure
+      element.style.display = 'block';
+      element.style.visibility = 'visible';
+      element.style.opacity = '1';
+      console.log(`[VisibilityManager] Forced visibility styles on element`);
+    }
+    
+    return success;
+  }
+
+  /**
+   * Gets or creates a panel element for a parameter panel
+   * @param panelId The panel ID
+   * @param parameterPanel The parameter panel instance
+   */
+  private getOrCreatePanelElement(panelId: string, parameterPanel: any): HTMLElement {
+    console.log(`[VisibilityManager] getOrCreatePanelElement called for ${panelId}`, parameterPanel);
+    
+    // If the parameter panel has an element, use it
+    if (parameterPanel.element) {
+      console.log(`[VisibilityManager] Using parameterPanel.element`);
+      return parameterPanel.element;
+    }
+
+    // Try to find the Tweakpane folder element that was already created
+    // The componentType is used as the folder title in UIManager.registerComponentControls
+    if (parameterPanel.componentType) {
+      console.log(`[VisibilityManager] Looking for component type: ${parameterPanel.componentType}`);
+      
+      // Look for existing Tweakpane folder with this component type
+      const existingFolder = document.querySelector(`[data-tp-folder-title="${parameterPanel.componentType}"]`);
+      if (existingFolder) {
+        console.log(`[VisibilityManager] Found existing folder by data-tp-folder-title`);
+        return existingFolder as HTMLElement;
+      }
+
+      // Also try looking by the component type in the DOM
+      const folderElements = document.querySelectorAll('.tp-fldv_t');
+      console.log(`[VisibilityManager] Found ${folderElements.length} tp-fldv_t elements`);
+      for (let i = 0; i < folderElements.length; i++) {
+        const element = folderElements[i];
+        console.log(`[VisibilityManager] Checking element ${i}: "${element.textContent}"`);
+        if (element.textContent?.includes(parameterPanel.componentType)) {
+          console.log(`[VisibilityManager] Found matching element by text content`);
+          return element.parentElement as HTMLElement;
+        }
+      }
+      
+      // Also try looking for the panel title that was created by createPanel
+      // FlagParameterPanel creates a panel with title 'Flag Simulation Settings'
+      const panelTitleElements = document.querySelectorAll('.tp-fldv_t');
+      for (let i = 0; i < panelTitleElements.length; i++) {
+        const element = panelTitleElements[i];
+        if (element.textContent?.includes('Flag Simulation Settings') || 
+            element.textContent?.includes('Water Droplet Settings') ||
+            element.textContent?.includes('Water Body Settings')) {
+          console.log(`[VisibilityManager] Found panel by title: "${element.textContent}"`);
+          return element.parentElement as HTMLElement;
+        }
+      }
+    }
+
+    console.log(`[VisibilityManager] No existing element found, creating new container`);
+    // If no existing element found, create a container element for the parameter panel
+    const element = document.createElement('div');
+    element.className = 'parameter-panel';
+    element.id = `parameter-panel-${panelId}`;
+    element.setAttribute('data-panel-id', panelId);
+
+    return element;
+  }
+
+  /**
+   * Shows all global panels
+   */
+  public showAllGlobalPanels(): void {
+    for (const [panelId, panel] of this.panels) {
+      if (panel.type === 'global') {
+        this.showPanel(panelId);
+      }
+    }
+  }
+
+  /**
+   * Hides all global panels
+   */
+  public hideAllGlobalPanels(): void {
+    for (const [panelId, panel] of this.panels) {
+      if (panel.type === 'global') {
+        this.hidePanel(panelId);
+      }
+    }
+  }
+
+  /**
+   * Shows all plugin panels
+   */
+  public showAllPluginPanels(): void {
+    for (const [panelId, panel] of this.panels) {
+      if (panel.type === 'plugin') {
+        this.showPanel(panelId);
+      }
+    }
+  }
+
+  /**
+   * Hides all plugin panels
+   */
+  public hideAllPluginPanels(): void {
+    for (const [panelId, panel] of this.panels) {
+      if (panel.type === 'plugin') {
+        this.hidePanel(panelId);
+      }
+    }
+  }
+
+  /**
+   * Gets panels by type
+   * @param type The type of panels to get
+   * @returns Map of panel IDs to panel registrations of the specified type
+   */
+  public getPanelsByType(type: 'global' | 'plugin' | 'system'): Map<string, PanelRegistration> {
+    const result = new Map<string, PanelRegistration>();
+    for (const [panelId, panel] of this.panels) {
+      if (panel.type === type) {
+        result.set(panelId, panel);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Gets panels by plugin name
+   * @param pluginName The plugin name to filter by
+   * @returns Map of panel IDs to panel registrations for the specified plugin
+   */
+  public getPanelsByPlugin(pluginName: string): Map<string, PanelRegistration> {
+    const result = new Map<string, PanelRegistration>();
+    for (const [panelId, panel] of this.panels) {
+      if (panel.metadata?.pluginName === pluginName) {
+        result.set(panelId, panel);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Toggles all panels for a specific plugin
+   * @param pluginName The plugin name
+   * @param visible Whether to show or hide the panels
+   */
+  public togglePluginPanels(pluginName: string, visible?: boolean): void {
+    const pluginPanels = this.getPanelsByPlugin(pluginName);
+    for (const [panelId] of pluginPanels) {
+      if (visible !== undefined) {
+        if (visible) {
+          this.showPanel(panelId);
+        } else {
+          this.hidePanel(panelId);
+        }
+      } else {
+        this.togglePanel(panelId);
+      }
+    }
   }
 
   /**

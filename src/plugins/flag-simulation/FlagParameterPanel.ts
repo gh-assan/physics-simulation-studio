@@ -35,6 +35,8 @@ export class FlagParameterPanel extends ParameterPanelComponent {
    * @param component The component instance to bind controls to
    */
   registerControls(uiManager: IUIManager, component?: IComponent): void {
+    console.log(`[FlagParameterPanel] registerControls called with component:`, component);
+    
     // If a component is provided, ensure it's a FlagComponent
     if (component && !(component instanceof FlagComponent)) {
       Logger.getInstance().error("FlagParameterPanel: provided component is not a FlagComponent");
@@ -44,12 +46,23 @@ export class FlagParameterPanel extends ParameterPanelComponent {
     // If no component is provided, we can't register controls for it.
     // In a future implementation, we could show global simulation settings here.
     if (!component) {
+      console.log(`[FlagParameterPanel] No component provided, creating status panel`);
       // Ensure the panel is visible even if no flag is selected
       const panel = uiManager.createPanel('Flag Simulation Settings');
-      panel.addBlade({
-        view: 'text',
-        value: 'No flag selected. Select a flag to see its properties.',
+      console.log(`[FlagParameterPanel] Created panel:`, panel);
+      
+      // Create a simple object to bind to for displaying the message
+      const messageObject = {
+        message: 'No flag selected. Select a flag to see its properties.'
+      };
+      
+      // Use addBinding to display the message
+      uiManager.addBinding(panel, messageObject, 'message', { 
+        readonly: true,
+        label: 'Status'
       });
+      
+      console.log(`[FlagParameterPanel] Added status message binding`);
       return;
     }
 

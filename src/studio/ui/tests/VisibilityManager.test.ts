@@ -100,7 +100,9 @@ describe("VisibilityManager", () => {
       expect(onVisibilityChange).toHaveBeenCalledWith({
         panelId: "main",
         visible: false,
-        element: mockPanel
+        element: mockPanel,
+        type: "system",
+        metadata: undefined
       });
     });
   });

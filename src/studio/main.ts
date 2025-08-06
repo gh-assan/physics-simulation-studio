@@ -78,7 +78,7 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
   const pane = new Pane({ container: leftPanel });
 
   const uiManager = new UIManager(pane);
-  const propertyInspectorUIManager = new PropertyInspectorUIManager(uiManager);
+  const propertyInspectorUIManager = new PropertyInspectorUIManager(uiManager, visibilityManager);
 
   // Expose for debugging
   (window as any).uiManager = uiManager;
@@ -99,7 +99,23 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
     studio.reset();
   });
 
+  // Register Global Controls panel with VisibilityManager
+  visibilityManager.registerGlobalPanel(
+    'global-controls',
+    globalControlsFolder,
+    leftPanel,
+    { isGlobalControl: true, priority: 1 }
+  );
+
   const simulationSelectionFolder = pane.addFolder({ title: "Simulations" });
+
+  // Register Simulations panel with VisibilityManager
+  visibilityManager.registerGlobalPanel(
+    'simulation-selector',
+    simulationSelectionFolder,
+    leftPanel,
+    { isSimulationSelector: true, priority: 2 }
+  );
 
   function updateSimulationSelector() {
     simulationSelectionFolder.children.forEach((child: any) => child.dispose());
@@ -135,6 +151,8 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
 }
 
 function registerComponentsAndSystems(world: World, studio: Studio, propertyInspectorUIManager: PropertyInspectorUIManager, pluginManager: PluginManager) {
+  Logger.getInstance().log("[main.ts] registerComponentsAndSystems function called");
+  
   // Register Component Properties
   ComponentPropertyRegistry.getInstance().registerComponentProperties(
     (FlagComponent as any).type || "FlagComponent",
@@ -147,31 +165,53 @@ function registerComponentsAndSystems(world: World, studio: Studio, propertyInsp
 
   // Register Core Components
   // Ensure static 'type' property is present for each component
+  Logger.getInstance().log("[main.ts] Registering core components...");
   world.registerComponent((PositionComponent as any).type ? PositionComponent : class extends PositionComponent { static type = "PositionComponent"; });
   world.registerComponent((RenderableComponent as any).type ? RenderableComponent : class extends RenderableComponent { static type = "RenderableComponent"; });
   world.registerComponent((SelectableComponent as any).type ? SelectableComponent : class extends SelectableComponent { static type = "SelectableComponent"; });
   world.registerComponent((RotationComponent as any).type ? RotationComponent : class extends RotationComponent { static type = "RotationComponent"; });
+  Logger.getInstance().log("[main.ts] Core components registered, now registering systems...");
 
   // Register Systems
-  const graphicsManager = new ThreeGraphicsManager();
+  Logger.getInstance().log("[main.ts] Starting system registration...");
   
-  // Initialize graphics manager with the main content container
-  const mainContent = document.getElementById("main-content");
-  if (!mainContent) {
-    throw new Error("Main content container not found");
+  let renderSystem: RenderSystem;
+  try {
+    // Create graphics manager and initialize canvas
+    const graphicsManager = new ThreeGraphicsManager();
+
+    // Initialize graphics manager with the main content container
+    const mainContent = document.getElementById("main-content");
+    if (!mainContent) {
+      throw new Error("Main content container not found");
+    }
+    graphicsManager.initialize(mainContent);
+
+    // Register core RenderSystem (this provides the canvas and basic rendering)
+    Logger.getInstance().log("[main.ts] Creating RenderSystem...");
+    renderSystem = new RenderSystem(graphicsManager, world);
+    Logger.getInstance().log("[main.ts] Registering RenderSystem...");
+    world.registerSystem(renderSystem);
+    
+    Logger.getInstance().log("[main.ts] Creating SelectionSystem...");
+    const selectionSystem = new SelectionSystem(studio, world as World);
+    Logger.getInstance().log("[main.ts] Registering SelectionSystem...");
+    world.registerSystem(selectionSystem);
+
+    Logger.getInstance().log("[main.ts] Creating PropertyInspectorSystem...");
+    const propertyInspectorSystem = new PropertyInspectorSystem(propertyInspectorUIManager, world as World, studio, pluginManager, selectionSystem);
+    Logger.getInstance().log("[main.ts] Registering PropertyInspectorSystem...");
+    world.registerSystem(propertyInspectorSystem);
+    
+    Logger.getInstance().log("[main.ts] System registration completed.");
+    studio.setRenderSystem(renderSystem);
+  } catch (error) {
+    Logger.getInstance().error("[main.ts] Error during system registration:", error);
+    throw error;
   }
-  graphicsManager.initialize(mainContent);
 
-  const renderSystem = new RenderSystem(graphicsManager, world);
-  world.registerSystem(renderSystem);
-
-  const selectionSystem = new SelectionSystem(studio, world as World); // Ensure correct type
-  world.registerSystem(selectionSystem);
-
-  world.registerSystem(
-    new PropertyInspectorSystem(propertyInspectorUIManager, world as World, studio, pluginManager, selectionSystem)
-  );
-  studio.setRenderSystem(renderSystem);
+  // Note: RenderSystem provides the canvas, plugin systems add to it
+  Logger.getInstance().log("[main.ts] Core systems registered - RenderSystem provides canvas, plugins add content");
 
   // Create viewport toolbar
   const viewportToolbar = new ViewportToolbar({
@@ -202,36 +242,58 @@ function startApplication(studio: Studio) {
 async function main() {
   // Enable logging for debugging
   Logger.getInstance().enable();
+  Logger.getInstance().log("=== MAIN FUNCTION STARTED ===");
   Logger.getInstance().log("Initializing Physics Simulation Studio...");
 
-  const { world, pluginManager, stateManager, studio } = setupCoreSystems();
-  const { uiManager, propertyInspectorUIManager } = setupUI(studio, stateManager, pluginManager);
-  registerComponentsAndSystems(world as World, studio, propertyInspectorUIManager, pluginManager as PluginManager);
-  registerPlugins(pluginManager);
+  try {
+    Logger.getInstance().log("[main.ts] Starting setupCoreSystems...");
+    const { world, pluginManager, stateManager, studio } = setupCoreSystems();
+    Logger.getInstance().log("[main.ts] setupCoreSystems completed");
 
-  // Set render system before loading simulation
-  const renderSystem = (world as World).systemManager.getSystem(RenderSystem);
-  if (renderSystem) {
-    studio.setRenderSystem(renderSystem);
+    Logger.getInstance().log("[main.ts] Starting setupUI...");
+    const { uiManager, propertyInspectorUIManager } = setupUI(studio, stateManager, pluginManager);
+    Logger.getInstance().log("[main.ts] setupUI completed");
+
+    Logger.getInstance().log("[main.ts] Starting registerComponentsAndSystems...");
+    registerComponentsAndSystems(world as World, studio, propertyInspectorUIManager, pluginManager as PluginManager);
+    Logger.getInstance().log("[main.ts] registerComponentsAndSystems completed");
+
+    Logger.getInstance().log("[main.ts] Starting registerPlugins...");
+    registerPlugins(pluginManager);
+    Logger.getInstance().log("[main.ts] registerPlugins completed");
+
+    // Load Initial Simulation - this should NOT clear systems
+    const defaultSimulationName = studio.getAvailableSimulationNames()[0] || null;
+    if (defaultSimulationName) {
+      Logger.getInstance().log(`Loading default simulation: ${defaultSimulationName}`);
+      await studio.loadSimulation(defaultSimulationName);
+      Logger.getInstance().log("Simulation loaded successfully");
+    } else {
+      Logger.getInstance().warn("No default simulation found to load.");
+    }
+
+    // Set render system after systems are registered
+    const renderSystem = (world as World).systemManager.getSystem(RenderSystem);
+    if (renderSystem) {
+      studio.setRenderSystem(renderSystem);
+      Logger.getInstance().log("RenderSystem set on studio");
+    } else {
+      Logger.getInstance().warn("RenderSystem not found after registration");
+    }
+
+    // Run system diagnostics to ensure everything is working
+    const diagnostics = new SystemDiagnostics(world as World);
+    diagnostics.diagnoseAndFix();
+    Logger.getInstance().log("System diagnostics report:", diagnostics.getReport());
+
+    startApplication(studio);
+
+    Logger.getInstance().log("Physics Simulation Studio Initialized");
+  } catch (error) {
+    console.error("[main.ts] Error during initialization:", error);
+    Logger.getInstance().error("Failed to initialize the studio:", error);
+    throw error;
   }
-
-  // Load Initial Simulation
-  const defaultSimulationName = studio.getAvailableSimulationNames()[0] || null;
-  if (defaultSimulationName) {
-    Logger.getInstance().log(`Loading default simulation: ${defaultSimulationName}`);
-    await studio.loadSimulation(defaultSimulationName);
-  } else {
-    Logger.getInstance().warn("No default simulation found to load.");
-  }
-
-  // Run system diagnostics to ensure everything is working
-  const diagnostics = new SystemDiagnostics(world as World);
-  diagnostics.diagnoseAndFix();
-  Logger.getInstance().log("System diagnostics report:", diagnostics.getReport());
-
-  startApplication(studio);
-
-  Logger.getInstance().log("Physics Simulation Studio Initialized");
 }
 
 // Run the main initialization function

@@ -102,7 +102,9 @@ export class World implements IWorld, IECSManager {
    * @param system The system to register
    */
   public registerSystem(system: ISystem): void {
+    console.log(`[World] Registering system: ${system.constructor.name}`);
     this.systemManager.registerSystem(system, this);
+    console.log(`[World] System registered: ${system.constructor.name}`);
   }
 
   /**
