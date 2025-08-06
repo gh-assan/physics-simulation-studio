@@ -41,10 +41,10 @@ describe("FlagSystem", () => {
       0.5,
       0.05,
       "",
-      0,
+      poleEntity,
       undefined, // windDirection - use default
       undefined, // gravity - use default
-      poleEntity,
+      undefined, // poleComponent - use default
       "left"
     ); // Link flag to pole
     const positionComponent = new PositionComponent(0, 0, 0);
@@ -87,7 +87,7 @@ describe("FlagSystem", () => {
   it("should apply gravity and wind forces to non-fixed points", () => {
     const entity = world.entityManager.createEntity();
     // Use 3x3 segments and no pole to ensure non-fixed points
-    const flagComponent = new FlagComponent(10, 6, 3, 3, 0.1, 0.5, 0.05, "", 0);
+    const flagComponent = new FlagComponent(10, 6, 3, 3);
     const positionComponent = new PositionComponent(0, 0, 0);
 
     world.componentManager.addComponent(

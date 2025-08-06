@@ -58,83 +58,18 @@ export class WaterSystem extends System {
 
     // Step 1: Calculate Density and Pressure
     for (const entityId of droplets) {
-      const dropletComponent = world.componentManager.getComponent(
-        entityId,
-        WaterDropletComponent.type
-      ) as WaterDropletComponent;
-      const positionComponent = world.componentManager.getComponent(
-        entityId,
-        PositionComponent.type
-      ) as PositionComponent;
+      const components = this.getDropletComponents(world, entityId);
+      if (!components) continue;
 
-      if (!dropletComponent || !positionComponent) continue;
+      const { dropletComponent, positionComponent } = components;
 
-      // Check for NaN in positionComponent
-      if (isNaN(positionComponent.x) || isNaN(positionComponent.y) || isNaN(positionComponent.z)) {
-        console.error(`[WaterSystem] Droplet ${entityId} - Detected NaN in PositionComponent. Resetting to 0,0,0.`);
-        positionComponent.x = 0;
-        positionComponent.y = 0;
-        positionComponent.z = 0;
-      }
+      // Validate and fix any NaN values
+      this.validateAndFixNaNValues(entityId, dropletComponent, positionComponent);
 
-      // Check for NaN in dropletComponent.velocity
-      if (isNaN(dropletComponent.velocity.x) || isNaN(dropletComponent.velocity.y) || isNaN(dropletComponent.velocity.z)) {
-        console.error(`[WaterSystem] Droplet ${entityId} - Detected NaN in velocity. Resetting to 0,0,0.`);
-        dropletComponent.velocity.x = 0;
-        dropletComponent.velocity.y = 0;
-        dropletComponent.velocity.z = 0;
-      }
-
-      // Check for NaN in dropletComponent.previousPosition
-      if (dropletComponent.previousPosition && (isNaN(dropletComponent.previousPosition.x) || isNaN(dropletComponent.previousPosition.y) || isNaN(dropletComponent.previousPosition.z))) {
-        dropletComponent.previousPosition.x = positionComponent.x;
-        dropletComponent.previousPosition.y = positionComponent.y;
-        dropletComponent.previousPosition.z = positionComponent.z;
-      }
-
-      let density = 0;
-      dropletComponent.neighbors = []; // Clear previous neighbors
-
-      const potentialNeighbors = this.spatialHasher.getNeighbors(
-        new Vector3(
-          positionComponent.x,
-          positionComponent.y,
-          positionComponent.z
-        )
-      );
-
-      for (const neighborId of potentialNeighbors) {
-        if (neighborId === entityId) continue; // Skip self
-
-        const neighborPositionComponent = world.componentManager.getComponent(
-          neighborId,
-          PositionComponent.type
-        ) as PositionComponent;
-        const neighborDropletComponent = world.componentManager.getComponent(
-          neighborId,
-          WaterDropletComponent.type
-        ) as WaterDropletComponent;
-
-        if (!neighborPositionComponent || !neighborDropletComponent) continue;
-
-        const rVec = new Vector3(
-          positionComponent.x - neighborPositionComponent.x,
-          positionComponent.y - neighborPositionComponent.y,
-          positionComponent.z - neighborPositionComponent.z
-        );
-        const r = rVec.magnitude();
-
-        if (r < this.smoothingLength) {
-          density += neighborDropletComponent.mass.value * this.kernels.W_poly6(r);
-          dropletComponent.neighbors.push(neighborId);
-        }
-      }
-      dropletComponent.density.value = density;
-      if (dropletComponent.density.value === 0) {
-        dropletComponent.density.value = 1e-6; // Set to a small non-zero value to prevent division by zero
-      }
-      dropletComponent.pressure.value =
-        this.gasConstant * (dropletComponent.density.value - this.restDensity);
+      // Calculate density
+      const density = this.calculateDensity(world, entityId, dropletComponent, positionComponent);
+      dropletComponent.density.value = Math.max(density, 1e-6); // Prevent division by zero
+      dropletComponent.pressure.value = this.gasConstant * (dropletComponent.density.value - this.restDensity);
     }
 
     // Step 2: Calculate Forces (Pressure, Viscosity, External)
@@ -321,6 +256,88 @@ export class WaterSystem extends System {
         waterBody.ripples = waterBody.ripples.filter(r => r.amplitude > 0);
       }
     }
+  }
+
+  private getDropletComponents(world: World, entityId: number) {
+    const dropletComponent = world.componentManager.getComponent(
+      entityId,
+      WaterDropletComponent.type
+    ) as WaterDropletComponent;
+    const positionComponent = world.componentManager.getComponent(
+      entityId,
+      PositionComponent.type
+    ) as PositionComponent;
+
+    if (!dropletComponent || !positionComponent) return null;
+    return { dropletComponent, positionComponent };
+  }
+
+  private validateAndFixNaNValues(
+    entityId: number,
+    dropletComponent: WaterDropletComponent,
+    positionComponent: PositionComponent
+  ): void {
+    // Check position
+    if (this.hasNaN(positionComponent.x, positionComponent.y, positionComponent.z)) {
+      console.error(`[WaterSystem] Droplet ${entityId} - NaN in position. Resetting to origin.`);
+      Object.assign(positionComponent, { x: 0, y: 0, z: 0 });
+    }
+
+    // Check velocity
+    if (this.hasNaN(dropletComponent.velocity.x, dropletComponent.velocity.y, dropletComponent.velocity.z)) {
+      console.error(`[WaterSystem] Droplet ${entityId} - NaN in velocity. Resetting to zero.`);
+      Object.assign(dropletComponent.velocity, { x: 0, y: 0, z: 0 });
+    }
+
+    // Check previous position
+    if (dropletComponent.previousPosition &&
+        this.hasNaN(dropletComponent.previousPosition.x, dropletComponent.previousPosition.y, dropletComponent.previousPosition.z)) {
+      Object.assign(dropletComponent.previousPosition, {
+        x: positionComponent.x,
+        y: positionComponent.y,
+        z: positionComponent.z
+      });
+    }
+  }
+
+  private hasNaN(...values: number[]): boolean {
+    return values.some(val => isNaN(val));
+  }
+
+  private calculateDensity(
+    world: World,
+    entityId: number,
+    dropletComponent: WaterDropletComponent,
+    positionComponent: PositionComponent
+  ): number {
+    let density = 0;
+    dropletComponent.neighbors = [];
+
+    const potentialNeighbors = this.spatialHasher.getNeighbors(
+      new Vector3(positionComponent.x, positionComponent.y, positionComponent.z)
+    );
+
+    for (const neighborId of potentialNeighbors) {
+      if (neighborId === entityId) continue;
+
+      const neighborComponents = this.getDropletComponents(world, neighborId);
+      if (!neighborComponents) continue;
+
+      const distance = this.calculateDistance(positionComponent, neighborComponents.positionComponent);
+      if (distance < this.smoothingLength) {
+        density += neighborComponents.dropletComponent.mass.value * this.kernels.W_poly6(distance);
+        dropletComponent.neighbors.push(neighborId);
+      }
+    }
+
+    return density;
+  }
+
+  private calculateDistance(pos1: PositionComponent, pos2: PositionComponent): number {
+    const dx = pos1.x - pos2.x;
+    const dy = pos1.y - pos2.y;
+    const dz = pos1.z - pos2.z;
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
   }
 
   init(): void {}

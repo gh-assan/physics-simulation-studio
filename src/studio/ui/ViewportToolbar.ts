@@ -267,42 +267,22 @@ export class ViewportToolbar {
    * Sets up keyboard shortcuts for toolbar actions
    */
   private setupKeyboardShortcuts(): void {
-    window.addEventListener("keydown", (event) => {
-      // Ignore if modifier keys are pressed (except for Shift)
-      if (event.ctrlKey || event.altKey || event.metaKey) {
-        return;
-      }
+    const shortcuts = new Map([
+      ['q', () => this.setActiveTool(ToolType.SELECT)],
+      ['w', () => this.setActiveTool(ToolType.MOVE)],
+      ['e', () => this.setActiveTool(ToolType.ROTATE)],
+      ['r', (event: KeyboardEvent) => !event.shiftKey && this.setActiveTool(ToolType.SCALE)],
+      ['g', () => this.toggleGrid()],
+      ['s', (event: KeyboardEvent) => event.shiftKey && this.toggleSnap()]
+    ]);
 
-      // Handle tool shortcuts
-      switch (event.key.toLowerCase()) {
-        case "q":
-          this.setActiveTool(ToolType.SELECT);
-          event.preventDefault();
-          break;
-        case "w":
-          this.setActiveTool(ToolType.MOVE);
-          event.preventDefault();
-          break;
-        case "e":
-          this.setActiveTool(ToolType.ROTATE);
-          event.preventDefault();
-          break;
-        case "r":
-          if (!event.shiftKey) {
-            this.setActiveTool(ToolType.SCALE);
-            event.preventDefault();
-          }
-          break;
-        case "g":
-          this.toggleGrid();
-          event.preventDefault();
-          break;
-        case "s":
-          if (event.shiftKey) {
-            this.toggleSnap();
-            event.preventDefault();
-          }
-          break;
+    window.addEventListener("keydown", (event) => {
+      // Skip if modifier keys are pressed (except for Shift where needed)
+      if (event.ctrlKey || event.altKey || event.metaKey) return;
+
+      const shortcut = shortcuts.get(event.key.toLowerCase());
+      if (shortcut && shortcut(event) !== false) {
+        event.preventDefault();
       }
     });
   }

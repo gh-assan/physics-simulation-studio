@@ -47,14 +47,15 @@ export class EntityManager implements IEntityManager {
   public destroyEntity(entityID: number, world: IWorld): void {
     this.availableEntityIDs.push(entityID);
     this.activeEntities.delete(entityID);
-    // Call onEntityRemoved on all systems if world is provided
-    if (world && world.systemManager && world.systemManager.getAllSystems) {
-      for (const system of world.systemManager.getAllSystems()) {
-        if (typeof system.onEntityRemoved === 'function') {
-          system.onEntityRemoved(entityID, world);
-        }
-      }
-    }
+    this.notifySystemsOfEntityRemoval(entityID, world);
+  }
+
+  private notifySystemsOfEntityRemoval(entityId: number, world: IWorld): void {
+    if (!world?.systemManager?.getAllSystems) return;
+
+    world.systemManager.getAllSystems()
+      .filter(system => typeof system.onEntityRemoved === 'function')
+      .forEach(system => system.onEntityRemoved!(entityId, world));
   }
 
   /**

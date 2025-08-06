@@ -229,10 +229,12 @@ export class ThreeGraphicsManager implements IGraphicsManager {
     this.scene.traverse((obj) => {
       this._disposeObject3D(obj);
     });
-    // Optionally remove renderer DOM element
-    if (this.renderer && this.renderer.domElement && this.renderer.domElement.parentNode) {
-      this.renderer.domElement.parentNode.removeChild(this.renderer.domElement);
-    }
+    this.removeDOMElement();
+  }
+
+  private removeDOMElement(): void {
+    if (!this.renderer?.domElement?.parentNode) return;
+    this.renderer.domElement.parentNode.removeChild(this.renderer.domElement);
   }
 
   public showControlInstructions(show: boolean): void {

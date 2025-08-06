@@ -27,17 +27,12 @@ export class UIManager implements IUIManager {
         `[UIManager] Registered ${properties.length} properties for '${componentName}'.` // Simplified log
       );
     } else {
-      for (const key in data) {
-        if (Object.prototype.hasOwnProperty.call(data, key)) {
-          const value = data[key];
-          if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'string') {
-            folder.addBinding(data, key, { label: key });
-          }
-        }
-      }
-      Logger.getInstance().log(
-        `[UIManager] Auto-detected and registered properties for '${componentName}'.` // Simplified log
-      );
+      // Auto-detect bindable properties
+      Object.entries(data)
+        .filter(([_, value]) => this.isBindableValue(value))
+        .forEach(([key]) => folder.addBinding(data, key, { label: key }));
+
+      Logger.getInstance().log(`[UIManager] Auto-detected properties for '${componentName}'.`);
     }
   }
   private pane: Pane;
@@ -173,5 +168,10 @@ export class UIManager implements IUIManager {
 
   public getPanels(): FolderApi[] {
     return Array.from(this.folders.values());
+  }
+
+  private isBindableValue(value: any): boolean {
+    const type = typeof value;
+    return type === 'number' || type === 'boolean' || type === 'string';
   }
 }

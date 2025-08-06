@@ -3,6 +3,9 @@ import { PointMass } from "./utils/PointMass";
 import { Spring } from "./utils/Spring";
 import { Vector3 } from "./utils/Vector3";
 import { RenderableComponent } from "../../core/ecs/RenderableComponent";
+import { PoleComponent } from "./PoleComponent";
+
+type Vector3D = { x: number; y: number; z: number };
 
 export class FlagComponent implements IComponent {
   public static readonly type = "FlagComponent";
@@ -16,7 +19,7 @@ export class FlagComponent implements IComponent {
 
   // Pole attachment
   poleEntityId: number | null = null;
-  attachedEdge: "left" | "right" | "top" | "bottom";
+  attachedEdge: "left" | "right" | "top" | "bottom" = "left";
 
   // Material properties
   mass: number; // Mass of each point in the grid
@@ -39,7 +42,7 @@ export class FlagComponent implements IComponent {
   windStrength: number;
   windDirection: { x: number; y: number; z: number };
 
-  public renderable: RenderableComponent;
+  public renderable?: RenderableComponent;
 
   constructor(
     width = 10,
@@ -50,13 +53,12 @@ export class FlagComponent implements IComponent {
     stiffness = 0.5,
     damping = 0.05,
     textureUrl = "",
-    windStrength = 0,
-    windDirection = { x: 1, y: 0, z: 0 },
-    gravity = { x: 0, y: -9.81, z: 0 },
     poleEntityId: number | null = null,
-    attachedEdge: "left" | "right" | "top" | "bottom" = "left"
+    windDirection?: Vector3D | null,
+    gravity?: Vector3D | null,
+    poleComponent?: PoleComponent | null,
+    attachedEdge: 'left' | 'right' | 'top' | 'bottom' = 'left'
   ) {
-    this.renderable = new RenderableComponent("plane", 0xffffff);
     this.width = width;
     this.height = height;
     this.segmentsX = segmentsX;
@@ -65,14 +67,15 @@ export class FlagComponent implements IComponent {
     this.stiffness = stiffness;
     this.damping = damping;
     this.textureUrl = textureUrl;
-    this.initialPoints = this.generateInitialPoints();
+    this.poleEntityId = poleEntityId;
+    this.windDirection = windDirection || { x: 1, y: 0, z: 0 };
+    this.gravity = gravity || { x: 0, y: -9.81, z: 0 };
+    this.attachedEdge = attachedEdge;
+
     this.points = [];
     this.springs = [];
-    this.windStrength = windStrength;
-    this.poleEntityId = poleEntityId;
-    this.attachedEdge = attachedEdge;
-    this.windDirection = windDirection;
-    this.gravity = gravity;
+    this.windStrength = 0;
+    this.initialPoints = this.generateInitialPoints();
   }
 
   // Add setters to keep wind vector in sync
@@ -125,10 +128,10 @@ export class FlagComponent implements IComponent {
       this.stiffness,
       this.damping,
       this.textureUrl,
-      this.windStrength,
+      this.poleEntityId,
       { ...this.windDirection },
       { ...this.gravity },
-      this.poleEntityId,
+      undefined,
       this.attachedEdge
     );
   }
