@@ -27,13 +27,9 @@ export class EntityManager implements IEntityManager {
    * @returns The ID of the created entity
    */
   public createEntity(id?: number): number {
-    let entityId: number;
-
-    if (id !== undefined) {
-      entityId = this.handleSpecificIdCreation(id);
-    } else {
-      entityId = this.getNextAvailableId();
-    }
+    const entityId = id !== undefined
+      ? this.handleSpecificIdCreation(id)
+      : this.getNextAvailableId();
 
     this.activeEntities.add(entityId);
     return entityId;
@@ -84,10 +80,7 @@ export class EntityManager implements IEntityManager {
    * @returns The entity ID if it exists, otherwise undefined
    */
   public getEntityById(entityID: number): number | undefined {
-    if (this.activeEntities.has(entityID)) {
-      return entityID;
-    }
-    return undefined;
+    return this.activeEntities.has(entityID) ? entityID : undefined;
   }
 
   /**
@@ -134,4 +127,3 @@ export class EntityManager implements IEntityManager {
     return this.nextEntityID++;
   }
 }
-

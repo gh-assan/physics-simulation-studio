@@ -192,12 +192,12 @@ export class FlagParameterPanel extends ParameterPanelComponent {
     const poleEntities = this.world.componentManager.getEntitiesWithComponents([
       PoleComponent
     ]);
-    const poleOptions: { text: string; value: number | null }[] =
+    const poleOptions: { text: string; value: number }[] =
       poleEntities.map((entityId) => ({
         text: `Pole ${entityId}`,
         value: entityId
       }));
-    poleOptions.unshift({ text: "None", value: null }); // Add a 'None' option
+    poleOptions.unshift({ text: "None", value: 0 }); // Add a 'None' option
 
     properties.push(
       {

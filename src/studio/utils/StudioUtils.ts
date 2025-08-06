@@ -43,19 +43,20 @@ export function loadFromFile(acceptType = "application/json"): Promise<string> {
 
     input.onchange = (event: Event) => {
       const file = (event.target as HTMLInputElement).files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          try {
-            resolve(e.target?.result as string);
-          } catch (error) {
-            reject(error);
-          }
-        };
-        reader.readAsText(file);
-      } else {
+      if (!file) {
         reject(new Error("No file selected"));
+        return;
       }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          resolve(e.target?.result as string);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      reader.readAsText(file);
     };
 
     input.click();

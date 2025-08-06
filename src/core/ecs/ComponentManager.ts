@@ -52,14 +52,14 @@ export class ComponentManager implements IComponentManager {
   ): void {
     // Removed redundant log
     const store = this.getComponentStore(componentType);
-    if (store) {
-      store.set(entityID, component);
-    } else {
+    if (!store) {
       Logger.getInstance().error(
         `[ComponentManager] Component type '${componentType}' is not registered. Entity: ${entityID}`
       );
       throw new Error(`Component type '${componentType}' is not registered`);
     }
+
+    store.set(entityID, component);
   }
 
   /**
@@ -73,15 +73,14 @@ export class ComponentManager implements IComponentManager {
     entityID: number,
     componentType: string
   ): T | undefined {
-    // Removed redundant log
-    const component = this.componentStores
-      .get(componentType)
-      ?.get(entityID) as T;
+    const component = this.componentStores.get(componentType)?.get(entityID) as T;
+
     if (!component) {
       Logger.getInstance().warn(
         `[ComponentManager] Component '${componentType}' not found for entity ${entityID}`
       );
     }
+
     return component;
   }
 
@@ -171,7 +170,7 @@ export class ComponentManager implements IComponentManager {
 
     this.componentStores.forEach((store, componentType) => {
       const component = store.get(entityID);
-      if (component !== undefined) {
+      if (component) {
         components[componentType] = component;
       }
     });
@@ -199,14 +198,14 @@ export class ComponentManager implements IComponentManager {
       `[ComponentManager] Updating component '${componentType}' for entity ${entityID}`
     );
     const store = this.getComponentStore(componentType);
-    if (store) {
-      store.set(entityID, newComponent);
-    } else {
+    if (!store) {
       Logger.getInstance().error(
         `[ComponentManager] Component type '${componentType}' is not registered. Entity: ${entityID}`
       );
       throw new Error(`Component type '${componentType}' is not registered`);
     }
+
+    store.set(entityID, newComponent);
   }
 
   /**

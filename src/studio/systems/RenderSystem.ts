@@ -10,6 +10,7 @@ import { WaterRenderer } from "../../plugins/water-simulation/WaterRenderer"; //
 import { SelectableComponent } from "../../core/components/SelectableComponent"; // Import SelectableComponent
 import { createGeometry, disposeThreeJsObject } from "../utils/ThreeJsUtils";
 import { ThreeGraphicsManager } from "../graphics/ThreeGraphicsManager";
+import { MaterialDisposer } from "../utils/MaterialDisposer";
 
 import { WaterDropletComponent } from "../../plugins/water-simulation/WaterComponents"; // Import WaterDropletComponent
 
@@ -46,8 +47,7 @@ export class RenderSystem extends System {
     if (mesh) {
       this.graphicsManager.getScene().remove(mesh);
       mesh.geometry.dispose();
-      if (mesh.material instanceof THREE.Material) mesh.material.dispose();
-      else if (Array.isArray(mesh.material)) mesh.material.forEach((m: any) => m.dispose());
+      MaterialDisposer.dispose(mesh.material);
       this.meshes.delete(entityId);
     }
   }
@@ -100,7 +100,7 @@ export class RenderSystem extends System {
         }
       }
 
-      if (selectedEntityId !== null) {
+      if (selectedEntityId) {
         const selectable = world.componentManager.getComponent(
           selectedEntityId,
           SelectableComponent.name
@@ -179,11 +179,7 @@ export class RenderSystem extends System {
     this.meshes.forEach((mesh) => {
       this.graphicsManager.getScene().remove(mesh);
       mesh.geometry.dispose();
-      if (mesh.material instanceof THREE.Material) {
-        mesh.material.dispose();
-      } else if (Array.isArray(mesh.material)) {
-        mesh.material.forEach((material) => material.dispose());
-      }
+      MaterialDisposer.dispose(mesh.material);
     });
     this.meshes.clear();
 
@@ -235,13 +231,13 @@ export class RenderSystem extends System {
   }
 
   private getOrCreateMesh(world: World, entityId: number, renderable: RenderableComponent): THREE.Mesh {
-    let mesh = this.meshes.get(entityId);
-    if (mesh) return mesh;
+    const existingMesh = this.meshes.get(entityId);
+    if (existingMesh) return existingMesh;
 
     const geometryType = renderable.geometry as "box" | "sphere" | "cylinder" | "cone" | "plane";
     const geometry = createGeometry(geometryType);
     const material = new THREE.MeshBasicMaterial({ color: renderable.color });
-    mesh = new THREE.Mesh(geometry, material);
+    const mesh = new THREE.Mesh(geometry, material);
 
     // Scale mesh by radius if CelestialBodyComponent is present
     const celestialBody = world.componentManager.getComponent(entityId, 'CelestialBodyComponent') as any;

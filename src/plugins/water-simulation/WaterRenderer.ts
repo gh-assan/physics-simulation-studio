@@ -5,8 +5,8 @@ import { WaterDropletComponent, WaterBodyComponent } from "./WaterComponents";
 import { PositionComponent } from "../../core/ecs/PositionComponent";
 
 export class WaterRenderer implements IRenderable {
-  private instancedMesh: THREE.InstancedMesh | null = null;
-  private waterMesh: THREE.Mesh | null = null;
+  private instancedMesh?: THREE.InstancedMesh;
+  private waterMesh?: THREE.Mesh;
   private rippleMeshes: THREE.Mesh[] = [];
   private dummy = new THREE.Object3D();
 
@@ -58,7 +58,7 @@ export class WaterRenderer implements IRenderable {
       if (this.instancedMesh) {
         scene.remove(this.instancedMesh);
         this.instancedMesh.dispose();
-        this.instancedMesh = null;
+        this.instancedMesh = undefined;
       }
       return;
     }
@@ -102,16 +102,16 @@ export class WaterRenderer implements IRenderable {
   }
 
   unregister(): void {
-    if (this.instancedMesh && this.instancedMesh.parent) {
+    if (this.instancedMesh?.parent) {
       this.instancedMesh.parent.remove(this.instancedMesh);
       this.instancedMesh.dispose();
-      this.instancedMesh = null;
+      this.instancedMesh = undefined;
     }
-    if (this.waterMesh && this.waterMesh.parent) {
+    if (this.waterMesh?.parent) {
       this.waterMesh.parent.remove(this.waterMesh);
       this.waterMesh.geometry.dispose();
       (this.waterMesh.material as THREE.Material).dispose();
-      this.waterMesh = null;
+      this.waterMesh = undefined;
     }
     for (const mesh of this.rippleMeshes) {
       if (mesh.parent) mesh.parent.remove(mesh);

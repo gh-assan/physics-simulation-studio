@@ -75,11 +75,8 @@ export class ViewportToolbar {
     this.setupDragFunctionality();
 
     // Add toolbar to container if provided, otherwise to document body
-    if (options.container) {
-      options.container.appendChild(this.element);
-    } else {
-      document.body.appendChild(this.element);
-    }
+    const container = options.container || document.body;
+    container.appendChild(this.element);
 
     // Set up keyboard shortcuts
     this.setupKeyboardShortcuts();

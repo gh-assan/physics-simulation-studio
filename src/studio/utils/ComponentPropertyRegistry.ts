@@ -29,16 +29,14 @@ export class ComponentPropertyRegistry implements IComponentPropertyRegistry {
     componentName: string
   ): ComponentControlProperty[] | undefined {
     const properties = this.registry[componentName];
-    if (properties) {
-      Logger.getInstance().log(
-        `[ComponentPropertyRegistry] Retrieved properties for '${componentName}'.`
-      );
-    } else {
-      Logger.getInstance().warn(
-        `[ComponentPropertyRegistry] No properties found for '${componentName}'.`
-      );
-    }
+
+    const logMessage = properties
+      ? `Retrieved properties for '${componentName}'.`
+      : `No properties found for '${componentName}'.`;
+
+    const logMethod = properties ? Logger.getInstance().log : Logger.getInstance().warn;
+    logMethod.call(Logger.getInstance(), `[ComponentPropertyRegistry] ${logMessage}`);
+
     return properties;
   }
 }
-

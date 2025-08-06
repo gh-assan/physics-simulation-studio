@@ -67,11 +67,14 @@ export class VisibilityManager {
     }
 
     // Mount the element to the container if not already mounted
+    if (container.contains(element)) {
+      console.log(`[VisibilityManager] Element already in container`);
+      // Still need to register the panel
+    }
+
     if (!container.contains(element)) {
       console.log(`[VisibilityManager] Appending element to container`);
       container.appendChild(element);
-    } else {
-      console.log(`[VisibilityManager] Element already in container`);
     }
 
     // Register the panel
@@ -219,9 +222,10 @@ export class VisibilityManager {
 
     if (panel.visible) {
       this.hidePanel(panelId);
-    } else {
-      this.showPanel(panelId);
+      return;
     }
+
+    this.showPanel(panelId);
   }
 
   /**
@@ -280,16 +284,26 @@ export class VisibilityManager {
   private applyResponsiveLayout(element: HTMLElement): void {
     const isMobile = window.innerWidth <= 768;
 
+    this.applyResponsiveStyles(element, isMobile);
+  }
+
+  /**
+   * Applies responsive styles to an element based on mobile/desktop mode
+   * @param element The element to style
+   * @param isMobile Whether mobile styles should be applied
+   */
+  private applyResponsiveStyles(element: HTMLElement, isMobile: boolean): void {
     if (isMobile) {
       element.style.width = "100%";
       element.style.position = "relative";
       element.style.height = "auto";
-    } else {
-      // Reset to default desktop styles
-      element.style.width = "";
-      element.style.position = "";
-      element.style.height = "";
+      return;
     }
+
+    // Reset to default desktop styles
+    element.style.width = "";
+    element.style.position = "";
+    element.style.height = "";
   }
 
   /**
@@ -448,8 +462,7 @@ export class VisibilityManager {
       // Also try looking by the component type in the DOM
       const folderElements = document.querySelectorAll('.tp-fldv_t');
       console.log(`[VisibilityManager] Found ${folderElements.length} tp-fldv_t elements`);
-      for (let i = 0; i < folderElements.length; i++) {
-        const element = folderElements[i];
+      for (const [i, element] of Array.from(folderElements).entries()) {
         console.log(`[VisibilityManager] Checking element ${i}: "${element.textContent}"`);
         if (element.textContent?.includes(parameterPanel.componentType)) {
           console.log(`[VisibilityManager] Found matching element by text content`);
@@ -457,17 +470,11 @@ export class VisibilityManager {
         }
       }
 
-      // Also try looking for the panel title that was created by createPanel
-      // FlagParameterPanel creates a panel with title 'Flag Simulation Settings'
-      const panelTitleElements = document.querySelectorAll('.tp-fldv_t');
-      for (let i = 0; i < panelTitleElements.length; i++) {
-        const element = panelTitleElements[i];
-        if (element.textContent?.includes('Flag Simulation Settings') ||
-            element.textContent?.includes('Water Droplet Settings') ||
-            element.textContent?.includes('Water Body Settings')) {
-          console.log(`[VisibilityManager] Found panel by title: "${element.textContent}"`);
-          return element.parentElement as HTMLElement;
-        }
+      // Try to find by known panel titles
+      const matchingTitleElement = this.findElementByPanelTitle();
+      if (matchingTitleElement) {
+        console.log(`[VisibilityManager] Found panel by title: "${matchingTitleElement.textContent}"`);
+        return matchingTitleElement.parentElement as HTMLElement;
       }
     }
 
@@ -479,6 +486,31 @@ export class VisibilityManager {
     element.setAttribute('data-panel-id', panelId);
 
     return element;
+  }
+
+  /**
+   * Finds a panel element by known panel titles
+   * @returns The matching element or null
+   */
+  private findElementByPanelTitle(): HTMLElement | null {
+    const knownTitles = [
+      'Flag Simulation Settings',
+      'Water Droplet Settings',
+      'Water Body Settings'
+    ];
+
+    const panelTitleElements = document.querySelectorAll('.tp-fldv_t');
+    for (const element of Array.from(panelTitleElements)) {
+      const textContent = element.textContent || '';
+
+      for (const title of knownTitles) {
+        if (textContent.includes(title)) {
+          return element as HTMLElement;
+        }
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -558,19 +590,15 @@ export class VisibilityManager {
   /**
    * Toggles all panels for a specific plugin
    * @param pluginName The plugin name
-   * @param visible Whether to show or hide the panels
+   * @param visible Whether to show or hide the panels (toggles if not specified)
    */
   public togglePluginPanels(pluginName: string, visible?: boolean): void {
     const pluginPanels = this.getPanelsByPlugin(pluginName);
     for (const [panelId] of pluginPanels) {
-      if (visible !== undefined) {
-        if (visible) {
-          this.showPanel(panelId);
-        } else {
-          this.hidePanel(panelId);
-        }
-      } else {
+      if (visible === undefined) {
         this.togglePanel(panelId);
+      } else {
+        visible ? this.showPanel(panelId) : this.hidePanel(panelId);
       }
     }
   }

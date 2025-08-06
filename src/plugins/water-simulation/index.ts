@@ -64,15 +64,14 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
       const waterDropletPanel = new WaterDropletParameterPanel();
 
       // Store them in the parameter panels array
-      this._parameterPanels.push(waterBodyPanel);
-      this._parameterPanels.push(waterDropletPanel);
+      this._parameterPanels.push(waterBodyPanel, waterDropletPanel);
 
       // Create and register parameter panel entities if ParameterPanelComponent is registered
-      if (
-        world.componentManager
-          .getComponentConstructors()
-          .has(ParameterPanelComponent.type)
-      ) {
+      const hasParameterPanelComponent = world.componentManager
+        .getComponentConstructors()
+        .has(ParameterPanelComponent.type);
+
+      if (hasParameterPanelComponent) {
         const waterBodyPanelEntity = world.entityManager.createEntity();
         world.componentManager.addComponent(
           waterBodyPanelEntity,
@@ -86,15 +85,11 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
           ParameterPanelComponent.type,
           waterDropletPanel
         );
-
-        console.log(
-          "Water Simulation Plugin registered with parameter panels."
-        );
-      } else {
-        console.log(
-          "Water Simulation Plugin registered without parameter panels (ParameterPanelComponent not registered)."
-        );
       }
+
+      console.log(
+        `Water Simulation Plugin registered ${hasParameterPanelComponent ? 'with' : 'without'} parameter panels${!hasParameterPanelComponent ? ' (ParameterPanelComponent not registered)' : ''}.`
+      );
     } catch (error) {
       console.warn(
         "Failed to register parameter panels, but simulation will continue:",

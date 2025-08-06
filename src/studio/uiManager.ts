@@ -19,21 +19,23 @@ export class UIManager implements IUIManager {
     this.removeComponentControls(componentName);
     const folder = this.pane.addFolder({ title: componentName });
     this.folders.set(componentName, folder);
-    if (properties) {
-      for (const prop of properties) {
-        this._addBindingForProperty(folder, data, prop);
-      }
-      Logger.getInstance().log(
-        `[UIManager] Registered ${properties.length} properties for '${componentName}'.` // Simplified log
-      );
-    } else {
+
+    if (!properties) {
       // Auto-detect bindable properties
       Object.entries(data)
         .filter(([_, value]) => this.isBindableValue(value))
         .forEach(([key]) => folder.addBinding(data, key, { label: key }));
 
       Logger.getInstance().log(`[UIManager] Auto-detected properties for '${componentName}'.`);
+      return;
     }
+
+    for (const prop of properties) {
+      this._addBindingForProperty(folder, data, prop);
+    }
+    Logger.getInstance().log(
+      `[UIManager] Registered ${properties.length} properties for '${componentName}'.` // Simplified log
+    );
   }
   private pane: Pane;
   private folders: Map<string, FolderApi> = new Map();
@@ -87,6 +89,8 @@ export class UIManager implements IUIManager {
         return String(v);
       }
     };
+
+    // Use nullish coalescing for cleaner property assignment
     if (prop.min !== undefined) options.min = prop.min;
     if (prop.max !== undefined) options.max = prop.max;
     if (prop.step !== undefined) options.step = prop.step;
@@ -99,43 +103,58 @@ export class UIManager implements IUIManager {
       const parentPath = parts.join("."); // Join the rest of the path
       const parentData = this._getNestedProperty(data, parentPath);
 
-      if (parentData) {
-        binding = folder.addBinding(parentData, lastKey, options);
-      } else {
+      if (!parentData) {
         Logger.getInstance().warn(
           `[UIManager] Could not find parent object for property: ${prop.property}`
         );
+        return; // Skip this property
       }
-    } else {
-      binding = folder.addBinding(data, prop.property, options);
-    }
 
-    // Prevent parameter changes from triggering simulation to play
-    // This ensures that only the play button can start the simulation
-    if (binding) {
+      binding = folder.addBinding(parentData, lastKey, options);
+
+      // Add binding check and event handling for nested properties
+      if (!binding) {
+        Logger.getInstance().warn(
+          `[UIManager] Failed to create binding for property: ${prop.property}`
+        );
+        return;
+      }
+
       binding.on("change", () => {
-        // Force a render update without starting the simulation
-        // This allows users to see the effect of parameter changes in the UI
-        // without triggering the simulation to play
         const event = new CustomEvent("parameter-changed", {
           detail: { property: prop.property }
         });
         window.dispatchEvent(event);
       });
-    } else {
+      return; // Early return for nested properties
+    }
+
+    binding = folder.addBinding(data, prop.property, options);
+
+    // Prevent parameter changes from triggering simulation to play
+    // This ensures that only the play button can start the simulation
+    if (!binding) {
       Logger.getInstance().warn(
         `[UIManager] Failed to create binding for property: ${prop.property}`
       );
+      return; // Skip this property
     }
+
+    binding.on("change", () => {
+      // Force a render update without starting the simulation
+      // This allows users to see the effect of parameter changes in the UI
+      // without triggering the simulation to play
+      const event = new CustomEvent("parameter-changed", {
+        detail: { property: prop.property }
+      });
+      window.dispatchEvent(event);
+    });
   }
 
   private _getNestedProperty(data: any, path: string): any {
     return path
       .split(".")
-      .reduce(
-        (obj, key) => (obj && obj[key] !== undefined ? obj[key] : undefined),
-        data
-      );
+      .reduce((obj, key) => obj?.[key], data);
   }
 
   public clearControls(): void {
@@ -153,10 +172,8 @@ export class UIManager implements IUIManager {
   // Utility: remove a specific component's controls
   public removeComponentControls(componentName: string): void {
     const folder = this.folders.get(componentName);
-    if (folder) {
-      folder.dispose();
-      this.folders.delete(componentName);
-    }
+    folder?.dispose();
+    this.folders.delete(componentName);
   }
 
   // Future extensibility: allow switching UI frameworks

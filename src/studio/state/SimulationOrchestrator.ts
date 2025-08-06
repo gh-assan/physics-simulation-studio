@@ -9,7 +9,7 @@ import { IStudio } from "../IStudio";
 export class SimulationOrchestrator {
   private world: IWorld;
   private pluginManager: IPluginManager;
-  private renderSystem: RenderSystem | null = null;
+  private renderSystem?: RenderSystem;
   private selectedSimulation: SelectedSimulationStateManager;
   private studio: IStudio;
 
@@ -29,8 +29,8 @@ export class SimulationOrchestrator {
     this.renderSystem = renderSystem;
   }
 
-  public async loadSimulation(pluginName: string | null): Promise<void> {
-    if (pluginName === null) {
+  public async loadSimulation(pluginName: string): Promise<void> {
+    if (!pluginName) {
       this.unloadCurrentSimulation();
       return;
     }
@@ -76,14 +76,9 @@ export class SimulationOrchestrator {
     await this.pluginManager.activatePlugin(pluginName, this.studio);
     Logger.getInstance().log(`Loaded simulation: ${pluginName}`);
     const activePlugin = this.pluginManager.getPlugin(pluginName);
-    if (activePlugin && activePlugin.initializeEntities) {
-      activePlugin.initializeEntities(this.world);
-      this.world.update(0);
-      if (this.renderSystem) {
-        this.renderSystem.update(this.world as World, 0);
-      }
-
-      this.selectedSimulation.setSimulation(pluginName);
-    }
+    activePlugin?.initializeEntities?.(this.world);
+    this.world.update(0);
+    this.renderSystem?.update(this.world as World, 0);
+    this.selectedSimulation.setSimulation(pluginName);
   }
 }

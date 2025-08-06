@@ -150,11 +150,14 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
       .on("change", (ev: { value: string }) => {
         console.log('Simulation selector changed to:', ev.value);
         stateManager.selectedSimulation.state.name = ev.value;
-        if (ev.value && ev.value !== "") {
-          void studio.loadSimulation(ev.value);
-        } else {
+
+        if (!ev.value || ev.value === "") {
           studio.unloadSimulation();
+          updateControlButtonStates();
+          return;
         }
+
+        void studio.loadSimulation(ev.value);
         updateControlButtonStates();
       });
   }

@@ -40,9 +40,7 @@ export class PropertyInspectorSystem extends System {
     if (!activeSimulationName) return [];
 
     const activePlugin = this.pluginManager.getPlugin(activeSimulationName);
-    if (!activePlugin || !activePlugin.getParameterPanels) return [];
-
-    return activePlugin.getParameterPanels(this.world);
+    return activePlugin?.getParameterPanels?.(this.world) ?? [];
   }
 
   /**

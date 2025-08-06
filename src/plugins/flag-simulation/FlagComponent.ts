@@ -18,7 +18,7 @@ export class FlagComponent implements IComponent {
   segmentsY: number;
 
   // Pole attachment
-  poleEntityId: number | null = null;
+  poleEntityId = 0;
   attachedEdge: "left" | "right" | "top" | "bottom" = "left";
 
   // Material properties
@@ -53,10 +53,10 @@ export class FlagComponent implements IComponent {
     stiffness = 0.5,
     damping = 0.05,
     textureUrl = "",
-    poleEntityId: number | null = null,
-    windDirection?: Vector3D | null,
-    gravity?: Vector3D | null,
-    poleComponent?: PoleComponent | null,
+    poleEntityId = 0,
+    windDirection: Vector3D = { x: 1, y: 0, z: 0 },
+    gravity: Vector3D = { x: 0, y: -9.81, z: 0 },
+    poleComponent?: PoleComponent,
     attachedEdge: 'left' | 'right' | 'top' | 'bottom' = 'left'
   ) {
     this.width = width;
@@ -68,8 +68,8 @@ export class FlagComponent implements IComponent {
     this.damping = damping;
     this.textureUrl = textureUrl;
     this.poleEntityId = poleEntityId;
-    this.windDirection = windDirection || { x: 1, y: 0, z: 0 };
-    this.gravity = gravity || { x: 0, y: -9.81, z: 0 };
+    this.windDirection = windDirection;
+    this.gravity = gravity;
     this.attachedEdge = attachedEdge;
 
     this.points = [];

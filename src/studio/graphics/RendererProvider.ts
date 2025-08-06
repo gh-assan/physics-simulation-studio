@@ -1,5 +1,11 @@
 import * as THREE from 'three';
+import { MaterialDisposer } from '../utils/MaterialDisposer';
 
+/**
+ * Provides a singleton instance of the Three.js renderer.
+ * This class is responsible for creating and managing a single WebGL renderer instance
+ * that can be used throughout the application.
+ */
 export class RendererProvider {
     static createRenderer(): THREE.WebGLRenderer {
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -32,13 +38,7 @@ export class RendererProvider {
                     (object as any).geometry.dispose();
                 }
                 if ((object as any).material) {
-                    if (Array.isArray((object as any).material)) {
-                        for (const mat of (object as any).material) {
-                            if (mat && typeof mat.dispose === 'function') mat.dispose();
-                        }
-                    } else if (typeof (object as any).material.dispose === 'function') {
-                        (object as any).material.dispose();
-                    }
+                    MaterialDisposer.dispose((object as any).material);
                 }
             }
         }

@@ -27,11 +27,11 @@ describe("FlagComponent UI Controls", () => {
     expect(flag1.windDirection).toEqual({ x: 1, y: 0, z: 0 });
 
     // Test with null windDirection - should use default
-    const flag2 = new FlagComponent(10, 6, 10, 6, 0.1, 0.5, 0.05, "", null, null);
+    const flag2 = new FlagComponent(10, 6, 10, 6, 0.1, 0.5, 0.05, "", 0);
     expect(flag2.windDirection).toEqual({ x: 1, y: 0, z: 0 });
 
     // Test with valid windDirection
-    const flag3 = new FlagComponent(10, 6, 10, 6, 0.1, 0.5, 0.05, "", null, { x: 0.2, y: 0, z: 0 });
+    const flag3 = new FlagComponent(10, 6, 10, 6, 0.1, 0.5, 0.05, "", 0, { x: 0.2, y: 0, z: 0 });
     expect(flag3.windDirection).toEqual({ x: 0.2, y: 0, z: 0 });
   });
 });
@@ -74,12 +74,12 @@ describe("FlagComponent Gravity Controls", () => {
     const flag1 = new FlagComponent();
     expect(flag1.gravity).toEqual({ x: 0, y: -9.81, z: 0 });
 
-    // Test with null gravity - should use default
-    const flag2 = new FlagComponent(10, 6, 10, 6, 0.1, 0.5, 0.05, "", null, null, null);
+    // Test with defaults
+    const flag2 = new FlagComponent(10, 6, 10, 6, 0.1, 0.5, 0.05, "");
     expect(flag2.gravity).toEqual({ x: 0, y: -9.81, z: 0 });
 
     // Test with valid gravity object
-    const flag3 = new FlagComponent(10, 6, 10, 6, 0.1, 0.5, 0.05, "", null, null, { x: 0, y: -5, z: 0 });
+    const flag3 = new FlagComponent(10, 6, 10, 6, 0.1, 0.5, 0.05, "", 0, { x: 1, y: 0, z: 0 }, { x: 0, y: -5, z: 0 });
     expect(flag3.gravity).toEqual({ x: 0, y: -5, z: 0 });
   });
 

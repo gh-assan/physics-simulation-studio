@@ -38,16 +38,11 @@ export class WaterBodyParameterPanel extends ParameterPanelComponent {
     if (!component) {
       const panel = uiManager.createPanel('Water Body Settings');
 
-      // Create a simple object to bind to for displaying the message
-      const messageObject = {
-        message: 'No water body selected. Select a water body to see its properties.'
-      };
-
-      // Use addBinding to display the message
-      uiManager.addBinding(panel, messageObject, 'message', {
-        readonly: true,
-        label: 'Info'
-      });
+      uiManager.addBinding(panel,
+        { message: 'No water body selected. Select a water body to see its properties.' },
+        'message',
+        { readonly: true, label: 'Info' }
+      );
 
       return;
     }

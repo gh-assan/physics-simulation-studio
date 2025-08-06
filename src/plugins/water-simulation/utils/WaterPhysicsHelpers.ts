@@ -62,18 +62,20 @@ export function handleDropletCollision(
       WaterDropletComponent.type
     ) as WaterDropletComponent;
 
-    if (dropletComponent) {
-      // Create ripples based on droplet properties
-      createRipples(
-        waterBodyComponent,
-        dropletPosition.x,
-        dropletPosition.z,
-        dropletComponent
-      );
-    } else {
+    if (!dropletComponent) {
       // Fallback to default ripple creation if droplet component not found
       createRipples(waterBodyComponent, dropletPosition.x, dropletPosition.z);
+      world.destroyEntity(dropletEntityId);
+      return true;
     }
+
+    // Create ripples based on droplet properties
+    createRipples(
+      waterBodyComponent,
+      dropletPosition.x,
+      dropletPosition.z,
+      dropletComponent
+    );
 
     world.destroyEntity(dropletEntityId);
     return true;

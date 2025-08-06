@@ -4,10 +4,9 @@ export class DebugHelper {
     console.log('=== DOM Structure Debug ===');
     console.log('Body children:', document.body.children.length);
 
-    for (let i = 0; i < document.body.children.length; i++) {
-      const child = document.body.children[i];
+    Array.from(document.body.children).forEach((child, i) => {
       console.log(`Child ${i}:`, child.tagName, child.id, child.className);
-    }
+    });
 
     console.log('Left panel:', document.getElementById('left-panel'));
     console.log('Main content:', document.getElementById('main-content'));

@@ -13,7 +13,7 @@ import { RenderSystem } from "./systems/RenderSystem";
 export class Studio implements IStudio {
   private _world: IWorld;
   private pluginManager: IPluginManager;
-  private renderSystem: RenderSystem | null = null;
+  private renderSystem?: RenderSystem;
   private isPlaying = true;
   private selectedSimulation: ISelectedSimulationStateManager;
   private orchestrator: ISimulationOrchestrator;
