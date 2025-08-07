@@ -103,7 +103,7 @@ export interface ISimulationPlugin {
    * Gets the parameter panels for this plugin.
    * This is used by the PropertyInspectorSystem to display the appropriate
    * parameter panels for the active simulation.
-   * 
+   *
    * @deprecated Use getParameterSchema() instead for the new clean parameter system
    * @returns An array of parameter panel components
    */

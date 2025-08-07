@@ -206,7 +206,7 @@ function registerComponentsAndSystems(world: World, studio: Studio, pluginManage
     const selectionSystem = new SelectionSystem(studio, world as World);
     world.registerSystem(selectionSystem);
 
-    // Use Clean Plugin-Based Property Inspector System  
+    // Use Clean Plugin-Based Property Inspector System
     const propertyInspectorSystem = new SimplifiedPropertyInspectorSystem(studio);
     propertyInspectorSystem.initialize((window as any).uiManager?.getPane());
     world.registerSystem(propertyInspectorSystem);

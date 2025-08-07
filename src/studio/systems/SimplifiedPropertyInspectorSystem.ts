@@ -90,7 +90,7 @@ export class SimplifiedPropertyInspectorSystem extends System {
       // Get the active plugin instance and its parameter schema
       const pluginManager = this.studio.getPluginManager();
       const plugin = pluginManager.getPlugin(pluginName);
-      
+
       if (!plugin || !plugin.getParameterSchema) {
         console.warn(`Plugin ${pluginName} not found or doesn't support parameters`);
         return;
@@ -149,7 +149,7 @@ export class SimplifiedPropertyInspectorSystem extends System {
     try {
       const pluginManager = this.studio.getPluginManager();
       const plugin = pluginManager.getPlugin(pluginName);
-      
+
       if (!plugin || !plugin.getParameterSchema) {
         console.warn(`Plugin ${pluginName} not found or doesn't support parameters`);
         return;
@@ -161,7 +161,7 @@ export class SimplifiedPropertyInspectorSystem extends System {
       // Create demo components for all component types in the plugin
       for (const [componentType, parameterDescriptors] of parameterSchema.components) {
         const demoComponent = this.createDemoComponent(componentType, parameterDescriptors);
-        
+
         this.parameterManager.registerComponentParameters(
           pluginName,
           componentType,
@@ -180,28 +180,52 @@ export class SimplifiedPropertyInspectorSystem extends System {
 
     // Create default values based on parameter descriptors
     for (const param of parameterDescriptors) {
-      switch (param.type) {
-        case 'number':
-          demoComponent[param.key] = param.min !== undefined ? (param.min + (param.max || param.min + 1)) / 2 : 1.0;
-          break;
-        case 'boolean':
-          demoComponent[param.key] = false;
-          break;
-        case 'text':
-          demoComponent[param.key] = '';
-          break;
-        case 'color':
-          demoComponent[param.key] = '#0077be';
-          break;
-        case 'vector3':
-          demoComponent[param.key] = { x: 0, y: 0, z: 0 };
-          break;
-        default:
-          demoComponent[param.key] = null;
+      const key = param.key;
+
+      // Handle dot notation (e.g., "windDirection.x")
+      if (key.includes('.')) {
+        const parts = key.split('.');
+        let current = demoComponent;
+
+        // Navigate/create nested object structure
+        for (let i = 0; i < parts.length - 1; i++) {
+          const part = parts[i];
+          if (!current[part]) {
+            current[part] = {};
+          }
+          current = current[part];
+        }
+
+        // Set the final property value
+        const finalKey = parts[parts.length - 1];
+        current[finalKey] = this.getDefaultValueForParam(param);
+      } else {
+        // Simple property
+        demoComponent[key] = this.getDefaultValueForParam(param);
       }
     }
 
     return demoComponent;
+  }
+
+  private getDefaultValueForParam(param: any): any {
+    switch (param.type) {
+      case 'number':
+        if (param.min !== undefined && param.max !== undefined) {
+          return (param.min + param.max) / 2;
+        }
+        return param.min !== undefined ? param.min : 1.0;
+      case 'boolean':
+        return false;
+      case 'text':
+        return '';
+      case 'color':
+        return '#0077be';
+      case 'vector3':
+        return { x: 0, y: 0, z: 0 };
+      default:
+        return null;
+    }
   }
 
   // Public methods for external control
