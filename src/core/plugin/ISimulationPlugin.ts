@@ -3,6 +3,7 @@ import { IStudio } from "../../studio/IStudio";
 import { ParameterPanelComponent } from "../components/ParameterPanelComponent";
 import { IWorld } from "../ecs/IWorld";
 import { ISystem } from "../ecs/ISystem";
+import { PluginParameterSchema } from "../ui/PluginParameterManager";
 
 /**
  * Interface for simulation plugins.
@@ -90,10 +91,20 @@ export interface ISimulationPlugin {
   getAuthor?(): string;
 
   /**
+   * Gets the parameter schema for this plugin.
+   * This defines the parameters that can be edited for components provided by this plugin.
+   * This replaces the old getParameterPanels approach with a cleaner, data-driven approach.
+   *
+   * @returns The plugin parameter schema, or undefined if not provided
+   */
+  getParameterSchema?(): PluginParameterSchema;
+
+  /**
    * Gets the parameter panels for this plugin.
    * This is used by the PropertyInspectorSystem to display the appropriate
    * parameter panels for the active simulation.
    *
+   * @deprecated Use getParameterSchema() instead for the new clean parameter system
    * @returns An array of parameter panel components
    */
   getParameterPanels?(world: IWorld): ParameterPanelComponent[];

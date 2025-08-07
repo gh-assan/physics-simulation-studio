@@ -117,8 +117,24 @@ export class PluginParameterManager {
         return;
       }
 
+      // Handle dot notation for binding
+      let bindingTarget = component;
+      let bindingKey = param.key;
+
+      if (param.key.includes('.')) {
+        const parts = param.key.split('.');
+        const finalKey = parts[parts.length - 1];
+
+        // Navigate to the parent object
+        for (let i = 0; i < parts.length - 1; i++) {
+          bindingTarget = bindingTarget[parts[i]];
+        }
+
+        bindingKey = finalKey;
+      }
+
       // Create binding based on type
-      const binding = folder.addBinding(component, param.key, {
+      const binding = folder.addBinding(bindingTarget, bindingKey, {
         label: param.label || param.key,
         min: param.min,
         max: param.max,
