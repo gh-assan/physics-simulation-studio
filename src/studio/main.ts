@@ -302,29 +302,29 @@ function setupStateChangeListeners(store: any, studio: Studio) {
  */
 function demonstrateGlobalState() {
   console.log('\n🚀 Demonstrating Global State Management:');
-  
+
   const store = (window as any).globalStore;
   const currentState = store.getState();
-  
+
   // Show initial state summary
   const summary = Selectors.Meta.getStateSummary(currentState);
   console.log('📊 Current State Summary:', summary);
-  
+
   // Show plugin information
   const allPlugins = Selectors.Plugin.getAllPlugins(currentState);
   const activePlugins = Selectors.Plugin.getActivePlugins(currentState);
   console.log(`🔌 Plugins: ${allPlugins.length} total, ${activePlugins.length} active`);
-  
+
   // Show current simulation
   const currentSim = Selectors.Simulation.getCurrentSimulation(currentState);
   console.log(`🎮 Current Simulation: ${currentSim || 'None loaded'}`);
-  
+
   // Show UI state
   const selectedEntity = Selectors.UI.getSelectedEntity(currentState);
   const visiblePanels = Selectors.UI.getVisiblePanels(currentState);
   console.log(`🎯 Selected Entity: ${selectedEntity || 'None'}`);
   console.log(`👁️  Visible Panels: ${visiblePanels.join(', ')}`);
-  
+
   // Show viewport state
   const cameraPos = Selectors.Viewport.getCameraPosition(currentState);
   const showGrid = Selectors.Viewport.isGridVisible(currentState);
@@ -333,7 +333,7 @@ function demonstrateGlobalState() {
 
   // Add to window for manual testing
   (window as any).demonstrateGlobalState = demonstrateGlobalState;
-  
+
   console.log('\n💡 Try these in the browser console:');
   console.log('   - demonstrateGlobalState() - Run this demo again');
   console.log('   - globalStore.getState() - Get current state');
@@ -351,7 +351,7 @@ async function main() {
     // 1. Initialize Global State Store FIRST - this must happen before everything else
     console.log("🌟 Initializing Global State Management System...");
     const globalStore = initializeGlobalStore();
-    
+
     // Add global state debugging tools to window
     (window as any).globalStore = globalStore;
     (window as any).stateSelectors = Selectors;
@@ -359,7 +359,7 @@ async function main() {
 
     // 2. Set up core systems as before
     const { world, pluginManager, stateManager, studio, pluginDiscovery } = setupCoreSystems();
-    
+
     // 3. Create the state synchronizer to bridge old and new state management
     console.log("🔗 Setting up state synchronization...");
     const stateSynchronizer = createGlobalStateSynchronizer(
@@ -378,7 +378,7 @@ async function main() {
 
     // 6. Load available plugins dynamically
     const loadedPlugins = await pluginDiscovery.loadAllPlugins();
-    
+
     // 7. Perform initial state synchronization AFTER everything is loaded
     console.log("🔄 Performing initial state synchronization...");
     stateSynchronizer.performInitialSync();

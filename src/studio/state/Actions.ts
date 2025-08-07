@@ -52,7 +52,7 @@ export interface SystemActivatedAction extends BaseAction {
   };
 }
 
-// Component Actions  
+// Component Actions
 export interface ComponentRegisteredAction extends BaseAction {
   readonly type: 'COMPONENT_REGISTERED';
   readonly payload: {
@@ -133,7 +133,7 @@ export interface ApplicationShutdownAction extends BaseAction {
 }
 
 // Union of all possible actions
-export type AppAction = 
+export type AppAction =
   | PluginRegisteredAction
   | PluginActivatedAction
   | PluginDeactivatedAction
@@ -158,21 +158,21 @@ export type AppAction =
 
 export const Actions = {
   // Plugin actions
-  pluginRegistered: (plugin: PluginInfo, source: string = 'PluginManager'): PluginRegisteredAction => ({
+  pluginRegistered: (plugin: PluginInfo, source = 'PluginManager'): PluginRegisteredAction => ({
     type: 'PLUGIN_REGISTERED',
     payload: { plugin },
     timestamp: Date.now(),
     metadata: { source },
   }),
 
-  pluginActivated: (pluginName: string, source: string = 'PluginManager'): PluginActivatedAction => ({
+  pluginActivated: (pluginName: string, source = 'PluginManager'): PluginActivatedAction => ({
     type: 'PLUGIN_ACTIVATED',
     payload: { pluginName },
     timestamp: Date.now(),
     metadata: { source },
   }),
 
-  pluginDeactivated: (pluginName: string, source: string = 'PluginManager'): PluginDeactivatedAction => ({
+  pluginDeactivated: (pluginName: string, source = 'PluginManager'): PluginDeactivatedAction => ({
     type: 'PLUGIN_DEACTIVATED',
     payload: { pluginName },
     timestamp: Date.now(),
@@ -180,7 +180,7 @@ export const Actions = {
   }),
 
   // System actions
-  systemRegistered: (system: SystemInfo, source: string = 'SystemManager'): SystemRegisteredAction => ({
+  systemRegistered: (system: SystemInfo, source = 'SystemManager'): SystemRegisteredAction => ({
     type: 'SYSTEM_REGISTERED',
     payload: { system },
     timestamp: Date.now(),
@@ -188,7 +188,7 @@ export const Actions = {
   }),
 
   // Component actions
-  componentRegistered: (component: ComponentInfo, source: string = 'ComponentManager'): ComponentRegisteredAction => ({
+  componentRegistered: (component: ComponentInfo, source = 'ComponentManager'): ComponentRegisteredAction => ({
     type: 'COMPONENT_REGISTERED',
     payload: { component },
     timestamp: Date.now(),
@@ -196,14 +196,14 @@ export const Actions = {
   }),
 
   // UI actions
-  entitySelected: (entityId: string | null, source: string = 'SelectionSystem'): EntitySelectedAction => ({
+  entitySelected: (entityId: string | null, source = 'SelectionSystem'): EntitySelectedAction => ({
     type: 'ENTITY_SELECTED',
     payload: { entityId },
     timestamp: Date.now(),
     metadata: { source },
   }),
 
-  panelVisibilityChanged: (panelId: string, isVisible: boolean, source: string = 'VisibilityManager'): PanelVisibilityChangedAction => ({
+  panelVisibilityChanged: (panelId: string, isVisible: boolean, source = 'VisibilityManager'): PanelVisibilityChangedAction => ({
     type: 'PANEL_VISIBILITY_CHANGED',
     payload: { panelId, isVisible },
     timestamp: Date.now(),
@@ -211,21 +211,21 @@ export const Actions = {
   }),
 
   // Simulation actions
-  simulationLoaded: (simulationName: string, source: string = 'Studio'): SimulationLoadedAction => ({
+  simulationLoaded: (simulationName: string, source = 'Studio'): SimulationLoadedAction => ({
     type: 'SIMULATION_LOADED',
     payload: { simulationName },
     timestamp: Date.now(),
     metadata: { source },
   }),
 
-  simulationUnloaded: (source: string = 'Studio'): SimulationUnloadedAction => ({
+  simulationUnloaded: (source = 'Studio'): SimulationUnloadedAction => ({
     type: 'SIMULATION_UNLOADED',
     timestamp: Date.now(),
     metadata: { source },
   }),
 
   // Viewport actions
-  cameraMoved: (position: { x: number; y: number; z: number }, target: { x: number; y: number; z: number }, zoom: number, source: string = 'CameraControls'): CameraMovedAction => ({
+  cameraMoved: (position: { x: number; y: number; z: number }, target: { x: number; y: number; z: number }, zoom: number, source = 'CameraControls'): CameraMovedAction => ({
     type: 'CAMERA_MOVED',
     payload: { position, target, zoom },
     timestamp: Date.now(),

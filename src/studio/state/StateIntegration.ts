@@ -194,7 +194,7 @@ export class ComponentManagerStateSync {
     for (const component of registeredComponents) {
       // Get actual entity count from component manager using component types
       const entityCount = this.componentManager.getEntitiesWithComponentTypes([component.name]).length;
-      
+
       if (entityCount !== component.entityCount) {
         this.store.dispatch(Actions.componentRegistered({
           ...component,
@@ -212,7 +212,7 @@ export class ComponentManagerStateSync {
 
     for (const [componentName, constructor] of componentConstructors.entries()) {
       const entityCount = this.componentManager.getEntitiesWithComponentTypes([componentName]).length;
-      
+
       const componentInfo: ComponentInfo = {
         name: componentName,
         type: componentName, // Could be enhanced to get actual type info
@@ -252,7 +252,7 @@ export class GlobalStateSynchronizer {
     store?: GlobalStateStore
   ) {
     this.store = store || getGlobalStore();
-    
+
     this.pluginSync = new PluginManagerStateSync(pluginManager, this.store);
     this.systemSync = new SystemManagerStateSync(systemManager, this.store);
     this.componentSync = new ComponentManagerStateSync(componentManager, this.store);
@@ -264,7 +264,7 @@ export class GlobalStateSynchronizer {
    */
   performInitialSync(): void {
     Logger.getInstance().log('[GlobalStateSynchronizer] Starting initial state synchronization...');
-    
+
     this.pluginSync.syncCurrentState();
     this.systemSync.syncCurrentState();
     this.componentSync.syncCurrentState();

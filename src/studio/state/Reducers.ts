@@ -19,7 +19,7 @@ function pluginsReducer(plugins: readonly PluginInfo[], action: AppAction): read
       }
       return [...plugins, plugin];
     }
-    
+
     case 'PLUGIN_ACTIVATED': {
       const { pluginName } = action.payload;
       return plugins.map(plugin =>
@@ -28,7 +28,7 @@ function pluginsReducer(plugins: readonly PluginInfo[], action: AppAction): read
           : plugin
       );
     }
-    
+
     case 'PLUGIN_DEACTIVATED': {
       const { pluginName } = action.payload;
       return plugins.map(plugin =>
@@ -37,7 +37,7 @@ function pluginsReducer(plugins: readonly PluginInfo[], action: AppAction): read
           : plugin
       );
     }
-    
+
     default:
       return plugins;
   }
@@ -56,7 +56,7 @@ function systemsReducer(systems: readonly SystemInfo[], action: AppAction): read
       }
       return [...systems, system];
     }
-    
+
     case 'SYSTEM_ACTIVATED': {
       const { systemName } = action.payload;
       return systems.map(system =>
@@ -65,7 +65,7 @@ function systemsReducer(systems: readonly SystemInfo[], action: AppAction): read
           : system
       );
     }
-    
+
     default:
       return systems;
   }
@@ -84,7 +84,7 @@ function componentsReducer(components: readonly ComponentInfo[], action: AppActi
       }
       return [...components, component];
     }
-    
+
     case 'COMPONENT_ENTITY_COUNT_UPDATED': {
       const { componentName, newCount } = action.payload;
       return components.map(component =>
@@ -93,7 +93,7 @@ function componentsReducer(components: readonly ComponentInfo[], action: AppActi
           : component
       );
     }
-    
+
     default:
       return components;
   }
@@ -109,13 +109,13 @@ function uiReducer(ui: AppState['ui'], action: AppAction): AppState['ui'] {
       const visiblePanels = isVisible
         ? [...ui.visiblePanels.filter(id => id !== panelId), panelId]
         : ui.visiblePanels.filter(id => id !== panelId);
-      
+
       return {
         ...ui,
         visiblePanels,
       };
     }
-    
+
     case 'ENTITY_SELECTED': {
       const { entityId } = action.payload;
       return {
@@ -123,7 +123,7 @@ function uiReducer(ui: AppState['ui'], action: AppAction): AppState['ui'] {
         selectedEntity: entityId,
       };
     }
-    
+
     case 'INSPECTOR_MODE_CHANGED': {
       const { mode } = action.payload;
       return {
@@ -131,7 +131,7 @@ function uiReducer(ui: AppState['ui'], action: AppAction): AppState['ui'] {
         inspectorMode: mode,
       };
     }
-    
+
     default:
       return ui;
   }
@@ -151,7 +151,7 @@ function simulationReducer(simulation: AppState['simulation'], action: AppAction
         isPaused: false,
       };
     }
-    
+
     case 'SIMULATION_UNLOADED': {
       return {
         ...simulation,
@@ -160,14 +160,14 @@ function simulationReducer(simulation: AppState['simulation'], action: AppAction
         isPaused: false,
       };
     }
-    
+
     case 'SIMULATION_STATE_CHANGED': {
       return {
         ...simulation,
         ...action.payload,
       };
     }
-    
+
     default:
       return simulation;
   }
@@ -189,14 +189,14 @@ function viewportReducer(viewport: AppState['viewport'], action: AppAction): App
         },
       };
     }
-    
+
     case 'VIEWPORT_SETTINGS_CHANGED': {
       return {
         ...viewport,
         ...action.payload,
       };
     }
-    
+
     default:
       return viewport;
   }
@@ -219,12 +219,12 @@ export function rootReducer(state: AppState, action: AppAction): AppState {
     viewport: viewportReducer(state.viewport, action),
     lastUpdated: Date.now(),
   };
-  
+
   // Only return new state if something actually changed
   if (JSON.stringify(newState) === JSON.stringify(state)) {
     return state; // No change, return original state reference
   }
-  
+
   return newState;
 }
 

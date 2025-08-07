@@ -31,7 +31,7 @@ export interface Subscription {
 export class GlobalStateStore {
   private state: AppState;
   private listeners: Set<StateChangeListener> = new Set();
-  private isDispatching: boolean = false;
+  private isDispatching = false;
   private actionHistory: AppAction[] = [];
   private readonly maxHistorySize: number = 100;
 
@@ -58,7 +58,7 @@ export class GlobalStateStore {
     try {
       this.isDispatching = true;
       const previousState = this.state;
-      
+
       // Apply the reducer to get the new state
       this.state = rootReducer(this.state, action);
 
@@ -80,7 +80,7 @@ export class GlobalStateStore {
    */
   subscribe(listener: StateChangeListener): Subscription {
     this.listeners.add(listener);
-    
+
     return {
       unsubscribe: () => {
         this.listeners.delete(listener);
@@ -106,13 +106,13 @@ export class GlobalStateStore {
     equalityFn?: (a: T, b: T) => boolean
   ): Subscription {
     let previousValue = selector(this.state);
-    
+
     const listener: StateChangeListener = (newState, previousState, action) => {
       const newValue = selector(newState);
-      
+
       // Use custom equality function or default shallow equality
       const isEqual = equalityFn ? equalityFn(newValue, previousValue) : newValue === previousValue;
-      
+
       if (!isEqual) {
         callback(newValue, previousValue, newState, action);
         previousValue = newValue;
@@ -182,7 +182,7 @@ export class GlobalStateStore {
    */
   private addToHistory(action: AppAction): void {
     this.actionHistory.push(action);
-    
+
     // Limit history size to prevent memory leaks
     if (this.actionHistory.length > this.maxHistorySize) {
       this.actionHistory = this.actionHistory.slice(-this.maxHistorySize);
