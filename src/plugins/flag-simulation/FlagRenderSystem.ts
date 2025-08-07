@@ -36,7 +36,6 @@ export class FlagRenderSystem extends System implements IRenderable {
           update: this.renderEntities.bind(this),
           clear: this.clear.bind(this)
         });
-        console.log('[FlagRenderSystem] Registered with RenderOrchestrator');
         break;
       }
     }
@@ -48,7 +47,6 @@ export class FlagRenderSystem extends System implements IRenderable {
   public onRemove(world: IWorld): void {
     if (this.renderOrchestrator) {
       this.renderOrchestrator.unregisterRenderer('flag-renderer');
-      console.log('[FlagRenderSystem] Unregistered from RenderOrchestrator');
     }
     this.clear();
   }

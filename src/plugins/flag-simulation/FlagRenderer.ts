@@ -3,7 +3,6 @@ import { PoleComponent } from "./PoleComponent";
 import * as THREE from "three";
 
 export function createFlagMesh(flag: FlagComponent): THREE.Mesh {
-  console.log("[FlagRenderer] createFlagMesh called for flag:", flag);
   const geometry = new THREE.BufferGeometry();
   const vertices: number[] = [];
   const indices: number[] = [];
