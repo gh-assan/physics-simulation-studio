@@ -1,0 +1,61 @@
+/**
+ * Framework-agnostic UI  createPanel(title: string): any {
+    console.log(`[TweakpaneAdapter] Creating panel: ${title}`);
+    const folder = this.tweakpane.addFolder({ title });
+    console.log(`[TweakpaneAdapter] Panel created:`, folder);
+    return folder;
+  }apter for parameter panels
+ * Separates UI logic from parameter definitions
+ */
+export declare abstract class UIAdapter {
+    abstract createPanel(title: string): any;
+    abstract addNumberControl(panel: any, target: object, key: string, options: any): void;
+    abstract addTextControl(panel: any, target: object, key: string, options: any): void;
+    abstract addBooleanControl(panel: any, target: object, key: string, options: any): void;
+    abstract addSelectControl(panel: any, target: object, key: string, options: any): void;
+    abstract addColorControl(panel: any, target: object, key: string, options: any): void;
+    abstract addVector3Control(panel: any, target: object, key: string, options: any): void;
+    abstract addGroup(panel: any, title: string): any;
+    abstract dispose(panel: any): void;
+    abstract setVisible(panel: any, visible: boolean): void;
+    abstract setEnabled(panel: any, enabled: boolean): void;
+}
+export declare class TweakpaneAdapter extends UIAdapter {
+    private pane;
+    constructor(pane: any);
+    createPanel(title: string): any;
+    addNumberControl(panel: any, target: object, key: string, options: any): any;
+    addTextControl(panel: any, target: object, key: string, options: any): void;
+    addBooleanControl(panel: any, target: object, key: string, options: any): void;
+    addSelectControl(panel: any, target: object, key: string, options: any): void;
+    addColorControl(panel: any, target: object, key: string, options: any): void;
+    addVector3Control(panel: any, target: object, key: string, options: any): void;
+    addGroup(panel: any, title: string): any;
+    dispose(panel: any): void;
+    setVisible(panel: any, visible: boolean): void;
+    setEnabled(panel: any, enabled: boolean): void;
+    private setupControlVisibility;
+}
+export declare class ParameterPanelRenderer {
+    readonly adapter: UIAdapter;
+    constructor(adapter: UIAdapter);
+    render(componentType: string, component: object, parentPanel?: any): any;
+    private renderProperty;
+    private formatComponentName;
+    private formatPropertyName;
+}
+export declare class ParameterManager {
+    private panels;
+    private pluginPanels;
+    private renderer;
+    constructor(adapter: UIAdapter);
+    registerComponent(componentType: string, component: object): any;
+    clearComponent(componentType: string): void;
+    clearAll(): void;
+    setPluginVisible(pluginId: string, visible: boolean): void;
+    showOnlyPlugin(pluginId: string): void;
+    showMultiplePlugins(pluginIds: string[]): void;
+    getVisiblePlugins(): string[];
+    getAvailablePlugins(): string[];
+    refreshVisibility(): void;
+}

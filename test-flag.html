@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flag Simulation Test</title>
+    <style>
+        body { margin: 0; padding: 20px; background: #222; color: white; font-family: Arial, sans-serif; }
+        #info { position: absolute; top: 10px; left: 10px; z-index: 100; }
+        #canvas-container { width: 100%; height: 500px; border: 1px solid #444; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <h2>🎌 Flag Simulation Test</h2>
+        <p>Open browser console to see debug output</p>
+        <p>The flag simulation should auto-load and render</p>
+    </div>
+    
+    <div id="left-panel" class="studio--left" style="position: fixed; left: 0; top: 0; width: 300px; height: 100vh; background: #333; padding: 10px; overflow-y: auto;"></div>
+    <div id="main-content" class="studio--main" style="margin-left: 320px; height: 100vh;"></div>
+    
+    <script type="module" src="/src/studio/main.ts"></script>
+</body>
+</html>

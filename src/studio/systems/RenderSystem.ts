@@ -5,14 +5,10 @@ import { PositionComponent } from "../../core/components/PositionComponent";
 import { RotationComponent } from "../../core/ecs/RotationComponent";
 import { RenderableComponent } from "../../core/ecs/RenderableComponent";
 import { IGraphicsManager } from "../IGraphicsManager";
-
-import { WaterRenderer } from "../../plugins/water-simulation/WaterRenderer"; // Import WaterRenderer
-import { SelectableComponent } from "../../core/components/SelectableComponent"; // Import SelectableComponent
+import { SelectableComponent } from "../../core/components/SelectableComponent";
 import { createGeometry, disposeThreeJsObject } from "../utils/ThreeJsUtils";
 import { ThreeGraphicsManager } from "../graphics/ThreeGraphicsManager";
 import { MaterialDisposer } from "../utils/MaterialDisposer";
-
-import { WaterDropletComponent } from "../../plugins/water-simulation/WaterComponents"; // Import WaterDropletComponent
 
 export class RenderSystem extends System {
   private graphicsManager: ThreeGraphicsManager;
@@ -20,10 +16,10 @@ export class RenderSystem extends System {
   private raycaster!: THREE.Raycaster;
   private mouse!: THREE.Vector2;
   private world: World;
-  // ...existing code...
+  private renderOrchestrator: any; // The single source of rendering truth
 
   constructor(graphicsManager: ThreeGraphicsManager, world: World) {
-    super(1000);
+    super(); // Use default priority - timing doesn't matter anymore
     this.graphicsManager = graphicsManager;
     this.world = world;
 
@@ -39,6 +35,13 @@ export class RenderSystem extends System {
       this.onParameterChanged,
       false
     );
+  }
+
+  /**
+   * Set the RenderOrchestrator as the single source of rendering truth
+   */
+  public setRenderOrchestrator(orchestrator: any): void {
+    this.renderOrchestrator = orchestrator;
   }
 
   // Automatically clean up meshes/materials when an entity is removed
@@ -113,36 +116,30 @@ export class RenderSystem extends System {
   }
 
   private onParameterChanged = (event: Event): void => {
-    // This method will be called when a 'parameter-changed' event is dispatched.
-    // It can be used to trigger a re-render or update specific parts of the scene
-    // based on the changed parameter, without necessarily restarting the simulation.
-    console.log('Parameter changed, re-rendering scene:', event);
-    // Example: if a parameter affects a mesh's color, update it here.
-    // For now, just trigger a render cycle.
+    // Trigger a re-render when parameters change
     this.graphicsManager.render();
   }
 
-  public update(world: World, _deltaTime: number): void {
-    // Always use the current world from the studio
-    this.clear();
-
-    // --- Water droplet debug rendering ---
-    const dropletEntities = world.componentManager.getEntitiesWithComponents([
-      WaterDropletComponent
-    ]);
-
-    for (const entityId of dropletEntities) {
-      const position = world.componentManager.getComponent(
-        entityId,
-        PositionComponent.type
-      ) as PositionComponent;
-
-      if (position) {
-        this.updateDebugBox(entityId, position);
-      }
+  public update(world: World, deltaTime: number): void {
+    // STREAMLINED DESIGN: Single delegation point
+    if (this.renderOrchestrator) {
+      // Delegate ALL rendering to the orchestrator - it knows best
+      this.renderOrchestrator.update(world, deltaTime);
+    } else {
+      // Fallback only if no orchestrator exists (for backward compatibility)
+      this.renderAllEntities(world);
     }
 
-    // --- Generic mesh rendering for other entities ---
+    // Final render call
+    this.graphicsManager.render();
+  }
+
+  /**
+   * Simple fallback: render all entities (used when no RenderOrchestrator)
+   */
+  private renderAllEntities(world: World): void {
+    this.clear();
+
     const entities = world.componentManager.getEntitiesWithComponents([
       PositionComponent,
       RotationComponent,
@@ -150,9 +147,6 @@ export class RenderSystem extends System {
     ]);
 
     for (const entityId of entities) {
-      // Skip if already handled as water droplet
-      if (world.componentManager.hasComponent(entityId, WaterDropletComponent.type)) continue;
-
       const components = this.getEntityComponents(world, entityId);
       if (!components) continue;
 
@@ -160,8 +154,6 @@ export class RenderSystem extends System {
       this.updateMeshTransform(mesh, components.position, components.rotation);
       this.updateMeshSelection(world, entityId, mesh);
     }
-
-    this.graphicsManager.render();
   }
 
   /**
@@ -176,48 +168,13 @@ export class RenderSystem extends System {
   }
 
   public clear(): void {
+    // Clean up managed meshes
     this.meshes.forEach((mesh) => {
       this.graphicsManager.getScene().remove(mesh);
       mesh.geometry.dispose();
       MaterialDisposer.dispose(mesh.material);
     });
     this.meshes.clear();
-
-    // Remove all debug boxes
-    this.graphicsManager.getScene().children = this.graphicsManager
-      .getScene()
-      .children.filter(
-        (child: THREE.Object3D) => !child.name.startsWith("debugBox_")
-      );
-
-    // Remove all ripple meshes from the scene
-    this.graphicsManager.getScene().children = this.graphicsManager
-      .getScene()
-      .children.filter(
-        (child: THREE.Object3D) => !child.name.startsWith("ripple_")
-      );
-
-    // Remove all water meshes from the scene
-    this.graphicsManager.getScene().children = this.graphicsManager
-      .getScene()
-      .children.filter(
-        (child: THREE.Object3D) =>
-          child.name !== "waterMesh" &&
-          child.name !== "waterDropletMesh" &&
-          child.name !== "waterRipple"
-      );
-  }
-
-  private updateDebugBox(entityId: number, position: PositionComponent): void {
-    let debugBox = this.graphicsManager.getScene().getObjectByName(`debugBox_${entityId}`);
-    if (!debugBox) {
-      const geometry = new THREE.BoxGeometry(2, 2, 2);
-      const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
-      debugBox = new THREE.Mesh(geometry, material);
-      debugBox.name = `debugBox_${entityId}`;
-      this.graphicsManager.getScene().add(debugBox);
-    }
-    debugBox.position.set(position.x, position.y, position.z);
   }
 
   private getEntityComponents(world: World, entityId: number) {
@@ -238,14 +195,6 @@ export class RenderSystem extends System {
     const geometry = createGeometry(geometryType);
     const material = new THREE.MeshBasicMaterial({ color: renderable.color });
     const mesh = new THREE.Mesh(geometry, material);
-
-    // Scale mesh by radius if CelestialBodyComponent is present
-    const celestialBody = world.componentManager.getComponent(entityId, 'CelestialBodyComponent') as any;
-    if (celestialBody?.radius) {
-      const VISUALIZATION_RADIUS_SCALE = 0.01;
-      const scaledRadius = Math.max(0.1, celestialBody.radius * VISUALIZATION_RADIUS_SCALE);
-      mesh.scale.set(scaledRadius, scaledRadius, scaledRadius);
-    }
 
     this.graphicsManager.getScene().add(mesh);
     this.meshes.set(entityId, mesh);

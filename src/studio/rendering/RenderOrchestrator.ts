@@ -11,7 +11,8 @@ import * as THREE from "three";
  */
 export class RenderOrchestrator extends System {
   private graphicsManager: ThreeGraphicsManager;
-  private renderers: Map<string, IRenderer> = new Map();
+  public renderers: Map<string, IRenderer> = new Map(); // Made public for plugin access
+  private performanceMetrics: Map<string, number> = new Map();
   private persistentObjects: Set<string> = new Set([
     "grid", "axes", "origin", "ambientLight", "directionalLight"
   ]);
@@ -31,6 +32,8 @@ export class RenderOrchestrator extends System {
    */
   public registerRenderer(rendererId: string, renderer: IRenderer): void {
     this.renderers.set(rendererId, renderer);
+    this.performanceMetrics.set(rendererId, 0);
+    Logger.getInstance().log(`✅ Renderer '${rendererId}' registered with RenderOrchestrator`);
   }
 
   /**
@@ -40,6 +43,8 @@ export class RenderOrchestrator extends System {
     const renderer = this.renderers.get(rendererId);
     renderer?.dispose?.();
     this.renderers.delete(rendererId);
+    this.performanceMetrics.delete(rendererId);
+    Logger.getInstance().log(`🗑️ Renderer '${rendererId}' unregistered from RenderOrchestrator`);
   }
 
   /**
@@ -95,6 +100,37 @@ export class RenderOrchestrator extends System {
   }
 
   /**
+   * Check if an entity is handled by a specialized renderer
+   * This prevents conflicts between different rendering systems
+   */
+  public isEntityHandled(entityId: number): boolean {
+    return this.sceneState.entities.has(entityId);
+  }
+
+  /**
+   * Get performance metrics for all renderers (in milliseconds)
+   */
+  public getPerformanceMetrics(): ReadonlyMap<string, number> {
+    return new Map(this.performanceMetrics);
+  }
+
+  /**
+   * Log performance summary for all renderers
+   */
+  public logPerformanceMetrics(): void {
+    if (this.performanceMetrics.size === 0) {
+      Logger.getInstance().log("[RenderOrchestrator] No renderers registered");
+      return;
+    }
+
+    Logger.getInstance().log("[RenderOrchestrator] Performance Metrics (last frame):");
+    for (const [rendererId, time] of this.performanceMetrics) {
+      const formatted = time.toFixed(3);
+      Logger.getInstance().log(`  ${rendererId}: ${formatted}ms`);
+    }
+  }
+
+  /**
    * Main update loop - orchestrates all rendering
    */
   public update(world: IWorld, deltaTime: number): void {
@@ -107,10 +143,13 @@ export class RenderOrchestrator extends System {
       return;
     }
 
-    // Update all registered renderers
+    // Update all registered renderers with performance monitoring
     for (const [rendererId, renderer] of this.renderers) {
+      const startTime = performance.now();
       try {
         renderer.update(world, deltaTime);
+        const endTime = performance.now();
+        this.performanceMetrics.set(rendererId, endTime - startTime);
       } catch (error) {
         Logger.getInstance().error(`[RenderOrchestrator] Error in renderer ${rendererId}:`, error);
       }
