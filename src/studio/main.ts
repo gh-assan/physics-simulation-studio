@@ -1,4 +1,11 @@
-import { PropertyInspectorUIManager } from "./ui/PropertyInspectorUIManager";
+// Modern Parameter System Integration
+import { setupModernParameterSystem, StudioParameterIntegration, SimplifiedPropertyInspectorUIManager } from "../core/ui/SimplifiedParameterSystem";
+import { createModernPropertyInspectorSystem } from "./systems/ModernPropertyInspectorSystem";
+// Integration test (will auto-run on page load)
+import "../core/ui/IntegrationTest";
+// Parameter verification (for debugging)
+import "../core/ui/ParameterVerification";
+
 import { SceneSerializer } from "./systems/SceneSerializer";
 import { PositionComponent } from "../core/components/PositionComponent";
 import { RenderableComponent } from "../core/components/RenderableComponent";
@@ -18,7 +25,6 @@ import { StateManager } from "./state/StateManager";
 import { Studio } from "./Studio";
 import { IUIManager } from "./IUIManager";
 import { UIManager } from "./uiManager";
-import { PropertyInspectorSystem } from "./systems/PropertyInspectorSystem";
 import { ComponentPropertyRegistry } from "./utils/ComponentPropertyRegistry";
 import { IPluginContext } from "./IPluginContext";
 import { ThreeGraphicsManager } from "./graphics/ThreeGraphicsManager";
@@ -62,7 +68,7 @@ function setupCoreSystems(): { world: World; pluginManager: PluginManager; state
   return { world, pluginManager, stateManager, studio, pluginDiscovery };
 }
 
-function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager): { uiManager: UIManager; propertyInspectorUIManager: PropertyInspectorUIManager; visibilityManager: VisibilityManager } {
+function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager): { uiManager: UIManager; propertyInspectorUIManager: SimplifiedPropertyInspectorUIManager; visibilityManager: VisibilityManager; parameterSystemIntegration: StudioParameterIntegration } {
   // Initialize core UI and ensure left panel exists
   const visibilityManager = new VisibilityManager();
   visibilityManager.initializeCoreUI();
@@ -76,11 +82,15 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
   const pane = new Pane({ container: leftPanel });
 
   const uiManager = new UIManager(pane);
-  const propertyInspectorUIManager = new PropertyInspectorUIManager(uiManager, visibilityManager);
+
+  // Modern Parameter System Integration 
+  const parameterSystemIntegration = setupModernParameterSystem(pane);
+  const propertyInspectorUIManager = parameterSystemIntegration.getManager();
 
   // Expose for debugging
   (window as any).uiManager = uiManager;
   (window as any).propertyInspectorUIManager = propertyInspectorUIManager;
+  (window as any).parameterSystemIntegration = parameterSystemIntegration;
   (window as any).visibilityManager = visibilityManager;
 
   const globalControlsFolder = pane.addFolder({ title: "Global Controls" });
@@ -173,10 +183,60 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
   // Listen for plugin registration to update simulation selector
   pluginManager.on(PluginManagerEvent.PLUGIN_REGISTERED, updateSimulationSelector);
 
-  return { uiManager, propertyInspectorUIManager, visibilityManager };
+  // NEW: Add Plugin Visibility Control
+  const pluginControlsFolder = pane.addFolder({ title: "Plugin Controls" });
+  
+  // Plugin selector for parameter visibility
+  const pluginSelectorState = { plugin: '' };
+  const pluginSelector = pluginControlsFolder.addBinding(pluginSelectorState, 'plugin', {
+    label: 'Show Parameters',
+    options: [
+      { text: 'All Plugins', value: '' },
+      { text: 'Flag Simulation', value: 'flag-simulation' },
+      { text: 'Water Simulation', value: 'water-simulation' },
+      { text: 'Solar System', value: 'solar-system' }
+    ]
+  });
+  
+  pluginSelector.on('change', (ev: any) => {
+    console.log('Plugin selector changed to:', ev.value);
+    if (ev.value) {
+      // Switch to specific plugin and show demo parameters
+      parameterSystemIntegration.switchToPlugin(ev.value);
+      
+      // Show demo parameters for the selected plugin
+      if (ev.value === 'flag-simulation') {
+        parameterSystemIntegration.demoFlagSimulation();
+      } else if (ev.value === 'water-simulation') {
+        parameterSystemIntegration.demoWaterSimulation();
+      } else if (ev.value === 'solar-system') {
+        // Add demo for solar system if it exists
+        console.log('Solar system demo not yet implemented');
+      }
+    } else {
+      // Show parameters for current simulation or clear all
+      const currentSim = stateManager.selectedSimulation.getSimulationName();
+      if (currentSim) {
+        parameterSystemIntegration.switchToPlugin(currentSim);
+      } else {
+        // Show all plugins demo
+        parameterSystemIntegration.demoMultiplePlugins();
+      }
+    }
+  });
+
+  // Register Plugin Controls panel with VisibilityManager  
+  visibilityManager.registerGlobalPanel(
+    'plugin-controls',
+    pluginControlsFolder,
+    leftPanel,
+    { priority: 1.5 }
+  );
+
+  return { uiManager, propertyInspectorUIManager, visibilityManager, parameterSystemIntegration };
 }
 
-function registerComponentsAndSystems(world: World, studio: Studio, propertyInspectorUIManager: PropertyInspectorUIManager, pluginManager: PluginManager, visibilityManager: VisibilityManager): VisibilityOrchestrator {
+function registerComponentsAndSystems(world: World, studio: Studio, propertyInspectorUIManager: SimplifiedPropertyInspectorUIManager, pluginManager: PluginManager, visibilityManager: VisibilityManager): VisibilityOrchestrator {
   // Register Core Components Only - Plugin components are registered by plugins themselves
   world.registerComponent((PositionComponent as any).type ? PositionComponent : class extends PositionComponent { static type = "PositionComponent"; });
   world.registerComponent((RenderableComponent as any).type ? RenderableComponent : class extends RenderableComponent { static type = "RenderableComponent"; });
@@ -210,7 +270,14 @@ function registerComponentsAndSystems(world: World, studio: Studio, propertyInsp
     const selectionSystem = new SelectionSystem(studio, world as World);
     world.registerSystem(selectionSystem);
 
-    const propertyInspectorSystem = new PropertyInspectorSystem(propertyInspectorUIManager, world as World, studio, pluginManager, selectionSystem);
+    // Use Modern Property Inspector System
+    const propertyInspectorSystem = createModernPropertyInspectorSystem(
+      (window as any).uiManager?.getPane(), // Get tweakpane directly
+      world as World, 
+      studio, 
+      pluginManager, 
+      selectionSystem
+    );
     world.registerSystem(propertyInspectorSystem);
 
     // Store graphics manager for later use
@@ -253,11 +320,51 @@ async function main() {
 
   try {
     const { world, pluginManager, stateManager, studio, pluginDiscovery } = setupCoreSystems();
-    const { uiManager, propertyInspectorUIManager, visibilityManager } = setupUI(studio, stateManager, pluginManager);
+    const { uiManager, propertyInspectorUIManager, visibilityManager, parameterSystemIntegration } = setupUI(studio, stateManager, pluginManager);
+    
+    // Connect parameter system to Studio
+    studio.setParameterSystemIntegration(parameterSystemIntegration);
+    
     const visibilityOrchestrator = registerComponentsAndSystems(world as World, studio, propertyInspectorUIManager, pluginManager as PluginManager, visibilityManager);
 
     // Load available plugins dynamically
     const loadedPlugins = await pluginDiscovery.loadAllPlugins();
+    
+    // Integration: Register plugins with parameter system
+    for (const plugin of loadedPlugins) {
+      // Access the underlying PluginParameterIntegration through the manager
+      const integration = (propertyInspectorUIManager as any).modernManager?.integration;
+      if (integration && typeof integration.registerPlugin === 'function') {
+        integration.registerPlugin(plugin, world);
+      }
+    }
+    
+    // Show demo parameters immediately
+    setTimeout(() => {
+      console.log('🎯 Showing demo parameters...');
+      
+      // Show demo flag simulation by default
+      parameterSystemIntegration.demoFlagSimulation();
+      
+      // Also log available options
+      console.log('Available parameter demos:');
+      console.log('- Flag Simulation: parameterSystemIntegration.demoFlagSimulation()');
+      console.log('- Water Simulation: parameterSystemIntegration.demoWaterSimulation()');
+      console.log('- Multiple Plugins: parameterSystemIntegration.demoMultiplePlugins()');
+      
+      // Add global testing functions
+      (window as any).showFlagParams = () => parameterSystemIntegration.demoFlagSimulation();
+      (window as any).showWaterParams = () => parameterSystemIntegration.demoWaterSimulation();
+      (window as any).showMultipleParams = () => parameterSystemIntegration.demoMultiplePlugins();
+      (window as any).clearParams = () => propertyInspectorUIManager.clearInspectorControls();
+      
+      console.log('🧪 Test commands available:');
+      console.log('- showFlagParams() - Show flag simulation parameters');
+      console.log('- showWaterParams() - Show water simulation parameters');  
+      console.log('- showMultipleParams() - Show multiple plugin parameters');
+      console.log('- clearParams() - Clear all parameters');
+    }, 1000);
+    
     Logger.getInstance().log(`Physics Simulation Studio ready with ${loadedPlugins.length} plugins loaded`);
 
     // Run system diagnostics to ensure everything is working
