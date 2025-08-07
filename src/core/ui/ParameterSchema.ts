@@ -28,13 +28,13 @@ export class ParameterSchemaRegistry {
 
   static register(componentType: string, schema: PropertyDescriptor[], pluginId?: string): void {
     console.log(`[ParameterSchemaRegistry] Registering ${componentType} with ${schema.length} parameters for plugin: ${pluginId || 'core'}`);
-    
+
     // Set plugin ID on all properties if not already set
     const enhancedSchema = schema.map(prop => ({
       ...prop,
       pluginId: prop.pluginId || pluginId || 'core'
     }));
-    
+
     this.schemas.set(componentType, enhancedSchema);
     console.log(`[ParameterSchemaRegistry] Registered schema for ${componentType}:`, enhancedSchema);
   }
@@ -63,7 +63,7 @@ export class ParameterSchemaRegistry {
     if (!schema.length) return new Map();
 
     const grouped = new Map<string, PropertyDescriptor[]>();
-    
+
     schema
       .sort((a, b) => (a.order || 0) - (b.order || 0))
       .forEach(prop => {
@@ -114,17 +114,17 @@ export class ParameterSchemaRegistry {
   // Get schema filtered by plugin
   static getForPlugin(pluginId: string): Map<string, PropertyDescriptor[]> {
     const result = new Map<string, PropertyDescriptor[]>();
-    
+
     for (const [componentType, schema] of this.schemas) {
-      const pluginSchema = schema.filter(prop => 
+      const pluginSchema = schema.filter(prop =>
         prop.pluginId === pluginId && this.isPluginVisible(pluginId)
       );
-      
+
       if (pluginSchema.length > 0) {
         result.set(componentType, pluginSchema);
       }
     }
-    
+
     return result;
   }
 }
@@ -134,21 +134,21 @@ export function Parameter(descriptor: Omit<PropertyDescriptor, 'key'>) {
   return function(target: any, propertyKey: string | symbol, _descriptor?: any) {
     const componentType = target.constructor.name;
     const existing = ParameterSchemaRegistry.get(componentType) || [];
-    
+
     // Try to infer plugin ID from component type or constructor
-    const pluginId = descriptor.pluginId || 
-                    target.constructor.pluginId || 
+    const pluginId = descriptor.pluginId ||
+                    target.constructor.pluginId ||
                     inferPluginFromComponentType(componentType);
-    
+
     ParameterSchemaRegistry.register(componentType, [
       ...existing,
-      { 
-        key: propertyKey as string, 
+      {
+        key: propertyKey as string,
         pluginId,
-        ...descriptor 
+        ...descriptor
       }
     ], pluginId);
-    
+
     return _descriptor;
   };
 }
@@ -156,12 +156,12 @@ export function Parameter(descriptor: Omit<PropertyDescriptor, 'key'>) {
 // Helper to infer plugin ID from component type
 function inferPluginFromComponentType(componentType: string): string | undefined {
   const lowerType = componentType.toLowerCase();
-  
+
   if (lowerType.includes('flag') || lowerType.includes('pole')) return 'flag-simulation';
   if (lowerType.includes('water') || lowerType.includes('droplet')) return 'water-simulation';
   if (lowerType.includes('solar') || lowerType.includes('celestial')) return 'solar-system';
   if (lowerType.includes('rigid') || lowerType.includes('physics')) return 'rigid-body-physics';
-  
+
   return undefined; // Core component
 }
 
@@ -169,7 +169,7 @@ function inferPluginFromComponentType(componentType: string): string | undefined
 export class SchemaInference {
   static infer<T extends object>(component: T): PropertyDescriptor[] {
     const schema: PropertyDescriptor[] = [];
-    
+
     for (const [key, value] of Object.entries(component)) {
       if (this.isParameterizable(value)) {
         schema.push({
@@ -180,13 +180,13 @@ export class SchemaInference {
         });
       }
     }
-    
+
     return schema;
   }
 
   private static isParameterizable(value: any): boolean {
-    return typeof value === 'number' || 
-           typeof value === 'string' || 
+    return typeof value === 'number' ||
+           typeof value === 'string' ||
            typeof value === 'boolean' ||
            (typeof value === 'object' && value?.value !== undefined);
   }

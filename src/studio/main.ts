@@ -83,7 +83,7 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
 
   const uiManager = new UIManager(pane);
 
-  // Modern Parameter System Integration 
+  // Modern Parameter System Integration
   const parameterSystemIntegration = setupModernParameterSystem(pane);
   const propertyInspectorUIManager = parameterSystemIntegration.getManager();
 
@@ -185,7 +185,7 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
 
   // NEW: Add Plugin Visibility Control
   const pluginControlsFolder = pane.addFolder({ title: "Plugin Controls" });
-  
+
   // Plugin selector for parameter visibility
   const pluginSelectorState = { plugin: '' };
   const pluginSelector = pluginControlsFolder.addBinding(pluginSelectorState, 'plugin', {
@@ -197,13 +197,13 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
       { text: 'Solar System', value: 'solar-system' }
     ]
   });
-  
+
   pluginSelector.on('change', (ev: any) => {
     console.log('Plugin selector changed to:', ev.value);
     if (ev.value) {
       // Switch to specific plugin and show demo parameters
       parameterSystemIntegration.switchToPlugin(ev.value);
-      
+
       // Show demo parameters for the selected plugin
       if (ev.value === 'flag-simulation') {
         parameterSystemIntegration.demoFlagSimulation();
@@ -225,7 +225,7 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
     }
   });
 
-  // Register Plugin Controls panel with VisibilityManager  
+  // Register Plugin Controls panel with VisibilityManager
   visibilityManager.registerGlobalPanel(
     'plugin-controls',
     pluginControlsFolder,
@@ -273,9 +273,9 @@ function registerComponentsAndSystems(world: World, studio: Studio, propertyInsp
     // Use Modern Property Inspector System
     const propertyInspectorSystem = createModernPropertyInspectorSystem(
       (window as any).uiManager?.getPane(), // Get tweakpane directly
-      world as World, 
-      studio, 
-      pluginManager, 
+      world as World,
+      studio,
+      pluginManager,
       selectionSystem
     );
     world.registerSystem(propertyInspectorSystem);
@@ -321,15 +321,15 @@ async function main() {
   try {
     const { world, pluginManager, stateManager, studio, pluginDiscovery } = setupCoreSystems();
     const { uiManager, propertyInspectorUIManager, visibilityManager, parameterSystemIntegration } = setupUI(studio, stateManager, pluginManager);
-    
+
     // Connect parameter system to Studio
     studio.setParameterSystemIntegration(parameterSystemIntegration);
-    
+
     const visibilityOrchestrator = registerComponentsAndSystems(world as World, studio, propertyInspectorUIManager, pluginManager as PluginManager, visibilityManager);
 
     // Load available plugins dynamically
     const loadedPlugins = await pluginDiscovery.loadAllPlugins();
-    
+
     // Integration: Register plugins with parameter system
     for (const plugin of loadedPlugins) {
       // Access the underlying PluginParameterIntegration through the manager
@@ -338,33 +338,33 @@ async function main() {
         integration.registerPlugin(plugin, world);
       }
     }
-    
+
     // Show demo parameters immediately
     setTimeout(() => {
       console.log('🎯 Showing demo parameters...');
-      
+
       // Show demo flag simulation by default
       parameterSystemIntegration.demoFlagSimulation();
-      
+
       // Also log available options
       console.log('Available parameter demos:');
       console.log('- Flag Simulation: parameterSystemIntegration.demoFlagSimulation()');
       console.log('- Water Simulation: parameterSystemIntegration.demoWaterSimulation()');
       console.log('- Multiple Plugins: parameterSystemIntegration.demoMultiplePlugins()');
-      
+
       // Add global testing functions
       (window as any).showFlagParams = () => parameterSystemIntegration.demoFlagSimulation();
       (window as any).showWaterParams = () => parameterSystemIntegration.demoWaterSimulation();
       (window as any).showMultipleParams = () => parameterSystemIntegration.demoMultiplePlugins();
       (window as any).clearParams = () => propertyInspectorUIManager.clearInspectorControls();
-      
+
       console.log('🧪 Test commands available:');
       console.log('- showFlagParams() - Show flag simulation parameters');
-      console.log('- showWaterParams() - Show water simulation parameters');  
+      console.log('- showWaterParams() - Show water simulation parameters');
       console.log('- showMultipleParams() - Show multiple plugin parameters');
       console.log('- clearParams() - Clear all parameters');
     }, 1000);
-    
+
     Logger.getInstance().log(`Physics Simulation Studio ready with ${loadedPlugins.length} plugins loaded`);
 
     // Run system diagnostics to ensure everything is working

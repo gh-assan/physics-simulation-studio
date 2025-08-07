@@ -44,7 +44,7 @@ export class ModernPropertyInspectorSystem extends System {
    */
   private registerAllPlugins(): void {
     const activePluginNames = this.pluginManager.getActivePluginNames();
-    
+
     for (const pluginName of activePluginNames) {
       const plugin = this.pluginManager.getPlugin(pluginName);
       if (plugin) {
@@ -60,10 +60,10 @@ export class ModernPropertyInspectorSystem extends System {
     try {
       // Try to get parameter panels from plugin (existing method)
       const parameterPanels = plugin.getParameterPanels?.(this.world) || [];
-      
+
       if (parameterPanels.length > 0) {
         console.log(`📝 Auto-migrating ${parameterPanels.length} parameter panels for ${pluginName}`);
-        
+
         // The SimplifiedPropertyInspectorUIManager will automatically migrate these
         this.propertyInspectorUIManager.registerParameterPanels(parameterPanels);
       }
@@ -104,10 +104,10 @@ export class ModernPropertyInspectorSystem extends System {
     }
 
     console.log(`🔄 Switching to plugin: ${activeSimulationName}`);
-    
+
     // Set active plugin for visibility
     this.propertyInspectorUIManager.setActivePlugin(activeSimulationName);
-    
+
     // If no entity selected, show global plugin parameters
     if (!this.selectionSystem.hasSelection()) {
       this.showGlobalPluginParameters(activeSimulationName);
@@ -154,7 +154,7 @@ export class ModernPropertyInspectorSystem extends System {
 
       // Check if component has modern schema
       const schema = ParameterSchemaRegistry.getVisible(componentName);
-      
+
       if (schema.length > 0) {
         console.log(`📊 Showing ${schema.length} parameters for ${componentName}`);
         this.propertyInspectorUIManager.registerComponentControls(componentName, component, []);
@@ -179,12 +179,12 @@ export class ModernPropertyInspectorSystem extends System {
    */
   private showGlobalPluginParameters(activeSimulationName: string): void {
     console.log(`🌐 Showing global parameters for ${activeSimulationName}`);
-    
+
     try {
       const activePlugin = this.pluginManager.getPlugin(activeSimulationName);
       if (activePlugin) {
         const parameterPanels = activePlugin.getParameterPanels?.(this.world) || [];
-        
+
         if (parameterPanels.length > 0) {
           this.propertyInspectorUIManager.registerParameterPanels(parameterPanels);
         } else {
@@ -218,10 +218,10 @@ export class ModernPropertyInspectorSystem extends System {
   public showMultiplePlugins(pluginNames: string[]): void {
     // This is a new feature not available in the old system!
     console.log(`🔀 Showing parameters for multiple plugins: ${pluginNames.join(', ')}`);
-    
+
     const integration = (this.propertyInspectorUIManager as any).modernManager.integration;
     integration.setActivePlugins(pluginNames);
-    
+
     // Show parameters from all active plugins
     for (const pluginName of pluginNames) {
       const plugin = this.pluginManager.getPlugin(pluginName);
@@ -238,7 +238,7 @@ export class ModernPropertyInspectorSystem extends System {
   public getSystemStats(): any {
     const availablePlugins = this.pluginManager.getActivePluginNames();
     const integration = (this.propertyInspectorUIManager as any).modernManager.integration;
-    
+
     return {
       availablePlugins,
       visiblePlugins: integration.getVisiblePlugins(),
@@ -257,7 +257,7 @@ export function createModernPropertyInspectorSystem(
   pluginManager: PluginManager,
   selectionSystem: SelectionSystem
 ): ModernPropertyInspectorSystem {
-  
+
   const system = new ModernPropertyInspectorSystem(
     tweakpane,
     world,
@@ -298,7 +298,7 @@ NEW ModernPropertyInspectorSystem.ts: 220 lines
 
 BUT the new system provides:
 ✅ Plugin visibility controls
-✅ Automatic parameter migration  
+✅ Automatic parameter migration
 ✅ Multi-plugin support
 ✅ Better error handling
 ✅ Cleaner, more maintainable code

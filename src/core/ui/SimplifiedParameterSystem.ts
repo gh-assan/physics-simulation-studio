@@ -9,77 +9,77 @@ import { PluginParameterIntegration, ModernPropertyInspectorUIManager } from './
 
 // Simple schema registration approach (no decorators needed)
 export class ComponentSchemaRegistrar {
-  
+
   // Register flag component schema
   static registerFlagComponent() {
     ParameterSchemaRegistry.register('FlagComponent', [
-      { 
-        key: 'width', 
-        label: 'Width', 
-        type: 'number', 
-        min: 0.1, 
-        max: 10, 
-        step: 0.1, 
+      {
+        key: 'width',
+        label: 'Width',
+        type: 'number',
+        min: 0.1,
+        max: 10,
+        step: 0.1,
         group: 'Dimensions',
         pluginId: 'flag-simulation',
         order: 1
       },
-      { 
-        key: 'height', 
-        label: 'Height', 
-        type: 'number', 
-        min: 0.1, 
-        max: 10, 
-        step: 0.1, 
+      {
+        key: 'height',
+        label: 'Height',
+        type: 'number',
+        min: 0.1,
+        max: 10,
+        step: 0.1,
         group: 'Dimensions',
         pluginId: 'flag-simulation',
         order: 2
       },
-      { 
-        key: 'stiffness', 
-        label: 'Stiffness', 
-        type: 'number', 
-        min: 0.1, 
-        max: 1, 
-        step: 0.01, 
+      {
+        key: 'stiffness',
+        label: 'Stiffness',
+        type: 'number',
+        min: 0.1,
+        max: 1,
+        step: 0.01,
         group: 'Physics',
         pluginId: 'flag-simulation',
         order: 10
       },
-      { 
-        key: 'damping', 
-        label: 'Damping', 
-        type: 'number', 
-        min: 0.01, 
-        max: 1, 
-        step: 0.01, 
+      {
+        key: 'damping',
+        label: 'Damping',
+        type: 'number',
+        min: 0.01,
+        max: 1,
+        step: 0.01,
         group: 'Physics',
         pluginId: 'flag-simulation',
         order: 11
       },
-      { 
-        key: 'windStrength', 
-        label: 'Wind Strength', 
-        type: 'number', 
-        min: 0, 
-        max: 10, 
-        step: 0.1, 
+      {
+        key: 'windStrength',
+        label: 'Wind Strength',
+        type: 'number',
+        min: 0,
+        max: 10,
+        step: 0.1,
         group: 'Environment',
         pluginId: 'flag-simulation',
         order: 20
       },
-      { 
-        key: 'windDirection', 
-        label: 'Wind Direction', 
-        type: 'vector3', 
+      {
+        key: 'windDirection',
+        label: 'Wind Direction',
+        type: 'vector3',
         group: 'Environment',
         pluginId: 'flag-simulation',
         order: 21
       },
-      { 
-        key: 'textureUrl', 
-        label: 'Texture URL', 
-        type: 'text', 
+      {
+        key: 'textureUrl',
+        label: 'Texture URL',
+        type: 'text',
         group: 'Appearance',
         pluginId: 'flag-simulation',
         order: 30
@@ -90,64 +90,64 @@ export class ComponentSchemaRegistrar {
   // Register water droplet component schema
   static registerWaterDropletComponent() {
     ParameterSchemaRegistry.register('WaterDropletComponent', [
-      { 
-        key: 'radius', 
-        label: 'Radius', 
-        type: 'number', 
-        min: 0.01, 
-        max: 1, 
-        step: 0.01, 
+      {
+        key: 'radius',
+        label: 'Radius',
+        type: 'number',
+        min: 0.01,
+        max: 1,
+        step: 0.01,
         group: 'Size',
         pluginId: 'water-simulation',
         order: 1
       },
-      { 
-        key: 'mass', 
-        label: 'Mass', 
-        type: 'number', 
-        min: 0.1, 
-        max: 10, 
-        step: 0.1, 
+      {
+        key: 'mass',
+        label: 'Mass',
+        type: 'number',
+        min: 0.1,
+        max: 10,
+        step: 0.1,
         group: 'Physics',
         pluginId: 'water-simulation',
         order: 2
       },
-      { 
-        key: 'enableSPH', 
-        label: 'Enable SPH', 
-        type: 'boolean', 
+      {
+        key: 'enableSPH',
+        label: 'Enable SPH',
+        type: 'boolean',
         group: 'Advanced Physics',
         pluginId: 'water-simulation',
         order: 10
       },
-      { 
-        key: 'smoothingLength', 
-        label: 'Smoothing Length', 
-        type: 'number', 
-        min: 0.01, 
-        max: 1, 
-        step: 0.01, 
+      {
+        key: 'smoothingLength',
+        label: 'Smoothing Length',
+        type: 'number',
+        min: 0.01,
+        max: 1,
+        step: 0.01,
         group: 'Advanced Physics',
         pluginId: 'water-simulation',
         order: 11,
         condition: (component: any) => component.enableSPH === true
       },
-      { 
-        key: 'gasConstant', 
-        label: 'Gas Constant', 
-        type: 'number', 
-        min: 1, 
-        max: 100, 
-        step: 1, 
+      {
+        key: 'gasConstant',
+        label: 'Gas Constant',
+        type: 'number',
+        min: 1,
+        max: 100,
+        step: 1,
         group: 'Advanced Physics',
         pluginId: 'water-simulation',
         order: 12,
         condition: (component: any) => component.enableSPH === true
       },
-      { 
-        key: 'color', 
-        label: 'Color', 
-        type: 'color', 
+      {
+        key: 'color',
+        label: 'Color',
+        type: 'color',
         group: 'Appearance',
         pluginId: 'water-simulation',
         order: 20
@@ -155,26 +155,26 @@ export class ComponentSchemaRegistrar {
     ], 'water-simulation');
   }
 
-  // Register water body component schema  
+  // Register water body component schema
   static registerWaterBodyComponent() {
     ParameterSchemaRegistry.register('WaterBodyComponent', [
-      { 
-        key: 'viscosity', 
-        label: 'Viscosity', 
-        type: 'number', 
-        min: 0, 
-        max: 1, 
-        step: 0.01, 
+      {
+        key: 'viscosity',
+        label: 'Viscosity',
+        type: 'number',
+        min: 0,
+        max: 1,
+        step: 0.01,
         group: 'Physics',
         pluginId: 'water-simulation'
       },
-      { 
-        key: 'surfaceTension', 
-        label: 'Surface Tension', 
-        type: 'number', 
-        min: 0, 
-        max: 1, 
-        step: 0.01, 
+      {
+        key: 'surfaceTension',
+        label: 'Surface Tension',
+        type: 'number',
+        min: 0,
+        max: 1,
+        step: 0.01,
         group: 'Physics',
         pluginId: 'water-simulation'
       }
@@ -186,7 +186,7 @@ export class ComponentSchemaRegistrar {
     this.registerFlagComponent();
     this.registerWaterDropletComponent();
     this.registerWaterBodyComponent();
-    
+
     console.log('✅ Registered modern parameter schemas for all components');
   }
 }
@@ -197,7 +197,7 @@ export class SimplifiedPropertyInspectorUIManager {
 
   constructor(tweakpane: any, visibilityManager?: any) {
     this.modernManager = new ModernPropertyInspectorUIManager(tweakpane);
-    
+
     // Initialize schemas
     ComponentSchemaRegistrar.registerAllSchemas();
   }
@@ -253,7 +253,7 @@ export class StudioParameterIntegration {
   // Demo different plugins
   demoFlagSimulation(): void {
     this.switchToPlugin('flag-simulation');
-    
+
     // Show sample flag component
     const sampleFlag = {
       width: 2.0,
@@ -264,13 +264,13 @@ export class StudioParameterIntegration {
       windDirection: { x: 1, y: 0, z: 0 },
       textureUrl: 'flag.png'
     };
-    
+
     this.manager.registerComponentControls('FlagComponent', sampleFlag, []);
   }
 
   demoWaterSimulation(): void {
     this.switchToPlugin('water-simulation');
-    
+
     const sampleWaterDroplet = {
       radius: 0.1,
       mass: 1.0,
@@ -279,7 +279,7 @@ export class StudioParameterIntegration {
       gasConstant: 20,
       color: '#4A90E2'
     };
-    
+
     this.manager.registerComponentControls('WaterDropletComponent', sampleWaterDroplet, []);
   }
 
@@ -287,7 +287,7 @@ export class StudioParameterIntegration {
     // Show both plugins simultaneously
     const integration = (this.manager as any).modernManager.integration;
     integration.setActivePlugins(['flag-simulation', 'water-simulation']);
-    
+
     this.demoFlagSimulation();
     this.demoWaterSimulation();
   }
@@ -296,7 +296,7 @@ export class StudioParameterIntegration {
 // Easy setup function for main application
 export function setupModernParameterSystem(tweakpane: any): StudioParameterIntegration {
   const integration = new StudioParameterIntegration(tweakpane);
-  
+
   console.log(`
 🚀 Modern Parameter System Initialized!
 
@@ -317,7 +317,7 @@ Usage:
   integration.switchToPlugin('flag-simulation');
   integration.demoFlagSimulation();
   `);
-  
+
   return integration;
 }
 

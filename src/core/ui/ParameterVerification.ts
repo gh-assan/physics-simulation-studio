@@ -1,6 +1,6 @@
 /**
  * Quick Parameter System Verification
- * 
+ *
  * Run this in the browser console to verify the parameter system is working
  */
 
@@ -18,7 +18,7 @@ console.log('System availability:', systems);
 // Check if schemas are registered
 if (systems.parameterSystemIntegration) {
   console.log('✅ Parameter system integration available');
-  
+
   // Try to show flag parameters
   try {
     console.log('🎯 Attempting to show flag parameters...');
@@ -27,7 +27,7 @@ if (systems.parameterSystemIntegration) {
   } catch (error) {
     console.error('❌ Error showing flag parameters:', error);
   }
-  
+
   // Try to show water parameters
   try {
     console.log('🎯 Attempting to show water parameters...');
@@ -36,7 +36,7 @@ if (systems.parameterSystemIntegration) {
   } catch (error) {
     console.error('❌ Error showing water parameters:', error);
   }
-  
+
 } else {
   console.error('❌ Parameter system integration not available');
 }
@@ -48,7 +48,7 @@ console.log('Left panel found:', !!leftPanel);
 if (leftPanel) {
   const panels = leftPanel.querySelectorAll('.tp-fldv_t');
   console.log('Total UI panels:', panels.length);
-  
+
   panels.forEach((panel, index) => {
     const title = panel.textContent;
     console.log(`Panel ${index + 1}: ${title}`);
@@ -63,21 +63,21 @@ if (leftPanel) {
       systems.parameterSystemIntegration.demoFlagSimulation();
     }
   },
-  
+
   showWater: () => {
     console.log('Manual test: Showing water parameters');
     if (systems.parameterSystemIntegration) {
       systems.parameterSystemIntegration.demoWaterSimulation();
     }
   },
-  
+
   showMultiple: () => {
     console.log('Manual test: Showing multiple parameters');
     if (systems.parameterSystemIntegration) {
       systems.parameterSystemIntegration.demoMultiplePlugins();
     }
   },
-  
+
   clear: () => {
     console.log('Manual test: Clearing parameters');
     if (systems.propertyInspectorUIManager) {

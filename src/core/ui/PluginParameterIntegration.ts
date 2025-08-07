@@ -22,10 +22,10 @@ class PluginParameterIntegration {
   // Integration with existing ISimulationPlugin interface
   registerPlugin(plugin: ISimulationPlugin, world: IWorld): void {
     const pluginName = plugin.getName();
-    
+
     // Get parameter panels from plugin (existing method)
     const parameterPanels = plugin.getParameterPanels?.(world) || [];
-    
+
     // Migrate existing parameter panels to new system
     for (const panel of parameterPanels) {
       this.migrateParameterPanel(panel, pluginName);
@@ -38,10 +38,10 @@ class PluginParameterIntegration {
   // Migrate existing ParameterPanelComponent to new system
   private migrateParameterPanel(panel: any, pluginId: string): void {
     const componentType = panel.componentType;
-    
+
     // Extract properties by calling registerControls with mock UIManager
     let extractedProperties: any[] = [];
-    
+
     const mockUIManager = {
       registerComponentControls: (_: string, __: any, properties: any[]) => {
         extractedProperties = properties || [];
@@ -52,7 +52,7 @@ class PluginParameterIntegration {
 
     try {
       panel.registerControls(mockUIManager, {});
-      
+
       if (extractedProperties.length > 0) {
         const schema: PropertyDescriptor[] = extractedProperties.map(prop => ({
           key: prop.property,
@@ -71,7 +71,7 @@ class PluginParameterIntegration {
       }
     } catch (error) {
       console.warn(`Could not migrate parameter panel for ${componentType}:`, error);
-      
+
       // Fallback: create minimal schema
       ParameterSchemaRegistry.register(componentType, [], pluginId);
     }
@@ -89,13 +89,13 @@ class PluginParameterIntegration {
 
   private inferGroup(propertyPath: string): string | undefined {
     const path = propertyPath.toLowerCase();
-    
+
     if (path.includes('gravity') || path.includes('wind') || path.includes('force')) return 'Physics';
     if (path.includes('width') || path.includes('height') || path.includes('size') || path.includes('radius')) return 'Dimensions';
     if (path.includes('color') || path.includes('texture') || path.includes('material')) return 'Appearance';
     if (path.includes('position') || path.includes('rotation') || path.includes('transform')) return 'Transform';
     if (path.includes('velocity') || path.includes('speed') || path.includes('acceleration')) return 'Motion';
-    
+
     return undefined; // Will use 'General'
   }
 
@@ -103,10 +103,10 @@ class PluginParameterIntegration {
   private autoRegisterPluginComponents(pluginId: string, world: IWorld): void {
     // Get all registered component types from the world
     const componentConstructors = world.componentManager.getComponentConstructors();
-    
+
     for (const [componentType] of componentConstructors) {
       const existingSchema = ParameterSchemaRegistry.get(componentType);
-      
+
       if (existingSchema && existingSchema.some(prop => prop.pluginId === pluginId)) {
         console.log(`✅ Found @Parameter decorators for ${componentType} in plugin ${pluginId}`);
       }
@@ -128,13 +128,13 @@ class PluginParameterIntegration {
   // Show parameters for selected entity
   showParametersForEntity(entityId: number, world: IWorld): void {
     this.parameterManager.clearAll();
-    
+
     const components = world.componentManager.getAllComponentsForEntity(entityId);
-    
+
     for (const [componentType, component] of Object.entries(components)) {
       // Check if component has schema (either migrated or decorated)
       const schema = ParameterSchemaRegistry.getVisible(componentType);
-      
+
       if (schema.length > 0) {
         this.parameterManager.registerComponent(componentType, component);
       }
@@ -144,12 +144,12 @@ class PluginParameterIntegration {
   // Show global plugin parameters (when no entity selected)
   showGlobalParameters(): void {
     this.parameterManager.clearAll();
-    
+
     if (!this.activePlugin) return;
 
     // Get all schemas for active plugin
     const pluginSchemas = ParameterSchemaRegistry.getForPlugin(this.activePlugin);
-    
+
     for (const [componentType] of pluginSchemas) {
       // Create dummy component instance for global parameters
       const dummyComponent = this.createDummyComponent(componentType);
@@ -160,7 +160,7 @@ class PluginParameterIntegration {
   private createDummyComponent(componentType: string): any {
     const schema = ParameterSchemaRegistry.get(componentType);
     const dummy: any = {};
-    
+
     // Initialize with default values
     for (const prop of schema || []) {
       switch (prop.type) {
@@ -177,7 +177,7 @@ class PluginParameterIntegration {
           dummy[prop.key] = null;
       }
     }
-    
+
     return dummy;
   }
 
@@ -212,7 +212,7 @@ export class ModernPropertyInspectorUIManager {
   ): void {
     // Try new system first
     const schema = ParameterSchemaRegistry.getVisible(componentTypeKey);
-    
+
     if (schema.length > 0) {
       this.integration.getParameterManager().registerComponent(componentTypeKey, componentInstance);
       return;
@@ -233,7 +233,7 @@ export class ModernPropertyInspectorUIManager {
       const pluginId = this.inferPluginId(panel.componentType);
       (this.integration as any).migrateParameterPanel(panel, pluginId);
     }
-    
+
     this.integration.showGlobalParameters();
   }
 
@@ -252,11 +252,11 @@ export class ModernPropertyInspectorUIManager {
 
   private inferPluginId(componentType: string): string {
     const lowerType = componentType.toLowerCase();
-    
+
     if (lowerType.includes('flag') || lowerType.includes('pole')) return 'flag-simulation';
     if (lowerType.includes('water') || lowerType.includes('droplet')) return 'water-simulation';
     if (lowerType.includes('solar') || lowerType.includes('celestial')) return 'solar-system';
-    
+
     return 'core';
   }
 }

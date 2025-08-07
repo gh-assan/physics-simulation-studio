@@ -7,7 +7,7 @@ import { ParameterManager, TweakpaneAdapter } from './ParameterManager';
 
 // Phase 1: Create compatibility layer
 class ParameterMigrationHelper {
-  
+
   // Convert existing ComponentControlProperty[] to new schema
   static convertLegacyProperties(componentType: string, legacyProperties: any[]): void {
     const schema = legacyProperties.map(prop => ({
@@ -19,7 +19,7 @@ class ParameterMigrationHelper {
       step: prop.step,
       options: prop.options
     }));
-    
+
     ParameterSchemaRegistry.register(componentType, schema);
   }
 
@@ -27,16 +27,16 @@ class ParameterMigrationHelper {
   static migrateParameterPanel(PanelClass: any): void {
     const instance = new PanelClass();
     const componentType = instance.componentType;
-    
+
     // Extract properties from registerControls method
     let extractedProperties: any[] = [];
-    
+
     const mockUIManager = {
       registerComponentControls: (_: string, __: any, properties: any[]) => {
         extractedProperties = properties || [];
       }
     };
-    
+
     try {
       instance.registerControls(mockUIManager, {});
       this.convertLegacyProperties(componentType, extractedProperties);
@@ -78,7 +78,7 @@ class LegacyParameterPanelAdapter {
     const parameterPanel = parameterPanels.find(
       (panel) => panel.componentType === componentTypeKey
     );
-    
+
     if (parameterPanel) {
       // Convert legacy panel to new system on the fly
       ParameterMigrationHelper.migrateParameterPanel(parameterPanel.constructor);
@@ -89,12 +89,12 @@ class LegacyParameterPanelAdapter {
   registerParameterPanels(parameterPanels: any[]): void {
     parameterPanels.forEach(panel => {
       const componentType = panel.componentType;
-      
+
       // Ensure schema exists
       if (!ParameterSchemaRegistry.get(componentType)) {
         ParameterMigrationHelper.migrateParameterPanel(panel.constructor);
       }
-      
+
       // Create a dummy component instance for schema-only panels
       const dummyComponent = {};
       this.parameterManager.registerComponent(componentType, dummyComponent);
@@ -108,7 +108,7 @@ class LegacyParameterPanelAdapter {
 
 // Phase 3: Component modernization examples
 export class ModernizationExamples {
-  
+
   // Before: 280+ line FlagParameterPanel class
   // After: Just add decorators to component
   static modernizeFlagComponent(): string {
@@ -143,7 +143,7 @@ export class FlagComponent {
   }
 
   // Before: Manual property definitions everywhere
-  // After: Automatic inference for simple cases  
+  // After: Automatic inference for simple cases
   static modernizeWaterComponent(): string {
     return `
 // OLD - manual definitions in 3 places
@@ -167,11 +167,11 @@ ParameterSchemaRegistry.register('WaterDropletComponent', schema);
 
 // Phase 4: Performance and maintainability improvements
 export class SystemImprovements {
-  
+
   static getImprovements(): string[] {
     return [
       "🔥 Reduced code: 280+ lines → 10-20 lines per component",
-      "🚀 Type safety: Decorators provide compile-time checking", 
+      "🚀 Type safety: Decorators provide compile-time checking",
       "🔧 Framework agnostic: Easy to switch from Tweakpane to other UI libraries",
       "🎯 Single source of truth: Component properties define their own UI",
       "⚡ Auto-inference: No manual UI definitions for simple cases",
@@ -196,7 +196,7 @@ export class SystemImprovements {
       },
       after: {
         linesOfCode: "~200 core + decorators on components",
-        files: "3 core files + decorators on components", 
+        files: "3 core files + decorators on components",
         couplingToECS: "None - pure UI concern",
         couplingToUI: "Low - adapter pattern",
         maintainability: "High - co-located with component logic",

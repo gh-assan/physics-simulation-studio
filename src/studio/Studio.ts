@@ -18,7 +18,7 @@ export class Studio implements IStudio {
   private selectedSimulation: ISelectedSimulationStateManager;
   private orchestrator: ISimulationOrchestrator;
   private pluginContext: IPluginContext;
-  
+
   // New: Parameter system integration
   private parameterSystemIntegration: any;
 
@@ -108,12 +108,12 @@ export class Studio implements IStudio {
     if (currentSimulation) {
       this.orchestrator.unloadSimulation(currentSimulation);
       this.selectedSimulation.setSimulation("");
-      
+
       // NEW: Clear parameter displays
       if (this.parameterSystemIntegration) {
         this.parameterSystemIntegration.getManager().clearInspectorControls();
       }
-      
+
       Logger.getInstance().log("Simulation unloaded");
     }
   }
@@ -121,19 +121,17 @@ export class Studio implements IStudio {
   // NEW: Plugin switching method
   public switchToPlugin(pluginName: string): void {
     console.log(`Studio: Switching to plugin: ${pluginName}`);
-    
+
     if (this.parameterSystemIntegration) {
       this.parameterSystemIntegration.switchToPlugin(pluginName);
     }
-    
+
     // Also update active simulation if it exists
     const availablePlugins = this.getAvailableSimulationNames();
     if (availablePlugins.includes(pluginName)) {
-      this.loadSimulation(pluginName);
+      void this.loadSimulation(pluginName);
     }
-  }
-
-  public update(deltaTime: number): void {
+  }  public update(deltaTime: number): void {
     if (this.isPlaying) {
       this.world.update(deltaTime);
     }

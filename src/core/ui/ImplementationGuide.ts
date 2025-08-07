@@ -1,6 +1,6 @@
 /**
  * IMPLEMENTATION GUIDE: Simplified Parameter System with Plugin Visibility
- * 
+ *
  * This guide shows exactly how to implement the new system in your physics simulation studio.
  * The new system provides 90% less code, plugin visibility controls, and much better maintainability.
  */
@@ -19,7 +19,7 @@ class Studio {
   constructor() {
     // ...
     this.propertyInspectorUIManager = new PropertyInspectorUIManager(
-      this.uiManager, 
+      this.uiManager,
       this.visibilityManager
     );
     // ...
@@ -33,7 +33,7 @@ import { setupModernParameterSystem } from "../core/ui/SimplifiedParameterSystem
 
 class Studio {
   private parameterSystemIntegration: any;
-  
+
   constructor() {
     // ...
     // Replace PropertyInspectorUIManager with modern system
@@ -41,7 +41,7 @@ class Studio {
     this.propertyInspectorUIManager = this.parameterSystemIntegration.getManager();
     // ...
   }
-  
+
   // NEW: Plugin switching capability
   switchToPlugin(pluginName: string) {
     this.parameterSystemIntegration.switchToPlugin(pluginName);
@@ -52,7 +52,7 @@ class Studio {
 
 /*
 =================================================================================
-STEP 2: Replace PropertyInspectorSystem in Studio.ts  
+STEP 2: Replace PropertyInspectorSystem in Studio.ts
 =================================================================================
 */
 
@@ -112,7 +112,7 @@ STEP 4: Add Plugin Visibility Controls (New Feature!)
 // Switch to show only flag simulation parameters
 studio.switchToPlugin('flag-simulation');
 
-// Show water simulation parameters  
+// Show water simulation parameters
 studio.switchToPlugin('water-simulation');
 
 // Show multiple plugins at once (new feature!)
@@ -135,7 +135,7 @@ const parameterSystem = setupModernParameterSystem(tweakpane);
 // Demo flag simulation
 parameterSystem.demoFlagSimulation();
 
-// Demo water simulation  
+// Demo water simulation
 parameterSystem.demoWaterSimulation();
 
 // Demo multiple plugins
@@ -168,7 +168,7 @@ MIGRATION TIMELINE
 */
 
 const MIGRATION_PHASES = {
-  
+
   "Phase 1: Drop-in Replacement (15 minutes)": {
     description: "Replace PropertyInspectorUIManager with SimplifiedPropertyInspectorUIManager",
     changes: ["Update Studio.ts constructor", "Update PropertyInspectorSystem creation"],
@@ -187,7 +187,7 @@ const MIGRATION_PHASES = {
     description: "Delete the massive parameter panel classes",
     changes: [
       "Delete FlagParameterPanel.ts (280 lines)",
-      "Delete WaterDropletParameterPanel.ts (234 lines)", 
+      "Delete WaterDropletParameterPanel.ts (234 lines)",
       "Delete WaterBodyParameterPanel.ts (89 lines)",
       "Delete ComponentPropertyDefinitions.ts (263 lines)"
     ],
@@ -210,14 +210,14 @@ TROUBLESHOOTING
 */
 
 const TROUBLESHOOTING = {
-  
+
   "Parameters not showing": {
     cause: "Plugin not active or component not registered",
     solution: "Check parameterSystem.switchToPlugin('your-plugin-name')"
   },
 
   "Old parameter panels still showing": {
-    cause: "Both old and new systems running simultaneously", 
+    cause: "Both old and new systems running simultaneously",
     solution: "Ensure you replaced PropertyInspectorUIManager completely"
   },
 
@@ -341,7 +341,7 @@ ${COMPLETE_STUDIO_INTEGRATION}
 
 export {
   IMMEDIATE_BENEFITS,
-  MIGRATION_PHASES, 
+  MIGRATION_PHASES,
   TROUBLESHOOTING,
   COMPLETE_STUDIO_INTEGRATION
 };

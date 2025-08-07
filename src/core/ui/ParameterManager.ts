@@ -37,14 +37,14 @@ export class TweakpaneAdapter extends UIAdapter {
 
   addNumberControl(panel: any, target: object, key: string, options: any): any {
     console.log(`[TweakpaneAdapter] Adding number control: ${key}`, { value: (target as any)[key], options });
-    
+
     const binding = panel.addBinding(target, key, {
       label: options.label || key,
       min: options.min,
       max: options.max,
       step: options.step || 0.01
     });
-    
+
     this.setupControlVisibility(binding, options);
     return binding;
   }
@@ -86,7 +86,7 @@ export class TweakpaneAdapter extends UIAdapter {
     // For Tweakpane, we can add individual X, Y, Z controls
     const group = this.addGroup(panel, options.label);
     const target_vector = (target as any)[key];
-    
+
     if (target_vector && typeof target_vector === 'object') {
       this.addNumberControl(group, target_vector, 'x', { ...options, label: 'X' });
       this.addNumberControl(group, target_vector, 'y', { ...options, label: 'Y' });
@@ -137,9 +137,9 @@ export class ParameterPanelRenderer {
 
     // Group properties
     const groups = ParameterSchemaRegistry.getGrouped(componentType);
-    
+
     for (const [groupName, properties] of groups) {
-      const groupPanel = groups.size > 1 
+      const groupPanel = groups.size > 1
         ? this.adapter.addGroup(panel, groupName)
         : panel;
 
@@ -205,15 +205,15 @@ export class ParameterManager {
 
   registerComponent(componentType: string, component: object): any {
     console.log(`[ParameterManager] Registering component: ${componentType}`, component);
-    
+
     this.clearComponent(componentType);
-    
+
     const panel = this.renderer.render(componentType, component);
     console.log(`[ParameterManager] Panel rendered:`, panel);
-    
+
     if (panel) {
       this.panels.set(componentType, panel);
-      
+
       // Also track by plugin
       const schema = ParameterSchemaRegistry.get(componentType);
       if (schema?.[0]?.pluginId) {
@@ -225,7 +225,7 @@ export class ParameterManager {
         console.log(`[ParameterManager] Registered ${componentType} under plugin: ${pluginId}`);
       }
     }
-    
+
     return panel;
   }
 
@@ -234,7 +234,7 @@ export class ParameterManager {
     if (panel) {
       this.renderer.adapter.dispose(panel);
       this.panels.delete(componentType);
-      
+
       // Also remove from plugin tracking
       for (const pluginPanels of this.pluginPanels.values()) {
         pluginPanels.delete(componentType);
@@ -251,7 +251,7 @@ export class ParameterManager {
   // Plugin visibility controls
   setPluginVisible(pluginId: string, visible: boolean): void {
     ParameterSchemaRegistry.setPluginVisible(pluginId, visible);
-    
+
     const pluginPanels = this.pluginPanels.get(pluginId);
     if (pluginPanels) {
       for (const panel of pluginPanels.values()) {
@@ -268,7 +268,7 @@ export class ParameterManager {
         this.setPluginVisible(pid, false);
       }
     }
-    
+
     // Show the specified plugin
     ParameterSchemaRegistry.setActivePlugin(pluginId);
     this.setPluginVisible(pluginId, true);
@@ -277,7 +277,7 @@ export class ParameterManager {
   showMultiplePlugins(pluginIds: string[]): void {
     // Hide all plugins first
     ParameterSchemaRegistry.hideAllPlugins();
-    
+
     // Show specified plugins
     for (const pluginId of pluginIds) {
       ParameterSchemaRegistry.addActivePlugin(pluginId);
@@ -296,11 +296,11 @@ export class ParameterManager {
   // Re-render components when plugin visibility changes
   refreshVisibility(): void {
     const componentsToRefresh = Array.from(this.panels.keys());
-    
+
     for (const componentType of componentsToRefresh) {
       const schema = ParameterSchemaRegistry.getVisible(componentType);
       const panel = this.panels.get(componentType);
-      
+
       if (schema.length === 0 && panel) {
         // Hide panel if no visible properties
         this.renderer.adapter.setVisible(panel, false);
