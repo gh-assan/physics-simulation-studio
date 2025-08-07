@@ -35,6 +35,10 @@ export class Studio implements IStudio {
     return this._world;
   }
 
+  public getPluginManager(): IPluginManager {
+    return this.pluginManager;
+  }
+
   public setRenderSystem(renderSystem: RenderSystem): void {
     this.renderSystem = renderSystem;
     if (this.orchestrator && typeof this.orchestrator.setRenderSystem === 'function') {

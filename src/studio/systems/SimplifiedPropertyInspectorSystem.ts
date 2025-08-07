@@ -87,74 +87,33 @@ export class SimplifiedPropertyInspectorSystem extends System {
     if (!this.parameterManager) return;
 
     try {
-      // Get the active plugin instance
-      const activePlugin = this.getActivePlugin();
-      if (!activePlugin) return;
+      // Get the active plugin instance and its parameter schema
+      const pluginManager = this.studio.getPluginManager();
+      const plugin = pluginManager.getPlugin(pluginName);
+      
+      if (!plugin || !plugin.getParameterSchema) {
+        console.warn(`Plugin ${pluginName} not found or doesn't support parameters`);
+        return;
+      }
 
-      // Get all registered plugins (since IStudio doesn't have getPluginManager, we need another approach)
-      // For now, let's use a direct plugin lookup approach
+      // Get parameter schema from the plugin itself
+      const parameterSchema = plugin.getParameterSchema();
+      const componentParameters = parameterSchema.components.get(componentType);
 
-      // Check if this is a plugin we know about and handle it directly
-      if (activePlugin === 'flag-simulation' && componentType === 'FlagComponent') {
-        this.registerFlagComponentParameters(component);
-      } else if (activePlugin === 'water-simulation' && (componentType === 'WaterDropletComponent' || componentType === 'WaterBodyComponent')) {
-        this.registerWaterComponentParameters(componentType, component);
+      if (componentParameters) {
+        console.log(`📝 Using plugin-defined parameters for ${componentType}`);
+        this.parameterManager.registerComponentParameters(
+          pluginName,
+          componentType,
+          component,
+          componentParameters
+        );
+      } else {
+        console.warn(`No parameters defined for component ${componentType} in plugin ${pluginName}`);
       }
 
     } catch (error) {
       console.warn(`Failed to register parameters for ${componentType}:`, error);
-    }
-  }
-
-  // Register flag component parameters directly
-  private registerFlagComponentParameters(component: any): void {
-    if (!this.parameterManager) return;
-
-    const flagParameters = [
-      { key: 'width', label: 'Flag Width', type: 'number' as const, min: 0.1, max: 10, step: 0.1, group: 'Dimensions', order: 1 },
-      { key: 'height', label: 'Flag Height', type: 'number' as const, min: 0.1, max: 10, step: 0.1, group: 'Dimensions', order: 2 },
-      { key: 'stiffness', label: 'Stiffness', type: 'number' as const, min: 0.1, max: 1, step: 0.01, group: 'Physics', order: 10 },
-      { key: 'damping', label: 'Damping', type: 'number' as const, min: 0.01, max: 1, step: 0.01, group: 'Physics', order: 11 },
-      { key: 'windStrength', label: 'Wind Strength', type: 'number' as const, min: 0, max: 10, step: 0.1, group: 'Environment', order: 20 },
-      { key: 'textureUrl', label: 'Texture URL', type: 'text' as const, group: 'Appearance', order: 30 }
-    ];
-
-    this.parameterManager.registerComponentParameters(
-      'flag-simulation',
-      'FlagComponent',
-      component,
-      flagParameters
-    );
-  }
-
-  // Register water component parameters directly
-  private registerWaterComponentParameters(componentType: string, component: any): void {
-    if (!this.parameterManager) return;
-
-    let parameters: any[] = [];
-
-    if (componentType === 'WaterDropletComponent') {
-      parameters = [
-        { key: 'radius', label: 'Radius', type: 'number' as const, min: 0.01, max: 1, step: 0.01, group: 'Size', order: 1 },
-        { key: 'mass', label: 'Mass', type: 'number' as const, min: 0.1, max: 10, step: 0.1, group: 'Physics', order: 2 },
-        { key: 'enableSPH', label: 'Enable SPH', type: 'boolean' as const, group: 'Advanced Physics', order: 10 },
-        { key: 'color', label: 'Color', type: 'color' as const, group: 'Appearance', order: 20 }
-      ];
-    } else if (componentType === 'WaterBodyComponent') {
-      parameters = [
-        { key: 'viscosity', label: 'Viscosity', type: 'number' as const, min: 0, max: 1, step: 0.01, group: 'Physics', order: 1 },
-        { key: 'surfaceTension', label: 'Surface Tension', type: 'number' as const, min: 0, max: 1, step: 0.01, group: 'Physics', order: 2 },
-        { key: 'density', label: 'Density', type: 'number' as const, min: 0.1, max: 10, step: 0.1, group: 'Physics', order: 3 }
-      ];
-    }
-
-    if (parameters.length > 0) {
-      this.parameterManager.registerComponentParameters(
-        'water-simulation',
-        componentType,
-        component,
-        parameters
-      );
     }
   }
 
@@ -179,55 +138,70 @@ export class SimplifiedPropertyInspectorSystem extends System {
 
       if (activePlugin) {
         console.log(`🔄 Simulation changed to: ${activePlugin}`);
-
-        if (activePlugin === 'flag-simulation') {
-          this.showFlagDemoParameters();
-        } else if (activePlugin === 'water-simulation') {
-          this.showWaterDemoParameters();
-        }
+        this.showDemoParametersForPlugin(activePlugin);
       }
     }
   }
 
-  private showFlagDemoParameters(): void {
+  private showDemoParametersForPlugin(pluginName: string): void {
     if (!this.parameterManager) return;
 
-    console.log('🎯 Showing flag simulation demo parameters');
+    try {
+      const pluginManager = this.studio.getPluginManager();
+      const plugin = pluginManager.getPlugin(pluginName);
+      
+      if (!plugin || !plugin.getParameterSchema) {
+        console.warn(`Plugin ${pluginName} not found or doesn't support parameters`);
+        return;
+      }
 
-    // Create a demo flag component with default values
-    const demoFlagComponent = {
-      width: 2.0,
-      height: 1.5,
-      stiffness: 0.8,
-      damping: 0.1,
-      windStrength: 3.0,
-      textureUrl: ''
-    };
+      const parameterSchema = plugin.getParameterSchema();
+      console.log(`🎯 Showing demo parameters for ${pluginName} plugin`);
 
-    this.registerFlagComponentParameters(demoFlagComponent);
+      // Create demo components for all component types in the plugin
+      for (const [componentType, parameterDescriptors] of parameterSchema.components) {
+        const demoComponent = this.createDemoComponent(componentType, parameterDescriptors);
+        
+        this.parameterManager.registerComponentParameters(
+          pluginName,
+          componentType,
+          demoComponent,
+          parameterDescriptors
+        );
+      }
+
+    } catch (error) {
+      console.warn(`Failed to show demo parameters for plugin ${pluginName}:`, error);
+    }
   }
 
-  private showWaterDemoParameters(): void {
-    if (!this.parameterManager) return;
+  private createDemoComponent(componentType: string, parameterDescriptors: any[]): any {
+    const demoComponent: any = {};
 
-    console.log('🎯 Showing water simulation demo parameters');
+    // Create default values based on parameter descriptors
+    for (const param of parameterDescriptors) {
+      switch (param.type) {
+        case 'number':
+          demoComponent[param.key] = param.min !== undefined ? (param.min + (param.max || param.min + 1)) / 2 : 1.0;
+          break;
+        case 'boolean':
+          demoComponent[param.key] = false;
+          break;
+        case 'text':
+          demoComponent[param.key] = '';
+          break;
+        case 'color':
+          demoComponent[param.key] = '#0077be';
+          break;
+        case 'vector3':
+          demoComponent[param.key] = { x: 0, y: 0, z: 0 };
+          break;
+        default:
+          demoComponent[param.key] = null;
+      }
+    }
 
-    // Create demo water components with default values
-    const demoWaterDropletComponent = {
-      radius: 0.1,
-      mass: 1.0,
-      enableSPH: true,
-      color: '#0077be'
-    };
-
-    const demoWaterBodyComponent = {
-      viscosity: 0.01,
-      surfaceTension: 0.072,
-      density: 1000
-    };
-
-    this.registerWaterComponentParameters('WaterDropletComponent', demoWaterDropletComponent);
-    this.registerWaterComponentParameters('WaterBodyComponent', demoWaterBodyComponent);
+    return demoComponent;
   }
 
   // Public methods for external control
