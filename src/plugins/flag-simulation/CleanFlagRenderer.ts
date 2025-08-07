@@ -11,7 +11,7 @@ export function createFlagMesh(flag: FlagComponent): THREE.Mesh {
   const geometry = new THREE.BufferGeometry();
   const segX = flag.segmentsX;
   const segY = flag.segmentsY;
-  
+
   // Create vertex and index arrays
   const vertices: number[] = [];
   const indices: number[] = [];
@@ -43,13 +43,13 @@ export function createFlagMesh(flag: FlagComponent): THREE.Mesh {
 
   // Create material with texture if available
   const material = flag.textureUrl
-    ? new THREE.MeshLambertMaterial({ 
+    ? new THREE.MeshLambertMaterial({
         map: new THREE.TextureLoader().load(flag.textureUrl),
-        side: THREE.DoubleSide 
+        side: THREE.DoubleSide
       })
-    : new THREE.MeshLambertMaterial({ 
-        color: 0x0077ff, 
-        side: THREE.DoubleSide 
+    : new THREE.MeshLambertMaterial({
+        color: 0x0077ff,
+        side: THREE.DoubleSide
       });
 
   return new THREE.Mesh(geometry, material);

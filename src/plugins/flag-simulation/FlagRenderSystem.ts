@@ -36,14 +36,14 @@ export class FlagRenderSystem extends System implements IRenderable {
           update: this.renderEntities.bind(this),
           clear: this.clear.bind(this)
         });
-        
+
         // Tell fallback renderer to skip flag entities
         const fallbackRenderer = this.renderOrchestrator.renderers?.get('fallback');
         if (fallbackRenderer && typeof fallbackRenderer.registerHandledComponentType === 'function') {
           fallbackRenderer.registerHandledComponentType('FlagComponent');
           fallbackRenderer.registerHandledComponentType('PoleComponent');
         }
-        
+
         break;
       }
     }

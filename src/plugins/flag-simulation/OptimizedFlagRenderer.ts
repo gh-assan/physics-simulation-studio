@@ -12,7 +12,7 @@ import { MaterialDisposer } from "../../studio/utils/MaterialDisposer";
 
 /**
  * Optimized Flag Renderer System
- * 
+ *
  * Combines flag and pole rendering into a single, efficient system.
  * Features:
  * - Efficient buffer geometry updates (no full rebuilds)
@@ -149,8 +149,8 @@ export class OptimizedFlagRenderer extends System implements IRenderable {
     const rotation = world.componentManager.getComponent(entityId, RotationComponent.type) as RotationComponent;
     const renderable = world.componentManager.getComponent(entityId, RenderableComponent.name) as RenderableComponent;
 
-    return (flag && position && rotation && renderable) 
-      ? { flag, position, rotation, renderable } 
+    return (flag && position && rotation && renderable)
+      ? { flag, position, rotation, renderable }
       : null;
   }
 
@@ -168,9 +168,9 @@ export class OptimizedFlagRenderer extends System implements IRenderable {
    * Efficiently update flag mesh geometry and transform
    */
   private updateFlagMesh(
-    mesh: THREE.Mesh, 
-    flag: FlagComponent, 
-    position: PositionComponent, 
+    mesh: THREE.Mesh,
+    flag: FlagComponent,
+    position: PositionComponent,
     rotation: RotationComponent
   ): void {
     // Update geometry using efficient buffer updates
@@ -198,7 +198,7 @@ export class OptimizedFlagRenderer extends System implements IRenderable {
     const geometry = new THREE.BufferGeometry();
     const segX = flag.segmentsX;
     const segY = flag.segmentsY;
-    
+
     // Create vertex and index arrays
     const vertices: number[] = [];
     const indices: number[] = [];
@@ -230,13 +230,13 @@ export class OptimizedFlagRenderer extends System implements IRenderable {
 
     // Create material with texture if available
     const material = flag.textureUrl
-      ? new THREE.MeshLambertMaterial({ 
+      ? new THREE.MeshLambertMaterial({
           map: new THREE.TextureLoader().load(flag.textureUrl),
-          side: THREE.DoubleSide 
+          side: THREE.DoubleSide
         })
-      : new THREE.MeshLambertMaterial({ 
-          color: 0x0077ff, 
-          side: THREE.DoubleSide 
+      : new THREE.MeshLambertMaterial({
+          color: 0x0077ff,
+          side: THREE.DoubleSide
         });
 
     return new THREE.Mesh(geometry, material);

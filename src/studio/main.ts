@@ -205,13 +205,13 @@ function registerComponentsAndSystems(world: World, studio: Studio, pluginManage
 
     // Create the traditional RenderSystem that Studio expects
     const renderSystem = new RenderSystem(graphicsManager, world);
-    
+
     // Set the RenderSystem in Studio BEFORE any plugin initialization
     studio.setRenderSystem(renderSystem);
 
     // Create centralized render orchestrator
     const renderOrchestrator = new RenderOrchestrator(graphicsManager);
-    
+
     // Create and register fallback renderer for basic entities
     const fallbackRenderer = new FallbackRenderer(graphicsManager);
     renderOrchestrator.registerRenderer('fallback', fallbackRenderer);
