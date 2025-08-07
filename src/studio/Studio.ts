@@ -95,6 +95,7 @@ export class Studio implements IStudio {
     if (currentSimulation) {
       this.orchestrator.unloadSimulation(currentSimulation);
       this.selectedSimulation.setSimulation("");
+
       Logger.getInstance().log("Simulation unloaded");
     }
   }

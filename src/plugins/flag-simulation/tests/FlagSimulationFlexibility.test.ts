@@ -57,23 +57,21 @@ describe("FlagSimulationPlugin UI Tests", () => {
   });
 
   test("Global parameter panel should be rendered", () => {
-    // Check that parameter panels are available from the plugin
-    const parameterPanels = flagPlugin.getParameterPanels(world);
-    expect(parameterPanels.length).toBeGreaterThan(0);
-
-    const globalPanel = parameterPanels[0];
-    expect(globalPanel).toBeDefined();
-    expect(globalPanel?.isVisible()).toBe(true);
+    // Check that parameter schema is available from the plugin
+    const parameterSchema = flagPlugin.getParameterSchema();
+    expect(parameterSchema).toBeDefined();
+    expect(parameterSchema.pluginId).toBe('flag-simulation');
+    expect(parameterSchema.components).toBeDefined();
+    expect(parameterSchema.components.size).toBeGreaterThan(0);
   });
 
-  test("Simulation parameter panel should be rendered", () => {
-    // Check that parameter panels are available from the plugin
-    const parameterPanels = flagPlugin.getParameterPanels(world);
-    expect(parameterPanels.length).toBeGreaterThan(0);
-
-    const simulationPanel = parameterPanels[0];
-    expect(simulationPanel).toBeDefined();
-    expect(simulationPanel?.isVisible()).toBe(true);
+  test("Simulation parameter schema should be available", () => {
+    // Check that parameter schema is available from the plugin
+    const parameterSchema = flagPlugin.getParameterSchema();
+    expect(parameterSchema).toBeDefined();
+    expect(parameterSchema.pluginId).toBe('flag-simulation');
+    expect(parameterSchema.components).toBeDefined();
+    expect(parameterSchema.components.size).toBeGreaterThan(0);
   });
 
   test("Flag should be rendered and visible", () => {

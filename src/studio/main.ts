@@ -1,4 +1,6 @@
-import { PropertyInspectorUIManager } from "./ui/PropertyInspectorUIManager";
+// Clean Plugin-Based Parameter System
+import { SimplifiedPropertyInspectorSystem } from "./systems/SimplifiedPropertyInspectorSystem";
+
 import { SceneSerializer } from "./systems/SceneSerializer";
 import { PositionComponent } from "../core/components/PositionComponent";
 import { RenderableComponent } from "../core/components/RenderableComponent";
@@ -18,7 +20,6 @@ import { StateManager } from "./state/StateManager";
 import { Studio } from "./Studio";
 import { IUIManager } from "./IUIManager";
 import { UIManager } from "./uiManager";
-import { PropertyInspectorSystem } from "./systems/PropertyInspectorSystem";
 import { ComponentPropertyRegistry } from "./utils/ComponentPropertyRegistry";
 import { IPluginContext } from "./IPluginContext";
 import { ThreeGraphicsManager } from "./graphics/ThreeGraphicsManager";
@@ -62,7 +63,7 @@ function setupCoreSystems(): { world: World; pluginManager: PluginManager; state
   return { world, pluginManager, stateManager, studio, pluginDiscovery };
 }
 
-function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager): { uiManager: UIManager; propertyInspectorUIManager: PropertyInspectorUIManager; visibilityManager: VisibilityManager } {
+function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager): { uiManager: UIManager; visibilityManager: VisibilityManager; pane: Pane } {
   // Initialize core UI and ensure left panel exists
   const visibilityManager = new VisibilityManager();
   visibilityManager.initializeCoreUI();
@@ -76,11 +77,9 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
   const pane = new Pane({ container: leftPanel });
 
   const uiManager = new UIManager(pane);
-  const propertyInspectorUIManager = new PropertyInspectorUIManager(uiManager, visibilityManager);
 
   // Expose for debugging
   (window as any).uiManager = uiManager;
-  (window as any).propertyInspectorUIManager = propertyInspectorUIManager;
   (window as any).visibilityManager = visibilityManager;
 
   const globalControlsFolder = pane.addFolder({ title: "Global Controls" });
@@ -139,7 +138,6 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
     // Add an "Unload" option to allow deselecting simulations
     const optionsWithUnload = [{ text: "Unload Simulation", value: "" }, ...options];
 
-    // Don't auto-select a simulation - keep it as empty unless explicitly set
     console.log('Creating simulation selector with state:', stateManager.selectedSimulation.state.name);
     console.log('Available options:', optionsWithUnload);
     simulationSelectionFolder
@@ -173,10 +171,10 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
   // Listen for plugin registration to update simulation selector
   pluginManager.on(PluginManagerEvent.PLUGIN_REGISTERED, updateSimulationSelector);
 
-  return { uiManager, propertyInspectorUIManager, visibilityManager };
+  return { uiManager, visibilityManager, pane };
 }
 
-function registerComponentsAndSystems(world: World, studio: Studio, propertyInspectorUIManager: PropertyInspectorUIManager, pluginManager: PluginManager, visibilityManager: VisibilityManager): VisibilityOrchestrator {
+function registerComponentsAndSystems(world: World, studio: Studio, pluginManager: PluginManager, visibilityManager: VisibilityManager, pane: Pane): VisibilityOrchestrator {
   // Register Core Components Only - Plugin components are registered by plugins themselves
   world.registerComponent((PositionComponent as any).type ? PositionComponent : class extends PositionComponent { static type = "PositionComponent"; });
   world.registerComponent((RenderableComponent as any).type ? RenderableComponent : class extends RenderableComponent { static type = "RenderableComponent"; });
@@ -202,15 +200,15 @@ function registerComponentsAndSystems(world: World, studio: Studio, propertyInsp
     const visibilityOrchestrator = new VisibilityOrchestrator(visibilityManager, renderOrchestrator);
     visibilityOrchestrator.initialize();
 
-    // NOTE: No default renderers are registered - renderers are added only when simulations load
-
     // Register the render orchestrator as a system
     world.registerSystem(renderOrchestrator);
 
     const selectionSystem = new SelectionSystem(studio, world as World);
     world.registerSystem(selectionSystem);
 
-    const propertyInspectorSystem = new PropertyInspectorSystem(propertyInspectorUIManager, world as World, studio, pluginManager, selectionSystem);
+    // Use Clean Plugin-Based Property Inspector System
+    const propertyInspectorSystem = new SimplifiedPropertyInspectorSystem(studio);
+    propertyInspectorSystem.initialize(pane);
     world.registerSystem(propertyInspectorSystem);
 
     // Store graphics manager for later use
@@ -253,11 +251,17 @@ async function main() {
 
   try {
     const { world, pluginManager, stateManager, studio, pluginDiscovery } = setupCoreSystems();
-    const { uiManager, propertyInspectorUIManager, visibilityManager } = setupUI(studio, stateManager, pluginManager);
-    const visibilityOrchestrator = registerComponentsAndSystems(world as World, studio, propertyInspectorUIManager, pluginManager as PluginManager, visibilityManager);
+    const { uiManager, visibilityManager, pane } = setupUI(studio, stateManager, pluginManager);
+
+    const visibilityOrchestrator = registerComponentsAndSystems(world as World, studio, pluginManager as PluginManager, visibilityManager, pane);
 
     // Load available plugins dynamically
     const loadedPlugins = await pluginDiscovery.loadAllPlugins();
+
+    console.log(`✅ Loaded ${loadedPlugins.length} plugins: ${loadedPlugins.join(', ')}`);
+    console.log('🎯 Clean plugin-based parameter system ready!');
+    console.log('📋 Parameters will appear when you select entities in the scene');
+
     Logger.getInstance().log(`Physics Simulation Studio ready with ${loadedPlugins.length} plugins loaded`);
 
     // Run system diagnostics to ensure everything is working
@@ -266,7 +270,7 @@ async function main() {
 
     startApplication(studio);
 
-    Logger.getInstance().log("Physics Simulation Studio Initialized");
+    Logger.getInstance().log("Physics Simulation Studio Initialized with Clean Plugin-Based Parameter System");
   } catch (error) {
     console.error("Error during initialization:", error);
     Logger.getInstance().error("Failed to initialize the studio:", error);

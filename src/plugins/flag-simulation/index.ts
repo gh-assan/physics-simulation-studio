@@ -3,37 +3,61 @@ import { World } from "../../core/ecs/World";
 import { IWorld } from "../../core/ecs/IWorld";
 import { ISimulationPlugin } from "../../core/plugin/ISimulationPlugin";
 import { FlagComponent } from "./FlagComponent";
-import { PoleComponent } from "./PoleComponent"; // Add this import
+import { PoleComponent } from "./PoleComponent";
 import { FlagSystem } from "./FlagSystem";
 import { FlagRenderSystem } from "./FlagRenderSystem";
 import { PositionComponent } from "../../core/components/PositionComponent";
-import { RenderableComponent } from "../../core/components/RenderableComponent"; // Correct import
+import { RenderableComponent } from "../../core/components/RenderableComponent";
 import { SelectableComponent } from "../../core/components/SelectableComponent";
 import { RotationComponent } from "../../core/components/RotationComponent";
 import { FlagPhysicsInitializer } from "./utils/FlagPhysicsInitializer";
-import { FlagParameterPanel } from "./FlagParameterPanel";
 import { ParameterPanelComponent } from "../../core/components/ParameterPanelComponent";
 import * as THREE from "three";
-import { flagComponentProperties } from "./flagComponentProperties";
-import { ComponentPropertyRegistry } from "../../studio/utils/ComponentPropertyRegistry";
+import { flagPluginParameterSchema } from "./FlagPluginParameters";
+import { PluginParameterManager } from "../../core/ui/PluginParameterManager";
 import { System } from "../../core/ecs/System";
 import { Logger } from '../../core/utils/Logger';
 import { ThreeGraphicsManager } from "../../studio/graphics/ThreeGraphicsManager";
 
 export class FlagSimulationPlugin implements ISimulationPlugin {
   private _flagSystem: FlagSystem | null = null;
-  private _parameterPanels: ParameterPanelComponent[] = [];
+  private _parameterManager: PluginParameterManager | null = null;
   private _studio: IStudio | null = null;
 
   getName(): string {
     return "flag-simulation";
   }
+
   getDependencies(): string[] {
     return [];
   }
-  getParameterPanels(world: IWorld): ParameterPanelComponent[] {
-    return this._parameterPanels;
+
+  // Clean parameter system - no more parameter panel classes!
+  getParameterSchema() {
+    return flagPluginParameterSchema;
   }
+
+  // Initialize parameter manager with the UI
+  initializeParameterManager(uiRenderer: any): void {
+    this._parameterManager = new PluginParameterManager(uiRenderer);
+    console.log('✅ Flag plugin parameter manager initialized');
+  }
+
+  // Register component parameters - called when components are selected
+  registerComponentParameters(componentType: string, component: any): void {
+    if (!this._parameterManager) return;
+
+    const parameters = flagPluginParameterSchema.components.get(componentType);
+    if (parameters) {
+      this._parameterManager.registerComponentParameters(
+        'flag-simulation',
+        componentType,
+        component,
+        parameters
+      );
+    }
+  }
+
   getSystems(studio: IStudio): System[] {
     // Store studio reference for later use in initializeEntities
     this._studio = studio;
@@ -41,64 +65,17 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
   }
 
   register(world: World): void {
-    // Register component properties first
-    ComponentPropertyRegistry.getInstance().registerComponentProperties(
-      FlagComponent.type,
-      flagComponentProperties
-    );
-
-    // Register components
+    // Register components - no more parameter panel boilerplate!
     world.componentManager.registerComponent(FlagComponent);
     world.componentManager.registerComponent(PoleComponent);
-    world.componentManager.registerComponent(FlagParameterPanel);
 
     // Register core components needed by this plugin
     world.componentManager.registerComponent(PositionComponent);
     world.componentManager.registerComponent(RenderableComponent);
     world.componentManager.registerComponent(SelectableComponent);
     world.componentManager.registerComponent(RotationComponent);
-    // Register ParameterPanelComponent with proper type casting
-    world.componentManager.registerComponent(
-      ParameterPanelComponent as unknown as new (...args: any[]) => ParameterPanelComponent
-    );
 
-    // Ensure FlagComponent and FlagParameterPanel are registered
-    world.registerComponent(FlagComponent);
-    world.registerComponent(FlagParameterPanel);
-
-    try {
-      // Create parameter panel
-      const flagParameterPanel = new FlagParameterPanel(world);
-
-      // Store it in the parameter panels array
-      this._parameterPanels.push(flagParameterPanel);
-
-      // Create and register parameter panel entity if ParameterPanelComponent is registered
-      if (
-        world.componentManager
-          .getComponentConstructors()
-          .has(ParameterPanelComponent.type)
-      ) {
-        const panelEntity = world.entityManager.createEntity();
-        world.componentManager.addComponent(
-          panelEntity,
-          ParameterPanelComponent.type,
-          flagParameterPanel
-        );
-
-        Logger.getInstance().log("FlagSimulationPlugin registered with parameter panel.");
-        return;
-      }
-
-      Logger.getInstance().log(
-        "FlagSimulationPlugin registered without parameter panel (ParameterPanelComponent not registered)."
-      );
-    } catch (error) {
-      Logger.getInstance().warn(
-        "Failed to register parameter panel, but simulation will continue:",
-        error
-      );
-    }
+    console.log('✅ Flag simulation plugin registered - simplified & clean!');
   }
   unregister(): void {
     if (this._flagSystem) {
@@ -106,8 +83,13 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
       this._flagSystem = null;
     }
 
-    // Clear parameter panels
-    this._parameterPanels = [];
+    // Clear parameter manager
+    if (this._parameterManager) {
+      this._parameterManager.clearAll();
+      this._parameterManager = null;
+    }
+
+    console.log('✅ Flag plugin unregistered');
   }
 
   private configureCamera(studio: IStudio): void {
@@ -124,15 +106,10 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     // Register components
     world.componentManager.registerComponent(FlagComponent);
     world.componentManager.registerComponent(PoleComponent);
-    // Ensure ParameterPanelComponent is registered correctly
-    world.componentManager.registerComponent(
-      ParameterPanelComponent as unknown as new (...args: any[]) => ParameterPanelComponent
-    );
 
     // Initialize entities
     this.initializeEntities(world);
 
-    // Consolidated log for initialization
     Logger.getInstance().log("FlagSimulationPlugin initialized with components and entities.");
   }
 

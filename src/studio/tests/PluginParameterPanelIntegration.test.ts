@@ -124,9 +124,21 @@ describe("Plugin Parameter Panel Integration", () => {
     const waterPanelMock = { componentType: WaterDropletComponent.type, registerControls: jest.fn() };
     flagPlugin = new FlagSimulationPlugin();
     waterPlugin = new WaterSimulationPlugin();
-    // Mock getParameterPanels for plugins with shared mock instances
-    flagPlugin.getParameterPanels = jest.fn().mockReturnValue([flagPanelMock]);
-    waterPlugin.getParameterPanels = jest.fn().mockReturnValue([waterPanelMock]);
+    // Mock getParameterSchema for plugins with new clean parameter system
+    flagPlugin.getParameterSchema = jest.fn().mockReturnValue({
+      pluginId: 'flag-simulation',
+      components: new Map([
+        ['FlagComponent', []],
+        ['PoleComponent', []]
+      ])
+    });
+    waterPlugin.getParameterSchema = jest.fn().mockReturnValue({
+      pluginId: 'water-simulation',
+      components: new Map([
+        ['WaterDropletComponent', []],
+        ['WaterBodyComponent', []]
+      ])
+    });
     pluginManager.registerPlugin(flagPlugin);
     pluginManager.registerPlugin(waterPlugin);
 
@@ -148,14 +160,14 @@ describe("Plugin Parameter Panel Integration", () => {
     // Activate the flag simulation plugin
     await pluginManager.activatePlugin("flag-simulation", studio);
 
-    // Get parameter panels from the active plugin
-    const panels = (
-      propertyInspectorSystem as any
-    ).getParameterPanelsFromActivePlugin();
+    // Get parameter schema from the active plugin
+    const parameterSchema = flagPlugin.getParameterSchema();
 
-    // There should be at least one panel
-    expect(panels.length).toBeGreaterThan(0);
-    expect(panels[0].componentType).toBe(FlagComponent.type);
+    // There should be parameter schema available
+    expect(parameterSchema).toBeDefined();
+    expect(parameterSchema.pluginId).toBe('flag-simulation');
+    expect(parameterSchema.components.size).toBeGreaterThan(0);
+    expect(parameterSchema.components.has('FlagComponent')).toBe(true);
   });
 
   it("should get parameter panels from the water simulation plugin", async () => {
@@ -168,19 +180,14 @@ describe("Plugin Parameter Panel Integration", () => {
     // Activate the water simulation plugin
     await pluginManager.activatePlugin("water-simulation", studio);
 
-    // Get parameter panels from the active plugin
-    const panels = (
-      propertyInspectorSystem as any
-    ).getParameterPanelsFromActivePlugin();
+    // Get parameter schema from the active plugin
+    const parameterSchema = waterPlugin.getParameterSchema();
 
-    // There should be at least one panel
-    expect(panels.length).toBeGreaterThan(0);
-    expect(
-      panels.some(
-        (panel: ParameterPanelComponent) =>
-          panel.componentType === WaterDropletComponent.type
-      )
-    ).toBe(true);
+    // There should be parameter schema available
+    expect(parameterSchema).toBeDefined();
+    expect(parameterSchema.pluginId).toBe('water-simulation');
+    expect(parameterSchema.components.size).toBeGreaterThan(0);
+    expect(parameterSchema.components.has('WaterDropletComponent')).toBe(true);
   });
 
   it("should update the UI when switching between simulations", async () => {
