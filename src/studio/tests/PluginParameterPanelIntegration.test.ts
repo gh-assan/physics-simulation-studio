@@ -124,9 +124,21 @@ describe("Plugin Parameter Panel Integration", () => {
     const waterPanelMock = { componentType: WaterDropletComponent.type, registerControls: jest.fn() };
     flagPlugin = new FlagSimulationPlugin();
     waterPlugin = new WaterSimulationPlugin();
-    // Mock getParameterPanels for plugins with shared mock instances
-    flagPlugin.getParameterPanels = jest.fn().mockReturnValue([flagPanelMock]);
-    waterPlugin.getParameterPanels = jest.fn().mockReturnValue([waterPanelMock]);
+    // Mock getParameterSchema for plugins with new clean parameter system
+    flagPlugin.getParameterSchema = jest.fn().mockReturnValue({
+      pluginId: 'flag-simulation',
+      components: new Map([
+        ['FlagComponent', []],
+        ['PoleComponent', []]
+      ])
+    });
+    waterPlugin.getParameterSchema = jest.fn().mockReturnValue({
+      pluginId: 'water-simulation',
+      components: new Map([
+        ['WaterDropletComponent', []],
+        ['WaterBodyComponent', []]
+      ])
+    });
     pluginManager.registerPlugin(flagPlugin);
     pluginManager.registerPlugin(waterPlugin);
 

@@ -79,9 +79,10 @@ describe("FlagSimulationPlugin Studio Integration Tests", () => {
     // Act: Initialize entities
     flagPlugin.initializeEntities(world);
 
-    // Assert: Parameter panels should be available
-    const parameterPanels = flagPlugin.getParameterPanels(world);
-    expect(parameterPanels.length).toBeGreaterThan(0);
+    // Assert: Parameter schema should be available
+    const parameterSchema = flagPlugin.getParameterSchema();
+    expect(parameterSchema).toBeDefined();
+    expect(parameterSchema.pluginId).toBe('flag-simulation');
   });
 
   test("should handle missing studio context gracefully", () => {

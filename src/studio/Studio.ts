@@ -19,9 +19,6 @@ export class Studio implements IStudio {
   private orchestrator: ISimulationOrchestrator;
   private pluginContext: IPluginContext;
 
-  // New: Parameter system integration
-  private parameterSystemIntegration: any;
-
   public get world(): IWorld {
     return this._world;
   }
@@ -32,11 +29,6 @@ export class Studio implements IStudio {
     this.selectedSimulation = stateManager.selectedSimulation;
     this.orchestrator = new SimulationOrchestrator(world, pluginManager, this);
     this.pluginContext = pluginContext;
-  }
-
-  // New: Set parameter system integration
-  public setParameterSystemIntegration(integration: any): void {
-    this.parameterSystemIntegration = integration;
   }
 
   public getWorld(): IWorld {
@@ -89,11 +81,6 @@ export class Studio implements IStudio {
     await this.orchestrator.loadSimulation(pluginName);
     this.selectedSimulation.setSimulation(pluginName);
 
-    // NEW: Switch parameter system to show this plugin's parameters
-    if (this.parameterSystemIntegration) {
-      this.parameterSystemIntegration.switchToPlugin(pluginName);
-    }
-
     this.renderSystem?.update(this.world as any, 0);
 
     const event = new CustomEvent("simulation-loaded", {
@@ -109,29 +96,11 @@ export class Studio implements IStudio {
       this.orchestrator.unloadSimulation(currentSimulation);
       this.selectedSimulation.setSimulation("");
 
-      // NEW: Clear parameter displays
-      if (this.parameterSystemIntegration) {
-        this.parameterSystemIntegration.getManager().clearInspectorControls();
-      }
-
       Logger.getInstance().log("Simulation unloaded");
     }
   }
 
-  // NEW: Plugin switching method
-  public switchToPlugin(pluginName: string): void {
-    console.log(`Studio: Switching to plugin: ${pluginName}`);
-
-    if (this.parameterSystemIntegration) {
-      this.parameterSystemIntegration.switchToPlugin(pluginName);
-    }
-
-    // Also update active simulation if it exists
-    const availablePlugins = this.getAvailableSimulationNames();
-    if (availablePlugins.includes(pluginName)) {
-      void this.loadSimulation(pluginName);
-    }
-  }  public update(deltaTime: number): void {
+  public update(deltaTime: number): void {
     if (this.isPlaying) {
       this.world.update(deltaTime);
     }
