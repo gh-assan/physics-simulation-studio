@@ -47,13 +47,7 @@ describe("WaterSimulationFlexibility", () => {
     const entities = world.entityManager.getAllEntities();
     expect(entities.size).toBeGreaterThan(0);
 
-    // Verify that water components were added
-    const waterBodyEntities =
-      world.componentManager.getEntitiesWithComponentTypes([
-        "WaterBodyComponent"
-      ]);
-    expect(waterBodyEntities.length).toBeGreaterThan(0);
-
+    // Verify that water droplet components were added (plugin only creates droplets in initializeEntities)
     const waterDropletEntities =
       world.componentManager.getEntitiesWithComponentTypes([
         "WaterDropletComponent"

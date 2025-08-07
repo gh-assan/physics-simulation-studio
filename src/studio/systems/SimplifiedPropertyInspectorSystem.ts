@@ -30,7 +30,7 @@ export class SimplifiedPropertyInspectorSystem extends System {
   update(world: IWorld, deltaTime: number): void {
     // Find currently selected entity
     const selectedEntity = this.findSelectedEntity(world);
-    
+
     // If selection changed, update parameters
     if (selectedEntity !== this.lastSelectedEntity) {
       this.updateParametersForEntity(world, selectedEntity);
@@ -43,14 +43,14 @@ export class SimplifiedPropertyInspectorSystem extends System {
 
   private findSelectedEntity(world: IWorld): number | null {
     const selectableEntities = world.componentManager.getEntitiesWithComponents([SelectableComponent]);
-    
+
     for (const entityId of selectableEntities) {
       const selectable = world.componentManager.getComponent(entityId, SelectableComponent.type) as SelectableComponent;
       if (selectable && selectable.isSelected) {
         return entityId;
       }
     }
-    
+
     return null;
   }
 
@@ -93,14 +93,14 @@ export class SimplifiedPropertyInspectorSystem extends System {
 
       // Get all registered plugins (since IStudio doesn't have getPluginManager, we need another approach)
       // For now, let's use a direct plugin lookup approach
-      
+
       // Check if this is a plugin we know about and handle it directly
       if (activePlugin === 'flag-simulation' && componentType === 'FlagComponent') {
         this.registerFlagComponentParameters(component);
       } else if (activePlugin === 'water-simulation' && (componentType === 'WaterDropletComponent' || componentType === 'WaterBodyComponent')) {
         this.registerWaterComponentParameters(componentType, component);
       }
-      
+
     } catch (error) {
       console.warn(`Failed to register parameters for ${componentType}:`, error);
     }
@@ -171,15 +171,15 @@ export class SimplifiedPropertyInspectorSystem extends System {
     if (!this.parameterManager) return;
 
     const activePlugin = this.getActivePlugin();
-    
+
     // If simulation changed, clear parameters and show new ones
     if (activePlugin !== this.lastActiveSimulation) {
       this.parameterManager.clearAll();
       this.lastActiveSimulation = activePlugin;
-      
+
       if (activePlugin) {
         console.log(`🔄 Simulation changed to: ${activePlugin}`);
-        
+
         if (activePlugin === 'flag-simulation') {
           this.showFlagDemoParameters();
         } else if (activePlugin === 'water-simulation') {
@@ -193,7 +193,7 @@ export class SimplifiedPropertyInspectorSystem extends System {
     if (!this.parameterManager) return;
 
     console.log('🎯 Showing flag simulation demo parameters');
-    
+
     // Create a demo flag component with default values
     const demoFlagComponent = {
       width: 2.0,
@@ -211,7 +211,7 @@ export class SimplifiedPropertyInspectorSystem extends System {
     if (!this.parameterManager) return;
 
     console.log('🎯 Showing water simulation demo parameters');
-    
+
     // Create demo water components with default values
     const demoWaterDropletComponent = {
       radius: 0.1,

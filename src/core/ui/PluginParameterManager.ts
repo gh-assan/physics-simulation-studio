@@ -35,9 +35,9 @@ export class PluginParameterManager {
 
   // Register a component with its parameters from the plugin
   registerComponentParameters(
-    pluginId: string, 
-    componentType: string, 
-    component: any, 
+    pluginId: string,
+    componentType: string,
+    component: any,
     parameterDescriptors: PluginParameterDescriptor[]
   ): void {
     console.log(`📝 Registering ${componentType} parameters for plugin: ${pluginId}`);
@@ -50,7 +50,7 @@ export class PluginParameterManager {
 
     // Render UI
     const panel = this.renderParameterGroup(componentType, component, grouped);
-    
+
     if (panel) {
       this.panels.set(componentType, panel);
       console.log(`✅ Created parameter panel for ${componentType}`);
@@ -74,8 +74,8 @@ export class PluginParameterManager {
 
   // Render parameter groups using the UI framework
   private renderParameterGroup(
-    componentType: string, 
-    component: any, 
+    componentType: string,
+    component: any,
     grouped: Map<string, PluginParameterDescriptor[]>
   ): any {
     if (!this.renderer) return null;

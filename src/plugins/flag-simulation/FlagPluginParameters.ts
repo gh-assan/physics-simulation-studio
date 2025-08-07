@@ -19,7 +19,7 @@ export const flagComponentParameters: PluginParameterDescriptor[] = [
   },
   {
     key: 'height',
-    label: 'Flag Height', 
+    label: 'Flag Height',
     type: 'number',
     min: 0.1,
     max: 10,
