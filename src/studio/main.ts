@@ -26,6 +26,7 @@ import { ThreeGraphicsManager } from "./graphics/ThreeGraphicsManager";
 import { VisibilityManager } from "./ui/VisibilityManager";
 import { SystemDiagnostics } from "./utils/SystemDiagnostics";
 import { RenderOrchestrator } from "./rendering/RenderOrchestrator";
+import { RenderSystem } from "./systems/RenderSystem";
 import { VisibilityOrchestrator } from "./orchestration/VisibilityOrchestrator";
 import { PluginDiscoveryService } from "./plugins/PluginDiscoveryService";
 
@@ -201,6 +202,12 @@ function registerComponentsAndSystems(world: World, studio: Studio, pluginManage
     }
     graphicsManager.initialize(mainContent);
 
+    // Create the traditional RenderSystem that Studio expects
+    const renderSystem = new RenderSystem(graphicsManager, world);
+    
+    // Set the RenderSystem in Studio BEFORE any plugin initialization
+    studio.setRenderSystem(renderSystem);
+
     // Create centralized render orchestrator
     const renderOrchestrator = new RenderOrchestrator(graphicsManager);
 
@@ -208,7 +215,8 @@ function registerComponentsAndSystems(world: World, studio: Studio, pluginManage
     const visibilityOrchestrator = new VisibilityOrchestrator(visibilityManager, renderOrchestrator);
     visibilityOrchestrator.initialize();
 
-    // Register the render orchestrator as a system
+    // Register both systems
+    world.registerSystem(renderSystem);
     world.registerSystem(renderOrchestrator);
 
     const selectionSystem = new SelectionSystem(studio, world as World);
@@ -229,6 +237,7 @@ function registerComponentsAndSystems(world: World, studio: Studio, pluginManage
     (window as any).viewportToolbar = viewportToolbar;
 
     // Expose for debugging
+    (window as any).renderSystem = renderSystem;
     (window as any).renderOrchestrator = renderOrchestrator;
     (window as any).visibilityOrchestrator = visibilityOrchestrator;
 
