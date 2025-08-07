@@ -132,6 +132,96 @@ export interface ApplicationShutdownAction extends BaseAction {
   readonly type: 'APPLICATION_SHUTDOWN';
 }
 
+// Performance monitoring actions
+export interface PerformanceMetricsUpdatedAction extends BaseAction {
+  readonly type: 'PERFORMANCE_METRICS_UPDATED';
+  readonly payload: {
+    readonly frameRate: number;
+    readonly renderTime: number;
+    readonly updateTime: number;
+    readonly memoryUsage: number;
+    readonly entityCount: number;
+  };
+}
+
+export interface SystemPerformanceUpdatedAction extends BaseAction {
+  readonly type: 'SYSTEM_PERFORMANCE_UPDATED';
+  readonly payload: {
+    readonly systemName: string;
+    readonly updateTime: number;
+  };
+}
+
+// Error handling actions
+export interface ErrorOccurredAction extends BaseAction {
+  readonly type: 'ERROR_OCCURRED';
+  readonly payload: {
+    readonly error: string;
+    readonly level: 'warning' | 'error' | 'critical';
+    readonly source: string;
+    readonly stackTrace?: string;
+  };
+}
+
+export interface ErrorAcknowledgedAction extends BaseAction {
+  readonly type: 'ERROR_ACKNOWLEDGED';
+  readonly payload: {
+    readonly errorId: string;
+  };
+}
+
+export interface ErrorsClearedAction extends BaseAction {
+  readonly type: 'ERRORS_CLEARED';
+}
+
+// Entity management actions
+export interface EntityCreatedAction extends BaseAction {
+  readonly type: 'ENTITY_CREATED';
+  readonly payload: {
+    readonly entityId: string;
+    readonly name?: string;
+    readonly components: readonly string[];
+  };
+}
+
+export interface EntityDestroyedAction extends BaseAction {
+  readonly type: 'ENTITY_DESTROYED';
+  readonly payload: {
+    readonly entityId: string;
+  };
+}
+
+export interface EntityVisibilityChangedAction extends BaseAction {
+  readonly type: 'ENTITY_VISIBILITY_CHANGED';
+  readonly payload: {
+    readonly entityId: string;
+    readonly isVisible: boolean;
+  };
+}
+
+export interface EntitiesSelectedAction extends BaseAction {
+  readonly type: 'ENTITIES_SELECTED';
+  readonly payload: {
+    readonly entityIds: readonly string[];
+  };
+}
+
+// User preferences actions
+export interface UserPreferenceChangedAction extends BaseAction {
+  readonly type: 'USER_PREFERENCE_CHANGED';
+  readonly payload: {
+    readonly key: string;
+    readonly value: any;
+  };
+}
+
+export interface ThemeChangedAction extends BaseAction {
+  readonly type: 'THEME_CHANGED';
+  readonly payload: {
+    readonly theme: 'light' | 'dark' | 'auto';
+  };
+}
+
 // Union of all possible actions
 export type AppAction =
   | PluginRegisteredAction
@@ -150,7 +240,18 @@ export type AppAction =
   | CameraMovedAction
   | ViewportSettingsChangedAction
   | ApplicationInitializedAction
-  | ApplicationShutdownAction;
+  | ApplicationShutdownAction
+  | PerformanceMetricsUpdatedAction
+  | SystemPerformanceUpdatedAction
+  | ErrorOccurredAction
+  | ErrorAcknowledgedAction
+  | ErrorsClearedAction
+  | EntityCreatedAction
+  | EntityDestroyedAction
+  | EntityVisibilityChangedAction
+  | EntitiesSelectedAction
+  | UserPreferenceChangedAction
+  | ThemeChangedAction;
 
 /**
  * Action Creators - Helper functions to create actions with consistent structure
@@ -237,5 +338,97 @@ export const Actions = {
     type: 'APPLICATION_INITIALIZED',
     timestamp: Date.now(),
     metadata: { source: 'Application' },
+  }),
+
+  // Performance monitoring
+  performanceMetricsUpdated: (
+    frameRate: number,
+    renderTime: number,
+    updateTime: number,
+    memoryUsage: number,
+    entityCount: number,
+    source = 'PerformanceMonitor'
+  ): PerformanceMetricsUpdatedAction => ({
+    type: 'PERFORMANCE_METRICS_UPDATED',
+    payload: { frameRate, renderTime, updateTime, memoryUsage, entityCount },
+    timestamp: Date.now(),
+    metadata: { source },
+  }),
+
+  systemPerformanceUpdated: (systemName: string, updateTime: number, source = 'SystemManager'): SystemPerformanceUpdatedAction => ({
+    type: 'SYSTEM_PERFORMANCE_UPDATED',
+    payload: { systemName, updateTime },
+    timestamp: Date.now(),
+    metadata: { source },
+  }),
+
+  // Error handling
+  errorOccurred: (
+    error: string,
+    level: 'warning' | 'error' | 'critical',
+    source: string,
+    stackTrace?: string
+  ): ErrorOccurredAction => ({
+    type: 'ERROR_OCCURRED',
+    payload: { error, level, source, stackTrace },
+    timestamp: Date.now(),
+    metadata: { source },
+  }),
+
+  errorAcknowledged: (errorId: string, source = 'ErrorManager'): ErrorAcknowledgedAction => ({
+    type: 'ERROR_ACKNOWLEDGED',
+    payload: { errorId },
+    timestamp: Date.now(),
+    metadata: { source },
+  }),
+
+  errorsCleared: (source = 'ErrorManager'): ErrorsClearedAction => ({
+    type: 'ERRORS_CLEARED',
+    timestamp: Date.now(),
+    metadata: { source },
+  }),
+
+  // Entity management
+  entityCreated: (entityId: string, components: string[], name?: string, source = 'EntityManager'): EntityCreatedAction => ({
+    type: 'ENTITY_CREATED',
+    payload: { entityId, components, name },
+    timestamp: Date.now(),
+    metadata: { source },
+  }),
+
+  entityDestroyed: (entityId: string, source = 'EntityManager'): EntityDestroyedAction => ({
+    type: 'ENTITY_DESTROYED',
+    payload: { entityId },
+    timestamp: Date.now(),
+    metadata: { source },
+  }),
+
+  entityVisibilityChanged: (entityId: string, isVisible: boolean, source = 'RenderSystem'): EntityVisibilityChangedAction => ({
+    type: 'ENTITY_VISIBILITY_CHANGED',
+    payload: { entityId, isVisible },
+    timestamp: Date.now(),
+    metadata: { source },
+  }),
+
+  entitiesSelected: (entityIds: string[], source = 'SelectionSystem'): EntitiesSelectedAction => ({
+    type: 'ENTITIES_SELECTED',
+    payload: { entityIds },
+    timestamp: Date.now(),
+    metadata: { source },
+  }),
+
+  // User preferences
+  userPreferenceChanged: (key: string, value: any, source = 'PreferenceManager'): UserPreferenceChangedAction => ({
+    type: 'USER_PREFERENCE_CHANGED',
+    payload: { key, value },
+    timestamp: Date.now(),
+    metadata: { source },
+  }),
+
+  themeChanged: (theme: 'light' | 'dark' | 'auto', source = 'ThemeManager'): ThemeChangedAction => ({
+    type: 'THEME_CHANGED',
+    payload: { theme },
+    timestamp: Date.now(),
+    metadata: { source },
   }),
 };

@@ -81,6 +81,53 @@ export interface AppConfiguration {
   };
 }
 
+export interface PerformanceState {
+  readonly metrics: {
+    readonly frameRate: number;
+    readonly averageFrameRate: number;
+    readonly renderTime: number;
+    readonly updateTime: number;
+    readonly memoryUsage: number;
+  };
+  readonly entityCount: number;
+  readonly systemUpdateTimes: readonly { readonly name: string; readonly time: number }[];
+}
+
+export interface ErrorState {
+  readonly errors: readonly {
+    readonly id: string;
+    readonly message: string;
+    readonly level: 'warning' | 'error' | 'critical';
+    readonly timestamp: number;
+    readonly source: string;
+    readonly acknowledged: boolean;
+  }[];
+  readonly maxErrors: number;
+}
+
+export interface EntityState {
+  readonly entities: readonly {
+    readonly id: string;
+    readonly name?: string;
+    readonly components: readonly string[];
+    readonly isVisible: boolean;
+    readonly isSelected: boolean;
+  }[];
+  readonly selectedEntities: readonly string[];
+  readonly totalCount: number;
+}
+
+export interface UserPreferencesState {
+  readonly theme: 'light' | 'dark' | 'auto';
+  readonly autoSave: boolean;
+  readonly gridSettings: {
+    readonly enabled: boolean;
+    readonly size: number;
+    readonly color: string;
+  };
+  readonly debugPanelsVisible: boolean;
+}
+
 /**
  * The complete application state
  * This is immutable and can only be changed through actions
@@ -93,6 +140,10 @@ export interface AppState {
   readonly ui: UIState;
   readonly simulation: SimulationState;
   readonly viewport: ViewportState;
+  readonly performance: PerformanceState;
+  readonly errors: ErrorState;
+  readonly entities: EntityState;
+  readonly userPreferences: UserPreferencesState;
   readonly lastUpdated: number;
 }
 
@@ -150,6 +201,36 @@ export const createInitialAppState = (): AppState => ({
       snapToGrid: false,
       gridSize: 1,
     },
+  },
+  performance: {
+    metrics: {
+      frameRate: 60,
+      averageFrameRate: 60,
+      renderTime: 0,
+      updateTime: 0,
+      memoryUsage: 0,
+    },
+    entityCount: 0,
+    systemUpdateTimes: [],
+  },
+  errors: {
+    errors: [],
+    maxErrors: 100,
+  },
+  entities: {
+    entities: [],
+    selectedEntities: [],
+    totalCount: 0,
+  },
+  userPreferences: {
+    theme: 'light',
+    autoSave: true,
+    gridSettings: {
+      enabled: true,
+      size: 1,
+      color: '#cccccc',
+    },
+    debugPanelsVisible: false,
   },
   lastUpdated: Date.now(),
 });

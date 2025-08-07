@@ -203,6 +203,202 @@ function viewportReducer(viewport: AppState['viewport'], action: AppAction): App
 }
 
 /**
+ * Performance state reducer
+ */
+function performanceReducer(performance: AppState['performance'], action: AppAction): AppState['performance'] {
+  switch (action.type) {
+    case 'PERFORMANCE_METRICS_UPDATED': {
+      const { frameRate, renderTime, updateTime, memoryUsage, entityCount } = action.payload;
+      return {
+        ...performance,
+        metrics: {
+          frameRate,
+          averageFrameRate: (performance.metrics.averageFrameRate * 9 + frameRate) / 10, // Moving average
+          renderTime,
+          updateTime,
+          memoryUsage,
+        },
+        entityCount,
+      };
+    }
+
+    case 'SYSTEM_PERFORMANCE_UPDATED': {
+      const { systemName, updateTime } = action.payload;
+      const existingIndex = performance.systemUpdateTimes.findIndex(s => s.name === systemName);
+
+      if (existingIndex >= 0) {
+        // Update existing system time
+        const updatedTimes = [...performance.systemUpdateTimes];
+        updatedTimes[existingIndex] = { name: systemName, time: updateTime };
+        return {
+          ...performance,
+          systemUpdateTimes: updatedTimes,
+        };
+      } else {
+        // Add new system time
+        return {
+          ...performance,
+          systemUpdateTimes: [
+            ...performance.systemUpdateTimes,
+            { name: systemName, time: updateTime }
+          ],
+        };
+      }
+    }
+
+    default:
+      return performance;
+  }
+}
+
+/**
+ * Error state reducer
+ */
+function errorsReducer(errors: AppState['errors'], action: AppAction): AppState['errors'] {
+  switch (action.type) {
+    case 'ERROR_OCCURRED': {
+      const { error, level, source, stackTrace } = action.payload;
+      const newError = {
+        id: `error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        message: error,
+        level,
+        source,
+        timestamp: action.timestamp || Date.now(),
+        acknowledged: false,
+      };
+
+      // Keep only the most recent errors up to the limit
+      const updatedErrors = [newError, ...errors.errors].slice(0, errors.maxErrors);
+
+      return {
+        ...errors,
+        errors: updatedErrors,
+      };
+    }
+
+    case 'ERROR_ACKNOWLEDGED': {
+      const { errorId } = action.payload;
+      return {
+        ...errors,
+        errors: errors.errors.map(error =>
+          error.id === errorId ? { ...error, acknowledged: true } : error
+        ),
+      };
+    }
+
+    case 'ERRORS_CLEARED': {
+      return {
+        ...errors,
+        errors: [],
+      };
+    }
+
+    default:
+      return errors;
+  }
+}
+
+/**
+ * Entity state reducer
+ */
+function entitiesReducer(entities: AppState['entities'], action: AppAction): AppState['entities'] {
+  switch (action.type) {
+    case 'ENTITY_CREATED': {
+      const { entityId, name, components } = action.payload;
+      const newEntity = {
+        id: entityId,
+        name,
+        components,
+        isVisible: true,
+        isSelected: false,
+      };
+
+      return {
+        ...entities,
+        entities: [...entities.entities, newEntity],
+        totalCount: entities.totalCount + 1,
+      };
+    }
+
+    case 'ENTITY_DESTROYED': {
+      const { entityId } = action.payload;
+      return {
+        ...entities,
+        entities: entities.entities.filter(e => e.id !== entityId),
+        selectedEntities: entities.selectedEntities.filter(id => id !== entityId),
+        totalCount: Math.max(0, entities.totalCount - 1),
+      };
+    }
+
+    case 'ENTITY_VISIBILITY_CHANGED': {
+      const { entityId, isVisible } = action.payload;
+      return {
+        ...entities,
+        entities: entities.entities.map(entity =>
+          entity.id === entityId ? { ...entity, isVisible } : entity
+        ),
+      };
+    }
+
+    case 'ENTITIES_SELECTED': {
+      const { entityIds } = action.payload;
+      return {
+        ...entities,
+        entities: entities.entities.map(entity => ({
+          ...entity,
+          isSelected: entityIds.includes(entity.id)
+        })),
+        selectedEntities: entityIds,
+      };
+    }
+
+    default:
+      return entities;
+  }
+}
+
+/**
+ * User preferences reducer
+ */
+function userPreferencesReducer(preferences: AppState['userPreferences'], action: AppAction): AppState['userPreferences'] {
+  switch (action.type) {
+    case 'THEME_CHANGED': {
+      const { theme } = action.payload;
+      return {
+        ...preferences,
+        theme,
+      };
+    }
+
+    case 'USER_PREFERENCE_CHANGED': {
+      const { key, value } = action.payload;
+      // Handle nested preference updates
+      if (key.includes('.')) {
+        const [parentKey, childKey] = key.split('.');
+        if (parentKey === 'gridSettings') {
+          return {
+            ...preferences,
+            gridSettings: {
+              ...preferences.gridSettings,
+              [childKey]: value,
+            },
+          };
+        }
+      }
+
+      // Handle top-level preference updates
+      return {
+        ...preferences,
+        [key]: value,
+      };
+    }
+
+    default:
+      return preferences;
+  }
+}
+
+/**
  * Root reducer that combines all sub-reducers
  * This is a pure function that takes the current state and an action,
  * and returns the new state
@@ -217,6 +413,10 @@ export function rootReducer(state: AppState, action: AppAction): AppState {
     ui: uiReducer(state.ui, action),
     simulation: simulationReducer(state.simulation, action),
     viewport: viewportReducer(state.viewport, action),
+    performance: performanceReducer(state.performance, action),
+    errors: errorsReducer(state.errors, action),
+    entities: entitiesReducer(state.entities, action),
+    userPreferences: userPreferencesReducer(state.userPreferences, action),
     lastUpdated: Date.now(),
   };
 

@@ -360,6 +360,197 @@ export const MetaSelectors = {
 };
 
 /**
+ * Performance selectors
+ */
+export const PerformanceSelectors = {
+  /**
+   * Get current performance metrics
+   */
+  getMetrics: (state: AppState) => state.performance.metrics,
+
+  /**
+   * Get current frame rate
+   */
+  getFrameRate: (state: AppState): number => state.performance.metrics.frameRate,
+
+  /**
+   * Get average frame rate
+   */
+  getAverageFrameRate: (state: AppState): number => state.performance.metrics.averageFrameRate,
+
+  /**
+   * Get system update times
+   */
+  getSystemUpdateTimes: (state: AppState) => state.performance.systemUpdateTimes,
+
+  /**
+   * Get slowest systems
+   */
+  getSlowestSystems: (state: AppState, count = 5) =>
+    [...state.performance.systemUpdateTimes]
+      .sort((a, b) => b.time - a.time)
+      .slice(0, count),
+
+  /**
+   * Get entity count
+   */
+  getEntityCount: (state: AppState): number => state.performance.entityCount,
+
+  /**
+   * Check if performance is good (>= 55 FPS)
+   */
+  isPerformanceGood: (state: AppState): boolean => state.performance.metrics.frameRate >= 55,
+
+  /**
+   * Get memory usage
+   */
+  getMemoryUsage: (state: AppState): number => state.performance.metrics.memoryUsage,
+};
+
+/**
+ * Error selectors
+ */
+export const ErrorSelectors = {
+  /**
+   * Get all errors
+   */
+  getAllErrors: (state: AppState) => state.errors.errors,
+
+  /**
+   * Get unacknowledged errors
+   */
+  getUnacknowledgedErrors: (state: AppState) =>
+    state.errors.errors.filter(error => !error.acknowledged),
+
+  /**
+   * Get errors by level
+   */
+  getErrorsByLevel: (state: AppState, level: 'warning' | 'error' | 'critical') =>
+    state.errors.errors.filter(error => error.level === level),
+
+  /**
+   * Get critical errors
+   */
+  getCriticalErrors: (state: AppState) =>
+    state.errors.errors.filter(error => error.level === 'critical'),
+
+  /**
+   * Get error count
+   */
+  getErrorCount: (state: AppState): number => state.errors.errors.length,
+
+  /**
+   * Get unacknowledged error count
+   */
+  getUnacknowledgedErrorCount: (state: AppState): number =>
+    state.errors.errors.filter(error => !error.acknowledged).length,
+
+  /**
+   * Check if there are critical errors
+   */
+  hasCriticalErrors: (state: AppState): boolean =>
+    state.errors.errors.some(error => error.level === 'critical'),
+
+  /**
+   * Get most recent error
+   */
+  getMostRecentError: (state: AppState) =>
+    state.errors.errors.length > 0 ? state.errors.errors[0] : null,
+};
+
+/**
+ * Entity selectors
+ */
+export const EntitySelectors = {
+  /**
+   * Get all entities
+   */
+  getAllEntities: (state: AppState) => state.entities.entities,
+
+  /**
+   * Get selected entities
+   */
+  getSelectedEntities: (state: AppState) =>
+    state.entities.entities.filter(entity => entity.isSelected),
+
+  /**
+   * Get selected entity IDs
+   */
+  getSelectedEntityIds: (state: AppState): readonly string[] => state.entities.selectedEntities,
+
+  /**
+   * Get visible entities
+   */
+  getVisibleEntities: (state: AppState) =>
+    state.entities.entities.filter(entity => entity.isVisible),
+
+  /**
+   * Get entity by ID
+   */
+  getEntityById: (state: AppState, entityId: string) =>
+    state.entities.entities.find(entity => entity.id === entityId),
+
+  /**
+   * Get entities with component
+   */
+  getEntitiesWithComponent: (state: AppState, componentName: string) =>
+    state.entities.entities.filter(entity =>
+      entity.components.includes(componentName)
+    ),
+
+  /**
+   * Get entity count
+   */
+  getEntityCount: (state: AppState): number => state.entities.totalCount,
+
+  /**
+   * Get selected entity count
+   */
+  getSelectedEntityCount: (state: AppState): number => state.entities.selectedEntities.length,
+
+  /**
+   * Check if entity is selected
+   */
+  isEntitySelected: (state: AppState, entityId: string): boolean =>
+    state.entities.selectedEntities.includes(entityId),
+
+  /**
+   * Check if any entities are selected
+   */
+  hasSelectedEntities: (state: AppState): boolean => state.entities.selectedEntities.length > 0,
+};
+
+/**
+ * User preference selectors
+ */
+export const UserPreferenceSelectors = {
+  /**
+   * Get current theme
+   */
+  getTheme: (state: AppState) => state.userPreferences.theme,
+
+  /**
+   * Get grid settings
+   */
+  getGridSettings: (state: AppState) => state.userPreferences.gridSettings,
+
+  /**
+   * Check if auto save is enabled
+   */
+  isAutoSaveEnabled: (state: AppState): boolean => state.userPreferences.autoSave,
+
+  /**
+   * Check if debug panels are visible
+   */
+  areDebugPanelsVisible: (state: AppState): boolean => state.userPreferences.debugPanelsVisible,
+
+  /**
+   * Get all preferences
+   */
+  getAllPreferences: (state: AppState) => state.userPreferences,
+};
+
+/**
  * Combined selectors object for easy access
  */
 export const Selectors = {
@@ -370,5 +561,9 @@ export const Selectors = {
   Simulation: SimulationSelectors,
   Viewport: ViewportSelectors,
   Configuration: ConfigurationSelectors,
+  Performance: PerformanceSelectors,
+  Error: ErrorSelectors,
+  Entity: EntitySelectors,
+  UserPreference: UserPreferenceSelectors,
   Meta: MetaSelectors,
 };
