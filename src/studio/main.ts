@@ -29,6 +29,14 @@ import { RenderOrchestrator } from "./rendering/RenderOrchestrator";
 import { VisibilityOrchestrator } from "./orchestration/VisibilityOrchestrator";
 import { PluginDiscoveryService } from "./plugins/PluginDiscoveryService";
 
+// Import Global State Management System
+import { getGlobalStore, initializeGlobalStore } from "./state/GlobalStore";
+import { createGlobalStateSynchronizer } from "./state/StateIntegration";
+import { Selectors } from "./state/Selectors";
+import { Actions } from "./state/Actions";
+import { SystemManager } from "../core/ecs/SystemManager";
+import { ComponentManager } from "../core/ecs/ComponentManager";
+
 // Import styles
 import "./styles/studio.css";
 import "./styles/toolbar.css";
@@ -244,25 +252,146 @@ function startApplication(studio: Studio) {
   animate(0);
 }
 
+/**
+ * Set up state change listeners for debugging and reactive updates
+ */
+function setupStateChangeListeners(store: any, studio: Studio) {
+  // Listen to all state changes for debugging
+  store.subscribe((newState: any, previousState: any, action: any) => {
+    if (action.type !== 'COMPONENT_ENTITY_COUNT_UPDATED') { // Avoid spam from frequent updates
+      Logger.getInstance().log(`[Global State] ${action.type}`, {
+        action: action.type,
+        source: action.metadata?.source || 'Unknown',
+        timestamp: new Date(action.timestamp).toISOString(),
+      });
+    }
+  });
+
+  // Listen specifically to plugin changes
+  store.selectSubscribe(
+    Selectors.Plugin.getAllPlugins,
+    (newPlugins: any, previousPlugins: any) => {
+      const activeCount = newPlugins.filter((p: any) => p.isActive).length;
+      console.log(`🔌 Plugin state updated: ${newPlugins.length} total plugins, ${activeCount} active`);
+    }
+  );
+
+  // Listen to simulation changes
+  store.selectSubscribe(
+    Selectors.Simulation.getCurrentSimulation,
+    (currentSim: any, previousSim: any) => {
+      if (currentSim !== previousSim) {
+        console.log(`🎮 Simulation changed: ${previousSim} → ${currentSim}`);
+      }
+    }
+  );
+
+  // Listen to UI changes (selected entity)
+  store.selectSubscribe(
+    Selectors.UI.getSelectedEntity,
+    (selectedEntity: any, previousEntity: any) => {
+      if (selectedEntity !== previousEntity) {
+        console.log(`🎯 Entity selection changed: ${previousEntity} → ${selectedEntity}`);
+      }
+    }
+  );
+}
+
+/**
+ * Demonstrate the global state management system
+ */
+function demonstrateGlobalState() {
+  console.log('\n🚀 Demonstrating Global State Management:');
+
+  const store = (window as any).globalStore;
+  const currentState = store.getState();
+
+  // Show initial state summary
+  const summary = Selectors.Meta.getStateSummary(currentState);
+  console.log('📊 Current State Summary:', summary);
+
+  // Show plugin information
+  const allPlugins = Selectors.Plugin.getAllPlugins(currentState);
+  const activePlugins = Selectors.Plugin.getActivePlugins(currentState);
+  console.log(`🔌 Plugins: ${allPlugins.length} total, ${activePlugins.length} active`);
+
+  // Show current simulation
+  const currentSim = Selectors.Simulation.getCurrentSimulation(currentState);
+  console.log(`🎮 Current Simulation: ${currentSim || 'None loaded'}`);
+
+  // Show UI state
+  const selectedEntity = Selectors.UI.getSelectedEntity(currentState);
+  const visiblePanels = Selectors.UI.getVisiblePanels(currentState);
+  console.log(`🎯 Selected Entity: ${selectedEntity || 'None'}`);
+  console.log(`👁️  Visible Panels: ${visiblePanels.join(', ')}`);
+
+  // Show viewport state
+  const cameraPos = Selectors.Viewport.getCameraPosition(currentState);
+  const showGrid = Selectors.Viewport.isGridVisible(currentState);
+  console.log(`📷 Camera Position: (${cameraPos.x}, ${cameraPos.y}, ${cameraPos.z})`);
+  console.log(`🔲 Grid Visible: ${showGrid}`);
+
+  // Add to window for manual testing
+  (window as any).demonstrateGlobalState = demonstrateGlobalState;
+
+  console.log('\n💡 Try these in the browser console:');
+  console.log('   - demonstrateGlobalState() - Run this demo again');
+  console.log('   - globalStore.getState() - Get current state');
+  console.log('   - stateSelectors.Plugin.getAllPlugins(globalStore.getState()) - Get plugins');
+  console.log('   - globalStore.getStats() - Get store statistics');
+  console.log('   - globalStore.getActionHistory() - See action history');
+}
+
 async function main() {
   // Enable logging for debugging
   Logger.getInstance().enable();
-  Logger.getInstance().log("Initializing Physics Simulation Studio...");
+  Logger.getInstance().log("Initializing Physics Simulation Studio with Global State Management...");
 
   try {
-    const { world, pluginManager, stateManager, studio, pluginDiscovery } = setupCoreSystems();
-    const { uiManager, visibilityManager, pane } = setupUI(studio, stateManager, pluginManager);
+    // 1. Initialize Global State Store FIRST - this must happen before everything else
+    console.log("🌟 Initializing Global State Management System...");
+    const globalStore = initializeGlobalStore();
 
+    // Add global state debugging tools to window
+    (window as any).globalStore = globalStore;
+    (window as any).stateSelectors = Selectors;
+    (window as any).stateActions = Actions;
+
+    // 2. Set up core systems as before
+    const { world, pluginManager, stateManager, studio, pluginDiscovery } = setupCoreSystems();
+
+    // 3. Create the state synchronizer to bridge old and new state management
+    console.log("🔗 Setting up state synchronization...");
+    const stateSynchronizer = createGlobalStateSynchronizer(
+      pluginManager,
+      world.systemManager as SystemManager,
+      world.componentManager as ComponentManager
+    );
+    (window as any).stateSynchronizer = stateSynchronizer;
+
+    // 4. Set up UI and other systems
+    const { uiManager, visibilityManager, pane } = setupUI(studio, stateManager, pluginManager);
     const visibilityOrchestrator = registerComponentsAndSystems(world as World, studio, pluginManager as PluginManager, visibilityManager, pane);
 
-    // Load available plugins dynamically
+    // 5. Set up state change listeners for debugging and reactive updates
+    setupStateChangeListeners(globalStore, studio);
+
+    // 6. Load available plugins dynamically
     const loadedPlugins = await pluginDiscovery.loadAllPlugins();
 
-    console.log(`✅ Loaded ${loadedPlugins.length} plugins: ${loadedPlugins.join(', ')}`);
-    console.log('🎯 Clean plugin-based parameter system ready!');
-    console.log('📋 Parameters will appear when you select entities in the scene');
+    // 7. Perform initial state synchronization AFTER everything is loaded
+    console.log("🔄 Performing initial state synchronization...");
+    stateSynchronizer.performInitialSync();
 
-    Logger.getInstance().log(`Physics Simulation Studio ready with ${loadedPlugins.length} plugins loaded`);
+    // 8. Log state summary
+    const stateSummary = Selectors.Meta.getStateSummary(globalStore.getState());
+    console.log("📊 Initial State Summary:", stateSummary);
+
+    console.log(`✅ Loaded ${loadedPlugins.length} plugins: ${loadedPlugins.join(', ')}`);
+    console.log('🎯 Global immutable state management ready!');
+    console.log('📋 State changes are now predictable and debuggable');
+
+    Logger.getInstance().log(`Physics Simulation Studio ready with ${loadedPlugins.length} plugins and global state management`);
 
     // Run system diagnostics to ensure everything is working
     const diagnostics = new SystemDiagnostics(world as World);
@@ -270,7 +399,12 @@ async function main() {
 
     startApplication(studio);
 
-    Logger.getInstance().log("Physics Simulation Studio Initialized with Clean Plugin-Based Parameter System");
+    // Demonstrate the global state system
+    setTimeout(() => {
+      demonstrateGlobalState();
+    }, 1000); // Give systems time to fully initialize
+
+    Logger.getInstance().log("Physics Simulation Studio Initialized with Global State Management System");
   } catch (error) {
     console.error("Error during initialization:", error);
     Logger.getInstance().error("Failed to initialize the studio:", error);
