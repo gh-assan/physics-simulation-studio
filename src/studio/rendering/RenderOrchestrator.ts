@@ -11,7 +11,7 @@ import * as THREE from "three";
  */
 export class RenderOrchestrator extends System {
   private graphicsManager: ThreeGraphicsManager;
-  private renderers: Map<string, IRenderer> = new Map();
+  public renderers: Map<string, IRenderer> = new Map(); // Made public for plugin access
   private performanceMetrics: Map<string, number> = new Map();
   private persistentObjects: Set<string> = new Set([
     "grid", "axes", "origin", "ambientLight", "directionalLight"
@@ -97,6 +97,14 @@ export class RenderOrchestrator extends System {
       meshes: new Map(this.sceneState.meshes),
       renderRequests: new Set(this.sceneState.renderRequests)
     };
+  }
+
+  /**
+   * Check if an entity is handled by a specialized renderer
+   * This prevents conflicts between different rendering systems
+   */
+  public isEntityHandled(entityId: number): boolean {
+    return this.sceneState.entities.has(entityId);
   }
 
   /**

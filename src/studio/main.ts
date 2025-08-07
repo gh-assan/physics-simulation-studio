@@ -27,6 +27,7 @@ import { VisibilityManager } from "./ui/VisibilityManager";
 import { SystemDiagnostics } from "./utils/SystemDiagnostics";
 import { RenderOrchestrator } from "./rendering/RenderOrchestrator";
 import { RenderSystem } from "./systems/RenderSystem";
+import { FallbackRenderer } from "./rendering/FallbackRenderer";
 import { VisibilityOrchestrator } from "./orchestration/VisibilityOrchestrator";
 import { PluginDiscoveryService } from "./plugins/PluginDiscoveryService";
 
@@ -210,14 +211,20 @@ function registerComponentsAndSystems(world: World, studio: Studio, pluginManage
 
     // Create centralized render orchestrator
     const renderOrchestrator = new RenderOrchestrator(graphicsManager);
+    
+    // Create and register fallback renderer for basic entities
+    const fallbackRenderer = new FallbackRenderer(graphicsManager);
+    renderOrchestrator.registerRenderer('fallback', fallbackRenderer);
+
+    // Connect RenderSystem to delegate to RenderOrchestrator
+    renderSystem.setRenderOrchestrator(renderOrchestrator);
+
+    // Register only the RenderSystem (which delegates to RenderOrchestrator)
+    world.registerSystem(renderSystem);
 
     // Create centralized visibility orchestrator with proper render orchestrator
     const visibilityOrchestrator = new VisibilityOrchestrator(visibilityManager, renderOrchestrator);
     visibilityOrchestrator.initialize();
-
-    // Register both systems
-    world.registerSystem(renderSystem);
-    world.registerSystem(renderOrchestrator);
 
     const selectionSystem = new SelectionSystem(studio, world as World);
     world.registerSystem(selectionSystem);
@@ -239,6 +246,7 @@ function registerComponentsAndSystems(world: World, studio: Studio, pluginManage
     // Expose for debugging
     (window as any).renderSystem = renderSystem;
     (window as any).renderOrchestrator = renderOrchestrator;
+    (window as any).fallbackRenderer = fallbackRenderer;
     (window as any).visibilityOrchestrator = visibilityOrchestrator;
 
     return visibilityOrchestrator;
