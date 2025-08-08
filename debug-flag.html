@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Flag Simulation</title>
+    <style>
+        body { margin: 0; padding: 20px; background: #222; color: white; font-family: Arial, sans-serif; }
+        #info { position: absolute; top: 10px; left: 10px; z-index: 100; }
+        #debug-output { position: absolute; top: 10px; right: 10px; z-index: 100; width: 400px; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 5px; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <h2>🎌 Flag Simulation Debug</h2>
+        <button onclick="debugSimulation()">Debug State</button>
+        <button onclick="loadFlagManually()">Load Flag Manually</button>
+        <button onclick="playSimulation()">Play</button>
+    </div>
+    
+    <div id="debug-output">
+        <h3>Debug Output:</h3>
+        <div id="debug-text">Initializing...</div>
+    </div>
+    
+    <div id="left-panel" class="studio--left" style="position: fixed; left: 0; top: 0; width: 300px; height: 100vh; background: #333; padding: 10px; overflow-y: auto;"></div>
+    <div id="main-content" class="studio--main" style="margin-left: 320px; height: 100vh;"></div>
+    
+    <script>
+        function log(message) {
+            console.log(message);
+            const debugText = document.getElementById('debug-text');
+            debugText.innerHTML += '<br>' + message;
+        }
+        
+        function debugSimulation() {
+            log('=== DEBUG SIMULATION STATE ===');
+            if (window.studio) {
+                const availableSims = window.studio.getAvailableSimulationNames();
+                log('Available simulations: ' + availableSims.join(', '));
+                log('Current simulation: ' + window.studio.getActiveSimulationName());
+                log('Is playing: ' + window.studio.getIsPlaying());
+            } else {
+                log('Studio not available yet');
+            }
+            
+            if (window.pluginManager) {
+                const plugins = Array.from(window.pluginManager.getAvailablePluginNames());
+                log('Available plugins: ' + plugins.join(', '));
+            } else {
+                log('PluginManager not available yet');
+            }
+        }
+        
+        async function loadFlagManually() {
+            log('=== LOADING FLAG MANUALLY ===');
+            if (window.studio) {
+                try {
+                    await window.studio.loadSimulation('flag-simulation');
+                    log('✅ Flag simulation loaded successfully');
+                } catch (error) {
+                    log('❌ Error loading flag simulation: ' + error.message);
+                }
+            } else {
+                log('❌ Studio not available');
+            }
+        }
+        
+        function playSimulation() {
+            log('=== PLAYING SIMULATION ===');
+            if (window.studio) {
+                window.studio.play();
+                log('✅ Play command sent');
+            } else {
+                log('❌ Studio not available');
+            }
+        }
+        
+        // Wait for studio to be available and auto-debug
+        setTimeout(() => {
+            debugSimulation();
+        }, 2000);
+    </script>
+    
+    <script type="module" src="/src/studio/main.ts"></script>
+</body>
+</html>
