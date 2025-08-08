@@ -87,3 +87,6 @@ export class SolarSystemPlugin implements ISimulationPlugin {
     return [new SolarSystemParameterPanel(world)];
   }
 }
+
+// Export plugin instance for auto-discovery
+export default new SolarSystemPlugin();

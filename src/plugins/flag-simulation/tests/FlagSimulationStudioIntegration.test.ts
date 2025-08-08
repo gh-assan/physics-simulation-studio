@@ -1,5 +1,5 @@
 import { World } from "../../../core/ecs/World";
-import { FlagSimulationPlugin } from "../index";
+import flagSimulationPluginInstance, { FlagSimulationPlugin } from "../index";
 import { ParameterPanelComponent } from "../../../core/components/ParameterPanelComponent";
 import { FlagComponent } from "../FlagComponent";
 import { IStudio } from "../../../studio/IStudio";
@@ -28,9 +28,9 @@ describe("FlagSimulationPlugin Studio Integration Tests", () => {
 
   beforeEach(() => {
     world = new World();
-    flagPlugin = new FlagSimulationPlugin();
+    flagPlugin = new FlagSimulationPlugin(); // Create new instance for testing
 
-    // Create mock studio with required methods
+    // Mock graphics manager
     const mockCamera = {
       position: { set: jest.fn() },
       lookAt: jest.fn()
@@ -54,25 +54,25 @@ describe("FlagSimulationPlugin Studio Integration Tests", () => {
     flagPlugin.getSystems(mockStudio); // This should provide studio context to the plugin
   });
 
-  test("should create flag entities when studio context is available", () => {
-    // Act: Initialize entities with world only (as per interface)
-    flagPlugin.initializeEntities(world);
+  test("should create flag entities when studio context is available", async () => {
+    // Act: Initialize entities with world only (as per interface) - await async operation
+    await flagPlugin.initializeEntities(world);
 
-    // Assert: Flag entities should be created
-    const flagEntities = world.componentManager.getEntitiesWithComponents([FlagComponent]);
+    // Wait a bit more for the async setTimeout in the plugin
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // Assert: Flag entities should be created using the IWorld interface
+    const flagEntities = world.getEntitiesWithComponents([FlagComponent]);
     expect(flagEntities.length).toBeGreaterThan(0);
   });
 
-  test("should configure camera when studio context is available", () => {
+  test("should initialize entities without camera configuration", () => {
     // Act: Initialize entities
     flagPlugin.initializeEntities(world);
 
-    // Assert: Camera should be configured
-    expect(mockGraphicsManager.getCamera).toHaveBeenCalled();
-    expect(mockGraphicsManager.getCamera().position.set).toHaveBeenCalledWith(0, 30, 60);
-    expect(mockGraphicsManager.getCamera().lookAt).toHaveBeenCalledWith(0, 0, 0);
-    expect(mockGraphicsManager.getControlsManager).toHaveBeenCalled();
-    expect(mockGraphicsManager.getControlsManager().enable).toHaveBeenCalled();
+    // Assert: Camera should not be configured in initializeEntities (handled by systems)
+    // The plugin focuses on entity creation, not camera setup
+    expect(mockGraphicsManager.getCamera).not.toHaveBeenCalled();
   });
 
   test("should create parameter panels when ParameterPanelComponent is registered", () => {

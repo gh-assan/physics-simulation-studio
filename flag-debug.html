@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flag Debug - Physics Simulation Studio</title>
+    <style>
+        body { margin: 0; padding: 20px; background: #222; color: white; font-family: Arial, sans-serif; }
+        #debug-panel { position: fixed; top: 10px; right: 10px; width: 400px; background: rgba(0,0,0,0.9); padding: 15px; border-radius: 8px; z-index: 1000; }
+        #debug-output { max-height: 400px; overflow-y: auto; font-size: 12px; }
+        button { margin: 5px; padding: 8px 12px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #45a049; }
+        .error { color: #ff6b6b; }
+        .success { color: #51cf66; }
+        .warning { color: #ffd43b; }
+    </style>
+</head>
+<body>
+    <div id="debug-panel">
+        <h3>🎌 Flag Simulation Debug</h3>
+        <div>
+            <button onclick="checkState()">Check State</button>
+            <button onclick="loadFlag()">Load Flag</button>
+            <button onclick="playSim()">Play</button>
+            <button onclick="checkEntities()">Check Entities</button>
+            <button onclick="clearLog()">Clear</button>
+        </div>
+        <div id="debug-output">Initializing debug panel...</div>
+    </div>
+    
+    <div id="left-panel" class="studio--left" style="position: fixed; left: 0; top: 0; width: 300px; height: 100vh; background: #333; padding: 10px; overflow-y: auto;"></div>
+    <div id="main-content" class="studio--main" style="margin-left: 320px; height: 100vh;"></div>
+    
+    <script>
+        let logCount = 0;
+        
+        function log(message, type = 'info') {
+            logCount++;
+            const debugOutput = document.getElementById('debug-output');
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : '';
+            debugOutput.innerHTML += `<div class="${className}">[${logCount}] ${message}</div>`;
+            debugOutput.scrollTop = debugOutput.scrollHeight;
+            console.log(`[DEBUG ${logCount}]`, message);
+        }
+        
+        function clearLog() {
+            document.getElementById('debug-output').innerHTML = '';
+            logCount = 0;
+        }
+        
+        function checkState() {
+            log('=== CHECKING SYSTEM STATE ===');
+            
+            if (typeof window.studio !== 'undefined') {
+                const availableSims = window.studio.getAvailableSimulationNames();
+                log(`Available simulations: [${availableSims.join(', ')}]`, availableSims.length > 0 ? 'success' : 'warning');
+                log(`Current simulation: ${window.studio.getActiveSimulationName()}`, 'info');
+                log(`Is playing: ${window.studio.getIsPlaying()}`, 'info');
+            } else {
+                log('Studio not available yet', 'warning');
+            }
+            
+            if (typeof window.pluginManager !== 'undefined') {
+                const plugins = Array.from(window.pluginManager.getAvailablePluginNames());
+                log(`Plugins: [${plugins.join(', ')}]`, plugins.length > 0 ? 'success' : 'warning');
+                const activePlugins = Array.from(window.pluginManager.getActivePluginNames());
+                log(`Active plugins: [${activePlugins.join(', ')}]`, 'info');
+            } else {
+                log('PluginManager not available yet', 'warning');
+            }
+            
+            if (typeof window.world !== 'undefined') {
+                log('World is available', 'success');
+            } else {
+                log('World not available', 'warning');
+            }
+        }
+        
+        async function loadFlag() {
+            log('=== LOADING FLAG SIMULATION ===');
+            if (window.studio) {
+                try {
+                    await window.studio.loadSimulation('flag-simulation');
+                    log('✅ Flag simulation loaded successfully', 'success');
+                    setTimeout(checkEntities, 1000); // Check entities after a delay
+                } catch (error) {
+                    log(`❌ Error loading flag simulation: ${error.message}`, 'error');
+                }
+            } else {
+                log('❌ Studio not available', 'error');
+            }
+        }
+        
+        function playSim() {
+            log('=== PLAYING SIMULATION ===');
+            if (window.studio) {
+                window.studio.play();
+                log('✅ Play command sent', 'success');
+            } else {
+                log('❌ Studio not available', 'error');
+            }
+        }
+        
+        function checkEntities() {
+            log('=== CHECKING ENTITIES ===');
+            if (window.world) {
+                const entityCount = window.world.getEntityCount ? window.world.getEntityCount() : 'unknown';
+                log(`Total entities: ${entityCount}`, 'info');
+                
+                if (window.world.componentManager) {
+                    // Check for FlagComponent entities
+                    try {
+                        const flagEntities = window.world.componentManager.getEntitiesWithComponent('FlagComponent');
+                        log(`Flag entities: ${flagEntities ? flagEntities.length : 0}`, flagEntities && flagEntities.length > 0 ? 'success' : 'warning');
+                        
+                        const positionEntities = window.world.componentManager.getEntitiesWithComponent('PositionComponent');
+                        log(`Position entities: ${positionEntities ? positionEntities.length : 0}`, 'info');
+                    } catch (error) {
+                        log(`Error checking components: ${error.message}`, 'error');
+                    }
+                }
+            } else {
+                log('❌ World not available', 'error');
+            }
+        }
+        
+        // Auto-check state after initialization
+        setTimeout(() => {
+            log('🚀 Debug panel ready', 'success');
+            setTimeout(checkState, 2000);
+        }, 1000);
+        
+        // Listen for errors
+        window.addEventListener('error', (event) => {
+            log(`❌ Runtime error: ${event.error.message}`, 'error');
+        });
+    </script>
+    
+    <script type="module" src="/src/studio/main.ts"></script>
+</body>
+</html>

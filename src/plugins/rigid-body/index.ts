@@ -1,5 +1,5 @@
-import { ISimulationPlugin } from "../../core/plugin";
-import { World } from "../../core/ecs";
+import { ISimulationPlugin } from "@core/plugin/ISimulationPlugin";
+import { IWorld } from "@core/ecs/IWorld";
 import { PhysicsSystem } from "./system";
 import { RigidBodyComponent } from "./components";
 import { RigidBody } from "../../core/physics/RigidBody";
@@ -15,20 +15,11 @@ class RigidBodyPlugin implements ISimulationPlugin {
     return [];
   }
 
-  public register(world: World): void {
+  public register(world: IWorld): void {
     console.log("Registering RigidBodyPlugin...");
 
-    // 1. Register components with the ECS
-    world.componentManager.registerComponent(RigidBodyComponent);
-
-    // 2. Register systems with the ECS
-    world.systemManager.registerSystem(new PhysicsSystem());
-
-    // Example: create and add a RigidBodyComponent to an entity
-    const entityId = world.entityManager.createEntity();
-    const rigidBody = new RigidBody();
-    const rigidBodyComponent = new RigidBodyComponent(rigidBody);
-    world.componentManager.addComponent(entityId, RigidBodyComponent.type, rigidBodyComponent);
+    // Register components with the ECS using IWorld interface
+    world.registerComponent(RigidBodyComponent);
   }
 
   public unregister(): void {
@@ -36,8 +27,12 @@ class RigidBodyPlugin implements ISimulationPlugin {
     console.log("Unregistering RigidBodyPlugin...");
   }
 
-  public initializeEntities(_world: World): void {
-    // No initial entities for this plugin yet
+  public initializeEntities(world: IWorld): void {
+    // Example: create and add a RigidBodyComponent to an entity
+    const entityId = world.createEntity();
+    const rigidBody = new RigidBody();
+    const rigidBodyComponent = new RigidBodyComponent(rigidBody);
+    world.addComponent(entityId, RigidBodyComponent.type, rigidBodyComponent);
   }
 
   public getSystems(studio: IStudio): System[] {
@@ -45,4 +40,5 @@ class RigidBodyPlugin implements ISimulationPlugin {
   }
 }
 
-export default RigidBodyPlugin;
+// Export plugin instance for auto-discovery
+export default new RigidBodyPlugin();

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Plugin Discovery Debug</title>
+    <style>
+        body { margin: 0; padding: 20px; background: #222; color: white; font-family: Arial, sans-serif; }
+        #debug-output { background: rgba(0,0,0,0.8); padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        button { padding: 10px; margin: 5px; background: #0078d4; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #106ebe; }
+        pre { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Auto Plugin Discovery System</h1>
+    
+    <div id="debug-output">
+        <h3>Debug Console:</h3>
+        <div id="debug-text">Initializing auto-discovery system...</div>
+    </div>
+    
+    <div>
+        <button onclick="testAutoDiscovery()">Test Auto Discovery</button>
+        <button onclick="showPluginInfo()">Show Plugin Info</button>
+        <button onclick="loadFlagSimulation()">Load Flag Simulation</button>
+    </div>
+    
+    <div id="left-panel" class="studio--left" style="position: fixed; left: 0; top: 0; width: 300px; height: 100vh; background: #333; padding: 10px; overflow-y: auto;"></div>
+    <div id="main-content" class="studio--main" style="margin-left: 320px; height: 100vh;"></div>
+    
+    <script>
+        function log(message, data = null) {
+            console.log(message, data || '');
+            const debugText = document.getElementById('debug-text');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = data ? `[${timestamp}] ${message}: ${JSON.stringify(data, null, 2)}` : `[${timestamp}] ${message}`;
+            debugText.innerHTML += '<br>' + logEntry.replace(/\n/g, '<br>').replace(/  /g, '&nbsp;&nbsp;');
+            debugText.scrollTop = debugText.scrollHeight;
+        }
+        
+        async function testAutoDiscovery() {
+            log('=== TESTING AUTO PLUGIN DISCOVERY ===');
+            
+            try {
+                if (!window.AutoPluginRegistry) {
+                    log('❌ AutoPluginRegistry not available in window');
+                    return;
+                }
+                
+                const registry = window.AutoPluginRegistry;
+                log('✅ AutoPluginRegistry available');
+                
+                const discoveredPlugins = registry.getDiscoveredPlugins();
+                log('📦 Discovered plugins', Array.from(discoveredPlugins.keys()));
+                
+                discoveredPlugins.forEach((plugin, name) => {
+                    log(`Plugin: ${name}`, {
+                        name: plugin.getName?.(),
+                        version: plugin.getVersion?.(),
+                        description: plugin.getDescription?.(),
+                        dependencies: plugin.getDependencies?.()
+                    });
+                });
+                
+            } catch (error) {
+                log('❌ Error testing auto discovery', error.message);
+            }
+        }
+        
+        function showPluginInfo() {
+            log('=== PLUGIN SYSTEM INFO ===');
+            
+            if (window.studio) {
+                const availableSims = window.studio.getAvailableSimulationNames();
+                log('Available simulations', availableSims);
+                
+                const currentSim = window.studio.getActiveSimulationName();
+                log('Current simulation', currentSim);
+                
+                const isPlaying = window.studio.getIsPlaying();
+                log('Is playing', isPlaying);
+            } else {
+                log('❌ Studio not available');
+            }
+            
+            if (window.pluginManager) {
+                const pluginNames = Array.from(window.pluginManager.getAvailablePluginNames?.() || []);
+                log('Available plugins in manager', pluginNames);
+            } else {
+                log('❌ PluginManager not available');
+            }
+        }
+        
+        async function loadFlagSimulation() {
+            log('=== LOADING FLAG SIMULATION ===');
+            
+            if (!window.studio) {
+                log('❌ Studio not available');
+                return;
+            }
+            
+            try {
+                await window.studio.loadSimulation('flag-simulation');
+                log('✅ Flag simulation loaded');
+                
+                // Start playing
+                window.studio.play();
+                log('✅ Simulation started');
+                
+            } catch (error) {
+                log('❌ Error loading flag simulation', error.message);
+            }
+        }
+        
+        // Auto-run discovery test after studio is loaded
+        setTimeout(() => {
+            log('🚀 Auto-discovery system initialized');
+            testAutoDiscovery();
+            showPluginInfo();
+        }, 3000);
+        
+        // Monitor for flag entities
+        setInterval(() => {
+            if (window.studio && window.studio.world) {
+                const entities = window.studio.world.getAllEntities?.() || [];
+                if (entities.length > 0) {
+                    log(`📊 Entities in world: ${entities.length}`);
+                }
+            }
+        }, 5000);
+    </script>
+    
+    <script type="module" src="/src/studio/main.ts"></script>
+</body>
+</html>
