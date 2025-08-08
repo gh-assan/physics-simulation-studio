@@ -44,6 +44,11 @@ export class TimeSteppingEngine implements ITimeSteppingEngine {
    * @param stepCallback Function to call for each fixed timestep
    */
   step(realDeltaTime: number, stepCallback: (fixedDt: number) => void): void {
+    // Handle edge cases
+    if (realDeltaTime <= 0) {
+      return; // Don't process negative or zero delta times
+    }
+    
     // Clamp real delta time to prevent huge jumps
     const clampedDeltaTime = Math.min(realDeltaTime, this.maxAccumulatedTime);
     
@@ -54,9 +59,16 @@ export class TimeSteppingEngine implements ITimeSteppingEngine {
     const maxSteps = Math.floor(this.maxAccumulatedTime / this.fixedTimestep);
 
     while (this.accumulatedTime >= this.fixedTimestep && steps < maxSteps) {
-      stepCallback(this.fixedTimestep);
-      this.accumulatedTime -= this.fixedTimestep;
-      steps++;
+      try {
+        stepCallback(this.fixedTimestep);
+        // Only consume the time if callback succeeded
+        this.accumulatedTime -= this.fixedTimestep;
+        steps++;
+      } catch (error) {
+        // Don't consume accumulated time on error - this prevents the simulation
+        // from getting "stuck" if callbacks consistently fail
+        throw error;
+      }
     }
 
     // If we hit max steps, reset accumulated time to prevent further accumulation
@@ -129,7 +141,8 @@ export class TimeSteppingEngine implements ITimeSteppingEngine {
    * Check if engine is keeping up with real time
    */
   isKeepingUp(): boolean {
-    return this.accumulatedTime < this.fixedTimestep * 2;
+    // Consider "falling behind" if we have more than 3 frames worth of accumulated time
+    return this.accumulatedTime < this.fixedTimestep * 3;
   }
 
   /**

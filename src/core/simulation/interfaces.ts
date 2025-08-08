@@ -19,6 +19,31 @@ export interface ISimulationState {
   readonly deltaTime: number;
   readonly isRunning: boolean;
   readonly metadata: ReadonlyMap<string, any>;
+  
+  /**
+   * Check if state has any entities
+   */
+  isEmpty(): boolean;
+  
+  /**
+   * Check if state contains specific entity
+   */
+  hasEntity(entityId: EntityId): boolean;
+  
+  /**
+   * Get entities as array for convenience
+   */
+  getEntityArray(): EntityId[];
+  
+  /**
+   * Get metadata value
+   */
+  getMetadata<T = any>(key: string): T | undefined;
+  
+  /**
+   * Check if metadata exists
+   */
+  hasMetadata(key: string): boolean;
 }
 
 /**
@@ -188,6 +213,26 @@ export interface IParameterManager {
   getParameterValue(algorithmName: string, paramName: string): any;
   
   /**
+   * Get all parameter values for algorithm
+   */
+  getParameterValues(algorithmName: string): Record<string, any>;
+  
+  /**
+   * Reset parameter to default value
+   */
+  resetParameter(algorithmName: string, paramName: string): void;
+  
+  /**
+   * Reset all parameters for algorithm
+   */
+  resetParameters(algorithmName: string): void;
+  
+  /**
+   * Get parameters grouped by category
+   */
+  getParametersByCategory(algorithmName: string): Map<string, IParameterDefinition[]>;
+  
+  /**
    * Add parameter change listener
    */
   addParameterChangeListener(
@@ -202,6 +247,15 @@ export interface IParameterManager {
     algorithmName: string,
     listener: (algorithmName: string, paramName: string, value: any) => void
   ): void;
+  
+  /**
+   * Get parameter statistics
+   */
+  getStats(): {
+    algorithmCount: number;
+    totalParameters: number;
+    parametersByCategory: Record<string, number>;
+  };
 }
 
 /**

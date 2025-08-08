@@ -129,6 +129,8 @@ export class SimulationManager implements ISimulationManager {
    */
   setEntities(entities: EntityId[]): void {
     this.updateSimulationState(state => state.withEntities(new Set(entities)));
+    // Update the initial state as well so reset preserves entities
+    this.initialState = this.initialState.withEntities(new Set(entities));
     this.reinitializeAlgorithms();
   }
 
