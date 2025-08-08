@@ -1,5 +1,5 @@
 import { ISimulationPlugin } from "@core/plugin/ISimulationPlugin";
-import { World } from "@core/ecs/World";
+import { IWorld } from "@core/ecs/IWorld";
 import { WaterBodyComponent, WaterDropletComponent } from "./WaterComponents";
 import { WaterSystem } from "./WaterSystem";
 import { WaterRenderer } from "./WaterRenderer";
@@ -11,7 +11,7 @@ import { Vector3 } from "./utils/Vector3";
 import { waterPluginParameterSchema } from "./WaterPluginParameters";
 import { PluginParameterManager } from "../../core/ui/PluginParameterManager";
 import { IStudio } from "../../studio/IStudio";
-import { ISystem } from "../../core/ecs/ISystem";
+import { System } from "../../core/ecs/System";
 
 export { WaterBodyComponent, WaterDropletComponent } from "./WaterComponents";
 
@@ -59,13 +59,10 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
     }
   }
 
-  register(world: World, studio?: any): void {
-    // Register components - no more parameter panel boilerplate!
-    world.componentManager.registerComponent(WaterBodyComponent);
-    world.componentManager.registerComponent(WaterDropletComponent);
-
-    // Register systems
-    world.systemManager.registerSystem(this.waterSystem);
+  register(world: IWorld, studio?: any): void {
+    // Register components using IWorld interface
+    world.registerComponent(WaterBodyComponent);
+    world.registerComponent(WaterDropletComponent);
 
     console.log('✅ Water simulation plugin registered - simplified & clean!');
   }
@@ -80,20 +77,20 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
     console.log('✅ Water plugin unregistered');
   }
 
-  initializeEntities(world: World): void {
+  initializeEntities(world: IWorld): void {
     // Create sample water droplet entities
-    const droplet1 = world.entityManager.createEntity();
-    world.componentManager.addComponent(
+    const droplet1 = world.createEntity();
+    world.addComponent(
       droplet1,
       PositionComponent.type,
       new PositionComponent(0, 10, 0)
     );
-    world.componentManager.addComponent(
+    world.addComponent(
       droplet1,
       WaterDropletComponent.type,
       new WaterDropletComponent()
     );
-    world.componentManager.addComponent(
+    world.addComponent(
       droplet1,
       SelectableComponent.type,
       new SelectableComponent(false)
@@ -106,7 +103,10 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
     return this.waterRenderer;
   }
 
-  getSystems(studio: IStudio): ISystem[] {
+  getSystems(studio: IStudio): System[] {
     return [this.waterSystem];
   }
 }
+
+// Export plugin instance for auto-discovery
+export default new WaterSimulationPlugin();

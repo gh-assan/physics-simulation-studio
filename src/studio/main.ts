@@ -30,6 +30,7 @@ import { RenderSystem } from "./systems/RenderSystem";
 import { FallbackRenderer } from "./rendering/FallbackRenderer";
 import { VisibilityOrchestrator } from "./orchestration/VisibilityOrchestrator";
 import { PluginDiscoveryService } from "./plugins/PluginDiscoveryService";
+import { AutoPluginRegistry } from "../core/plugin/AutoPluginRegistry";
 
 // Import Global State Management System
 import { getGlobalStore, initializeGlobalStore } from "./state/GlobalStore";
@@ -393,8 +394,29 @@ async function main() {
     // 5. Set up state change listeners for debugging and reactive updates
     setupStateChangeListeners(globalStore, studio);
 
-    // 6. Load available plugins dynamically
-    const loadedPlugins = await pluginDiscovery.loadAllPlugins();
+    // 6. Auto-discover and register plugins
+    console.log("🔍 Starting automatic plugin discovery...");
+    const autoPluginRegistry = AutoPluginRegistry.getInstance();
+
+    // Discover all plugins that implement ISimulationPlugin
+    await autoPluginRegistry.discoverPlugins();
+
+    // Auto-register all discovered plugins
+    const registeredPlugins = await autoPluginRegistry.autoRegisterPlugins(world, pluginManager, studio);
+
+    console.log(`✅ Auto-discovered and registered ${registeredPlugins.length} plugins: ${registeredPlugins.join(', ')}`);
+
+    // Add plugins to plugin manager if not already added
+    for (const pluginName of registeredPlugins) {
+      const plugin = autoPluginRegistry.getPlugin(pluginName);
+      if (plugin && pluginManager && !pluginManager.getPlugin?.(pluginName)) {
+        try {
+          pluginManager.registerPlugin(plugin);
+        } catch (error) {
+          console.log(`Plugin ${pluginName} already registered in manager:`, (error as Error).message);
+        }
+      }
+    }
 
     // 7. Perform initial state synchronization AFTER everything is loaded
     console.log("🔄 Performing initial state synchronization...");
@@ -404,11 +426,11 @@ async function main() {
     const stateSummary = Selectors.Meta.getStateSummary(globalStore.getState());
     console.log("📊 Initial State Summary:", stateSummary);
 
-    console.log(`✅ Loaded ${loadedPlugins.length} plugins: ${loadedPlugins.join(', ')}`);
+    console.log(`✅ Auto-registered ${registeredPlugins.length} plugins total`);
     console.log('🎯 Global immutable state management ready!');
     console.log('📋 State changes are now predictable and debuggable');
 
-    Logger.getInstance().log(`Physics Simulation Studio ready with ${loadedPlugins.length} plugins and global state management`);
+    Logger.getInstance().log(`Physics Simulation Studio ready with ${registeredPlugins.length} plugins and global state management`);
 
     // Run system diagnostics to ensure everything is working
     const diagnostics = new SystemDiagnostics(world as World);

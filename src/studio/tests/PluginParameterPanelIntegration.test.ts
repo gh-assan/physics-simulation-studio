@@ -23,8 +23,8 @@ import { Studio } from "../Studio";
 jest.mock("../ui/PropertyInspectorUIManager");
 import { PropertyInspectorUIManager } from "../ui/PropertyInspectorUIManager";
 import { PropertyInspectorSystem } from "../systems/PropertyInspectorSystem";
-import { FlagSimulationPlugin } from "../../plugins/flag-simulation";
-import { WaterSimulationPlugin } from "../../plugins/water-simulation";
+import flagSimulationPluginInstance, { FlagSimulationPlugin } from "../../plugins/flag-simulation";
+import waterSimulationPluginInstance, { WaterSimulationPlugin } from "../../plugins/water-simulation";
 import { SelectableComponent } from "../../core/components/SelectableComponent";
 import { FlagComponent } from "../../plugins/flag-simulation/FlagComponent";
 import { WaterDropletComponent } from "../../plugins/water-simulation/WaterComponents";
@@ -124,14 +124,8 @@ describe("Plugin Parameter Panel Integration", () => {
     const waterPanelMock = { componentType: WaterDropletComponent.type, registerControls: jest.fn() };
     flagPlugin = new FlagSimulationPlugin();
     waterPlugin = new WaterSimulationPlugin();
-    // Mock getParameterSchema for plugins with new clean parameter system
-    flagPlugin.getParameterSchema = jest.fn().mockReturnValue({
-      pluginId: 'flag-simulation',
-      components: new Map([
-        ['FlagComponent', []],
-        ['PoleComponent', []]
-      ])
-    });
+    // Flag plugin now has proper getParameterSchema implementation
+    // Mock only the water plugin for now
     waterPlugin.getParameterSchema = jest.fn().mockReturnValue({
       pluginId: 'water-simulation',
       components: new Map([

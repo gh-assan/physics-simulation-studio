@@ -1,5 +1,5 @@
 import { World } from "../../../core/ecs/World";
-import { FlagSimulationPlugin } from "../index";
+import flagSimulationPluginInstance, { FlagSimulationPlugin } from "../index";
 import { ParameterPanelComponent } from "../../../core/components/ParameterPanelComponent";
 import { FlagComponent } from "../FlagComponent";
 import { IStudio } from "../../../studio/IStudio";
