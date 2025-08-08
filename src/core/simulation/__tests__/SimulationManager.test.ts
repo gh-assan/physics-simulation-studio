@@ -1,14 +1,14 @@
 /**
  * SimulationManager Test Suite
- * 
+ *
  * TDD: Testing algorithm orchestration and fixed timestep execution
  */
 
 import { SimulationManager } from '../../../studio/simulation/SimulationManager';
-import { 
-  ISimulationAlgorithm, 
-  ISimulationState, 
-  EntityId 
+import {
+  ISimulationAlgorithm,
+  ISimulationState,
+  EntityId
 } from '../interfaces';
 import { SimulationState } from '../SimulationState';
 
@@ -16,7 +16,7 @@ import { SimulationState } from '../SimulationState';
 class MockAlgorithm implements ISimulationAlgorithm {
   readonly name: string;
   readonly version = '1.0.0';
-  
+
   public stepCallCount = 0;
   public lastFixedDeltaTime = 0;
   public lastState: ISimulationState | null = null;
@@ -26,7 +26,7 @@ class MockAlgorithm implements ISimulationAlgorithm {
   public disposeCallCount = 0;
   public parameters: Record<string, any> = {};
 
-  constructor(name: string = 'mock-algorithm') {
+  constructor(name = 'mock-algorithm') {
     this.name = name;
   }
 
@@ -34,7 +34,7 @@ class MockAlgorithm implements ISimulationAlgorithm {
     this.stepCallCount++;
     this.lastFixedDeltaTime = fixedDeltaTime;
     this.lastState = state;
-    
+
     if (this.shouldThrowError) {
       throw new Error('Mock algorithm error');
     }
@@ -43,13 +43,19 @@ class MockAlgorithm implements ISimulationAlgorithm {
     if (state instanceof SimulationState) {
       return state.withTime(state.time + fixedDeltaTime, fixedDeltaTime);
     }
-    
+
+    // Create metadata object for Node.js 8 compatibility
+    const metadataObj: Record<string, any> = {};
+    for (const [key, value] of state.metadata) {
+      metadataObj[key] = value;
+    }
+
     return SimulationState.create(
       Array.from(state.entities),
       state.time + fixedDeltaTime,
       fixedDeltaTime,
       state.isRunning,
-      Object.fromEntries(state.metadata)
+      metadataObj
     );
   }
 
@@ -101,7 +107,7 @@ describe('SimulationManager', () => {
   describe('Initialization', () => {
     it('should initialize with default settings', () => {
       const newManager = new SimulationManager();
-      
+
       expect(newManager.getCurrentState().isEmpty()).toBe(true);
       expect(newManager.getCurrentState().time).toBe(0);
       expect(newManager.getCurrentState().isRunning).toBe(false);
@@ -111,7 +117,7 @@ describe('SimulationManager', () => {
     it('should initialize with custom timestep', () => {
       const customManager = new SimulationManager(1/120); // 120 FPS
       const metrics = customManager.getTimeMetrics();
-      
+
       expect(metrics.fixedTimestep).toBeCloseTo(1/120, 5);
       expect(metrics.targetFPS).toBeCloseTo(120, 1);
     });
@@ -119,7 +125,7 @@ describe('SimulationManager', () => {
     it('should initialize with custom initial state', () => {
       const initialState = SimulationState.create([1, 2, 3], 10.5, 0.02, false);
       const customManager = new SimulationManager(1/60, initialState);
-      
+
       expect(customManager.getCurrentState().entities.size).toBe(3);
       expect(customManager.getCurrentState().time).toBe(10.5);
       expect(customManager.getCurrentState().hasEntity(1)).toBe(true);
@@ -129,7 +135,7 @@ describe('SimulationManager', () => {
   describe('Algorithm Registration', () => {
     it('should register valid algorithm', () => {
       manager.registerAlgorithm(mockAlgorithm);
-      
+
       expect(manager.getActiveAlgorithms()).toHaveLength(1);
       expect(manager.getActiveAlgorithms()[0]).toBe(mockAlgorithm);
       expect(mockAlgorithm.initializeCallCount).toBe(1);
@@ -137,7 +143,7 @@ describe('SimulationManager', () => {
 
     it('should reject algorithm without name', () => {
       const invalidAlgorithm = new MockAlgorithm('');
-      
+
       expect(() => {
         manager.registerAlgorithm(invalidAlgorithm);
       }).toThrow('Algorithm must have a valid name');
@@ -146,7 +152,7 @@ describe('SimulationManager', () => {
     it('should reject algorithm without version', () => {
       const invalidAlgorithm = new MockAlgorithm('test');
       Object.defineProperty(invalidAlgorithm, 'version', { value: '' });
-      
+
       expect(() => {
         manager.registerAlgorithm(invalidAlgorithm);
       }).toThrow('Algorithm must have a valid version');
@@ -155,7 +161,7 @@ describe('SimulationManager', () => {
     it('should reject duplicate algorithm names', () => {
       manager.registerAlgorithm(mockAlgorithm);
       const duplicate = new MockAlgorithm('mock-algorithm');
-      
+
       expect(() => {
         manager.registerAlgorithm(duplicate);
       }).toThrow('Algorithm already registered: mock-algorithm');
@@ -164,11 +170,11 @@ describe('SimulationManager', () => {
     it('should register multiple different algorithms', () => {
       const algorithm2 = new MockAlgorithm('algorithm-2');
       const algorithm3 = new MockAlgorithm('algorithm-3');
-      
+
       manager.registerAlgorithm(mockAlgorithm);
       manager.registerAlgorithm(algorithm2);
       manager.registerAlgorithm(algorithm3);
-      
+
       expect(manager.getActiveAlgorithms()).toHaveLength(3);
     });
   });
@@ -180,7 +186,7 @@ describe('SimulationManager', () => {
 
     it('should unregister algorithm', () => {
       manager.unregisterAlgorithm('mock-algorithm');
-      
+
       expect(manager.getActiveAlgorithms()).toHaveLength(0);
       expect(mockAlgorithm.disposeCallCount).toBe(1);
     });
@@ -189,7 +195,7 @@ describe('SimulationManager', () => {
       expect(() => {
         manager.unregisterAlgorithm('non-existent');
       }).not.toThrow();
-      
+
       expect(manager.getActiveAlgorithms()).toHaveLength(1);
     });
 
@@ -198,13 +204,13 @@ describe('SimulationManager', () => {
       throwingAlgorithm.dispose = jest.fn(() => {
         throw new Error('Disposal error');
       });
-      
+
       manager.registerAlgorithm(throwingAlgorithm);
-      
+
       expect(() => {
         manager.unregisterAlgorithm('throwing');
       }).not.toThrow();
-      
+
       expect(manager.getActiveAlgorithms()).toHaveLength(1); // Original algorithm still there
     });
   });
@@ -217,21 +223,21 @@ describe('SimulationManager', () => {
     describe('Play/Pause/Reset', () => {
       it('should start simulation', () => {
         manager.play();
-        
+
         expect(manager.getCurrentState().isRunning).toBe(true);
       });
 
       it('should pause simulation', () => {
         manager.play();
         manager.pause();
-        
+
         expect(manager.getCurrentState().isRunning).toBe(false);
       });
 
       it('should handle multiple play calls', () => {
         manager.play();
         manager.play(); // Should not throw or cause issues
-        
+
         expect(manager.getCurrentState().isRunning).toBe(true);
       });
 
@@ -239,7 +245,7 @@ describe('SimulationManager', () => {
         manager.play();
         manager.pause();
         manager.pause(); // Should not throw or cause issues
-        
+
         expect(manager.getCurrentState().isRunning).toBe(false);
       });
 
@@ -247,12 +253,12 @@ describe('SimulationManager', () => {
         manager.setEntities([1, 2, 3]);
         manager.play();
         manager.step(1.0); // Advance simulation
-        
+
         const stateBeforeReset = manager.getCurrentState();
         expect(stateBeforeReset.time).toBeGreaterThan(0);
-        
+
         manager.reset();
-        
+
         const stateAfterReset = manager.getCurrentState();
         expect(stateAfterReset.time).toBe(0);
         expect(stateAfterReset.isRunning).toBe(false);
@@ -263,9 +269,9 @@ describe('SimulationManager', () => {
     describe('Entity Management', () => {
       it('should set entities and reinitialize algorithms', () => {
         const entities = [10, 20, 30];
-        
+
         manager.setEntities(entities);
-        
+
         expect(manager.getCurrentState().entities.size).toBe(3);
         expect(manager.getCurrentState().hasEntity(10)).toBe(true);
         expect(mockAlgorithm.initializeCallCount).toBe(2); // Once on registration, once on setEntities
@@ -273,7 +279,7 @@ describe('SimulationManager', () => {
 
       it('should handle empty entity list', () => {
         manager.setEntities([]);
-        
+
         expect(manager.getCurrentState().isEmpty()).toBe(true);
       });
     });
@@ -288,29 +294,29 @@ describe('SimulationManager', () => {
     it('should not execute steps when paused', () => {
       manager.pause();
       manager.step(1.0);
-      
+
       expect(mockAlgorithm.stepCallCount).toBe(0);
     });
 
     it('should execute fixed timestep on step', () => {
       manager.step(1/60); // Exactly one frame
-      
+
       expect(mockAlgorithm.stepCallCount).toBe(1);
       expect(mockAlgorithm.lastFixedDeltaTime).toBeCloseTo(1/60, 5);
     });
 
     it('should execute multiple timesteps for large delta', () => {
       manager.step(1/20); // 50ms should trigger multiple 16.67ms steps
-      
+
       expect(mockAlgorithm.stepCallCount).toBeGreaterThan(1);
       expect(mockAlgorithm.lastFixedDeltaTime).toBeCloseTo(1/60, 5);
     });
 
     it('should update simulation time correctly', () => {
       const initialTime = manager.getCurrentState().time;
-      
+
       manager.step(1/30); // 33.33ms
-      
+
       const finalTime = manager.getCurrentState().time;
       expect(finalTime).toBeGreaterThan(initialTime);
     });
@@ -318,13 +324,13 @@ describe('SimulationManager', () => {
     it('should handle multiple algorithms in sequence', () => {
       const algorithm2 = new MockAlgorithm('algorithm-2');
       manager.registerAlgorithm(algorithm2);
-      
+
       manager.step(1/60);
-      
+
       expect(mockAlgorithm.stepCallCount).toBe(1);
       expect(algorithm2.stepCallCount).toBe(1);
-      
-      // First algorithm receives state with time 0, second receives modified state  
+
+      // First algorithm receives state with time 0, second receives modified state
       expect(mockAlgorithm.lastState?.time).toBe(0); // First gets initial state
       expect(algorithm2.lastState?.time).toBe(1/60); // Second gets state after first
     });
@@ -338,11 +344,11 @@ describe('SimulationManager', () => {
 
     it('should handle algorithm step errors gracefully', () => {
       mockAlgorithm.shouldThrowError = true;
-      
+
       expect(() => {
         manager.step(1/60);
       }).not.toThrow();
-      
+
       // Simulation should continue working
       mockAlgorithm.shouldThrowError = false;
       manager.step(1/60);
@@ -354,7 +360,7 @@ describe('SimulationManager', () => {
       throwingAlgorithm.initialize = jest.fn(() => {
         throw new Error('Initialization error');
       });
-      
+
       expect(() => {
         manager.setEntities([1, 2, 3]);
       }).not.toThrow();
@@ -368,9 +374,9 @@ describe('SimulationManager', () => {
 
     it('should configure algorithm parameters', () => {
       const parameters = { param1: 'value1', param2: 42 };
-      
+
       manager.configureAlgorithm('mock-algorithm', parameters);
-      
+
       expect(mockAlgorithm.configureCallCount).toBe(1);
       expect(mockAlgorithm.parameters).toEqual(parameters);
     });
@@ -400,7 +406,7 @@ describe('SimulationManager', () => {
     it('should notify listeners on state changes', () => {
       manager.play();
       manager.step(1/60);
-      
+
       expect(listener).toHaveBeenCalled();
       expect(listener).toHaveBeenCalledWith(manager.getCurrentState());
     });
@@ -408,7 +414,7 @@ describe('SimulationManager', () => {
     it('should not notify listeners when simulation is paused', () => {
       manager.pause();
       manager.step(1/60);
-      
+
       expect(listener).not.toHaveBeenCalled();
     });
 
@@ -416,7 +422,7 @@ describe('SimulationManager', () => {
       manager.removeStateChangeListener(listener);
       manager.play();
       manager.step(1/60);
-      
+
       expect(listener).not.toHaveBeenCalled();
     });
 
@@ -425,12 +431,12 @@ describe('SimulationManager', () => {
         throw new Error('Listener error');
       });
       manager.addStateChangeListener(throwingListener);
-      
+
       expect(() => {
         manager.play();
         manager.step(1/60);
       }).not.toThrow();
-      
+
       expect(throwingListener).toHaveBeenCalled();
     });
   });
@@ -438,7 +444,7 @@ describe('SimulationManager', () => {
   describe('Time Management', () => {
     it('should allow changing fixed timestep', () => {
       manager.setFixedTimestep(1/120); // 120 FPS
-      
+
       const metrics = manager.getTimeMetrics();
       expect(metrics.fixedTimestep).toBeCloseTo(1/120, 5);
       expect(metrics.targetFPS).toBeCloseTo(120, 1);
@@ -446,9 +452,9 @@ describe('SimulationManager', () => {
 
     it('should provide time metrics', () => {
       manager.registerAlgorithm(mockAlgorithm);
-      
+
       const metrics = manager.getTimeMetrics();
-      
+
       expect(metrics.fixedTimestep).toBeCloseTo(1/60, 5);
       expect(metrics.targetFPS).toBeCloseTo(60, 1);
       expect(typeof metrics.isKeepingUp).toBe('boolean');
@@ -464,9 +470,9 @@ describe('SimulationManager', () => {
 
     it('should provide comprehensive debug info', () => {
       manager.play();
-      
+
       const debugInfo = manager.getDebugInfo();
-      
+
       expect(debugInfo.algorithmsCount).toBe(1);
       expect(debugInfo.entityCount).toBe(3);
       expect(debugInfo.isPlaying).toBe(true);
@@ -477,9 +483,9 @@ describe('SimulationManager', () => {
     it('should update debug info as simulation progresses', () => {
       manager.play();
       manager.step(1/60);
-      
+
       const debugInfo = manager.getDebugInfo();
-      
+
       expect(debugInfo.currentTime).toBeGreaterThan(0);
       expect(debugInfo.isPlaying).toBe(true);
     });

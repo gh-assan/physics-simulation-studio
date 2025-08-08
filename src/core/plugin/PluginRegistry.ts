@@ -55,7 +55,7 @@ export class PluginRegistry implements IPluginRegistry {
 
       // Initialize plugin
       await plugin.initialize(context);
-      
+
       // Update state to loaded
       entry.state = 'loaded';
       this.notifyStateChanged(plugin.metadata.name, 'loaded');
@@ -63,7 +63,7 @@ export class PluginRegistry implements IPluginRegistry {
     } catch (error) {
       // Remove failed plugin from registry
       this.plugins.delete(plugin.metadata.name);
-      
+
       const pluginError = error instanceof Error ? error : new Error(String(error));
       this.notifyError(plugin.metadata.name, pluginError);
       throw pluginError;
@@ -86,7 +86,7 @@ export class PluginRegistry implements IPluginRegistry {
 
       // Cleanup plugin
       await entry.plugin.cleanup();
-      
+
       // Remove from registry
       this.plugins.delete(pluginName);
 

@@ -1,11 +1,11 @@
-import { 
-  IParameterManager, 
-  IParameterDefinition 
+import {
+  IParameterManager,
+  IParameterDefinition
 } from '../../core/simulation/interfaces';
 
 /**
  * Parameter Manager - Clean Parameter System
- * 
+ *
  * This manager handles all parameter definitions, validation, and updates
  * with clear separation between physics and visual parameters.
  */
@@ -19,16 +19,16 @@ export class ParameterManager implements IParameterManager {
    */
   registerParameter(algorithmName: string, parameter: IParameterDefinition): void {
     this.validateParameterDefinition(parameter);
-    
+
     this.ensureAlgorithmMaps(algorithmName);
-    
+
     const algorithmParams = this.parameterDefinitions.get(algorithmName)!;
     algorithmParams.set(parameter.name, parameter);
-    
+
     // Set default value
     const algorithmValues = this.parameterValues.get(algorithmName)!;
     algorithmValues.set(parameter.name, parameter.defaultValue);
-    
+
     console.log(`⚙️ Parameter registered: ${algorithmName}.${parameter.name} = ${parameter.defaultValue}`);
   }
 
@@ -46,11 +46,11 @@ export class ParameterManager implements IParameterManager {
    */
   unregisterParameters(algorithmName: string): void {
     const paramCount = this.parameterDefinitions.get(algorithmName)?.size || 0;
-    
+
     this.parameterDefinitions.delete(algorithmName);
     this.parameterValues.delete(algorithmName);
     this.listeners.delete(algorithmName);
-    
+
     console.log(`🗑️ Parameters unregistered: ${algorithmName} (${paramCount} parameters)`);
   }
 
@@ -75,14 +75,14 @@ export class ParameterManager implements IParameterManager {
   getParametersByCategory(algorithmName: string): Map<string, IParameterDefinition[]> {
     const parameters = this.getParameters(algorithmName);
     const categorized = new Map<string, IParameterDefinition[]>();
-    
+
     for (const param of parameters) {
       const category = param.category;
       const categoryParams = categorized.get(category) || [];
       categoryParams.push(param);
       categorized.set(category, categoryParams);
     }
-    
+
     return categorized;
   }
 
@@ -91,7 +91,7 @@ export class ParameterManager implements IParameterManager {
    */
   validateParameter(algorithmName: string, paramName: string, value: any): true | string {
     const definition = this.getParameter(algorithmName, paramName);
-    
+
     if (!definition) {
       return `Parameter ${paramName} not found for algorithm ${algorithmName}`;
     }
@@ -104,14 +104,14 @@ export class ParameterManager implements IParameterManager {
    */
   setParameter(algorithmName: string, paramName: string, value: any): void {
     const validation = this.validateParameter(algorithmName, paramName, value);
-    
+
     if (validation !== true) {
       throw new Error(`Invalid parameter value: ${validation}`);
     }
 
     this.updateParameterValue(algorithmName, paramName, value);
     this.notifyParameterChange(algorithmName, paramName, value);
-    
+
     console.log(`⚙️ Parameter updated: ${algorithmName}.${paramName} = ${value}`);
   }
 
@@ -127,7 +127,14 @@ export class ParameterManager implements IParameterManager {
    */
   getParameterValues(algorithmName: string): Record<string, any> {
     const algorithmValues = this.parameterValues.get(algorithmName);
-    return algorithmValues ? Object.fromEntries(algorithmValues) : {};
+    if (!algorithmValues) return {};
+
+    // Convert Map to object for Node.js 8 compatibility
+    const result: Record<string, any> = {};
+    for (const [key, value] of algorithmValues) {
+      result[key] = value;
+    }
+    return result;
   }
 
   /**
@@ -135,7 +142,7 @@ export class ParameterManager implements IParameterManager {
    */
   resetParameter(algorithmName: string, paramName: string): void {
     const definition = this.getParameter(algorithmName, paramName);
-    
+
     if (!definition) {
       console.warn(`⚠️ Cannot reset unknown parameter: ${algorithmName}.${paramName}`);
       return;
@@ -149,11 +156,11 @@ export class ParameterManager implements IParameterManager {
    */
   resetParameters(algorithmName: string): void {
     const parameters = this.getParameters(algorithmName);
-    
+
     for (const param of parameters) {
       this.resetParameter(algorithmName, param.name);
     }
-    
+
     console.log(`🔄 All parameters reset for: ${algorithmName}`);
   }
 
@@ -161,7 +168,7 @@ export class ParameterManager implements IParameterManager {
    * Add parameter change listener
    */
   addParameterChangeListener(
-    algorithmName: string, 
+    algorithmName: string,
     listener: (algorithmName: string, paramName: string, value: any) => void
   ): void {
     const algorithmListeners = this.listeners.get(algorithmName) || [];
@@ -178,7 +185,7 @@ export class ParameterManager implements IParameterManager {
   ): void {
     const algorithmListeners = this.listeners.get(algorithmName) || [];
     const index = algorithmListeners.indexOf(listener);
-    
+
     if (index !== -1) {
       algorithmListeners.splice(index, 1);
     }
@@ -200,7 +207,7 @@ export class ParameterManager implements IParameterManager {
 
     for (const algorithmParams of this.parameterDefinitions.values()) {
       stats.totalParameters += algorithmParams.size;
-      
+
       for (const param of algorithmParams.values()) {
         const category = param.category;
         stats.parametersByCategory[category] = (stats.parametersByCategory[category] || 0) + 1;
@@ -216,7 +223,7 @@ export class ParameterManager implements IParameterManager {
     if (!parameter.name?.trim()) {
       throw new Error('Parameter must have a valid name');
     }
-    
+
     if (!parameter.type) {
       throw new Error('Parameter must have a valid type');
     }
@@ -234,11 +241,11 @@ export class ParameterManager implements IParameterManager {
     if (!this.parameterDefinitions.has(algorithmName)) {
       this.parameterDefinitions.set(algorithmName, new Map());
     }
-    
+
     if (!this.parameterValues.has(algorithmName)) {
       this.parameterValues.set(algorithmName, new Map());
     }
-    
+
     if (!this.listeners.has(algorithmName)) {
       this.listeners.set(algorithmName, []);
     }
@@ -264,19 +271,19 @@ export class ParameterManager implements IParameterManager {
     switch (definition.type) {
       case 'number':
         return typeof value === 'number' && !isNaN(value) ? true : 'Value must be a valid number';
-      
+
       case 'boolean':
         return typeof value === 'boolean' ? true : 'Value must be a boolean';
-      
+
       case 'vector':
         return this.validateVector(value);
-      
+
       case 'color':
         return this.validateColor(value);
-      
+
       case 'enum':
         return this.validateEnum(definition, value);
-      
+
       default:
         return `Unknown parameter type: ${definition.type}`;
     }
@@ -286,14 +293,14 @@ export class ParameterManager implements IParameterManager {
     if (!value || typeof value !== 'object') {
       return 'Vector must be an object';
     }
-    
+
     const required = ['x', 'y', 'z'];
     for (const prop of required) {
       if (typeof value[prop] !== 'number' || isNaN(value[prop])) {
         return `Vector.${prop} must be a valid number`;
       }
     }
-    
+
     return true;
   }
 
@@ -302,27 +309,27 @@ export class ParameterManager implements IParameterManager {
       // Basic hex color validation
       return /^#[0-9A-Fa-f]{6}$/.test(value) ? true : 'Color must be a valid hex string (#RRGGBB)';
     }
-    
+
     if (typeof value === 'number') {
       return value >= 0 && value <= 0xFFFFFF ? true : 'Color number must be between 0 and 0xFFFFFF';
     }
-    
+
     return 'Color must be a hex string or number';
   }
 
   private validateEnum(definition: IParameterDefinition, value: any): true | string {
     const options = definition.constraints?.options;
-    
+
     if (!options) {
       return 'Enum parameter must define options';
     }
-    
+
     return options.includes(value) ? true : `Value must be one of: ${options.join(', ')}`;
   }
 
   private validateConstraints(definition: IParameterDefinition, value: any): true | string {
     const constraints = definition.constraints;
-    
+
     if (!constraints) {
       return true;
     }
@@ -331,7 +338,7 @@ export class ParameterManager implements IParameterManager {
       if (constraints.min !== undefined && value < constraints.min) {
         return `Value must be >= ${constraints.min}`;
       }
-      
+
       if (constraints.max !== undefined && value > constraints.max) {
         return `Value must be <= ${constraints.max}`;
       }
@@ -342,7 +349,7 @@ export class ParameterManager implements IParameterManager {
 
   private updateParameterValue(algorithmName: string, paramName: string, value: any): void {
     const algorithmValues = this.parameterValues.get(algorithmName);
-    
+
     if (algorithmValues) {
       algorithmValues.set(paramName, value);
     }
@@ -350,7 +357,7 @@ export class ParameterManager implements IParameterManager {
 
   private notifyParameterChange(algorithmName: string, paramName: string, value: any): void {
     const algorithmListeners = this.listeners.get(algorithmName) || [];
-    
+
     for (const listener of algorithmListeners) {
       this.safelyNotifyListener(listener, algorithmName, paramName, value);
     }

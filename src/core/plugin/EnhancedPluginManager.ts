@@ -3,12 +3,12 @@
  * High-level plugin management orchestrating registry and discovery services
  */
 
-import { 
-  IPluginManager, 
-  IPluginRegistry, 
+import {
+  IPluginManager,
+  IPluginRegistry,
   IPluginDiscoveryService,
   IPluginMetadata,
-  PluginState 
+  PluginState
 } from './interfaces';
 import { PluginRegistry } from './PluginRegistry';
 import { PluginDiscoveryService } from './PluginDiscoveryService';
@@ -30,7 +30,7 @@ export class EnhancedPluginManager implements IPluginManager {
   ) {
     this.registry = registry || new PluginRegistry();
     this.discoveryService = discoveryService || new PluginDiscoveryService();
-    
+
     this.setupEventHandlers();
   }
 
@@ -45,7 +45,7 @@ export class EnhancedPluginManager implements IPluginManager {
 
     try {
       console.log('[EnhancedPluginManager] Initializing plugin system...');
-      
+
       // Discover available plugins
       const availablePlugins = await this.discoveryService.discoverPlugins();
       console.log(`[EnhancedPluginManager] Discovered ${availablePlugins.length} available plugins`);
@@ -70,8 +70,16 @@ export class EnhancedPluginManager implements IPluginManager {
     const availablePlugins = await this.discoveryService.discoverPlugins();
     console.log(`[EnhancedPluginManager] Loading ${availablePlugins.length} plugins...`);
 
-    const results = await Promise.allSettled(
-      availablePlugins.map(pluginName => this.loadPlugin(pluginName))
+    // Use Promise.all with individual try/catch for Node.js 8 compatibility
+    const results = await Promise.all(
+      availablePlugins.map(async (pluginName) => {
+        try {
+          await this.loadPlugin(pluginName);
+          return { status: 'fulfilled' as const, value: undefined };
+        } catch (reason) {
+          return { status: 'rejected' as const, reason };
+        }
+      })
     );
 
     const successful = results.filter(result => result.status === 'fulfilled').length;
@@ -83,7 +91,7 @@ export class EnhancedPluginManager implements IPluginManager {
       const errors = results
         .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
         .map(result => result.reason);
-      
+
       console.warn('[EnhancedPluginManager] Some plugins failed to load:', errors);
     }
   }
@@ -105,7 +113,7 @@ export class EnhancedPluginManager implements IPluginManager {
 
       // Load plugin instance from discovery service
       const plugin = await this.discoveryService.loadPlugin(pluginName);
-      
+
       // Register plugin in registry
       await this.registry.register(plugin);
 

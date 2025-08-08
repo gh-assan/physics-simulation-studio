@@ -14,7 +14,7 @@ import { SimulationState } from '../../core/simulation/SimulationState';
 
 /**
  * Simple Physics Algorithm Example
- * 
+ *
  * This demonstrates a clean, simple physics implementation
  * following the new architecture principles.
  */
@@ -30,18 +30,18 @@ class SimplePhysicsAlgorithm implements ISimulationAlgorithm {
     // Simple physics: gravity + damping
     for (const entityId of state.entities) {
       const entityState = this.getOrCreateEntityState(entityId);
-      
+
       // Apply gravity
       entityState.vy += this.gravity * fixedDeltaTime;
-      
+
       // Apply damping
       entityState.vx *= this.damping;
       entityState.vy *= this.damping;
-      
+
       // Update position
       entityState.x += entityState.vx * fixedDeltaTime;
       entityState.y += entityState.vy * fixedDeltaTime;
-      
+
       // Simple ground collision
       if (entityState.y < 0) {
         entityState.y = 0;
@@ -50,14 +50,24 @@ class SimplePhysicsAlgorithm implements ISimulationAlgorithm {
     }
 
     // Return updated state with physics metadata
-    return state instanceof SimulationState 
+    return state instanceof SimulationState
       ? state.withAddedMetadata('physics-step', state.time)
       : SimulationState.create(
           Array.from(state.entities),
           state.time,
           state.deltaTime,
           state.isRunning,
-          { ...Object.fromEntries(state.metadata), 'physics-step': state.time }
+          {
+            // Convert metadata for Node.js 8 compatibility
+            ...(() => {
+              const metadataObj: Record<string, any> = {};
+              for (const [key, value] of state.metadata) {
+                metadataObj[key] = value;
+              }
+              return metadataObj;
+            })(),
+            'physics-step': state.time
+          }
         );
   }
 
@@ -72,7 +82,7 @@ class SimplePhysicsAlgorithm implements ISimulationAlgorithm {
 
   initialize(entities: EntityId[]): void {
     this.entityStates.clear();
-    
+
     // Initialize with random positions/velocities for demo
     for (const entityId of entities) {
       this.entityStates.set(entityId, {
@@ -82,7 +92,7 @@ class SimplePhysicsAlgorithm implements ISimulationAlgorithm {
         vy: Math.random() * 2
       });
     }
-    
+
     console.log(`🎯 Simple physics initialized with ${entities.length} entities`);
   }
 
@@ -99,7 +109,7 @@ class SimplePhysicsAlgorithm implements ISimulationAlgorithm {
       case 'gravity':
         return typeof value === 'number' ? true : 'Gravity must be a number';
       case 'damping':
-        return typeof value === 'number' && value >= 0 && value <= 1 
+        return typeof value === 'number' && value >= 0 && value <= 1
           ? true : 'Damping must be a number between 0 and 1';
       default:
         return `Unknown parameter: ${paramName}`;
@@ -131,7 +141,7 @@ class SimpleRenderer implements ISimulationRenderer {
     // Simple sphere rendering (placeholder - would use actual 3D library)
     for (const entityId of entities) {
       let mesh = this.meshes.get(entityId);
-      
+
       if (!mesh) {
         // Create new sphere mesh (pseudo-code)
         mesh = context.createMesh(
@@ -140,7 +150,7 @@ class SimpleRenderer implements ISimulationRenderer {
         );
         this.meshes.set(entityId, mesh);
       }
-      
+
       // Update mesh position from physics state
       // This would read from ECS components in real implementation
       mesh.position.x = Math.sin(context.time + entityId) * 2;
@@ -193,20 +203,20 @@ class SimpleUI implements ISimulationUI {
         <label>Damping: <input type="number" id="damping" step="0.01" min="0" max="1" value="0.98"></label>
       </div>
     `;
-    
+
     container.appendChild(this.panel);
   }
 
   update(values: Record<string, any>): void {
     if (!this.panel) return;
-    
+
     const gravityInput = this.panel.querySelector('#gravity') as HTMLInputElement;
     const dampingInput = this.panel.querySelector('#damping') as HTMLInputElement;
-    
+
     if (gravityInput && values.gravity !== undefined) {
       gravityInput.value = values.gravity.toString();
     }
-    
+
     if (dampingInput && values.damping !== undefined) {
       dampingInput.value = values.damping.toString();
     }
@@ -288,29 +298,29 @@ export class SimplePhysicsPlugin implements ISimulationPlugin {
   register(context: IPluginContext): void {
     // 1. Register algorithm
     context.simulationManager.registerAlgorithm(this.algorithm);
-    
+
     // 2. Register renderer
     context.renderManager.registerRenderer(this.renderer);
-    
+
     // 3. Register parameters
     for (const param of this.getParameters()) {
       context.parameterManager.registerParameter(this.name, param);
     }
-    
+
     // 4. Register UI
     context.uiManager.registerUI(this.ui);
-    
+
     // 5. Register graphs
     for (const graph of this.getGraphs()) {
       context.graphManager.registerGraph(this.name, graph);
     }
-    
+
     // 6. Set up parameter change listener
     context.parameterManager.addParameterChangeListener(
       this.name,
       this.onParameterChanged.bind(this)
     );
-    
+
     context.logger.log(`✅ ${this.name} plugin registered successfully`);
   }
 
@@ -321,16 +331,16 @@ export class SimplePhysicsPlugin implements ISimulationPlugin {
     context.parameterManager.unregisterParameters(this.name);
     context.renderManager.unregisterRenderer(this.algorithm.name);
     context.simulationManager.unregisterAlgorithm(this.algorithm.name);
-    
+
     context.logger.log(`🗑️ ${this.name} plugin unregistered`);
   }
 
   onParameterChanged(algorithmName: string, paramName: string, value: any): void {
     if (algorithmName !== this.name) return;
-    
+
     // Update algorithm configuration
     this.algorithm.configure({ [paramName]: value });
-    
+
     console.log(`⚙️ Parameter changed: ${paramName} = ${value}`);
   }
 }

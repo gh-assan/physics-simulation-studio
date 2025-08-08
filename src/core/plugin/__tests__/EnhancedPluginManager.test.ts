@@ -6,14 +6,14 @@
 import { EnhancedPluginManager } from '../EnhancedPluginManager';
 import { PluginRegistry } from '../PluginRegistry';
 import { PluginDiscoveryService } from '../PluginDiscoveryService';
-import { 
-  IPlugin, 
-  IPluginMetadata, 
-  IPluginContext, 
-  PluginState, 
+import {
+  IPlugin,
+  IPluginMetadata,
+  IPluginContext,
+  PluginState,
   PluginCategory,
   IPluginRegistry,
-  IPluginDiscoveryService 
+  IPluginDiscoveryService
 } from '../interfaces';
 import { ISimulationAlgorithm } from '../../simulation/interfaces';
 
@@ -159,7 +159,7 @@ describe('EnhancedPluginManager', () => {
     test('should load all available plugins', async () => {
       const plugin1 = new MockTestPlugin('plugin1');
       const plugin2 = new MockTestPlugin('plugin2');
-      
+
       mockDiscovery.discoverPlugins.mockResolvedValue(['plugin1', 'plugin2']);
       mockDiscovery.loadPlugin
         .mockResolvedValueOnce(plugin1)
@@ -223,7 +223,7 @@ describe('EnhancedPluginManager', () => {
       const testPlugin = new MockTestPlugin('reload-plugin');
       mockRegistry.isLoaded.mockReturnValue(true);
       mockDiscovery.loadPlugin.mockResolvedValue(testPlugin);
-      
+
       // Mock the loadPlugin method to track the final call
       jest.spyOn(pluginManager, 'loadPlugin');
 

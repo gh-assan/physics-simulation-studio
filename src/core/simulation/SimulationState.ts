@@ -2,7 +2,7 @@ import { ISimulationState, EntityId } from './interfaces';
 
 /**
  * Immutable simulation state implementation
- * 
+ *
  * This class represents the complete state of a simulation at a point in time.
  * It enforces immutability to ensure predictable state management.
  */
@@ -147,7 +147,12 @@ export class SimulationState implements ISimulationState {
    * Get all metadata as plain object
    */
   getMetadataObject(): Record<string, any> {
-    return Object.fromEntries(this.metadata);
+    // Use manual iteration for Node.js 8 compatibility
+    const result: Record<string, any> = {};
+    for (const [key, value] of this.metadata) {
+      result[key] = value;
+    }
+    return result;
   }
 
   /**

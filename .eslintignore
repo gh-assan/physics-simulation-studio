@@ -1,5 +1,6 @@
 build/
 dist/
+coverage/
 jest.config.js
 jest.setup.js
 REFACTORING_EXAMPLES.ts

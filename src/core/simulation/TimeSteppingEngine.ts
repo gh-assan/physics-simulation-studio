@@ -1,6 +1,6 @@
 /**
  * Fixed Timestep Engine for Stable Physics Simulation
- * 
+ *
  * This engine ensures numerical stability by using fixed timesteps,
  * preventing instability from variable frame rates.
  */
@@ -25,7 +25,7 @@ export interface ITimeSteppingEngine {
 
 export class TimeSteppingEngine implements ITimeSteppingEngine {
   private fixedTimestep: number;
-  private accumulatedTime: number = 0;
+  private accumulatedTime = 0;
   private readonly maxAccumulatedTime: number;
 
   constructor(
@@ -39,7 +39,7 @@ export class TimeSteppingEngine implements ITimeSteppingEngine {
 
   /**
    * Execute fixed timestep simulation
-   * 
+   *
    * @param realDeltaTime Time since last frame (variable)
    * @param stepCallback Function to call for each fixed timestep
    */
@@ -48,10 +48,10 @@ export class TimeSteppingEngine implements ITimeSteppingEngine {
     if (realDeltaTime <= 0) {
       return; // Don't process negative or zero delta times
     }
-    
+
     // Clamp real delta time to prevent huge jumps
     const clampedDeltaTime = Math.min(realDeltaTime, this.maxAccumulatedTime);
-    
+
     this.accumulatedTime += clampedDeltaTime;
 
     // Execute as many fixed timesteps as needed
@@ -59,16 +59,10 @@ export class TimeSteppingEngine implements ITimeSteppingEngine {
     const maxSteps = Math.floor(this.maxAccumulatedTime / this.fixedTimestep);
 
     while (this.accumulatedTime >= this.fixedTimestep && steps < maxSteps) {
-      try {
-        stepCallback(this.fixedTimestep);
-        // Only consume the time if callback succeeded
-        this.accumulatedTime -= this.fixedTimestep;
-        steps++;
-      } catch (error) {
-        // Don't consume accumulated time on error - this prevents the simulation
-        // from getting "stuck" if callbacks consistently fail
-        throw error;
-      }
+      // Execute step callback and only consume time on success
+      stepCallback(this.fixedTimestep);
+      this.accumulatedTime -= this.fixedTimestep;
+      steps++;
     }
 
     // If we hit max steps, reset accumulated time to prevent further accumulation
@@ -87,7 +81,7 @@ export class TimeSteppingEngine implements ITimeSteppingEngine {
     if (timestep > 0.1) {
       console.warn(`Warning: Large timestep (${timestep}s) may cause instability`);
     }
-    
+
     this.fixedTimestep = timestep;
   }
 

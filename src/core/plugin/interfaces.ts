@@ -22,7 +22,7 @@ export interface IPluginMetadata {
 /**
  * Plugin categories for organization and filtering
  */
-export type PluginCategory = 
+export type PluginCategory =
   | 'simulation'
   | 'visualization'
   | 'analysis'
@@ -32,7 +32,7 @@ export type PluginCategory =
 /**
  * Plugin lifecycle state tracking
  */
-export type PluginState = 
+export type PluginState =
   | 'unloaded'
   | 'loading'
   | 'loaded'
@@ -68,7 +68,7 @@ export interface IPluginContext {
 export interface IPlugin extends Partial<IPluginLifecycleEvents> {
   readonly metadata: IPluginMetadata;
   readonly state: PluginState;
-  
+
   // Core plugin functionality
   initialize(context: IPluginContext): Promise<void>;
   getAlgorithms(): ISimulationAlgorithm[];
@@ -104,28 +104,28 @@ export interface IPluginRegistry {
   // Plugin registration
   register(plugin: IPlugin): Promise<void>;
   unregister(pluginName: string): Promise<void>;
-  
+
   // Plugin lifecycle management
   load(pluginName: string): Promise<void>;
   unload(pluginName: string): Promise<void>;
   activate(pluginName: string): Promise<void>;
   deactivate(pluginName: string): Promise<void>;
-  
+
   // Plugin discovery and information
   getPlugin(name: string): IPluginRegistryEntry | undefined;
   getAllPlugins(): readonly IPluginRegistryEntry[];
   getActivePlugins(): readonly IPluginRegistryEntry[];
   getPluginsByCategory(category: PluginCategory): readonly IPluginRegistryEntry[];
-  
+
   // Dependency management
   validateDependencies(pluginName: string): IPluginDependencyResult;
   resolveDependencies(plugins: readonly string[]): readonly string[];
-  
+
   // State queries
   isLoaded(pluginName: string): boolean;
   isActive(pluginName: string): boolean;
   getPluginState(pluginName: string): PluginState;
-  
+
   // Event handling
   onPluginStateChanged(callback: (pluginName: string, state: PluginState) => void): void;
   onPluginError(callback: (pluginName: string, error: Error) => void): void;
@@ -138,11 +138,11 @@ export interface IPluginDiscoveryService {
   // Plugin discovery
   discoverPlugins(): Promise<readonly string[]>;
   scanDirectory(path: string): Promise<readonly string[]>;
-  
+
   // Plugin loading
   loadPlugin(pluginName: string): Promise<IPlugin>;
   loadPluginFromPath(path: string): Promise<IPlugin>;
-  
+
   // Plugin factories
   registerPluginFactory(name: string, factory: () => Promise<IPlugin>): void;
   getAvailablePlugins(): readonly string[];
@@ -154,18 +154,18 @@ export interface IPluginDiscoveryService {
 export interface IPluginManager {
   readonly registry: IPluginRegistry;
   readonly discoveryService: IPluginDiscoveryService;
-  
+
   // High-level plugin management
   initializePluginSystem(): Promise<void>;
   loadAllPlugins(): Promise<void>;
   loadPlugin(pluginName: string): Promise<void>;
   unloadPlugin(pluginName: string): Promise<void>;
   reloadPlugin(pluginName: string): Promise<void>;
-  
+
   // Plugin information
   getLoadedPlugins(): readonly string[];
   getPluginInfo(pluginName: string): IPluginMetadata | undefined;
-  
+
   // Event handling
   onPluginStateChanged(callback: (pluginName: string, state: PluginState) => void): void;
   onPluginError(callback: (pluginName: string, error: Error) => void): void;

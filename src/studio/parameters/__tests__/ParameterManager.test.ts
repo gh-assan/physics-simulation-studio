@@ -27,7 +27,7 @@ describe('ParameterManager', () => {
       };
 
       parameterManager.registerParameter(testAlgorithm, definition);
-      
+
       expect(parameterManager.getParameterValue(testAlgorithm, 'speed')).toBe(5.0);
       expect(parameterManager.getParameters(testAlgorithm)).toHaveLength(1);
       expect(parameterManager.getParameters(testAlgorithm)[0].name).toBe('speed');
@@ -42,7 +42,7 @@ describe('ParameterManager', () => {
       };
 
       parameterManager.registerParameter(testAlgorithm, definition);
-      
+
       expect(parameterManager.getParameterValue(testAlgorithm, 'enabled')).toBe(true);
     });
 
@@ -56,7 +56,7 @@ describe('ParameterManager', () => {
       };
 
       parameterManager.registerParameter(testAlgorithm, definition);
-      
+
       expect(parameterManager.getParameterValue(testAlgorithm, 'mode')).toBe('auto');
     });
 
@@ -69,7 +69,7 @@ describe('ParameterManager', () => {
       };
 
       parameterManager.registerParameter(testAlgorithm, definition);
-      
+
       expect(parameterManager.getParameterValue(testAlgorithm, 'position')).toEqual({ x: 0, y: 0, z: 0 });
     });
 
@@ -82,7 +82,7 @@ describe('ParameterManager', () => {
       };
 
       parameterManager.registerParameter(testAlgorithm, definition);
-      
+
       expect(parameterManager.getParameterValue(testAlgorithm, 'fillColor')).toBe('#ff0000');
     });
 
@@ -103,7 +103,7 @@ describe('ParameterManager', () => {
       ];
 
       parameterManager.registerParameters(testAlgorithm, definitions);
-      
+
       expect(parameterManager.getParameters(testAlgorithm)).toHaveLength(2);
     });
   });
@@ -304,14 +304,14 @@ describe('ParameterManager', () => {
         defaultValue: 5.0,
         category: 'physics'
       });
-      
+
       parameterManager.registerParameter(testAlgorithm, {
         name: 'enabled',
         type: 'boolean',
         defaultValue: false,
         category: 'physics'
       });
-      
+
       // Modify values
       parameterManager.setParameter(testAlgorithm, 'speed', 10.0);
       parameterManager.setParameter(testAlgorithm, 'enabled', true);
@@ -319,14 +319,14 @@ describe('ParameterManager', () => {
 
     it('should reset single parameter to default', () => {
       parameterManager.resetParameter(testAlgorithm, 'speed');
-      
+
       expect(parameterManager.getParameterValue(testAlgorithm, 'speed')).toBe(5.0);
       expect(parameterManager.getParameterValue(testAlgorithm, 'enabled')).toBe(true); // Unchanged
     });
 
     it('should reset all parameters to defaults', () => {
       parameterManager.resetParameters(testAlgorithm);
-      
+
       expect(parameterManager.getParameterValue(testAlgorithm, 'speed')).toBe(5.0);
       expect(parameterManager.getParameterValue(testAlgorithm, 'enabled')).toBe(false);
     });
@@ -344,7 +344,7 @@ describe('ParameterManager', () => {
 
     it('should unregister all parameters for an algorithm', () => {
       parameterManager.unregisterParameters(testAlgorithm);
-      
+
       expect(parameterManager.getParameters(testAlgorithm)).toEqual([]);
       expect(parameterManager.getParameterValues(testAlgorithm)).toEqual({});
     });
@@ -369,7 +369,7 @@ describe('ParameterManager', () => {
 
     it('should provide statistics', () => {
       const stats = parameterManager.getStats();
-      
+
       expect(stats.algorithmCount).toBe(2);
       expect(stats.totalParameters).toBe(2);
       expect(stats.parametersByCategory.physics).toBe(1);

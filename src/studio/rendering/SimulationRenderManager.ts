@@ -1,14 +1,14 @@
-import { 
-  ISimulationRenderer, 
-  IRenderManager, 
-  IRenderContext, 
-  EntityId, 
-  ISimulationState 
+import {
+  ISimulationRenderer,
+  IRenderManager,
+  IRenderContext,
+  EntityId,
+  ISimulationState
 } from '../../core/simulation/interfaces';
 
 /**
  * State-Driven Render Manager
- * 
+ *
  * This manager handles all visualization by reacting to state changes only.
  * No polling, no frame-based updates - pure reactive rendering.
  */
@@ -16,7 +16,7 @@ export class SimulationRenderManager implements IRenderManager {
   private renderers: Map<string, ISimulationRenderer> = new Map();
   private renderContext: IRenderContext | null = null;
   private lastRenderedState: ISimulationState | null = null;
-  private isEnabled: boolean = true;
+  private isEnabled = true;
 
   constructor(renderContext?: IRenderContext) {
     this.renderContext = renderContext || null;
@@ -35,7 +35,7 @@ export class SimulationRenderManager implements IRenderManager {
    */
   registerRenderer(renderer: ISimulationRenderer): void {
     this.validateRenderer(renderer);
-    
+
     this.renderers.set(renderer.algorithmName, renderer);
     console.log(`✅ Renderer registered: ${renderer.algorithmName} (${renderer.rendererType})`);
   }
@@ -45,7 +45,7 @@ export class SimulationRenderManager implements IRenderManager {
    */
   unregisterRenderer(algorithmName: string): void {
     const renderer = this.renderers.get(algorithmName);
-    
+
     if (!renderer) {
       console.warn(`⚠️ Renderer not found: ${algorithmName}`);
       return;
@@ -53,7 +53,7 @@ export class SimulationRenderManager implements IRenderManager {
 
     this.cleanupRenderer(renderer);
     this.renderers.delete(algorithmName);
-    
+
     console.log(`🗑️ Renderer unregistered: ${algorithmName}`);
   }
 
@@ -67,7 +67,7 @@ export class SimulationRenderManager implements IRenderManager {
     }
 
     const activeContext = context || this.renderContext;
-    
+
     if (!activeContext) {
       console.warn('⚠️ No render context available');
       return;
@@ -75,7 +75,7 @@ export class SimulationRenderManager implements IRenderManager {
 
     // Only render active renderers
     const activeRenderers = this.getActiveRenderers();
-    
+
     if (activeRenderers.length === 0) {
       return;
     }
@@ -100,7 +100,7 @@ export class SimulationRenderManager implements IRenderManager {
    */
   updateVisualParameters(algorithmName: string, parameters: Record<string, any>): void {
     const renderer = this.renderers.get(algorithmName);
-    
+
     if (!renderer) {
       console.warn(`⚠️ Renderer not found for visual update: ${algorithmName}`);
       return;
@@ -117,7 +117,7 @@ export class SimulationRenderManager implements IRenderManager {
     for (const renderer of this.renderers.values()) {
       this.safelyClearRenderer(renderer);
     }
-    
+
     console.log('🧹 All renderers cleared');
   }
 
@@ -126,11 +126,11 @@ export class SimulationRenderManager implements IRenderManager {
    */
   setEnabled(enabled: boolean): void {
     this.isEnabled = enabled;
-    
+
     if (!enabled) {
       this.clearAll();
     }
-    
+
     console.log(`🎨 Rendering ${enabled ? 'enabled' : 'disabled'}`);
   }
 
@@ -157,7 +157,7 @@ export class SimulationRenderManager implements IRenderManager {
     if (!renderer.algorithmName?.trim()) {
       throw new Error('Renderer must have a valid algorithm name');
     }
-    
+
     if (!renderer.rendererType?.trim()) {
       throw new Error('Renderer must have a valid renderer type');
     }
@@ -183,8 +183,8 @@ export class SimulationRenderManager implements IRenderManager {
     }
 
     const entities = Array.from(this.lastRenderedState.entities);
-    
-    return Array.from(this.renderers.values()).filter(renderer => 
+
+    return Array.from(this.renderers.values()).filter(renderer =>
       this.canRendererHandle(renderer, entities)
     );
   }
@@ -211,8 +211,8 @@ export class SimulationRenderManager implements IRenderManager {
   }
 
   private safelyRenderWithRenderer(
-    renderer: ISimulationRenderer, 
-    entities: EntityId[], 
+    renderer: ISimulationRenderer,
+    entities: EntityId[],
     context: IRenderContext
   ): void {
     try {
@@ -248,7 +248,7 @@ export class SimulationRenderManager implements IRenderManager {
   private hasEntitiesChanged(newState: ISimulationState): boolean {
     const oldEntities = this.lastRenderedState?.entities;
     const newEntities = newState.entities;
-    
+
     if (!oldEntities) return true;
     if (oldEntities.size !== newEntities.size) return true;
 
@@ -262,7 +262,7 @@ export class SimulationRenderManager implements IRenderManager {
   private hasMetadataChanged(newState: ISimulationState): boolean {
     const oldMetadata = this.lastRenderedState?.metadata;
     const newMetadata = newState.metadata;
-    
+
     if (!oldMetadata) return true;
     if (oldMetadata.size !== newMetadata.size) return true;
 

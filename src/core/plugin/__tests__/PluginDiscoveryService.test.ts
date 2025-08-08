@@ -86,7 +86,7 @@ describe('PluginDiscoveryService', () => {
     test('should clear all factories', () => {
       const factory1 = async () => new MockTestPlugin('plugin1');
       const factory2 = async () => new MockTestPlugin('plugin2');
-      
+
       discoveryService.registerPluginFactory('plugin1', factory1);
       discoveryService.registerPluginFactory('plugin2', factory2);
 
@@ -101,7 +101,7 @@ describe('PluginDiscoveryService', () => {
     test('should discover registered plugins', async () => {
       const factory1 = async () => new MockTestPlugin('plugin1');
       const factory2 = async () => new MockTestPlugin('plugin2');
-      
+
       discoveryService.registerPluginFactory('plugin1', factory1);
       discoveryService.registerPluginFactory('plugin2', factory2);
 
@@ -134,7 +134,7 @@ describe('PluginDiscoveryService', () => {
     test('should load plugin using factory', async () => {
       const expectedPlugin = new MockTestPlugin('loadable-plugin');
       const factory = async () => expectedPlugin;
-      
+
       discoveryService.registerPluginFactory('loadable-plugin', factory);
 
       const loadedPlugin = await discoveryService.loadPlugin('loadable-plugin');
@@ -147,7 +147,7 @@ describe('PluginDiscoveryService', () => {
       const errorFactory = async () => {
         throw new Error('Factory failed');
       };
-      
+
       discoveryService.registerPluginFactory('error-plugin', errorFactory);
 
       await expect(discoveryService.loadPlugin('error-plugin'))
@@ -164,7 +164,7 @@ describe('PluginDiscoveryService', () => {
         await new Promise(resolve => setTimeout(resolve, 10));
         return new MockTestPlugin('delayed-plugin');
       };
-      
+
       discoveryService.registerPluginFactory('delayed-plugin', delayedFactory);
 
       const startTime = Date.now();
@@ -200,7 +200,7 @@ describe('PluginDiscoveryService', () => {
 
       const factory1 = async () => new MockTestPlugin('plugin1');
       const factory2 = async () => new MockTestPlugin('plugin2');
-      
+
       discoveryService.registerPluginFactory('plugin1', factory1);
       expect(discoveryService.getFactoryCount()).toBe(1);
 
@@ -248,7 +248,7 @@ describe('PluginDiscoveryService', () => {
       const syncErrorFactory = () => {
         throw new Error('Synchronous error');
       };
-      
+
       discoveryService.registerPluginFactory('sync-error-plugin', syncErrorFactory as any);
 
       await expect(discoveryService.loadPlugin('sync-error-plugin'))
@@ -259,7 +259,7 @@ describe('PluginDiscoveryService', () => {
       const stringErrorFactory = async () => {
         throw 'String error';
       };
-      
+
       discoveryService.registerPluginFactory('string-error-plugin', stringErrorFactory);
 
       await expect(discoveryService.loadPlugin('string-error-plugin'))
@@ -268,11 +268,11 @@ describe('PluginDiscoveryService', () => {
 
     test('should handle factory returning null/undefined', async () => {
       const nullFactory = async () => null as any;
-      
+
       discoveryService.registerPluginFactory('null-plugin', nullFactory);
 
       const plugin = await discoveryService.loadPlugin('null-plugin');
-      
+
       expect(plugin).toBeNull();
     });
   });

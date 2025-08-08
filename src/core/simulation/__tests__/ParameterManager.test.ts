@@ -1,6 +1,6 @@
 /**
  * ParameterManager Test Suite
- * 
+ *
  * TDD: Testing parameter validation, registration, and management
  */
 
@@ -26,7 +26,7 @@ describe('ParameterManager', () => {
 
     it('should register valid parameter', () => {
       manager.registerParameter('testAlgorithm', validParameter);
-      
+
       const retrieved = manager.getParameter('testAlgorithm', 'testParam');
       expect(retrieved).toEqual(validParameter);
       expect(manager.getParameterValue('testAlgorithm', 'testParam')).toBe(10);
@@ -35,10 +35,10 @@ describe('ParameterManager', () => {
     it('should register multiple parameters for same algorithm', () => {
       const param1: IParameterDefinition = { ...validParameter, name: 'param1' };
       const param2: IParameterDefinition = { ...validParameter, name: 'param2', defaultValue: 20 };
-      
+
       manager.registerParameter('testAlgorithm', param1);
       manager.registerParameter('testAlgorithm', param2);
-      
+
       const allParams = manager.getParameters('testAlgorithm');
       expect(allParams).toHaveLength(2);
       expect(allParams.find((p: IParameterDefinition) => p.name === 'param1')).toEqual(param1);
@@ -48,7 +48,7 @@ describe('ParameterManager', () => {
     it('should register parameters for multiple algorithms', () => {
       manager.registerParameter('algorithm1', validParameter);
       manager.registerParameter('algorithm2', { ...validParameter, name: 'otherParam' });
-      
+
       expect(manager.getParameters('algorithm1')).toHaveLength(1);
       expect(manager.getParameters('algorithm2')).toHaveLength(1);
       expect(manager.getParameter('algorithm1', 'testParam')).toBeTruthy();
@@ -57,7 +57,7 @@ describe('ParameterManager', () => {
 
     it('should reject parameter without name', () => {
       const invalidParam = { ...validParameter, name: '' };
-      
+
       expect(() => {
         manager.registerParameter('testAlgorithm', invalidParam);
       }).toThrow('Parameter must have a valid name');
@@ -65,7 +65,7 @@ describe('ParameterManager', () => {
 
     it('should reject parameter without type', () => {
       const invalidParam = { ...validParameter, type: undefined as any };
-      
+
       expect(() => {
         manager.registerParameter('testAlgorithm', invalidParam);
       }).toThrow('Parameter must have a valid type');
@@ -73,7 +73,7 @@ describe('ParameterManager', () => {
 
     it('should reject parameter without category', () => {
       const invalidParam = { ...validParameter, category: undefined as any };
-      
+
       expect(() => {
         manager.registerParameter('testAlgorithm', invalidParam);
       }).toThrow('Parameter must have a valid category');
@@ -81,7 +81,7 @@ describe('ParameterManager', () => {
 
     it('should reject parameter without default value', () => {
       const invalidParam = { ...validParameter, defaultValue: undefined };
-      
+
       expect(() => {
         manager.registerParameter('testAlgorithm', invalidParam);
       }).toThrow('Parameter must have a default value');
@@ -96,7 +96,7 @@ describe('ParameterManager', () => {
       const param2: IParameterDefinition = {
         name: 'param2', type: 'number', defaultValue: 2, category: 'physics'
       };
-      
+
       manager.registerParameter('algorithm1', param1);
       manager.registerParameter('algorithm1', param2);
       manager.registerParameter('algorithm2', param1);
@@ -104,13 +104,13 @@ describe('ParameterManager', () => {
 
     it('should unregister all parameters for algorithm', () => {
       expect(manager.getParameters('algorithm1')).toHaveLength(2);
-      
+
       manager.unregisterParameters('algorithm1');
-      
+
       expect(manager.getParameters('algorithm1')).toHaveLength(0);
       expect(manager.getParameter('algorithm1', 'param1')).toBeUndefined();
       expect(manager.getParameterValue('algorithm1', 'param1')).toBeUndefined();
-      
+
       // Other algorithm unaffected
       expect(manager.getParameters('algorithm2')).toHaveLength(1);
     });
@@ -131,14 +131,14 @@ describe('ParameterManager', () => {
         category: 'physics',
         constraints: { min: 0, max: 100, step: 1 }
       };
-      
+
       const booleanParam: IParameterDefinition = {
         name: 'booleanParam',
         type: 'boolean',
         defaultValue: true,
         category: 'visual'
       };
-      
+
       const enumParam: IParameterDefinition = {
         name: 'enumParam',
         type: 'enum',
@@ -146,21 +146,21 @@ describe('ParameterManager', () => {
         category: 'algorithm',
         constraints: { options: ['option1', 'option2', 'option3'] }
       };
-      
+
       const vectorParam: IParameterDefinition = {
         name: 'vectorParam',
         type: 'vector',
         defaultValue: { x: 1, y: 2, z: 3 },
         category: 'physics'
       };
-      
+
       const colorParam: IParameterDefinition = {
         name: 'colorParam',
         type: 'color',
         defaultValue: '#ff0000',
         category: 'visual'
       };
-      
+
       manager.registerParameter('testAlg', numberParam);
       manager.registerParameter('testAlg', booleanParam);
       manager.registerParameter('testAlg', enumParam);
@@ -271,7 +271,7 @@ describe('ParameterManager', () => {
 
     it('should set valid parameter values', () => {
       manager.setParameter('testAlg', 'testParam', 75);
-      
+
       expect(manager.getParameterValue('testAlg', 'testParam')).toBe(75);
     });
 
@@ -287,9 +287,9 @@ describe('ParameterManager', () => {
       };
       manager.registerParameter('testAlg', param2);
       manager.setParameter('testAlg', 'testParam', 25);
-      
+
       const values = manager.getParameterValues('testAlg');
-      
+
       expect(values).toEqual({
         testParam: 25,
         param2: false
@@ -299,7 +299,7 @@ describe('ParameterManager', () => {
     it('should reset parameter to default value', () => {
       manager.setParameter('testAlg', 'testParam', 75);
       expect(manager.getParameterValue('testAlg', 'testParam')).toBe(75);
-      
+
       manager.resetParameter('testAlg', 'testParam');
       expect(manager.getParameterValue('testAlg', 'testParam')).toBe(42);
     });
@@ -309,12 +309,12 @@ describe('ParameterManager', () => {
         name: 'param2', type: 'boolean', defaultValue: true, category: 'visual'
       };
       manager.registerParameter('testAlg', param2);
-      
+
       manager.setParameter('testAlg', 'testParam', 75);
       manager.setParameter('testAlg', 'param2', false);
-      
+
       manager.resetParameters('testAlg');
-      
+
       expect(manager.getParameterValue('testAlg', 'testParam')).toBe(42);
       expect(manager.getParameterValue('testAlg', 'param2')).toBe(true);
     });
@@ -326,16 +326,16 @@ describe('ParameterManager', () => {
         { name: 'gravity', type: 'number', defaultValue: -9.81, category: 'physics' },
         { name: 'damping', type: 'number', defaultValue: 0.98, category: 'physics' }
       ];
-      
+
       const visualParams: IParameterDefinition[] = [
         { name: 'color', type: 'color', defaultValue: '#ff0000', category: 'visual' },
         { name: 'wireframe', type: 'boolean', defaultValue: false, category: 'visual' }
       ];
-      
+
       const algorithmParams: IParameterDefinition[] = [
         { name: 'method', type: 'enum', defaultValue: 'verlet', category: 'algorithm', constraints: { options: ['euler', 'verlet', 'rk4'] } }
       ];
-      
+
       [...physicsParams, ...visualParams, ...algorithmParams].forEach(param => {
         manager.registerParameter('testAlg', param);
       });
@@ -343,11 +343,11 @@ describe('ParameterManager', () => {
 
     it('should group parameters by category', () => {
       const categorized = manager.getParametersByCategory('testAlg');
-      
+
       expect(categorized.get('physics')).toHaveLength(2);
       expect(categorized.get('visual')).toHaveLength(2);
       expect(categorized.get('algorithm')).toHaveLength(1);
-      
+
       expect(categorized.get('physics')?.map((p: IParameterDefinition) => p.name)).toEqual(['gravity', 'damping']);
       expect(categorized.get('visual')?.map((p: IParameterDefinition) => p.name)).toEqual(['color', 'wireframe']);
       expect(categorized.get('algorithm')?.map((p: IParameterDefinition) => p.name)).toEqual(['method']);
@@ -368,16 +368,16 @@ describe('ParameterManager', () => {
 
     it('should notify listeners on parameter change', () => {
       manager.setParameter('testAlg', 'testParam', 25);
-      
+
       expect(listener).toHaveBeenCalledWith('testAlg', 'testParam', 25);
     });
 
     it('should not notify listeners for other algorithms', () => {
       manager.registerParameter('otherAlg', testParam);
       manager.addParameterChangeListener('otherAlg', listener);
-      
+
       manager.setParameter('testAlg', 'testParam', 25);
-      
+
       expect(listener).toHaveBeenCalledTimes(1);
       expect(listener).toHaveBeenCalledWith('testAlg', 'testParam', 25);
     });
@@ -385,7 +385,7 @@ describe('ParameterManager', () => {
     it('should allow removing listeners', () => {
       manager.removeParameterChangeListener('testAlg', listener);
       manager.setParameter('testAlg', 'testParam', 25);
-      
+
       expect(listener).not.toHaveBeenCalled();
     });
 
@@ -394,11 +394,11 @@ describe('ParameterManager', () => {
         throw new Error('Listener error');
       });
       manager.addParameterChangeListener('testAlg', throwingListener);
-      
+
       expect(() => {
         manager.setParameter('testAlg', 'testParam', 25);
       }).not.toThrow();
-      
+
       expect(throwingListener).toHaveBeenCalled();
     });
   });
@@ -409,13 +409,13 @@ describe('ParameterManager', () => {
       const param1: IParameterDefinition = { name: 'p1', type: 'number', defaultValue: 1, category: 'physics' };
       const param2: IParameterDefinition = { name: 'p2', type: 'boolean', defaultValue: true, category: 'visual' };
       const param3: IParameterDefinition = { name: 'p3', type: 'enum', defaultValue: 'a', category: 'algorithm', constraints: { options: ['a', 'b'] } };
-      
+
       manager.registerParameter('alg1', param1);
       manager.registerParameter('alg1', param2);
       manager.registerParameter('alg2', param3);
-      
+
       const stats = manager.getStats();
-      
+
       expect(stats.algorithmCount).toBe(2);
       expect(stats.totalParameters).toBe(3);
       expect(stats.parametersByCategory.physics).toBe(1);
@@ -425,7 +425,7 @@ describe('ParameterManager', () => {
 
     it('should handle empty state statistics', () => {
       const stats = manager.getStats();
-      
+
       expect(stats.algorithmCount).toBe(0);
       expect(stats.totalParameters).toBe(0);
       expect(stats.parametersByCategory).toEqual({});

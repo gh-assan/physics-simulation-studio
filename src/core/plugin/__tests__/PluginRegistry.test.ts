@@ -1,15 +1,15 @@
 /**
- * PluginRegistry Tests - Phase 3 Implementation  
+ * PluginRegistry Tests - Phase 3 Implementation
  * Comprehensive test suite for production PluginRegistry
  */
 
 import { PluginRegistry } from '../PluginRegistry';
-import { 
-  IPlugin, 
-  IPluginMetadata, 
-  IPluginContext, 
-  PluginState, 
-  PluginCategory 
+import {
+  IPlugin,
+  IPluginMetadata,
+  IPluginContext,
+  PluginState,
+  PluginCategory
 } from '../interfaces';
 import { ISimulationAlgorithm } from '../../simulation/interfaces';
 
@@ -22,7 +22,7 @@ class MockPlugin implements IPlugin {
   public onUnloadCalled = false;
   public onActivateCalled = false;
   public onDeactivateCalled = false;
-  
+
   // Mock methods that can be overridden for error testing
   public onActivate?: () => Promise<void>;
   public onDeactivate?: () => Promise<void>;
@@ -67,8 +67,8 @@ describe('PluginRegistry', () => {
   let registry: PluginRegistry;
 
   const createMockMetadata = (
-    name: string, 
-    dependencies: string[] = [], 
+    name: string,
+    dependencies: string[] = [],
     category: PluginCategory = 'simulation'
   ): IPluginMetadata => ({
     name,
@@ -95,7 +95,7 @@ describe('PluginRegistry', () => {
       expect(registry.isLoaded('test-plugin')).toBe(true);
       expect(registry.getPluginState('test-plugin')).toBe('loaded');
       expect(plugin.initializeCalled).toBe(true);
-      
+
       const entry = registry.getPlugin('test-plugin');
       expect(entry).toBeDefined();
       expect(entry?.plugin).toBe(plugin);
@@ -112,7 +112,7 @@ describe('PluginRegistry', () => {
 
       await expect(registry.register(plugin2))
         .rejects.toThrow('Plugin duplicate-plugin is already registered');
-      
+
       // First plugin should still be registered
       expect(registry.isLoaded('duplicate-plugin')).toBe(true);
     });
@@ -123,7 +123,7 @@ describe('PluginRegistry', () => {
       plugin.initialize = jest.fn().mockRejectedValue(new Error('Initialization failed'));
 
       await expect(registry.register(plugin)).rejects.toThrow('Initialization failed');
-      
+
       expect(registry.isLoaded('error-plugin')).toBe(false);
       expect(registry.getPlugin('error-plugin')).toBeUndefined();
     });
@@ -158,7 +158,7 @@ describe('PluginRegistry', () => {
       await registry.register(plugin);
 
       await expect(registry.activate('error-plugin')).rejects.toThrow('Activation failed');
-      
+
       expect(registry.getPluginState('error-plugin')).toBe('error');
       expect(registry.isActive('error-plugin')).toBe(false);
     });
@@ -190,7 +190,7 @@ describe('PluginRegistry', () => {
     test('should get plugins by category', async () => {
       const simPlugin = new MockPlugin(createMockMetadata('sim-plugin', [], 'simulation'));
       const vizPlugin = new MockPlugin(createMockMetadata('viz-plugin', [], 'visualization'));
-      
+
       await registry.register(simPlugin);
       await registry.register(vizPlugin);
 
@@ -208,7 +208,7 @@ describe('PluginRegistry', () => {
     test('should validate dependencies successfully', async () => {
       const basePlugin = new MockPlugin(createMockMetadata('base-plugin'));
       const dependentPlugin = new MockPlugin(createMockMetadata('dependent-plugin', ['base-plugin']));
-      
+
       await registry.register(basePlugin);
       await registry.register(dependentPlugin);
 
@@ -232,7 +232,7 @@ describe('PluginRegistry', () => {
       const basePlugin = new MockPlugin(createMockMetadata('base'));
       const middlePlugin = new MockPlugin(createMockMetadata('middle', ['base']));
       const topPlugin = new MockPlugin(createMockMetadata('top', ['middle']));
-      
+
       await registry.register(basePlugin);
       await registry.register(middlePlugin);
       await registry.register(topPlugin);
@@ -245,7 +245,7 @@ describe('PluginRegistry', () => {
     test('should detect circular dependencies', async () => {
       const plugin1 = new MockPlugin(createMockMetadata('plugin1', ['plugin2']));
       const plugin2 = new MockPlugin(createMockMetadata('plugin2', ['plugin1']));
-      
+
       await registry.register(plugin1);
       await registry.register(plugin2);
 

@@ -4,7 +4,7 @@ import { TimeSteppingEngine, ITimeSteppingEngine } from '../../core/simulation/T
 
 /**
  * Simulation Manager - Core Algorithm Orchestration
- * 
+ *
  * This class manages the execution of physics algorithms using fixed timesteps
  * for numerical stability. It follows clean architecture principles with
  * no nested conditions and clear single responsibilities.
@@ -13,10 +13,10 @@ export class SimulationManager implements ISimulationManager {
   private algorithms: Map<string, ISimulationAlgorithm> = new Map();
   private currentState: SimulationState;
   private timeEngine: ITimeSteppingEngine;
-  private isPlaying: boolean = false;
+  private isPlaying = false;
   private listeners: ((state: ISimulationState) => void)[] = [];
   private initialState: SimulationState;
-  
+
   constructor(
     fixedTimestep: number = 1/60,
     initialState?: SimulationState
@@ -31,10 +31,10 @@ export class SimulationManager implements ISimulationManager {
    */
   registerAlgorithm(algorithm: ISimulationAlgorithm): void {
     this.validateAlgorithm(algorithm);
-    
+
     this.algorithms.set(algorithm.name, algorithm);
     this.initializeAlgorithm(algorithm);
-    
+
     console.log(`✅ Algorithm registered: ${algorithm.name} v${algorithm.version}`);
   }
 
@@ -43,7 +43,7 @@ export class SimulationManager implements ISimulationManager {
    */
   unregisterAlgorithm(algorithmName: string): void {
     const algorithm = this.algorithms.get(algorithmName);
-    
+
     if (!algorithm) {
       console.warn(`⚠️ Algorithm not found: ${algorithmName}`);
       return;
@@ -51,7 +51,7 @@ export class SimulationManager implements ISimulationManager {
 
     this.cleanupAlgorithm(algorithm);
     this.algorithms.delete(algorithmName);
-    
+
     console.log(`🗑️ Algorithm unregistered: ${algorithmName}`);
   }
 
@@ -82,10 +82,10 @@ export class SimulationManager implements ISimulationManager {
     if (this.isPlaying) {
       return;
     }
-    
+
     this.isPlaying = true;
     this.updateSimulationState(state => state.withRunning(true));
-    
+
     console.log('▶️ Simulation started');
   }
 
@@ -96,10 +96,10 @@ export class SimulationManager implements ISimulationManager {
     if (!this.isPlaying) {
       return;
     }
-    
+
     this.isPlaying = false;
     this.updateSimulationState(state => state.withRunning(false));
-    
+
     console.log('⏸️ Simulation paused');
   }
 
@@ -109,11 +109,11 @@ export class SimulationManager implements ISimulationManager {
   reset(): void {
     this.pause();
     this.timeEngine.reset();
-    
+
     this.currentState = this.initialState;
     this.reinitializeAlgorithms();
     this.notifyStateChange();
-    
+
     console.log('🔄 Simulation reset');
   }
 
@@ -156,7 +156,7 @@ export class SimulationManager implements ISimulationManager {
    */
   configureAlgorithm(algorithmName: string, parameters: Record<string, any>): void {
     const algorithm = this.algorithms.get(algorithmName);
-    
+
     if (!algorithm) {
       console.error(`❌ Algorithm not found: ${algorithmName}`);
       return;
@@ -164,7 +164,7 @@ export class SimulationManager implements ISimulationManager {
 
     this.validateParameters(algorithm, parameters);
     algorithm.configure(parameters);
-    
+
     console.log(`⚙️ Algorithm configured: ${algorithmName}`, parameters);
   }
 
@@ -189,7 +189,7 @@ export class SimulationManager implements ISimulationManager {
     if (!algorithm.name?.trim()) {
       throw new Error('Algorithm must have a valid name');
     }
-    
+
     if (!algorithm.version?.trim()) {
       throw new Error('Algorithm must have a valid version');
     }
@@ -214,14 +214,14 @@ export class SimulationManager implements ISimulationManager {
 
   private executeFixedStep(fixedDeltaTime: number): void {
     const algorithmList = Array.from(this.algorithms.values());
-    
+
     if (algorithmList.length === 0) {
       return;
     }
 
     // Execute algorithms in sequence, passing state between them
     let newState = this.currentState;
-    
+
     for (const algorithm of algorithmList) {
       newState = this.executeAlgorithmStep(algorithm, newState, fixedDeltaTime);
     }
@@ -237,8 +237,8 @@ export class SimulationManager implements ISimulationManager {
   }
 
   private executeAlgorithmStep(
-    algorithm: ISimulationAlgorithm, 
-    state: ISimulationState, 
+    algorithm: ISimulationAlgorithm,
+    state: ISimulationState,
     fixedDeltaTime: number
   ): SimulationState {
     try {
@@ -248,21 +248,34 @@ export class SimulationManager implements ISimulationManager {
         return result;
       }
       // Convert interface to concrete implementation
+      // Create metadata object for Node.js 8 compatibility
+      const resultMetadata: Record<string, any> = {};
+      for (const [key, value] of result.metadata) {
+        resultMetadata[key] = value;
+      }
+
       return SimulationState.create(
         Array.from(result.entities),
         result.time,
         result.deltaTime,
         result.isRunning,
-        Object.fromEntries(result.metadata)
+        resultMetadata
       );
     } catch (error) {
       console.error(`Error in algorithm ${algorithm.name}:`, error);
+
+      // Create metadata object for Node.js 8 compatibility
+      const stateMetadata: Record<string, any> = {};
+      for (const [key, value] of state.metadata) {
+        stateMetadata[key] = value;
+      }
+
       return state instanceof SimulationState ? state : SimulationState.create(
         Array.from(state.entities),
         state.time,
         state.deltaTime,
         state.isRunning,
-        Object.fromEntries(state.metadata)
+        stateMetadata
       );
     }
   }
@@ -270,7 +283,7 @@ export class SimulationManager implements ISimulationManager {
   private validateParameters(algorithm: ISimulationAlgorithm, parameters: Record<string, any>): void {
     for (const [paramName, value] of Object.entries(parameters)) {
       const validation = algorithm.validateParameter(paramName, value);
-      
+
       if (validation !== true) {
         throw new Error(`Invalid parameter ${paramName} for ${algorithm.name}: ${validation}`);
       }
@@ -279,7 +292,7 @@ export class SimulationManager implements ISimulationManager {
 
   private reinitializeAlgorithms(): void {
     const entities = this.currentState.getEntityArray();
-    
+
     for (const algorithm of this.algorithms.values()) {
       this.safeReinitializeAlgorithm(algorithm, entities);
     }

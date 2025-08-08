@@ -1,6 +1,6 @@
 /**
  * Clean Architecture Integration Example
- * 
+ *
  * This demonstrates how to integrate the new clean architecture
  * with the existing system, following the comprehensive design.
  */
@@ -9,13 +9,13 @@ import { SimulationManager } from '../studio/simulation/SimulationManager';
 import { SimulationRenderManager } from '../studio/rendering/SimulationRenderManager';
 import { ParameterManager } from '../studio/parameters/ParameterManager';
 import { SimplePhysicsPlugin } from '../plugins/simple-physics/SimplePhysicsPlugin';
-import { 
-  IPluginContext, 
-  ILogger, 
+import {
+  IPluginContext,
+  ILogger,
   IEventBus,
   ICameraManager,
   IGraphManager,
-  IUIManager 
+  IUIManager
 } from '../core/simulation/interfaces';
 
 /**
@@ -130,7 +130,7 @@ export class CleanArchitectureDemo {
   private logger: ILogger;
   private eventBus: IEventBus;
   private pluginContext: IPluginContext;
-  
+
   constructor() {
     // Initialize core managers
     this.logger = new SimpleLogger();
@@ -138,7 +138,7 @@ export class CleanArchitectureDemo {
     this.simulationManager = new SimulationManager();
     this.renderManager = new SimulationRenderManager();
     this.parameterManager = new ParameterManager();
-    
+
     // Create plugin context
     this.pluginContext = {
       world: null as any, // Would be real ECS world
@@ -181,14 +181,14 @@ export class CleanArchitectureDemo {
    */
   private async registerSimplePhysicsPlugin(): Promise<void> {
     const plugin = new SimplePhysicsPlugin();
-    
+
     try {
       plugin.register(this.pluginContext);
-      
+
       // Test parameter changes
       this.parameterManager.setParameter('simple-physics', 'gravity', -12.0);
       this.parameterManager.setParameter('simple-physics', 'damping', 0.95);
-      
+
       this.logger.log('✅ Simple Physics Plugin registered successfully');
     } catch (error) {
       this.logger.error('❌ Failed to register Simple Physics Plugin:', error);
@@ -201,7 +201,7 @@ export class CleanArchitectureDemo {
   startSimulation(): void {
     this.logger.log('▶️ Starting simulation');
     this.simulationManager.play();
-    
+
     // Start animation loop
     this.startAnimationLoop();
   }
@@ -253,18 +253,18 @@ export class CleanArchitectureDemo {
 
   private startAnimationLoop(): void {
     let lastTime = performance.now();
-    
+
     const animate = (currentTime: number) => {
       const deltaTime = (currentTime - lastTime) / 1000; // Convert to seconds
       lastTime = currentTime;
-      
+
       // Fixed timestep simulation
       this.simulationManager.step(deltaTime);
-      
+
       // Continue loop
       requestAnimationFrame(animate);
     };
-    
+
     requestAnimationFrame(animate);
   }
 }
@@ -274,17 +274,17 @@ export class CleanArchitectureDemo {
  */
 export function runCleanArchitectureExample(): void {
   const demo = new CleanArchitectureDemo();
-  
-  demo.initialize().then(() => {
+
+  void demo.initialize().then(() => {
     // Start simulation after initialization
     demo.startSimulation();
-    
+
     // Log stats periodically
     setInterval(() => {
       const stats = demo.getStats();
       console.log('📊 System Stats:', stats);
     }, 5000);
-    
+
     // Expose demo globally for debugging
     (window as any).cleanArchitectureDemo = demo;
   });

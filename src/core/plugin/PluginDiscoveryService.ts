@@ -30,7 +30,7 @@ export class PluginDiscoveryService implements IPluginDiscoveryService {
    */
   async scanDirectory(path: string): Promise<readonly string[]> {
     this.discoveredPaths.add(path);
-    
+
     // In a real implementation, this would scan the filesystem
     // For now, return empty array as we're in browser environment
     console.log(`[PluginDiscovery] Would scan directory: ${path}`);
@@ -123,9 +123,9 @@ export class PluginDiscoveryService implements IPluginDiscoveryService {
    * Initialize built-in plugin factories
    */
   private initializeBuiltInPlugins(): void {
-    // Note: Actual plugin factories will be registered when plugins are updated 
+    // Note: Actual plugin factories will be registered when plugins are updated
     // to implement the new IPlugin interface. For now, we provide placeholder factories.
-    
+
     console.log(`[PluginDiscovery] Plugin system ready. Plugins can be registered via registerPluginFactory()`);
   }
 }
