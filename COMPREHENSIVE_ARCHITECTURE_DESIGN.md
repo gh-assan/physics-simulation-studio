@@ -721,8 +721,7 @@ registerGraph(algorithmName: string, config: GraphConfig): void {
           beginAtZero: true
         }
       }
-    }
-  });
+    });
   
   this.charts.set(chartId, chart);
 }
@@ -1219,7 +1218,7 @@ class PluginDiscoveryService {
 #### **Core Infrastructure**
 1. **Create Core Interfaces** (`src/core/simulation/`)
    - `ISimulationAlgorithm` interface
-   - `ISimulationRenderer` interface  
+   - `ISimulationRenderer` interface
    - `IParameterDefinition` interface
    - `SimulationState` class
    - `TimeSteppingEngine` class
@@ -1230,7 +1229,11 @@ class PluginDiscoveryService {
    - Create simulation-specific Selectors
    - Update state synchronizer
 
-3. **Create Studio Managers** (`src/studio/`)
+3. **Introduce Dependency Injection**
+   - Use a DI container for managing dependencies (e.g., InversifyJS).
+   - Register core services and managers in the container.
+
+4. **Create Studio Managers** (`src/studio/`)
    - `SimulationManager` - algorithm orchestration
    - `SimulationController` - play/pause/reset logic
    - `ParameterManager` - parameter registration & updates
@@ -1240,6 +1243,8 @@ class PluginDiscoveryService {
 - Unit tests for core interfaces
 - State management tests
 - Integration tests for manager communication
+
+---
 
 ### **Phase 2: Simulation System (Week 3-4)**
 
@@ -1281,7 +1286,33 @@ class PluginDiscoveryService {
 - Time stepping accuracy tests
 - State consistency tests
 
-### **Phase 3: Rendering System (Week 5-6)**
+---
+
+### **Phase 3: Plugin System (Week 5-6)**
+
+#### **Plugin Interface Enhancements**
+1. **Define Plugin Lifecycle Hooks**
+   - `onLoad`, `onUnload`, `onParameterChanged`, `onSimulationStateChanged`.
+
+2. **Add Plugin Metadata**
+   - Include versioning, dependencies, and compatibility information.
+
+3. **Introduce Plugin Registry**
+   - Centralized registry for dynamic plugin loading and unloading.
+   - Validate plugin dependencies and compatibility during registration.
+
+4. **Plugin Discovery Service**
+   - Implement a service to discover and load plugins dynamically.
+   - Support for lazy loading and unloading of plugins.
+
+#### **Testing & Validation**
+- Plugin lifecycle tests
+- Dynamic loading/unloading tests
+- Dependency resolution tests
+
+---
+
+### **Phase 4: Rendering System (Week 7-8)**
 
 #### **SimulationRenderManager Implementation**
 1. **State-Driven Rendering**
@@ -1321,7 +1352,33 @@ class PluginDiscoveryService {
 - Performance benchmarks
 - Visual regression tests
 
-### **Phase 4: Visualization & UI (Week 7-8)**
+---
+
+### **Phase 5: Simulation Framework (Week 9-10)**
+
+#### **Unified Simulation Framework**
+1. **Reusable Components**
+   - Time-stepping engine
+   - State synchronization utilities
+   - Debugging and profiling tools
+
+2. **Multi-Threading Support**
+   - Use Web Workers for performance-critical tasks.
+   - Offload heavy computations to separate threads.
+
+3. **Simulation Debugging Tools**
+   - Real-time state inspection
+   - Performance profiling
+   - Error visualization
+
+#### **Testing & Validation**
+- Framework functionality tests
+- Multi-threading performance tests
+- Debugging tool usability tests
+
+---
+
+### **Phase 6: Visualization & UI (Week 11-12)**
 
 #### **Graph System Implementation**
 1. **GraphManager**
@@ -1355,78 +1412,30 @@ class PluginDiscoveryService {
 - Parameter binding tests
 - User experience testing
 
-### **Phase 5: Plugin Migration (Week 9-10)**
+---
 
-#### **Flag Simulation Plugin**
-1. **Algorithm Implementation**
-   - Convert existing flag system to new architecture
-   - Implement `ISimulationAlgorithm` interface
-   - Verlet integration physics
-   - Wind force application
-
-2. **Renderer Implementation**
-   - Convert to `ISimulationRenderer` interface
-   - Cloth mesh generation
-   - Dynamic geometry updates
-   - Material property handling
-
-3. **Parameter & UI System**
-   - Define parameter structure
-   - Create UI controls
-   - Implement parameter change handling
-   - Add physics visualization graphs
-
-#### **Other Plugins Migration**
-1. **Water Simulation Plugin**
-   - SPH algorithm implementation
-   - Particle system renderer
-   - Fluid property parameters
-   - Pressure/velocity graphs
-
-2. **Solar System Plugin**
-   - Orbital mechanics algorithm
-   - Planet/moon renderer
-   - Gravitational parameters
-   - Orbital trajectory graphs
-
-#### **Testing & Validation**
-- Plugin functionality tests
-- Algorithm accuracy tests
-- Performance comparison with old system
-- User acceptance testing
-
-### **Phase 6: Integration & Polish (Week 11-12)**
+### **Phase 7: Integration & Polish (Week 13-14)**
 
 #### **System Integration**
 1. **End-to-End Testing**
    - Complete workflow testing
-   - Plugin interoperability
-   - Performance optimization
    - Memory leak detection
 
 2. **Error Handling & Robustness**
    - Graceful error recovery
-   - Plugin loading error handling
-   - State corruption prevention
    - User error feedback
 
 #### **Documentation & Polish**
 1. **Developer Documentation**
    - API documentation
-   - Plugin development guide
-   - Architecture documentation
    - Troubleshooting guide
 
 2. **User Interface Polish**
    - UI/UX improvements
-   - Responsive design
-   - Accessibility features
    - Performance optimizations
 
 3. **Performance Optimization**
    - Profiling and optimization
-   - Memory usage optimization
-   - Rendering performance tuning
    - Algorithm optimization
 
 #### **Deployment Preparation**
@@ -1439,20 +1448,10 @@ class PluginDiscoveryService {
 
 ## Conclusion
 
-This comprehensive architecture design addresses all identified issues and requirements:
+This updated implementation plan ensures:
 
-✅ **Simulation-First Design**: Physics algorithms are primary concerns
-✅ **State Management Integration**: Leverages existing global state system
-✅ **Parameter Management**: Complete parameter system with UI integration
-✅ **Simulation Controls**: Play/pause/reset with state preservation
-✅ **Camera Management**: Full camera control with presets
-✅ **Graph Updates**: Real-time visualization with performance metrics
-✅ **Clean Architecture**: Clear separation between core/studio/plugins
-✅ **Plugin Extensibility**: Self-registering plugins with complete capabilities
-✅ **Performance Optimization**: Fixed timestep, dirty tracking, efficient rendering
-✅ **Maintainability**: Clear responsibilities, testable components
-✅ **Scalability**: Event-driven updates, optimized data flow
-
-The new architecture eliminates the rendering conflicts that caused the flag flickering issue by establishing clear ownership and state-driven updates. It provides a robust foundation for physics simulation while maintaining the flexibility to add new algorithms and visualizations through the plugin system.
-
-The implementation plan provides a structured approach to migration that minimizes risk while ensuring all functionality is preserved and enhanced. The result will be a professional, scalable physics simulation platform with clean architecture and excellent developer experience.
+✅ **Modular System Design**: Clear boundaries and reusable components
+✅ **Clean Code Practices**: Enforced standards and documentation
+✅ **Robust Plugin System**: Dynamic loading, metadata, and lifecycle hooks
+✅ **Unified Simulation Framework**: Reusable and performance-optimized
+✅ **Separation of Concerns**: Decoupled layers and event-driven communication
