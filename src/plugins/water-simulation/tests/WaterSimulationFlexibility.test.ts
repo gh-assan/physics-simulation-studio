@@ -1,12 +1,14 @@
 import { World } from "../../../core/ecs/World";
 import { WaterSimulationPlugin } from "../index";
 
-jest.mock("../WaterRenderer", () => {
+jest.mock("../SimplifiedWaterRenderer", () => {
   return {
-    WaterRenderer: jest.fn().mockImplementation(() => {
+    SimplifiedWaterRenderer: jest.fn().mockImplementation(() => {
       return {
+        canRender: jest.fn().mockReturnValue(true),
         render: jest.fn(),
-        unregister: jest.fn()
+        dispose: jest.fn(),
+        getName: jest.fn().mockReturnValue('water-renderer')
       };
     })
   };

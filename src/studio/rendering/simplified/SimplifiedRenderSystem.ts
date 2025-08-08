@@ -1,6 +1,6 @@
 /**
  * 🎯 Simplified Render System
- * 
+ *
  * ECS System wrapper that connects the SimplifiedRenderManager to the ECS world.
  * Much simpler than the current RenderSystem/RenderOrchestrator complexity.
  */
@@ -17,7 +17,7 @@ export class SimplifiedRenderSystem extends System {
 
   constructor(private graphicsManager: ThreeGraphicsManager) {
     super();
-    
+
     this.renderManager = new SimplifiedRenderManager(
       graphicsManager.getScene(),
       graphicsManager.getCamera()
@@ -39,18 +39,25 @@ export class SimplifiedRenderSystem extends System {
   }
 
   /**
+   * Get the graphics manager (for compatibility)
+   */
+  getGraphicsManager(): ThreeGraphicsManager {
+    return this.graphicsManager;
+  }
+
+  /**
    * Main ECS update loop
    */
   update(world: IWorld, deltaTime: number): void {
     const currentTime = performance.now();
-    
+
     // Only render when needed
     const didRender = this.renderManager.render(world, deltaTime);
-    
+
     if (didRender) {
       // Trigger Three.js render
       this.graphicsManager.render();
-      
+
       const renderTime = performance.now() - currentTime;
       console.log(`🎬 Frame rendered in ${renderTime.toFixed(2)}ms`);
     }

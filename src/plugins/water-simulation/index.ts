@@ -2,7 +2,7 @@ import { ISimulationPlugin } from "@core/plugin/ISimulationPlugin";
 import { IWorld } from "@core/ecs/IWorld";
 import { WaterBodyComponent, WaterDropletComponent } from "./WaterComponents";
 import { WaterSystem } from "./WaterSystem";
-import { WaterRenderer } from "./WaterRenderer";
+import { SimplifiedWaterRenderer } from "./SimplifiedWaterRenderer";
 import { PositionComponent } from "@core/components/PositionComponent";
 import { RenderableComponent } from "../../core/ecs/RenderableComponent";
 import { SelectableComponent } from "@core/components/SelectableComponent";
@@ -25,12 +25,12 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
   }
 
   private waterSystem: WaterSystem;
-  private waterRenderer: WaterRenderer;
+  private waterRenderer: SimplifiedWaterRenderer;
   private _parameterManager: PluginParameterManager | null = null;
 
   constructor() {
     this.waterSystem = new WaterSystem();
-    this.waterRenderer = new WaterRenderer();
+    this.waterRenderer = new SimplifiedWaterRenderer();
   }
 
   // Clean parameter system - no more parameter panel classes!
@@ -99,7 +99,7 @@ export class WaterSimulationPlugin implements ISimulationPlugin {
     console.log("Water simulation entities initialized.");
   }
 
-  getRenderer(): WaterRenderer {
+  getRenderer(): SimplifiedWaterRenderer {
     return this.waterRenderer;
   }
 

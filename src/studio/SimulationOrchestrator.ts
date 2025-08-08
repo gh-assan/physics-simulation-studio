@@ -2,14 +2,15 @@ import { IPluginManager } from '../core/plugin/IPluginManager';
 import { IWorld } from "../core/ecs/IWorld";
 import { World } from '../core/ecs/World';
 import { Logger } from "../core/utils/Logger";
-import { RenderSystem } from './systems/RenderSystem';
+import { SimplifiedRenderSystem } from './rendering/simplified/SimplifiedRenderSystem';
 import { IStudio } from './IStudio';
 import { ISimulationOrchestrator } from './ISimulationOrchestrator';
+import { IRenderer } from './rendering/simplified/SimplifiedInterfaces';
 
 export class SimulationOrchestrator implements ISimulationOrchestrator {
     private world: IWorld;
     private pluginManager: IPluginManager;
-    private renderSystem: RenderSystem | null = null;
+    private renderSystem: SimplifiedRenderSystem | null = null;
     private studio: IStudio;
 
     constructor(world: IWorld, pluginManager: IPluginManager, studio: IStudio) {
@@ -24,9 +25,23 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
         try {
             await this.pluginManager.activatePlugin(pluginName, this.studio);
             Logger.getInstance().log(`Loaded simulation: ${pluginName}`);
+
             const activePlugin = this.pluginManager.getPlugin(pluginName);
+
+            // Register plugin renderer with SimplifiedRenderSystem
+            if (this.renderSystem && activePlugin?.getRenderer) {
+                const pluginRenderer = activePlugin.getRenderer();
+                if (pluginRenderer && typeof pluginRenderer === 'object') {
+                    // Check if it's a new-style IRenderer
+                    if (pluginRenderer.name && pluginRenderer.canRender && pluginRenderer.render) {
+                        this.renderSystem.registerRenderer(pluginRenderer as IRenderer);
+                        Logger.getInstance().log(`Registered ${pluginName} renderer: ${pluginRenderer.name}`);
+                    }
+                }
+            }
+
             if (activePlugin?.initializeEntities) {
-                activePlugin.initializeEntities(this.world);
+                await activePlugin.initializeEntities(this.world);
                 this.world.update(0);
                 this.world.systemManager.updateAll(this.world, 0);
                 if (this.renderSystem) {
@@ -65,8 +80,12 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
         // Only clear entities and components, NOT systems
         // Core systems (RenderSystem, SelectionSystem, PropertyInspectorSystem) should persist
         this.world.clear(false); // Changed from clear(true) to clear(false)
+
+        // Clear all renderers from the SimplifiedRenderSystem
+        // Note: SimplifiedRenderSystem doesn't have a clear() method - it's automatic
         if (this.renderSystem) {
-            this.renderSystem.clear();
+            // Renderers are automatically cleaned up when plugins are unloaded
+            Logger.getInstance().log('Render system ready for new simulation');
         }
     }
 
@@ -85,7 +104,7 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
         // Add reset logic here
     }
 
-    public setRenderSystem(renderSystem: RenderSystem): void {
+    public setRenderSystem(renderSystem: SimplifiedRenderSystem): void {
         this.renderSystem = renderSystem;
     }
 }

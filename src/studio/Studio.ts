@@ -8,12 +8,12 @@ import { IStudio } from "./IStudio";
 import { IGraphicsManager } from "./IGraphicsManager";
 import { IPluginContext } from "./IPluginContext";
 import { Logger } from "../core/utils/Logger";
-import { RenderSystem } from "./systems/RenderSystem";
+import { SimplifiedRenderSystem } from "./rendering/simplified/SimplifiedRenderSystem";
 
 export class Studio implements IStudio {
   private _world: IWorld;
   private pluginManager: IPluginManager;
-  private renderSystem?: RenderSystem;
+  private renderSystem?: SimplifiedRenderSystem;
   private isPlaying = true;
   private selectedSimulation: ISelectedSimulationStateManager;
   private orchestrator: ISimulationOrchestrator;
@@ -39,10 +39,10 @@ export class Studio implements IStudio {
     return this.pluginManager;
   }
 
-  public setRenderSystem(renderSystem: RenderSystem): void {
+  public setRenderSystem(renderSystem: SimplifiedRenderSystem): void {
     this.renderSystem = renderSystem;
     if (this.orchestrator && typeof this.orchestrator.setRenderSystem === 'function') {
-      this.orchestrator.setRenderSystem(renderSystem);
+      this.orchestrator.setRenderSystem(renderSystem as any);
     }
   }
 

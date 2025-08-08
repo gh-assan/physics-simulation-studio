@@ -1,9 +1,9 @@
 /**
  * 🎯 Simplified Rendering System
- * 
+ *
  * Exports the complete simplified rendering solution:
  * - Single IRenderer interface
- * - BaseRenderer helper class  
+ * - BaseRenderer helper class
  * - SimplifiedRenderManager
  * - SimplifiedRenderSystem (ECS integration)
  * - Example implementations
@@ -23,12 +23,12 @@ export { SimplifiedFlagRenderer } from './SimplifiedFlagRenderer';
 
 /**
  * 🔄 Migration Guide:
- * 
+ *
  * 1. Replace your current renderer with IRenderer interface
  * 2. Use SimplifiedRenderSystem instead of RenderSystem + RenderOrchestrator
  * 3. Implement canRender() and render() methods
  * 4. Use markDirty() for performance optimizations
- * 
+ *
  * Benefits:
  * ✅ Single interface instead of 3+
  * ✅ Built-in dirty flag system

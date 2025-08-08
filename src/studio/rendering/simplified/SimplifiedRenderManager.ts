@@ -1,6 +1,6 @@
 /**
  * 🎯 Simplified Render Manager
- * 
+ *
  * Single point of truth for all rendering. Replaces the complex
  * orchestrator pattern with a simple, efficient system.
  */
@@ -27,10 +27,10 @@ export class SimplifiedRenderManager {
    */
   registerRenderer(renderer: IRenderer): void {
     console.log(`📝 Registering renderer: ${renderer.name}`);
-    
+
     this.renderers.set(renderer.name, renderer);
     this.markDirty(renderer.name);
-    
+
     // Initialize if needed
     if (renderer.initialize) {
       renderer.initialize();
@@ -42,12 +42,12 @@ export class SimplifiedRenderManager {
    */
   unregisterRenderer(name: string): void {
     console.log(`🗑️ Unregistering renderer: ${name}`);
-    
+
     const renderer = this.renderers.get(name);
     if (renderer?.dispose) {
       renderer.dispose();
     }
-    
+
     this.renderers.delete(name);
     this.dirtyRenderers.delete(name);
   }
@@ -58,7 +58,7 @@ export class SimplifiedRenderManager {
   markDirty(rendererName: string): void {
     if (this.renderers.has(rendererName)) {
       this.dirtyRenderers.add(rendererName);
-      
+
       // Also mark the renderer itself if it supports it
       const renderer = this.renderers.get(rendererName);
       if (renderer?.markDirty) {
@@ -81,7 +81,7 @@ export class SimplifiedRenderManager {
    */
   render(world: IWorld, deltaTime: number): boolean {
     this.frameNumber++;
-    
+
     const context: RenderContext = {
       scene: this.scene,
       camera: this.camera,
@@ -95,13 +95,13 @@ export class SimplifiedRenderManager {
 
     for (const renderer of sortedRenderers) {
       const needsRender = this.shouldRenderRenderer(renderer);
-      
+
       if (needsRender) {
         try {
           const startTime = performance.now();
           renderer.render(context);
           const endTime = performance.now();
-          
+
           console.log(`🎨 ${renderer.name}: ${(endTime - startTime).toFixed(2)}ms`);
           didRender = true;
         } catch (error) {
@@ -149,13 +149,13 @@ export class SimplifiedRenderManager {
    */
   clearAll(): void {
     console.log('🧹 Clearing all renderers');
-    
+
     for (const renderer of this.renderers.values()) {
       if (renderer.dispose) {
         renderer.dispose();
       }
     }
-    
+
     this.renderers.clear();
     this.dirtyRenderers.clear();
   }

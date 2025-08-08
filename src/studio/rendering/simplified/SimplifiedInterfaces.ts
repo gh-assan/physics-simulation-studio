@@ -1,6 +1,6 @@
 /**
  * 🎯 Simplified Rendering System - Core Interfaces
- * 
+ *
  * This file defines the new unified rendering interfaces that replace
  * the complex multi-interface system with a single, clear pattern.
  */
@@ -25,7 +25,7 @@ export interface RenderContext {
 export interface IRenderer {
   /** Unique name for this renderer */
   readonly name: string;
-  
+
   /** Priority for rendering order (lower = earlier) */
   readonly priority?: number;
 
@@ -94,20 +94,20 @@ export abstract class BaseRenderer implements IRenderer {
     // Get all entities by querying for basic components
     // This is inefficient but works as a fallback
     const allEntities: number[] = [];
-    
+
     // Try to get entities with any common components
     try {
       // Most entities have position or renderable components
       const withPosition = world.componentManager.getEntitiesWithComponentTypes(['PositionComponent']);
       const withRenderable = world.componentManager.getEntitiesWithComponentTypes(['RenderableComponent']);
-      
+
       // Combine and deduplicate
       const combined = new Set([...withPosition, ...withRenderable]);
       allEntities.push(...combined);
     } catch {
       // Fallback: return empty array, subclass should implement properly
     }
-    
+
     return allEntities.filter((id: number) => this.canRender(id, world));
   }
 

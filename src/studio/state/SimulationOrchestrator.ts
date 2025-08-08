@@ -2,14 +2,14 @@ import { IWorld } from "../../core/ecs/IWorld";
 import { World } from "../../core/ecs/World";
 import { IPluginManager } from "../../core/plugin/IPluginManager";
 import { Logger } from "../../core/utils/Logger";
-import { RenderSystem } from "../systems/RenderSystem";
+import { SimplifiedRenderSystem } from "../rendering/simplified/SimplifiedRenderSystem";
 import { SelectedSimulationStateManager } from "./SelectedSimulationState";
 import { IStudio } from "../IStudio";
 
 export class SimulationOrchestrator {
   private world: IWorld;
   private pluginManager: IPluginManager;
-  private renderSystem?: RenderSystem;
+  private renderSystem?: SimplifiedRenderSystem;
   private selectedSimulation: SelectedSimulationStateManager;
   private studio: IStudio;
 
@@ -25,7 +25,7 @@ export class SimulationOrchestrator {
     this.selectedSimulation = selectedSimulation;
   }
 
-  public setRenderSystem(renderSystem: RenderSystem): void {
+  public setRenderSystem(renderSystem: SimplifiedRenderSystem): void {
     this.renderSystem = renderSystem;
   }
 
@@ -61,7 +61,7 @@ export class SimulationOrchestrator {
   private clearWorldAndRenderSystem(): void {
     this.world.clear();
     if (this.renderSystem) {
-      this.renderSystem.clear();
+      this.renderSystem.dispose();
     }
   }
 
@@ -76,7 +76,7 @@ export class SimulationOrchestrator {
     await this.pluginManager.activatePlugin(pluginName, this.studio);
     Logger.getInstance().log(`Loaded simulation: ${pluginName}`);
     const activePlugin = this.pluginManager.getPlugin(pluginName);
-    activePlugin?.initializeEntities?.(this.world);
+    await activePlugin?.initializeEntities?.(this.world);
     this.world.update(0);
     this.renderSystem?.update(this.world as World, 0);
     this.selectedSimulation.setSimulation(pluginName);

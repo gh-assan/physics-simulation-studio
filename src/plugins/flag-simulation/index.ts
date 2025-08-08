@@ -4,15 +4,15 @@ import { IWorld } from '../../core/ecs/IWorld';
 import { IStudio } from '../../studio/IStudio';
 import { ISystem } from '../../core/ecs/ISystem';
 import { FlagClothAlgorithm } from './FlagClothAlgorithm';
-import { FlagRenderer } from './FlagRenderer';
+import { SimplifiedFlagRenderer } from '../../studio/rendering/simplified/SimplifiedFlagRenderer';
 
 class FlagSimulationPlugin implements ISimulationPlugin {
   private algorithm: FlagClothAlgorithm;
-  private renderer: FlagRenderer;
+  private renderer: SimplifiedFlagRenderer;
 
   constructor() {
     this.algorithm = new FlagClothAlgorithm();
-    this.renderer = new FlagRenderer();
+    this.renderer = new SimplifiedFlagRenderer();
   }
 
   getName(): string {
@@ -56,65 +56,62 @@ class FlagSimulationPlugin implements ISimulationPlugin {
     console.log("Unregistering Flag Simulation Plugin");
   }
 
-  initializeEntities(world: IWorld): void {
+  async initializeEntities(world: IWorld): Promise<void> {
     // Initialize flag entities in the world
     console.log('Initializing flag entities');
 
     // We need to register components first - let's import them synchronously
-    void Promise.all([
+    const [{FlagComponent}, {PositionComponent}] = await Promise.all([
       import('./FlagComponent'),
       import('../../core/components/PositionComponent'),
-    ]).then(([{FlagComponent}, {PositionComponent}]) => {
-      // Register components with the component manager first
-      if (world.componentManager && world.componentManager.registerComponent) {
-        try {
-          world.componentManager.registerComponent(FlagComponent);
-          console.log("✅ FlagComponent registered");
-        } catch (error) {
-          console.log("FlagComponent already registered or registration failed:", (error as Error).message);
-        }
+    ]);
 
-        try {
-          world.componentManager.registerComponent(PositionComponent);
-          console.log("✅ PositionComponent registered");
-        } catch (error) {
-          console.log("PositionComponent already registered or registration failed:", (error as Error).message);
-        }
+    // Register components with the component manager first
+    if (world.componentManager && world.componentManager.registerComponent) {
+      try {
+        world.componentManager.registerComponent(FlagComponent);
+        console.log("✅ FlagComponent registered");
+      } catch (error) {
+        console.log("FlagComponent already registered or registration failed:", (error as Error).message);
       }
 
-      // Create flag entity
-      const flagEntity = world.createEntity();
+      try {
+        world.componentManager.registerComponent(PositionComponent);
+        console.log("✅ PositionComponent registered");
+      } catch (error) {
+        console.log("PositionComponent already registered or registration failed:", (error as Error).message);
+      }
+    }
 
-      // Add flag component with default parameters
-      const flagComponent = new FlagComponent(
-        3,    // width
-        2,    // height
-        20,   // segmentsX
-        15,   // segmentsY
-        0.1,  // mass
-        0.3,  // stiffness
-        0.99, // damping
-        "",   // textureUrl
-        0,    // poleEntityId
-        { x: 0.5, y: 0, z: 0 }, // windDirection
-        { x: 0, y: -9.81, z: 0 } // gravity
-      );
+    // Create flag entity
+    const flagEntity = world.createEntity();
 
-      world.componentManager.addComponent(flagEntity, FlagComponent.type, flagComponent);
+    // Add flag component with default parameters
+    const flagComponent = new FlagComponent(
+      3,    // width
+      2,    // height
+      20,   // segmentsX
+      15,   // segmentsY
+      0.1,  // mass
+      0.3,  // stiffness
+      0.99, // damping
+      "",   // textureUrl
+      0,    // poleEntityId
+      { x: 0.5, y: 0, z: 0 }, // windDirection
+      { x: 0, y: -9.81, z: 0 } // gravity
+    );
 
-      // Add position component
-      const positionComponent = new PositionComponent(0, 2, 0, "flag-simulation");
-      world.componentManager.addComponent(flagEntity, PositionComponent.type, positionComponent);
+    world.componentManager.addComponent(flagEntity, FlagComponent.type, flagComponent);
 
-      console.log("✅ Flag entity created with ID:", flagEntity);
+    // Add position component
+    const positionComponent = new PositionComponent(0, 2, 0, "flag-simulation");
+    world.componentManager.addComponent(flagEntity, PositionComponent.type, positionComponent);
 
-      // Initialize the flag renderer with the world
-      this.renderer.setWorld(world as any);
+    console.log("✅ Flag entity created with ID:", flagEntity);
 
-      console.log("✅ Flag renderer initialized");
-    }).catch(error => {
-      console.error("❌ Error initializing flag entities:", error);
-    });
+    // The SimplifiedFlagRenderer doesn't need explicit world setup
+    // It will get the world through the render context
+    console.log("✅ Flag renderer ready (no initialization needed)");
   }
 
   getSystems(studio: IStudio): ISystem[] {
@@ -217,7 +214,7 @@ class FlagSimulationPlugin implements ISimulationPlugin {
     return this.algorithm;
   }
 
-  getFlag(): FlagRenderer {
+  getFlag(): SimplifiedFlagRenderer {
     return this.renderer;
   }
 }

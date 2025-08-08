@@ -1,13 +1,7 @@
 /**
  * 🎯 Simplified Rendering System - Core Interfaces
- * 
- * This file defines the new  /**
-   * Helper: Get entities that this renderer can handle
-   */
-  protected getEntities(world: IWorld): number[] {
-    const allEntities = world.componentManager.getAllEntityIds();
-    return allEntities.filter((id: number) => this.canRender(id, world));
-  }d rendering interfaces that replace
+ *
+ * This file defines the new unified rendering interfaces that replace
  * the complex multi-interface system with a single, clear pattern.
  */
 
@@ -31,7 +25,7 @@ export interface RenderContext {
 export interface IRenderer {
   /** Unique name for this renderer */
   readonly name: string;
-  
+
   /** Priority for rendering order (lower = earlier) */
   readonly priority?: number;
 
@@ -95,9 +89,9 @@ export abstract class BaseRenderer implements IRenderer {
   /**
    * Helper: Get entities that this renderer can handle
    */
-  protected getEntities(world: World): number[] {
-    const allEntities = world.componentManager.getAllEntityIds();
-    return allEntities.filter(id => this.canRender(id, world));
+  protected getEntities(world: IWorld): number[] {
+    const allEntities = Array.from(world.entityManager.getAllEntities());
+    return allEntities.filter((id: number) => this.canRender(id, world));
   }
 
   /**

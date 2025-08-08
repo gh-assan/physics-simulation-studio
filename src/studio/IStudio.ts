@@ -2,13 +2,13 @@ import { IGraphicsManager } from "./IGraphicsManager";
 import { IWorld } from "../core/ecs/IWorld";
 import { IPluginContext } from "./IPluginContext";
 import { IPluginManager } from "../core/plugin/IPluginManager";
-import { RenderSystem } from "./systems/RenderSystem";
+import { SimplifiedRenderSystem } from "./rendering/simplified/SimplifiedRenderSystem";
 
 export interface IStudio {
   getGraphicsManager(): IGraphicsManager;
   getWorld(): IWorld;
   getPluginManager(): IPluginManager;
-  setRenderSystem(renderSystem: RenderSystem): void;
+  setRenderSystem(renderSystem: SimplifiedRenderSystem): void;
   clearRenderer(): void;
   play(): void;
   pause(): void;

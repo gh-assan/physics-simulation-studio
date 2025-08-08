@@ -50,8 +50,10 @@ describe('Application Initialization', () => {
     };
     const mockRenderSystem = {
       getGraphicsManager: jest.fn(() => mockGraphicsManager),
+      registerRenderer: jest.fn(), // Added for SimplifiedRenderSystem compatibility
+      unregisterRenderer: jest.fn(), // Added for SimplifiedRenderSystem compatibility
       update: jest.fn(),
-      clear: jest.fn(),
+      dispose: jest.fn(), // Changed from 'clear' to 'dispose' to match SimplifiedRenderSystem
     };
 
     const pluginContext: IPluginContext = {

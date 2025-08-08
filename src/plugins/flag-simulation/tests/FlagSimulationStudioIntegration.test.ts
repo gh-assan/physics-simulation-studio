@@ -66,18 +66,18 @@ describe("FlagSimulationPlugin Studio Integration Tests", () => {
     expect(flagEntities.length).toBeGreaterThan(0);
   });
 
-  test("should initialize entities without camera configuration", () => {
+  test("should initialize entities without camera configuration", async () => {
     // Act: Initialize entities
-    flagPlugin.initializeEntities(world);
+    await flagPlugin.initializeEntities(world);
 
     // Assert: Camera should not be configured in initializeEntities (handled by systems)
     // The plugin focuses on entity creation, not camera setup
     expect(mockGraphicsManager.getCamera).not.toHaveBeenCalled();
   });
 
-  test("should create parameter panels when ParameterPanelComponent is registered", () => {
+  test("should create parameter panels when ParameterPanelComponent is registered", async () => {
     // Act: Initialize entities
-    flagPlugin.initializeEntities(world);
+    await flagPlugin.initializeEntities(world);
 
     // Assert: Parameter schema should be available
     const parameterSchema = flagPlugin.getParameterSchema();
@@ -92,7 +92,7 @@ describe("FlagSimulationPlugin Studio Integration Tests", () => {
 
     // Act & Assert: Should not throw error, but should log warning
     expect(() => {
-      newPlugin.initializeEntities(world);
+      void newPlugin.initializeEntities(world);
     }).not.toThrow();
 
     // Should not create entities when studio is not available

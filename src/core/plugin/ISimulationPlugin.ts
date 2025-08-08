@@ -49,7 +49,7 @@ export interface ISimulationPlugin {
    *
    * @param world The central ECS World instance
    */
-  initializeEntities(world: IWorld): void;
+  initializeEntities(world: IWorld): Promise<void> | void;
 
   /**
    * Gets the systems provided by this plugin.
@@ -109,4 +109,3 @@ export interface ISimulationPlugin {
    */
   getParameterPanels?(world: IWorld): ParameterPanelComponent[];
 }
-

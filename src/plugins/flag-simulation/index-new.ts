@@ -19,7 +19,7 @@ import { FlagPhysicsInitializer } from "./utils/FlagPhysicsInitializer";
 
 /**
  * Flag Simulation Plugin - New Architecture
- * 
+ *
  * Complete plugin implementing the enhanced ISimulationPlugin interface
  * with proper algorithm/renderer separation and parameter management.
  */
@@ -173,15 +173,15 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
 
       // 2. Register algorithm with simulation manager
       context.simulationManager.registerAlgorithm(this.algorithm);
-      
+
       // Set world reference for algorithm
       if ('setWorld' in this.algorithm) {
         (this.algorithm as any).setWorld(context.world);
       }
 
-      // 3. Register renderer with render manager  
+      // 3. Register renderer with render manager
       context.renderManager.registerRenderer(this.renderer);
-      
+
       // Set world reference for renderer
       if ('setWorld' in this.renderer) {
         (this.renderer as any).setWorld(context.world);
@@ -208,7 +208,7 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
       // 8. Set up parameter change listener
       if (context.globalStore) {
         context.globalStore.subscribe((newState: any, prevState: any, action: any) => {
-          if (action?.type === 'PARAMETER_CHANGED' && 
+          if (action?.type === 'PARAMETER_CHANGED' &&
               action?.payload?.algorithmName === this.name) {
             this.onParameterChanged(
               action.payload.algorithmName,
@@ -234,11 +234,11 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     try {
       // Clean unregistration in reverse order
       context.graphManager?.unregisterGraphs(this.name);
-      
+
       this.getUI().forEach(ui => {
         context.uiManager?.unregisterUI(ui);
       });
-      
+
       context.parameterManager?.unregisterParameters(this.name);
       context.renderManager?.unregisterRenderer(this.algorithm.name);
       context.simulationManager?.unregisterAlgorithm(this.algorithm.name);
@@ -261,7 +261,7 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     try {
       // Separate physics and visual parameters
       const visualParameters = ['flagColor', 'flagOpacity', 'showWireframe', 'poleColor'];
-      
+
       if (visualParameters.includes(paramName)) {
         // Update renderer visual parameters
         this.renderer.updateVisualParameters({ [paramName]: value });
@@ -298,7 +298,7 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
     // Note: These might already be registered by core, but it's safe to re-register
     const coreComponents = [
       PositionComponent,
-      RenderableComponent, 
+      RenderableComponent,
       SelectableComponent,
       RotationComponent
     ];
@@ -323,16 +323,16 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
 
       // Create default pole entity
       const poleEntity = this.createEntity(context);
-      this.addComponent(context, poleEntity, PositionComponent.type, 
+      this.addComponent(context, poleEntity, PositionComponent.type,
         new PositionComponent(0, 0, 0));
-      this.addComponent(context, poleEntity, PoleComponent.type, 
+      this.addComponent(context, poleEntity, PoleComponent.type,
         new PoleComponent({ height: 20, radius: 0.2 }));
 
       // Create flag entity
       const flagEntity = this.createEntity(context);
-      this.addComponent(context, flagEntity, PositionComponent.type, 
+      this.addComponent(context, flagEntity, PositionComponent.type,
         new PositionComponent(0, 10, 0));
-      this.addComponent(context, flagEntity, RenderableComponent.type, 
+      this.addComponent(context, flagEntity, RenderableComponent.type,
         new RenderableComponent("plane", "#ff0000"));
 
       const initialFlagComponent = new FlagComponent(
@@ -341,7 +341,7 @@ export class FlagSimulationPlugin implements ISimulationPlugin {
       );
 
       this.addComponent(context, flagEntity, FlagComponent.type, initialFlagComponent);
-      this.addComponent(context, flagEntity, SelectableComponent.type, 
+      this.addComponent(context, flagEntity, SelectableComponent.type,
         new SelectableComponent(false));
 
       // Initialize flag physics

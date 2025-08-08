@@ -1,6 +1,6 @@
 /**
  * 🎯 Simplified Flag Renderer Example
- * 
+ *
  * This shows how to convert the complex FlagRenderer to the new simple pattern.
  * Much cleaner, easier to understand, and more reliable.
  */
@@ -31,7 +31,7 @@ export class SimplifiedFlagRenderer extends BaseRenderer {
    */
   render(context: RenderContext): void {
     const { scene, world } = context;
-    
+
     // Get all flag entities efficiently
     const flagEntities = world.componentManager.getEntitiesWithComponentTypes([
       FlagComponent.type,
@@ -77,7 +77,7 @@ export class SimplifiedFlagRenderer extends BaseRenderer {
    */
   private createFlagMesh(flag: FlagComponent): THREE.Mesh {
     const geometry = new THREE.BufferGeometry();
-    
+
     // Create vertex arrays
     const positions = new Float32Array(flag.points.length * 3);
     const indices: number[] = [];
@@ -147,7 +147,7 @@ export class SimplifiedFlagRenderer extends BaseRenderer {
    */
   private cleanupDeletedMeshes(activeEntities: number[], scene: THREE.Scene): void {
     const activeSet = new Set(activeEntities);
-    
+
     for (const [entityId, mesh] of this.flagMeshes) {
       if (!activeSet.has(entityId)) {
         this.disposeMesh(mesh, scene);
@@ -167,7 +167,7 @@ export class SimplifiedFlagRenderer extends BaseRenderer {
         (mesh.material as THREE.Material).dispose();
       }
     }
-    
+
     this.flagMeshes.clear();
     super.dispose();
   }

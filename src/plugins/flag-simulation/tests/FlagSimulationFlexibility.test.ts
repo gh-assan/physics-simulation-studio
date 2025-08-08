@@ -25,7 +25,7 @@ describe("FlagSimulationPlugin UI Tests", () => {
   let flagPlugin: FlagSimulationPlugin;
   let mockStudio: IStudio;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     world = new World();
     flagPlugin = new FlagSimulationPlugin();
 
@@ -45,15 +45,18 @@ describe("FlagSimulationPlugin UI Tests", () => {
     } as any;
 
     mockStudio = {
-      getGraphicsManager: jest.fn().mockReturnValue(mockGraphicsManager)
-    } as any;
+      loadSimulation: jest.fn(),
+      addSystem: jest.fn(),
+      getGraphicsManager: jest.fn().mockReturnValue(mockGraphicsManager),
+      world: world
+    } as unknown as IStudio;
 
     // Register the plugin and provide studio context
     flagPlugin.register(world);
     flagPlugin.getSystems(mockStudio);
 
     // Initialize entities and components
-    flagPlugin.initializeEntities(world);
+    await flagPlugin.initializeEntities(world);
   });
 
   test("Global parameter panel should be rendered", () => {

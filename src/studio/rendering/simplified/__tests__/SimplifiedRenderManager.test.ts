@@ -1,6 +1,6 @@
 /**
  * 🧪 Simplified Rendering System Tests
- * 
+ *
  * Shows how much easier testing becomes with the simplified design.
  * No complex mocking, clear test cases, predictable behavior.
  */
@@ -14,7 +14,7 @@ import * as THREE from 'three';
 class MockRenderer extends BaseRenderer {
   readonly name: string;
   readonly priority: number;
-  
+
   public renderCalled = false;
   public canRenderResult = true;
   public entities: number[] = [];
@@ -68,7 +68,7 @@ describe('SimplifiedRenderManager', () => {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera();
     manager = new SimplifiedRenderManager(scene, camera);
-    
+
     // Mock world
     mockWorld = {
       componentManager: {
@@ -118,12 +118,12 @@ describe('SimplifiedRenderManager', () => {
     it('should not render clean renderers', () => {
       const renderer = new MockRenderer();
       manager.registerRenderer(renderer);
-      
+
       // First render
       manager.render(mockWorld, 16);
       renderer.reset();
       renderer.testMarkClean(); // Mark as clean using public method
-      
+
       // Second render should skip
       const didRender = manager.render(mockWorld, 16);
 
@@ -141,7 +141,7 @@ describe('SimplifiedRenderManager', () => {
         renderer1.testMarkClean();
       };
       renderer2.render = (context) => {
-        renderOrder.push('low-priority');  
+        renderOrder.push('low-priority');
         renderer2.testMarkClean();
       };
 
@@ -157,11 +157,11 @@ describe('SimplifiedRenderManager', () => {
     it('should mark specific renderer as dirty', () => {
       const renderer = new MockRenderer();
       manager.registerRenderer(renderer);
-      
+
       // Render once to clean
       manager.render(mockWorld, 16);
       renderer.reset();
-      
+
       // Mark specific renderer dirty
       manager.markDirty('mock-renderer');
       const didRender = manager.render(mockWorld, 16);
@@ -177,12 +177,12 @@ describe('SimplifiedRenderManager', () => {
 
       manager.registerRenderer(renderer1);
       manager.registerRenderer(renderer2);
-      
+
       // Render once to clean
       manager.render(mockWorld, 16);
       renderer1.reset();
       renderer2.reset();
-      
+
       // Mark all dirty
       manager.markAllDirty();
       const didRender = manager.render(mockWorld, 16);
@@ -201,7 +201,7 @@ describe('SimplifiedRenderManager', () => {
       };
 
       manager.registerRenderer(renderer);
-      
+
       // Should not throw
       expect(() => {
         const didRender = manager.render(mockWorld, 16);
