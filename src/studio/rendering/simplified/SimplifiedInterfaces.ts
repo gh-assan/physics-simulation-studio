@@ -58,7 +58,7 @@ export interface IRenderer {
   /**
    * Clean up renderer resources
    */
-  dispose?(): void;
+  dispose?(scene?: THREE.Scene): void;
 }
 
 /**

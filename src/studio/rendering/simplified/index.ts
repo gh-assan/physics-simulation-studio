@@ -18,9 +18,6 @@ export { SimplifiedRenderManager } from './SimplifiedRenderManager';
 // ECS system integration
 export { SimplifiedRenderSystem } from './SimplifiedRenderSystem';
 
-// Example implementations
-export { SimplifiedFlagRenderer } from './SimplifiedFlagRenderer';
-
 /**
  * 🔄 Migration Guide:
  *

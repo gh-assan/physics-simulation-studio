@@ -4,15 +4,14 @@ import { IWorld } from '../../core/ecs/IWorld';
 import { IStudio } from '../../studio/IStudio';
 import { ISystem } from '../../core/ecs/ISystem';
 import { FlagClothAlgorithm } from './FlagClothAlgorithm';
-import { SimplifiedFlagRenderer } from '../../studio/rendering/simplified/SimplifiedFlagRenderer';
 
 class FlagSimulationPlugin implements ISimulationPlugin {
   private algorithm: FlagClothAlgorithm;
-  private renderer: SimplifiedFlagRenderer;
+  private registeredRenderer: any = null;
+  private renderSystem: any = null;
 
   constructor() {
     this.algorithm = new FlagClothAlgorithm();
-    this.renderer = new SimplifiedFlagRenderer();
   }
 
   getName(): string {
@@ -54,6 +53,9 @@ class FlagSimulationPlugin implements ISimulationPlugin {
 
   unregister(): void {
     console.log("Unregistering Flag Simulation Plugin");
+    
+    // Clean up renderer when plugin is unregistered
+    this.unregisterRenderer();
   }
 
   async initializeEntities(world: IWorld): Promise<void> {
@@ -109,9 +111,85 @@ class FlagSimulationPlugin implements ISimulationPlugin {
 
     console.log("✅ Flag entity created with ID:", flagEntity);
 
-    // The SimplifiedFlagRenderer doesn't need explicit world setup
-    // It will get the world through the render context
-    console.log("✅ Flag renderer ready (no initialization needed)");
+    // 🎯 RENDERER REGISTRATION: Now handled by Studio.loadSimulation() orchestrator
+    // when this specific simulation is selected, not during plugin initialization
+    await this.registerRendererIfActive(world);
+
+    console.log("✅ Flag entities initialized");
+  }
+
+  /**
+   * Register renderer when this simulation is specifically loaded/activated
+   * This should be called by Studio.loadSimulation() orchestrator
+   */
+  public async registerRenderer(world: IWorld): Promise<void> {
+    await this.autoDiscoverAndRegisterRenderer(world);
+  }
+
+  /**
+   * Unregister renderer when simulation is unloaded/deactivated
+   */
+  public unregisterRenderer(): void {
+    if (this.renderSystem && this.registeredRenderer) {
+      // Unregister renderer from SimplifiedRenderSystem
+      if (typeof this.renderSystem.unregisterRenderer === 'function') {
+        this.renderSystem.unregisterRenderer(this.registeredRenderer);
+        console.log('🗑️ SimplifiedFlagRenderer unregistered from SimplifiedRenderSystem');
+      }
+      
+      // Clean up renderer resources
+      if (typeof this.registeredRenderer.dispose === 'function') {
+        this.registeredRenderer.dispose();
+      }
+      
+      this.registeredRenderer = null;
+      this.renderSystem = null;
+    }
+  }
+
+  /**
+   * Register renderer only if this simulation is currently active
+   * (Used during plugin initialization to check if already selected)
+   */
+  private async registerRendererIfActive(world: IWorld): Promise<void> {
+    // For now, don't auto-register during initialization
+    // Renderer registration will happen when simulation is explicitly loaded
+    console.log('🎯 Flag renderer will be registered when simulation is loaded');
+  }
+
+  /**
+   * Auto-discover SimplifiedRenderSystem and register our renderer
+   */
+  private async autoDiscoverAndRegisterRenderer(world: IWorld): Promise<void> {
+    try {
+      // Import SimplifiedRenderSystem first to get the constructor type
+      const { SimplifiedRenderSystem } = await import('../../studio/rendering/simplified/SimplifiedRenderSystem');
+
+      // Look for SimplifiedRenderSystem in the world's system manager
+      const renderSystem = (world as any).systemManager?.getSystem(SimplifiedRenderSystem);
+
+      if (renderSystem && typeof renderSystem.registerRenderer === 'function') {
+        console.log('🔍 Found SimplifiedRenderSystem, registering flag renderer...');
+
+        // Import and create our SimplifiedFlagRenderer
+        const { SimplifiedFlagRenderer } = await import('./renderers/SimplifiedFlagRenderer');
+        const flagRenderer = new SimplifiedFlagRenderer();
+
+        // Store references for cleanup during unregister
+        this.registeredRenderer = flagRenderer;
+        this.renderSystem = renderSystem;
+
+        // Register with the simplified render system
+        renderSystem.registerRenderer(flagRenderer);
+
+        console.log('✅ SimplifiedFlagRenderer registered with SimplifiedRenderSystem');
+      } else {
+        console.log('⚠️ SimplifiedRenderSystem not found, flag rendering may not work');
+        console.log('Available systems:', (world as any).systemManager?.getAllSystems?.().map((s: any) => s.constructor.name) || 'No systems found');
+      }
+    } catch (error) {
+      console.error('❌ Failed to auto-register flag renderer:', error);
+    }
   }
 
   getSystems(studio: IStudio): ISystem[] {
@@ -130,7 +208,7 @@ class FlagSimulationPlugin implements ISimulationPlugin {
   }
 
   getRenderer(): any {
-    return this.renderer;
+    return this.registeredRenderer;
   }
 
   getVersion?(): string {
@@ -214,8 +292,8 @@ class FlagSimulationPlugin implements ISimulationPlugin {
     return this.algorithm;
   }
 
-  getFlag(): SimplifiedFlagRenderer {
-    return this.renderer;
+  getFlag(): any {
+    return this.registeredRenderer;
   }
 }
 

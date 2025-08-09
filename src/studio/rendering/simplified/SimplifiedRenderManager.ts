@@ -45,7 +45,8 @@ export class SimplifiedRenderManager {
 
     const renderer = this.renderers.get(name);
     if (renderer?.dispose) {
-      renderer.dispose();
+      // Pass the scene so renderer can remove its objects properly
+      renderer.dispose(this.scene);
     }
 
     this.renderers.delete(name);
@@ -152,7 +153,7 @@ export class SimplifiedRenderManager {
 
     for (const renderer of this.renderers.values()) {
       if (renderer.dispose) {
-        renderer.dispose();
+        renderer.dispose(this.scene);
       }
     }
 

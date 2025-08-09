@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flag Visibility Test - TDD Implementation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #000011;
+            color: white;
+        }
+        #container {
+            width: 800px;
+            height: 600px;
+            margin: 20px auto;
+            border: 2px solid #444;
+            border-radius: 8px;
+            position: relative;
+        }
+        .info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .status {
+            background: #333;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .debug-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h1>🏁 Flag Visibility Test - TDD Implementation</h1>
+        <p>Testing flag rendering with our systematically implemented auto-discovery mechanism</p>
+        <div class="status" id="status">Loading...</div>
+    </div>
+    
+    <div id="container"></div>
+    <div class="debug-info" id="debug"></div>
+
+    <script type="module">
+        import { World } from './build/src/core/World.js';
+        import { SimplifiedRenderSystem } from './build/src/rendering/SimplifiedRenderSystem.js';
+        import { SystemManager } from './build/src/core/SystemManager.js';
+        import { ComponentManager } from './build/src/core/ComponentManager.js';
+        import { EntityManager } from './build/src/core/EntityManager.js';
+        import { FlagSimulationPlugin } from './build/src/plugins/flag-simulation/index.js';
+
+        const debugElement = document.getElementById('debug');
+        const statusElement = document.getElementById('status');
+
+        function log(message, isError = false) {
+            console.log(message);
+            const color = isError ? '#ff6b6b' : '#4ecdc4';
+            debugElement.innerHTML += `<div style="color: ${color}">${message}</div>`;
+            debugElement.scrollTop = debugElement.scrollHeight;
+        }
+
+        async function initializeFlagTest() {
+            try {
+                statusElement.textContent = "🔄 Creating world with SystemManager...";
+                log("🚀 Starting Flag Visibility Test - TDD Implementation");
+
+                // Create world components
+                const entityManager = new EntityManager();
+                const componentManager = new ComponentManager();
+                const systemManager = new SystemManager();
+                
+                // Create world with SystemManager
+                const world = new World(entityManager, componentManager);
+                // Add systemManager to world manually since our TDD implementation expects it
+                (world).systemManager = systemManager;
+
+                log("✅ World created with SystemManager");
+
+                // Create and register SimplifiedRenderSystem
+                statusElement.textContent = "🔄 Creating SimplifiedRenderSystem...";
+                const renderSystem = new SimplifiedRenderSystem(document.getElementById('container'));
+                systemManager.addSystem(renderSystem);
+                log("✅ SimplifiedRenderSystem created and added to SystemManager");
+
+                // Create and register FlagSimulationPlugin
+                statusElement.textContent = "🔄 Registering FlagSimulationPlugin...";
+                const flagPlugin = new FlagSimulationPlugin();
+                flagPlugin.register(world);
+                log("✅ FlagSimulationPlugin registered");
+
+                // Initialize flag entities (this should trigger auto-discovery and registration)
+                statusElement.textContent = "🔄 Initializing flag entities with auto-discovery...";
+                await flagPlugin.initializeEntities(world);
+                log("✅ Flag entities initialized with TDD auto-discovery mechanism");
+
+                // Check if renderer was registered
+                const registeredRenderers = renderSystem.getRegisteredRenderers ? renderSystem.getRegisteredRenderers() : [];
+                log(`🔍 Registered renderers: ${registeredRenderers.length}`);
+                registeredRenderers.forEach((renderer, index) => {
+                    log(`   ${index + 1}. ${renderer.name || 'unnamed renderer'}`);
+                });
+
+                // Start rendering
+                statusElement.textContent = "🔄 Starting render loop...";
+                renderSystem.start();
+                log("✅ Render loop started");
+
+                statusElement.textContent = "✅ Test complete - Flag should be visible!";
+                statusElement.style.background = "#2d5a2d";
+
+                // Check for flag visibility after a moment
+                setTimeout(() => {
+                    const scene = renderSystem.getScene ? renderSystem.getScene() : null;
+                    if (scene) {
+                        const objects = scene.children.length;
+                        log(`🏁 Scene contains ${objects} objects`);
+                        if (objects > 0) {
+                            log("🎉 SUCCESS: Flag should be visible with TDD implementation!");
+                        } else {
+                            log("⚠️ Scene appears empty - investigating...", true);
+                        }
+                    }
+                }, 1000);
+
+            } catch (error) {
+                log(`❌ ERROR: ${error.message}`, true);
+                statusElement.textContent = `❌ Error: ${error.message}`;
+                statusElement.style.background = "#5a2d2d";
+            }
+        }
+
+        // Start the test
+        initializeFlagTest();
+    </script>
+</body>
+</html>

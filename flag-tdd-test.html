@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flag Renderer TDD Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        #main-content {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ccc;
+        }
+        .info {
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h1>🎌 Flag Renderer TDD Test - Auto-Discovery</h1>
+        <p>This tests our TDD implementation of the flag renderer auto-discovery mechanism.</p>
+        <p>You should see a flag with a brown pole automatically rendered in the 3D scene.</p>
+    </div>
+
+    <!-- Main content container for 3D scene -->
+    <div id="main-content"></div>
+
+    <!-- Load the compiled JavaScript -->
+    <script type="module" src="/src/studio/main.ts"></script>
+
+    <script type="module">
+        // Wait for the studio to be ready, then load flag simulation
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 TDD Test: Starting flag renderer auto-discovery test...');
+            
+            // Wait for studio initialization
+            await new Promise(resolve => {
+                const checkStudio = () => {
+                    if (window.studio && window.studio.world) {
+                        resolve();
+                    } else {
+                        setTimeout(checkStudio, 100);
+                    }
+                };
+                checkStudio();
+            });
+
+            console.log('✅ Studio initialized, loading flag simulation...');
+            
+            // Load the flag simulation using the auto-discovery system
+            try {
+                await window.studio.loadSimulation('flag-simulation');
+                console.log('🎌 Flag simulation loaded with auto-discovery!');
+                
+                // Check if the flag renderer was auto-discovered
+                const renderSystem = window.studio.world.getSystem('SimplifiedRenderSystem');
+                if (renderSystem) {
+                    const debugInfo = renderSystem.getDebugInfo();
+                    console.log('📊 Render system debug info:', debugInfo);
+                    
+                    if (debugInfo.renderers.includes('simplified-flag-renderer')) {
+                        console.log('🎉 SUCCESS: SimplifiedFlagRenderer was auto-discovered and registered!');
+                    } else {
+                        console.log('❌ FAIL: SimplifiedFlagRenderer was not auto-discovered');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Failed to load flag simulation:', error);
+            }
+        });
+    </script>
+</body>
+</html>

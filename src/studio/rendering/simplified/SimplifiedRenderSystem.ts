@@ -10,6 +10,7 @@ import { IWorld } from "../../../core/ecs/IWorld";
 import { ThreeGraphicsManager } from "../../graphics/ThreeGraphicsManager";
 import { SimplifiedRenderManager } from "./SimplifiedRenderManager";
 import { IRenderer } from "./SimplifiedInterfaces";
+import * as THREE from 'three';
 
 export class SimplifiedRenderSystem extends System {
   private renderManager: SimplifiedRenderManager;
@@ -43,6 +44,13 @@ export class SimplifiedRenderSystem extends System {
    */
   getGraphicsManager(): ThreeGraphicsManager {
     return this.graphicsManager;
+  }
+
+  /**
+   * Get the scene for clean slate operations
+   */
+  getScene(): THREE.Scene {
+    return this.graphicsManager.getScene();
   }
 
   /**
