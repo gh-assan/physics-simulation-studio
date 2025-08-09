@@ -37,7 +37,6 @@ import { Selectors } from "./state/Selectors";
 import { Actions } from "./state/Actions";
 import { SystemManager } from "../core/ecs/SystemManager";
 import { ComponentManager } from "../core/ecs/ComponentManager";
-
 // Import styles
 import "./styles/studio.css";
 import "./styles/toolbar.css";

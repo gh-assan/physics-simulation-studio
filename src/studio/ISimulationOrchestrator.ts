@@ -4,5 +4,6 @@ export interface ISimulationOrchestrator {
     play(): void;
     pause(): void;
     reset(): void;
+    stepSimulation(deltaTime: number): void;
     setRenderSystem(renderSystem: any): void;
 }

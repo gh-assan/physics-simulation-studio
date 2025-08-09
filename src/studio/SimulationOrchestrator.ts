@@ -6,6 +6,8 @@ import { SimplifiedRenderSystem } from './rendering/simplified/SimplifiedRenderS
 import { IStudio } from './IStudio';
 import { ISimulationOrchestrator } from './ISimulationOrchestrator';
 import { IRenderer } from './rendering/simplified/SimplifiedInterfaces';
+import { SimulationManager } from './simulation/SimulationManager';
+import { ISimulationManager } from '../core/simulation/interfaces';
 import * as THREE from 'three';
 
 export class SimulationOrchestrator implements ISimulationOrchestrator {
@@ -13,28 +15,42 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
     private pluginManager: IPluginManager;
     private renderSystem: SimplifiedRenderSystem | null = null;
     private studio: IStudio;
+    private simulationManager: ISimulationManager;
 
     constructor(world: IWorld, pluginManager: IPluginManager, studio: IStudio) {
         this.world = world;
         this.pluginManager = pluginManager;
         this.studio = studio;
+        
+        // Initialize simulation manager with 60 FPS target
+        this.simulationManager = new SimulationManager(1/60);
+        Logger.getInstance().log("✅ SimulationOrchestrator: Simulation manager initialized");
     }
 
     public async loadSimulation(pluginName: string): Promise<void> {
+        // Clear everything first for clean slate
         this._deactivateCurrentSimulation(pluginName);
         this._clearWorldAndRenderSystem();
+        
         try {
+            // Activate plugin
             await this.pluginManager.activatePlugin(pluginName, this.studio);
-            Logger.getInstance().log(`Loaded simulation: ${pluginName}`);
+            Logger.getInstance().log(`✅ Loaded simulation plugin: ${pluginName}`);
 
             const activePlugin = this.pluginManager.getPlugin(pluginName);
 
-            // Register plugin renderer with SimplifiedRenderSystem
+            // Initialize entities FIRST - plugins create their own meshes
+            if (activePlugin?.initializeEntities) {
+                await activePlugin.initializeEntities(this.world);
+                Logger.getInstance().log(`🏗️ ${pluginName}: Entities and meshes initialized`);
+            }
+
+            // Register rendering system AFTER entities are created
             if (this.renderSystem && activePlugin) {
                 // First, check if plugin has a registerRenderer method (new style)
                 if (typeof (activePlugin as any).registerRenderer === 'function') {
                     await (activePlugin as any).registerRenderer(this.world);
-                    Logger.getInstance().log(`Registered ${pluginName} renderer via registerRenderer method`);
+                    Logger.getInstance().log(`🎨 ${pluginName}: Registered renderer via registerRenderer method`);
                 }
                 // Fallback to legacy getRenderer method
                 else if (activePlugin.getRenderer) {
@@ -43,28 +59,33 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
                         // Check if it's a new-style IRenderer
                         if (pluginRenderer.name && pluginRenderer.canRender && pluginRenderer.render) {
                             this.renderSystem.registerRenderer(pluginRenderer as IRenderer);
-                            Logger.getInstance().log(`Registered ${pluginName} renderer: ${pluginRenderer.name}`);
+                            Logger.getInstance().log(`🎨 ${pluginName}: Registered renderer: ${pluginRenderer.name}`);
                         }
                     }
                 }
             }
 
-            if (activePlugin?.initializeEntities) {
-                await activePlugin.initializeEntities(this.world);
-                this.world.update(0);
-                this.world.systemManager.updateAll(this.world, 0);
-                if (this.renderSystem) {
-                    this.renderSystem.update(this.world as World, 0);
-                }
+            // Set entities in simulation manager for physics tracking
+            const entityIds = Array.from(this.world.entityManager.getAllEntities());
+            this.simulationManager.setEntities(entityIds);
+            Logger.getInstance().log(`🔢 ${pluginName}: Registered ${entityIds.length} entities with physics manager`);
+
+            // Initial update to establish rendering state
+            this.world.update(0);
+            this.world.systemManager.updateAll(this.world, 0);
+            if (this.renderSystem) {
+                this.renderSystem.update(this.world as World, 0);
             }
 
+            // Dispatch loaded event
             const event = new CustomEvent("simulation-loaded", {
                 detail: { simulationName: pluginName }
             });
             window.dispatchEvent(event);
-            Logger.getInstance().log(`Dispatched simulation-loaded event for ${pluginName}`);
+            Logger.getInstance().log(`📡 Dispatched simulation-loaded event for ${pluginName}`);
+            
         } catch (error: unknown) {
-            Logger.getInstance().error(`Failed to load simulation:`, error);
+            Logger.getInstance().error(`❌ Failed to load simulation:`, error);
         }
     }
 
@@ -138,18 +159,23 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
     }
 
     public play(): void {
-        Logger.getInstance().log('Simulation play');
-        // Add play logic here
+        this.simulationManager.play();
+        Logger.getInstance().log('▶️ SimulationOrchestrator: Starting simulation physics');
     }
 
     public pause(): void {
-        Logger.getInstance().log('Simulation pause');
-        // Add pause logic here
+        this.simulationManager.pause();
+        Logger.getInstance().log('⏸️ SimulationOrchestrator: Pausing simulation physics');
     }
 
     public reset(): void {
-        Logger.getInstance().log('Simulation reset');
-        // Add reset logic here
+        this.simulationManager.reset();
+        Logger.getInstance().log('🔄 SimulationOrchestrator: Resetting simulation physics');
+    }
+
+    public stepSimulation(deltaTime: number): void {
+        // Step the physics simulation
+        this.simulationManager.step(deltaTime);
     }
 
     public setRenderSystem(renderSystem: SimplifiedRenderSystem): void {

@@ -379,6 +379,10 @@ export interface ISimulationManager {
   play(): void;
   pause(): void;
   reset(): void;
+  setEntities(entities: EntityId[]): void;
+  getCurrentState(): ISimulationState;
+  addStateChangeListener(listener: (state: ISimulationState) => void): void;
+  removeStateChangeListener(listener: (state: ISimulationState) => void): void;
 }
 
 export interface IRenderManager {
