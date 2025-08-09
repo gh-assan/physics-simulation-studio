@@ -37,9 +37,9 @@ import { Selectors } from "./state/Selectors";
 import { Actions } from "./state/Actions";
 import { SystemManager } from "../core/ecs/SystemManager";
 import { ComponentManager } from "../core/ecs/ComponentManager";
-// Import styles
-import "./styles/studio.css";
-import "./styles/toolbar.css";
+// Import styles - Commented out for Vite compatibility when using compiled JS
+// import "./styles/studio.css";
+// import "./styles/toolbar.css";
 
 function setupCoreSystems(): { world: World; pluginManager: PluginManager; stateManager: StateManager; studio: Studio; pluginDiscovery: PluginDiscoveryService } {
   const world: World = new World();
