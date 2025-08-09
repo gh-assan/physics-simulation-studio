@@ -263,7 +263,7 @@ export class SimulationManager implements ISimulationManager {
     );
 
     this.currentState = timeUpdatedState;
-    
+
     // Update all renderers with new state
     for (const renderer of this.renderers.values()) {
       try {
@@ -272,7 +272,7 @@ export class SimulationManager implements ISimulationManager {
         console.error('Error updating renderer:', error);
       }
     }
-    
+
     this.notifyStateChange();
   }
 

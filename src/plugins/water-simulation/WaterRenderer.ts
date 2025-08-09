@@ -70,7 +70,7 @@ export class WaterRenderer implements ISimulationRenderer {
       this.particleGeometry = new THREE.SphereGeometry(0.02, 8, 8);
     }
     if (!this.particleMaterial) {
-      this.particleMaterial = new THREE.MeshPhongMaterial({ 
+      this.particleMaterial = new THREE.MeshPhongMaterial({
         color: 0x0077ff,
         transparent: true,
         opacity: 0.8
@@ -90,7 +90,7 @@ export class WaterRenderer implements ISimulationRenderer {
    */
   updateFromState(state: ISimulationState): void {
     const particles = (state as any).particles as WaterParticleState[];
-    
+
     if (!particles || !this.scene) {
       return;
     }
@@ -112,7 +112,7 @@ export class WaterRenderer implements ISimulationRenderer {
           particle.position.y,
           particle.position.z
         );
-        
+
         // Optional: Color based on velocity magnitude for visual debugging
         const velocityMagnitude = Math.sqrt(
           particle.velocity.x * particle.velocity.x +
@@ -120,7 +120,7 @@ export class WaterRenderer implements ISimulationRenderer {
           particle.velocity.z * particle.velocity.z
         );
         const intensity = Math.min(velocityMagnitude * 2, 1);
-        
+
         // Only update material color if it exists and is the correct type
         if (this.particleMaterial && this.particleMaterial.color && this.particleMaterial.color.setRGB) {
           this.particleMaterial.color.setRGB(
@@ -149,7 +149,7 @@ export class WaterRenderer implements ISimulationRenderer {
    */
   dispose(): void {
     this.clear();
-    
+
     // Clean up shared resources
     if (this.particleGeometry) {
       this.particleGeometry.dispose();
@@ -183,19 +183,19 @@ export class WaterRenderer implements ISimulationRenderer {
     } else {
       if (!this.particleGeometry || !this.particleMaterial) return;
       mesh = new THREE.Mesh(this.particleGeometry, this.particleMaterial);
-      
+
       mesh.position.set(
         particle.position.x,
         particle.position.y,
         particle.position.z
       );
-      
+
       mesh.castShadow = true;
       mesh.receiveShadow = true;
     }
-    
+
     this.particleMeshes.set(particle.id, mesh);
-    
+
     // Add to scene if it has an add method
     if (this.scene.add) {
       this.scene.add(mesh);

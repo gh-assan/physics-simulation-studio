@@ -21,7 +21,7 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
         this.world = world;
         this.pluginManager = pluginManager;
         this.studio = studio;
-        
+
         // Initialize simulation manager with 60 FPS target
         this.simulationManager = new SimulationManager(1/60);
         Logger.getInstance().log("✅ SimulationOrchestrator: Simulation manager initialized");
@@ -31,7 +31,7 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
         // Clear everything first for clean slate
         this._deactivateCurrentSimulation(pluginName);
         this._clearWorldAndRenderSystem();
-        
+
         try {
             // Activate plugin
             await this.pluginManager.activatePlugin(pluginName, this.studio);
@@ -83,7 +83,7 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
             });
             window.dispatchEvent(event);
             Logger.getInstance().log(`📡 Dispatched simulation-loaded event for ${pluginName}`);
-            
+
         } catch (error: unknown) {
             Logger.getInstance().error(`❌ Failed to load simulation:`, error);
         }

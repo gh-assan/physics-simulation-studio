@@ -52,7 +52,7 @@ export class SolarSystemPlugin implements ISimulationPlugin, IEnhancedSimulation
     // Register core components that might not be registered elsewhere
     world.registerComponent(PositionComponent);
     world.registerComponent(RenderableComponent);
-    
+
     // Register solar system specific components
     world.registerComponent(CelestialBodyComponent);
     world.registerComponent(OrbitComponent);

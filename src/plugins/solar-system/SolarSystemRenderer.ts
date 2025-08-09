@@ -9,7 +9,7 @@ export class SolarSystemRenderer implements ISimulationRenderer {
   private simulationManager: SimulationManager | null = null;
   private meshes: Map<number, THREE.Mesh> = new Map();
   private scene: THREE.Scene | null = null;
-  
+
   initialize(simulationManager: SimulationManager): void {
     this.simulationManager = simulationManager;
     // Get scene reference from the rendering system
@@ -64,7 +64,7 @@ export class SolarSystemRenderer implements ISimulationRenderer {
       if (this.scene) {
         this.scene.remove(mesh);
       }
-      
+
       // Dispose geometry and material
       if (mesh.geometry) {
         mesh.geometry.dispose();
@@ -77,7 +77,7 @@ export class SolarSystemRenderer implements ISimulationRenderer {
         }
       }
     }
-    
+
     this.meshes.clear();
     console.log('🧹 SolarSystemRenderer disposed');
   }
@@ -86,13 +86,13 @@ export class SolarSystemRenderer implements ISimulationRenderer {
     // Create geometry based on body radius
     const scaledRadius = Math.max(body.radius / 1e5, 0.1); // Scale and set minimum size
     const geometry = new THREE.SphereGeometry(scaledRadius, 32, 16);
-    
+
     // Create material based on body type
     let material: THREE.Material;
-    
+
     if (body.entityId === 1) {
       // Sun - bright yellow/orange with emissive material
-      material = new THREE.MeshBasicMaterial({ 
+      material = new THREE.MeshBasicMaterial({
         color: 0xffaa00
       });
     } else {
@@ -103,11 +103,11 @@ export class SolarSystemRenderer implements ISimulationRenderer {
     }
 
     const mesh = new THREE.Mesh(geometry, material);
-    
+
     // Add some visual enhancements
     mesh.castShadow = true;
     mesh.receiveShadow = true;
-    
+
     return mesh;
   }
 

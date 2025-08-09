@@ -60,7 +60,7 @@ export class WaterSimulationPlugin implements ISimulationPlugin, IEnhancedSimula
     // Register core components that might not be registered elsewhere
     world.registerComponent(PositionComponent);
     world.registerComponent(RenderableComponent);
-    
+
     // Register water-specific components
     world.registerComponent(WaterBodyComponent);
     world.registerComponent(WaterDropletComponent);

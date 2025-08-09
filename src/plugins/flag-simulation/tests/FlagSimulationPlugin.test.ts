@@ -1,13 +1,41 @@
-import { describe, it, expect, beforeEach } from '@jest/globals';
-import { WaterSimulationPlugin } from '../index';
-import { World } from '../../../core/ecs/World';
-import { SimulationManager } from '../../../studio/simulation/SimulationManager';
-import { WaterAlgorithm } from '../WaterAlgorithm';
-import { WaterRenderer } from '../WaterRenderer';
+import {FlagSimulationPlugin} from '../FlagSimulationPlugin';
+import {World} from '../../../core/ecs/World';
+import {SimulationManager} from '../../../studio/simulation/SimulationManager';
+import {FlagAlgorithm} from '../FlagAlgorithm';
+import {FlagCleanRenderer} from '../FlagCleanRenderer';
 import * as THREE from 'three';
 
-describe('WaterSimulationPlugin - Clean Architecture', () => {
-  let plugin: WaterSimulationPlugin;
+// Mock THREE.js BufferAttribute for testing
+jest.mock('three', () => {
+  const originalTHREE = jest.requireActual('three');
+  return {
+    ...originalTHREE,
+    BufferAttribute: jest.fn().mockImplementation((array, itemSize) => ({
+      array,
+      itemSize,
+      needsUpdate: true
+    })),
+    PlaneGeometry: jest.fn().mockImplementation(() => ({
+      attributes: {
+        position: { array: new Float32Array(12) }
+      },
+      setAttribute: jest.fn(),
+      setIndex: jest.fn(),
+      computeVertexNormals: jest.fn()
+    })),
+    BufferGeometry: jest.fn().mockImplementation(() => ({
+      attributes: {
+        position: { array: new Float32Array(12) }
+      },
+      setAttribute: jest.fn(),
+      setIndex: jest.fn(),
+      computeVertexNormals: jest.fn()
+    }))
+  };
+});
+
+describe('FlagSimulationPlugin - Clean Architecture', () => {
+  let plugin: FlagSimulationPlugin;
   let world: World;
   let simulationManager: SimulationManager;
   let mockRenderer: THREE.WebGLRenderer;
@@ -16,25 +44,33 @@ describe('WaterSimulationPlugin - Clean Architecture', () => {
 
   beforeEach(() => {
     world = new World();
-    // Create headless renderer for testing
-    const canvas = document.createElement('canvas');
-    mockRenderer = new THREE.WebGLRenderer({ canvas });
+
+    // Create mock renderer for testing instead of real WebGLRenderer
+    mockRenderer = {
+      render: jest.fn(),
+      setSize: jest.fn(),
+      dispose: jest.fn()
+    } as any;
 
     // Create a proper mock scene with required methods
-    mockScene = new THREE.Scene();
-    // Ensure the remove method exists for testing
-    if (!mockScene.remove) {
-      mockScene.remove = jest.fn();
-    }
+    mockScene = {
+      add: jest.fn(),
+      remove: jest.fn(),
+      children: []
+    } as any;
 
-    mockCamera = new THREE.PerspectiveCamera();
+    mockCamera = {
+      position: { set: jest.fn() },
+      lookAt: jest.fn()
+    } as any;
+
     simulationManager = new SimulationManager();
-    plugin = new WaterSimulationPlugin();
+    plugin = new FlagSimulationPlugin();
   });
 
   describe('Plugin Structure', () => {
     it('should have name and basic plugin interface', () => {
-      expect(plugin.getName()).toBe('water-simulation');
+      expect(plugin.getName()).toBe('flag-simulation');
       expect(plugin.getDependencies()).toEqual([]);
     });
 
@@ -45,8 +81,8 @@ describe('WaterSimulationPlugin - Clean Architecture', () => {
       const algorithm = plugin.getAlgorithm();
       const renderer = plugin.getRenderer();
 
-      expect(algorithm).toBeInstanceOf(WaterAlgorithm);
-      expect(renderer).toBeInstanceOf(WaterRenderer);
+      expect(algorithm).toBeInstanceOf(FlagAlgorithm);
+      expect(renderer).toBeInstanceOf(FlagCleanRenderer);
     });
   });
 
@@ -61,17 +97,18 @@ describe('WaterSimulationPlugin - Clean Architecture', () => {
       expect(algorithm.setState).toBeDefined();
     });
 
-    it('should manage SPH fluid physics without rendering concerns', () => {
+    it('should manage cloth physics without rendering concerns', () => {
       const algorithm = plugin.getAlgorithm();
       algorithm.initialize(simulationManager);
 
-      // Algorithm should focus on SPH physics calculations only
+      // Algorithm should focus on cloth physics calculations only
       const state = algorithm.getState();
-      expect(state.particles).toBeDefined();
-      expect(state.particles.length).toBeGreaterThan(0);
+      expect(state.points).toBeDefined();
+      expect(state.springs).toBeDefined();
+      expect(state.points.length).toBeGreaterThan(0);
     });
 
-    it('should handle SPH particle interactions', () => {
+    it('should handle Verlet integration for cloth dynamics', () => {
       const algorithm = plugin.getAlgorithm();
       algorithm.initialize(simulationManager);
 
@@ -79,8 +116,8 @@ describe('WaterSimulationPlugin - Clean Architecture', () => {
       algorithm.update(1/60); // One timestep
 
       const updatedState = algorithm.getState();
-      // Particles should have moved or changed
-      expect(updatedState.particles).not.toEqual(initialState.particles);
+      // Points should have moved or changed from physics
+      expect(updatedState.points).not.toEqual(initialState.points);
     });
   });
 
@@ -94,9 +131,9 @@ describe('WaterSimulationPlugin - Clean Architecture', () => {
       expect(renderer.updateFromState).toBeDefined();
     });
 
-    it('should create and manage THREE.js particle meshes', () => {
+    it('should create and manage THREE.js cloth meshes', () => {
       const algorithm = plugin.getAlgorithm();
-      const renderer = plugin.getRenderer() as WaterRenderer;
+      const renderer = plugin.getRenderer() as FlagCleanRenderer;
 
       // Initialize algorithm first
       algorithm.initialize(simulationManager);
@@ -106,17 +143,14 @@ describe('WaterSimulationPlugin - Clean Architecture', () => {
       const state = algorithm.getState();
       renderer.updateFromState(state);
 
-      // Should have created meshes for water particles
+      // Should have created mesh for cloth
       const meshes = renderer.getMeshes();
       expect(meshes.size).toBeGreaterThan(0);
-
-      // Should have particle meshes
-      expect(meshes.size).toBe(state.particles.length);
     });
 
-    it('should handle particle mesh disposal properly', () => {
+    it('should handle cloth mesh disposal properly', () => {
       const algorithm = plugin.getAlgorithm();
-      const renderer = plugin.getRenderer() as WaterRenderer;
+      const renderer = plugin.getRenderer() as FlagCleanRenderer;
 
       // Initialize algorithm first
       algorithm.initialize(simulationManager);
@@ -138,18 +172,18 @@ describe('WaterSimulationPlugin - Clean Architecture', () => {
   });
 
   describe('Entity Management', () => {
-    it('should create entities with proper water components when initialized', () => {
+    it('should create entities with proper flag components when initialized', () => {
       plugin.register(world);
       plugin.initializeEntities(world, simulationManager);
 
-      // Should have created water droplet entities
-      const entities = world.getEntitiesWithComponentTypes(['WaterDropletComponent']);
+      // Should have created flag entities
+      const entities = world.getEntitiesWithComponentTypes(['FlagComponent']);
       expect(entities.length).toBeGreaterThan(0);
 
-      // Entities should have position, water droplet, and renderable components
+      // Entities should have position, flag, and renderable components
       const firstEntity = entities[0];
       expect(world.hasComponent(firstEntity, 'PositionComponent')).toBe(true);
-      expect(world.hasComponent(firstEntity, 'WaterDropletComponent')).toBe(true);
+      expect(world.hasComponent(firstEntity, 'FlagComponent')).toBe(true);
       expect(world.hasComponent(firstEntity, 'RenderableComponent')).toBe(true);
     });
   });
@@ -163,45 +197,42 @@ describe('WaterSimulationPlugin - Clean Architecture', () => {
 
       expect(mockRegisterRenderer).toHaveBeenCalledWith(
         plugin.getName(),
-        expect.any(WaterRenderer)
+        expect.any(FlagCleanRenderer)
       );
     });
   });
 
-  describe('SPH Physics Validation', () => {
-    it('should maintain particle count during simulation', () => {
+  describe('Cloth Physics Validation', () => {
+    it('should maintain structural integrity of cloth mesh', () => {
       const algorithm = plugin.getAlgorithm();
       algorithm.initialize(simulationManager);
 
-      const initialState = algorithm.getState();
-      const initialCount = initialState.particles.length;
+      const state = algorithm.getState();
+      expect(state.points.length).toBeGreaterThan(0);
+      expect(state.springs.length).toBeGreaterThan(0);
 
-      // Run several timesteps
+      // Springs should connect points
+      state.springs.forEach((spring: any) => {
+        expect(spring.p1).toBeLessThan(state.points.length);
+        expect(spring.p2).toBeLessThan(state.points.length);
+      });
+    });
+
+    it('should apply wind forces and gravity to cloth points', () => {
+      const algorithm = plugin.getAlgorithm();
+      algorithm.initialize(simulationManager);
+
+      // Run multiple timesteps
       for (let i = 0; i < 10; i++) {
         algorithm.update(1/60);
       }
 
-      const finalState = algorithm.getState();
-      expect(finalState.particles.length).toBe(initialCount);
-    });
-
-    it('should respect fluid boundaries', () => {
-      const algorithm = plugin.getAlgorithm();
-      algorithm.initialize(simulationManager);
-
-      // Run simulation for a while
-      for (let i = 0; i < 100; i++) {
-        algorithm.update(1/60);
-      }
-
       const state = algorithm.getState();
-      // All particles should be within reasonable bounds
-      state.particles.forEach((particle: any) => {
-        expect(particle.position.x).toBeGreaterThan(-100);
-        expect(particle.position.x).toBeLessThan(100);
-        expect(particle.position.y).toBeGreaterThan(-10); // Above ground
-        expect(particle.position.z).toBeGreaterThan(-100);
-        expect(particle.position.z).toBeLessThan(100);
+      // Non-pinned points should have moved due to gravity/wind
+      state.points.forEach((point: any) => {
+        if (!point.pinned) {
+          expect(point.position.y).toBeLessThan(point.previousPosition.y || 0);
+        }
       });
     });
   });

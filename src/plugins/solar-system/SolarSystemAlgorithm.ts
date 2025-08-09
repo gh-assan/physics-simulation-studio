@@ -33,10 +33,10 @@ export class SolarSystemAlgorithm implements ISimulationAlgorithm {
 
     // Apply gravitational forces between all bodies
     this.applyGravitationalForces(timestep);
-    
+
     // Update positions based on velocities
     this.updatePositions(timestep);
-    
+
     // Update ECS components with new positions
     this.syncWithECS();
   }

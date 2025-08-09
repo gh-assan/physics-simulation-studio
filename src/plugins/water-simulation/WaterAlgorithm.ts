@@ -101,7 +101,7 @@ export class WaterAlgorithm implements ISimulationAlgorithm {
 
   private initializeParticles(): void {
     this.particles = [];
-    
+
     // Create a small grid of water particles
     const gridSize = 5;
     const spacing = 0.05;
@@ -152,8 +152,8 @@ export class WaterAlgorithm implements ISimulationAlgorithm {
 
   private calculateForces(timestep: number): void {
     for (const particle of this.particles) {
-      let pressureForce = new Vector3(0, 0, 0);
-      let viscosityForce = new Vector3(0, 0, 0);
+      const pressureForce = new Vector3(0, 0, 0);
+      const viscosityForce = new Vector3(0, 0, 0);
 
       // Calculate pressure and viscosity forces from neighbors
       for (const neighbor of this.particles) {

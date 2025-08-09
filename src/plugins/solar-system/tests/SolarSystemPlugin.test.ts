@@ -19,14 +19,14 @@ describe('SolarSystemPlugin - Clean Architecture', () => {
     // Create headless renderer for testing
     const canvas = document.createElement('canvas');
     mockRenderer = new THREE.WebGLRenderer({ canvas });
-    
+
     // Create a proper mock scene with required methods
     mockScene = new THREE.Scene();
     // Ensure the remove method exists for testing
     if (!mockScene.remove) {
       mockScene.remove = jest.fn();
     }
-    
+
     mockCamera = new THREE.PerspectiveCamera();
     simulationManager = new SimulationManager();
     plugin = new SolarSystemPlugin();
@@ -41,10 +41,10 @@ describe('SolarSystemPlugin - Clean Architecture', () => {
     it('should have separate algorithm and renderer classes', () => {
       expect(plugin.getAlgorithm).toBeDefined();
       expect(plugin.getRenderer).toBeDefined();
-      
+
       const algorithm = plugin.getAlgorithm();
       const renderer = plugin.getRenderer();
-      
+
       expect(algorithm).toBeInstanceOf(SolarSystemAlgorithm);
       expect(renderer).toBeInstanceOf(SolarSystemRenderer);
     });
@@ -53,7 +53,7 @@ describe('SolarSystemPlugin - Clean Architecture', () => {
   describe('Algorithm Implementation', () => {
     it('should implement ISimulationAlgorithm interface', () => {
       const algorithm = plugin.getAlgorithm();
-      
+
       expect(algorithm.initialize).toBeDefined();
       expect(algorithm.update).toBeDefined();
       expect(algorithm.reset).toBeDefined();
@@ -64,7 +64,7 @@ describe('SolarSystemPlugin - Clean Architecture', () => {
     it('should manage celestial body physics without rendering concerns', () => {
       const algorithm = plugin.getAlgorithm();
       algorithm.initialize(simulationManager);
-      
+
       // Algorithm should focus on physics calculations only
       const state = algorithm.getState();
       expect(state.bodies).toBeDefined();
@@ -75,7 +75,7 @@ describe('SolarSystemPlugin - Clean Architecture', () => {
   describe('Renderer Implementation', () => {
     it('should implement ISimulationRenderer interface', () => {
       const renderer = plugin.getRenderer();
-      
+
       expect(renderer.initialize).toBeDefined();
       expect(renderer.render).toBeDefined();
       expect(renderer.dispose).toBeDefined();
@@ -85,7 +85,7 @@ describe('SolarSystemPlugin - Clean Architecture', () => {
     it('should create and manage THREE.js meshes for celestial bodies', () => {
       const algorithm = plugin.getAlgorithm();
       const renderer = plugin.getRenderer() as SolarSystemRenderer;
-      
+
       // Initialize algorithm first
       algorithm.initialize(simulationManager);
       renderer.initialize(simulationManager);
@@ -105,7 +105,7 @@ describe('SolarSystemPlugin - Clean Architecture', () => {
     it('should handle mesh disposal properly', () => {
       const algorithm = plugin.getAlgorithm();
       const renderer = plugin.getRenderer() as SolarSystemRenderer;
-      
+
       // Initialize algorithm first
       algorithm.initialize(simulationManager);
       renderer.initialize(simulationManager);
@@ -129,11 +129,11 @@ describe('SolarSystemPlugin - Clean Architecture', () => {
     it('should create entities with proper components when initialized', () => {
       plugin.register(world);
       plugin.initializeEntities(world, simulationManager);
-      
+
       // Should have created celestial body entities
       const entities = world.getEntitiesWithComponentTypes(['CelestialBodyComponent']);
       expect(entities.length).toBeGreaterThan(0);
-      
+
       // Entities should have position, celestial body, and renderable components
       const firstEntity = entities[0];
       expect(world.hasComponent(firstEntity, 'PositionComponent')).toBe(true);
@@ -145,10 +145,10 @@ describe('SolarSystemPlugin - Clean Architecture', () => {
   describe('Integration with SimulationManager', () => {
     it('should register renderer with simulation manager during entity initialization', () => {
       const mockRegisterRenderer = jest.spyOn(simulationManager, 'registerRenderer');
-      
+
       plugin.register(world);
       plugin.initializeEntities(world, simulationManager);
-      
+
       expect(mockRegisterRenderer).toHaveBeenCalledWith(
         plugin.getName(),
         expect.any(SolarSystemRenderer)

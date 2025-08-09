@@ -110,7 +110,7 @@ export class Studio implements IStudio {
   public update(deltaTime: number): void {
     if (this.isPlaying) {
       this.world.update(deltaTime);
-      
+
       // Step the physics simulation through the orchestrator
       this.orchestrator.stepSimulation(deltaTime);
     }

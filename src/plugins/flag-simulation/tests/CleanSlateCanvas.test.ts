@@ -65,29 +65,29 @@ describe('Clean Slate Canvas Management TDD Tests', () => {
   let worldClearSpy: jest.SpyInstance;
   let scene: THREE.Scene;
   let flagPlugin: FlagSimulationPlugin;
-  
+
   beforeEach(() => {
     // Create fresh scene for each test
     const testGraphics = new TestGraphicsManager();
     scene = testGraphics.getScene();
-    
+
     // Ensure scene has children property (for THREE.js compatibility)
     if (!scene.children) {
       (scene as any).children = [];
     }
-    
+
     // Reset scene to empty state
     while(scene.children.length > 0) {
       scene.remove(scene.children[0]);
     }
-    
+
     // Create render system with graphics manager
     renderSystem = new SimplifiedRenderSystem(testGraphics as any);
-    
+
     // Create world with mock system manager
     world = new World();
     (world as any).systemManager = createMockSystemManager(renderSystem);
-    
+
     // Create plugin manager and orchestrator
     pluginManager = new PluginManager(world);
     const mockStudio = {
@@ -96,11 +96,11 @@ describe('Clean Slate Canvas Management TDD Tests', () => {
     };
     orchestrator = new SimulationOrchestrator(world, pluginManager, mockStudio as any);
     orchestrator.setRenderSystem(renderSystem);
-    
+
     // Create and register flag plugin
     flagPlugin = new FlagSimulationPlugin();
     pluginManager.registerPlugin(flagPlugin);
-    
+
     // Spy on world.clear to verify clean slate approach
     worldClearSpy = jest.spyOn(world, 'clear');
   });
@@ -121,21 +121,21 @@ describe('Clean Slate Canvas Management TDD Tests', () => {
   });
 
   test('🔴 RED: Switching simulations should result in clean slate with fresh objects', async () => {
-    // Arrange: Load initial simulation  
+    // Arrange: Load initial simulation
     await orchestrator.loadSimulation('flag-simulation');
     const objectsAfterFlag = scene.children.length;
     expect(objectsAfterFlag).toBeGreaterThan(0);
-    
+
     // Act: Switch to different simulation
-    await orchestrator.loadSimulation('water-simulation'); 
-    
+    await orchestrator.loadSimulation('water-simulation');
+
     // Assert: Should have been cleared and repopulated
     // Clean slate approach means world.clear should be called
     expect(worldClearSpy).toHaveBeenCalledWith(true);
-    
+
     // Scene should have persistent objects (lights, helpers) + new simulation objects
     expect(scene.children.length).toBeGreaterThan(0);
-    const hasSystemObjects = scene.children.some(child => 
+    const hasSystemObjects = scene.children.some(child =>
       child.type.includes('Light') || child.type.includes('Helper')
     );
     expect(hasSystemObjects).toBe(true);
@@ -144,7 +144,7 @@ describe('Clean Slate Canvas Management TDD Tests', () => {
   test('🔴 RED: World.clear should be called with false to preserve systems', async () => {
     // Act: Load any simulation
     await orchestrator.loadSimulation('flag-simulation');
-    
+
     // Assert: Clean slate approach calls world.clear(false) to preserve render systems
     expect(worldClearSpy).toHaveBeenCalledWith(false);
   });
@@ -154,11 +154,11 @@ describe('Clean Slate Canvas Management TDD Tests', () => {
     await orchestrator.loadSimulation('flag-simulation');
     await orchestrator.loadSimulation('water-simulation');
     await orchestrator.loadSimulation('flag-simulation');
-    
+
     // Assert: Each switch should call world.clear(false) to preserve systems
     expect(worldClearSpy).toHaveBeenCalledTimes(3);
     expect(worldClearSpy).toHaveBeenCalledWith(false);
-    
+
     // Final scene should have system objects + current simulation objects
     expect(scene.children.length).toBeGreaterThan(0);
   });
@@ -166,24 +166,24 @@ describe('Clean Slate Canvas Management TDD Tests', () => {
   test('🟢 GREEN: Integration test for clean slate approach', async () => {
     // Arrange: Scene starts empty
     expect(scene.children.length).toBe(0);
-    
+
     // Act: Load flag simulation
     await orchestrator.loadSimulation('flag-simulation');
-    
+
     // Assert: Should have system objects + simulation objects
     expect(scene.children.length).toBeGreaterThan(0);
     expect(worldClearSpy).toHaveBeenCalledWith(false);
-    
-    // Act: Switch to different simulation  
+
+    // Act: Switch to different simulation
     const childrenAfterFirst = scene.children.length;
     await orchestrator.loadSimulation('water-simulation');
-    
+
     // Assert: Clean slate - cleared and rebuilt
     expect(worldClearSpy).toHaveBeenCalledTimes(2);
     expect(scene.children.length).toBeGreaterThan(0);
-    
+
     // Should have system objects in final state
-    const hasSystemObjects = scene.children.some(child => 
+    const hasSystemObjects = scene.children.some(child =>
       child.type.includes('Light') || child.type.includes('Helper')
     );
     expect(hasSystemObjects).toBe(true);

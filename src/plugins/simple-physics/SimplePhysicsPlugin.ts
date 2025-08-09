@@ -58,7 +58,7 @@ class SimplePhysicsAlgorithm implements ISimulationAlgorithm {
         const positionComponent = this.world.componentManager.getComponent(
           entityId, PositionComponent.type
         ) as PositionComponent;
-        
+
         if (positionComponent) {
           positionComponent.x = entityState.x;
           positionComponent.y = entityState.y;
@@ -190,17 +190,17 @@ class SimplePhysicsRenderer implements ISimulationRenderer {
   private createEntityMesh(entityId: EntityId, context: IRenderContext): THREE.Mesh {
     // Create colorful bouncing spheres
     const geometry = new THREE.SphereGeometry(0.2, 16, 16);
-    
+
     // Give each entity a unique color based on its ID
     const hue = (entityId * 137.508) % 360; // Golden angle distribution
     const color = new THREE.Color().setHSL(hue / 360, 0.7, 0.6);
-    
+
     const material = new THREE.MeshLambertMaterial({ color });
     const mesh = new THREE.Mesh(geometry, material);
-    
+
     // Add mesh to scene
     context.scene.add(mesh);
-    
+
     return mesh;
   }
 
@@ -210,7 +210,7 @@ class SimplePhysicsRenderer implements ISimulationRenderer {
       const positionComponent = this.world.componentManager.getComponent(
         entityId, PositionComponent.type
       ) as PositionComponent;
-      
+
       if (positionComponent) {
         mesh.position.set(
           positionComponent.x,
@@ -223,7 +223,7 @@ class SimplePhysicsRenderer implements ISimulationRenderer {
 
   private cleanupUnusedMeshes(currentEntities: EntityId[], context: IRenderContext): void {
     const currentEntitySet = new Set(currentEntities);
-    
+
     for (const [entityId, mesh] of this.meshes) {
       if (!currentEntitySet.has(entityId)) {
         // Remove from scene and dispose
@@ -413,35 +413,35 @@ export class SimplePhysicsPlugin implements ISimulationPlugin {
   async initializeEntities(world: any): Promise<void> {
     try {
       console.log('🎯 Simple Physics: Creating entities with meshes');
-      
+
       // Create 3 bouncing physics entities
       const numEntities = 3;
-      
+
       for (let i = 0; i < numEntities; i++) {
         // Create entity
         const entityId = world.createEntity();
-        
+
         // Add PositionComponent with random starting positions
         const positionComponent = new PositionComponent(
           Math.random() * 10 - 5,  // x: -5 to 5
-          Math.random() * 5 + 2,   // y: 2 to 7 (above ground)  
+          Math.random() * 5 + 2,   // y: 2 to 7 (above ground)
           0,                       // z: 0 (2D physics)
           'simple-physics'         // simulationType
         );
         world.addComponent(entityId, PositionComponent.type, positionComponent);
-        
+
         // Add RenderableComponent - though mesh creation is now handled by renderer
         const renderableComponent = new RenderableComponent(
           'sphere',
           `hsl(${(i * 120) % 360}, 70%, 60%)` // Different colors
         );
         world.addComponent(entityId, RenderableComponent.type, renderableComponent);
-        
+
         console.log(`✨ Simple Physics: Created entity ${entityId} with components`);
       }
-      
+
       console.log(`🎯 Simple Physics: Initialized ${numEntities} bouncing entities`);
-      
+
     } catch (error) {
       console.error('❌ Simple Physics: Failed to initialize entities:', error);
     }
