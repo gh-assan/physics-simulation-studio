@@ -1,5 +1,4 @@
-import { describe, it, expect, beforeEach } from '@jest/globals';
-import { SolarSystemPlugin } from '../SolarSystemPlugin';
+import {SolarSystemPlugin} from '../SolarSystemPlugin';
 import { World } from '../../../core/ecs/World';
 import { SimulationManager } from '../../../studio/simulation/SimulationManager';
 import { SolarSystemRenderer } from '../SolarSystemRenderer';

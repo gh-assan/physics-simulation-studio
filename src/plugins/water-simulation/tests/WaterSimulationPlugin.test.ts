@@ -1,5 +1,4 @@
-import { describe, it, expect, beforeEach } from '@jest/globals';
-import { WaterSimulationPlugin } from '../index';
+import {WaterSimulationPlugin} from '../WaterSimulationPlugin';
 import { World } from '../../../core/ecs/World';
 import { SimulationManager } from '../../../studio/simulation/SimulationManager';
 import { WaterAlgorithm } from '../WaterAlgorithm';
