@@ -7,16 +7,53 @@ import { ThreeGraphicsManager } from "../../../studio/graphics/ThreeGraphicsMana
 
 // Mock THREE library
 jest.mock("three", () => {
+  class Object3D {
+    children: any[];
+    position: { x: number; y: number; z: number; set: (...args: any[]) => void };
+    rotation: { x: number; y: number; z: number };
+    name: string;
+    constructor() {
+      this.children = [];
+      this.position = { x: 0, y: 0, z: 0, set: jest.fn() };
+      this.rotation = { x: 0, y: 0, z: 0 };
+      this.name = '';
+    }
+    add(...objs: any[]) { this.children.push(...objs); }
+    remove(obj: any) { this.children = this.children.filter((o: any) => o !== obj); }
+    traverse(fn: (obj: any) => void) { this.children.forEach(fn); }
+    getObjectByName(name: string) { return this.children.find((o: any) => o.name === name); }
+  }
+  class Group extends Object3D {}
+  class Scene extends Object3D {}
+  class Mesh extends Object3D {
+    geometry: any;
+    material: any;
+    constructor(geometry: any, material: any) { super(); this.geometry = geometry; this.material = material; }
+  }
+  class CylinderGeometry { dispose() {} }
+  class PlaneGeometry { dispose() {} }
+  class MeshLambertMaterial { constructor(opts: any) {} dispose() {} }
+  class PerspectiveCamera extends Object3D {}
+  class AmbientLight extends Object3D {}
+  class AxesHelper extends Object3D {}
+  class BufferGeometry { dispose() {} }
+  class Material { dispose() {} }
   return {
-    Vector3: jest.fn().mockImplementation(() => {
-      return { x: 0, y: 0, z: 0 };
-    }),
-    Quaternion: jest.fn().mockImplementation(() => {
-      return {
-        x: 0, y: 0, z: 0, w: 1,
-        setFromAxisAngle: jest.fn().mockReturnThis()
-      };
-    })
+    Vector3: jest.fn().mockImplementation(() => ({ x: 0, y: 0, z: 0 })),
+    Quaternion: jest.fn().mockImplementation(() => ({ x: 0, y: 0, z: 0, w: 1, setFromAxisAngle: jest.fn().mockReturnThis() })),
+    Object3D,
+    Group,
+    Scene,
+    Mesh,
+    CylinderGeometry,
+    PlaneGeometry,
+    MeshLambertMaterial,
+    PerspectiveCamera,
+    AmbientLight,
+    AxesHelper,
+    BufferGeometry,
+    Material,
+    DoubleSide: 2
   };
 });
 
@@ -25,7 +62,7 @@ describe("FlagSimulationPlugin UI Tests", () => {
   let flagPlugin: FlagSimulationPlugin;
   let mockStudio: IStudio;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     world = new World();
     flagPlugin = new FlagSimulationPlugin();
 
@@ -45,15 +82,18 @@ describe("FlagSimulationPlugin UI Tests", () => {
     } as any;
 
     mockStudio = {
-      getGraphicsManager: jest.fn().mockReturnValue(mockGraphicsManager)
-    } as any;
+      loadSimulation: jest.fn(),
+      addSystem: jest.fn(),
+      getGraphicsManager: jest.fn().mockReturnValue(mockGraphicsManager),
+      world: world
+    } as unknown as IStudio;
 
     // Register the plugin and provide studio context
     flagPlugin.register(world);
     flagPlugin.getSystems(mockStudio);
 
     // Initialize entities and components
-    flagPlugin.initializeEntities(world);
+    await flagPlugin.initializeEntities(world);
   });
 
   test("Global parameter panel should be rendered", () => {

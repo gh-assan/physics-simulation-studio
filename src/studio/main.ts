@@ -25,9 +25,7 @@ import { IPluginContext } from "./IPluginContext";
 import { ThreeGraphicsManager } from "./graphics/ThreeGraphicsManager";
 import { VisibilityManager } from "./ui/VisibilityManager";
 import { SystemDiagnostics } from "./utils/SystemDiagnostics";
-import { RenderOrchestrator } from "./rendering/RenderOrchestrator";
-import { RenderSystem } from "./systems/RenderSystem";
-import { FallbackRenderer } from "./rendering/FallbackRenderer";
+import { SimplifiedRenderSystem } from "./rendering/simplified/SimplifiedRenderSystem";
 import { VisibilityOrchestrator } from "./orchestration/VisibilityOrchestrator";
 import { PluginDiscoveryService } from "./plugins/PluginDiscoveryService";
 import { AutoPluginRegistry } from "../core/plugin/AutoPluginRegistry";
@@ -204,27 +202,19 @@ function registerComponentsAndSystems(world: World, studio: Studio, pluginManage
     }
     graphicsManager.initialize(mainContent);
 
-    // Create the traditional RenderSystem that Studio expects
-    const renderSystem = new RenderSystem(graphicsManager, world);
+    // Create the new SimplifiedRenderSystem - much cleaner!
+    const renderSystem = new SimplifiedRenderSystem(graphicsManager);
 
     // Set the RenderSystem in Studio BEFORE any plugin initialization
     studio.setRenderSystem(renderSystem);
 
-    // Create centralized render orchestrator
-    const renderOrchestrator = new RenderOrchestrator(graphicsManager);
+    // No need for complex orchestrator setup - SimplifiedRenderSystem handles everything!
 
-    // Create and register fallback renderer for basic entities
-    const fallbackRenderer = new FallbackRenderer(graphicsManager);
-    renderOrchestrator.registerRenderer('fallback', fallbackRenderer);
-
-    // Connect RenderSystem to delegate to RenderOrchestrator
-    renderSystem.setRenderOrchestrator(renderOrchestrator);
-
-    // Register only the RenderSystem (which delegates to RenderOrchestrator)
+    // Register only the SimplifiedRenderSystem (much simpler!)
     world.registerSystem(renderSystem);
 
-    // Create centralized visibility orchestrator with proper render orchestrator
-    const visibilityOrchestrator = new VisibilityOrchestrator(visibilityManager, renderOrchestrator);
+    // Create visibility manager (simplified without orchestrator dependency)
+    const visibilityOrchestrator = new VisibilityOrchestrator(visibilityManager, renderSystem as any);
     visibilityOrchestrator.initialize();
 
     const selectionSystem = new SelectionSystem(studio, world as World);
@@ -244,10 +234,8 @@ function registerComponentsAndSystems(world: World, studio: Studio, pluginManage
     });
     (window as any).viewportToolbar = viewportToolbar;
 
-    // Expose for debugging
+    // Expose for debugging (simplified)
     (window as any).renderSystem = renderSystem;
-    (window as any).renderOrchestrator = renderOrchestrator;
-    (window as any).fallbackRenderer = fallbackRenderer;
     (window as any).visibilityOrchestrator = visibilityOrchestrator;
 
     return visibilityOrchestrator;

@@ -2,7 +2,7 @@ import { Studio } from './Studio';
 import { World } from '../core/ecs/World';
 import { PluginManager } from '../core/plugin/PluginManager';
 import { StateManager } from './state/StateManager';
-import { RenderSystem } from './systems/RenderSystem';
+import { SimplifiedRenderSystem } from './rendering/simplified/SimplifiedRenderSystem';
 
 // Mocks
 class MockPlugin {
@@ -26,6 +26,11 @@ class MockStateManager {
 class MockRenderSystem {
   update = jest.fn();
   clear = jest.fn();
+  getScene = jest.fn(() => ({
+    children: [],
+    add: jest.fn(),
+    remove: jest.fn(),
+  }));
 }
 
 describe('Studio', () => {

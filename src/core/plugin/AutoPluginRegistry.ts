@@ -132,7 +132,7 @@ export class AutoPluginRegistry {
         }
 
         // 4. Initialize entities
-        pluginInstance.initializeEntities(world);
+        await pluginInstance.initializeEntities(world);
 
         this.registeredPlugins.add(pluginName);
         registeredNames.push(pluginName);

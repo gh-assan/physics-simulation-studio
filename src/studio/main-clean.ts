@@ -25,7 +25,7 @@ import { IPluginContext } from "./IPluginContext";
 import { ThreeGraphicsManager } from "./graphics/ThreeGraphicsManager";
 import { VisibilityManager } from "./ui/VisibilityManager";
 import { SystemDiagnostics } from "./utils/SystemDiagnostics";
-import { RenderOrchestrator } from "./rendering/RenderOrchestrator";
+import { SimplifiedRenderSystem } from "./rendering/simplified/SimplifiedRenderSystem";
 import { VisibilityOrchestrator } from "./orchestration/VisibilityOrchestrator";
 import { PluginDiscoveryService } from "./plugins/PluginDiscoveryService";
 
@@ -193,15 +193,18 @@ function registerComponentsAndSystems(world: World, studio: Studio, pluginManage
     }
     graphicsManager.initialize(mainContent);
 
-    // Create centralized render orchestrator
-    const renderOrchestrator = new RenderOrchestrator(graphicsManager);
+    // Create simplified render system (much cleaner!)
+    const renderSystem = new SimplifiedRenderSystem(graphicsManager);
 
-    // Create centralized visibility orchestrator with proper render orchestrator
-    const visibilityOrchestrator = new VisibilityOrchestrator(visibilityManager, renderOrchestrator);
+    // Set the RenderSystem in Studio
+    studio.setRenderSystem(renderSystem);
+
+    // Create centralized visibility orchestrator with simplified system
+    const visibilityOrchestrator = new VisibilityOrchestrator(visibilityManager, renderSystem as any);
     visibilityOrchestrator.initialize();
 
-    // Register the render orchestrator as a system
-    world.registerSystem(renderOrchestrator);
+    // Register the simplified render system
+    world.registerSystem(renderSystem);
 
     const selectionSystem = new SelectionSystem(studio, world as World);
     world.registerSystem(selectionSystem);
@@ -220,8 +223,8 @@ function registerComponentsAndSystems(world: World, studio: Studio, pluginManage
     });
     (window as any).viewportToolbar = viewportToolbar;
 
-    // Expose for debugging
-    (window as any).renderOrchestrator = renderOrchestrator;
+    // Expose for debugging (simplified)
+    (window as any).renderSystem = renderSystem;
     (window as any).visibilityOrchestrator = visibilityOrchestrator;
 
     return visibilityOrchestrator;

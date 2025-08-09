@@ -7,16 +7,53 @@ import { ThreeGraphicsManager } from "../../../studio/graphics/ThreeGraphicsMana
 
 // Mock THREE library
 jest.mock("three", () => {
+  class Object3D {
+    children: any[];
+    position: { x: number; y: number; z: number; set: (...args: any[]) => void };
+    rotation: { x: number; y: number; z: number };
+    name: string;
+    constructor() {
+      this.children = [];
+      this.position = { x: 0, y: 0, z: 0, set: jest.fn() };
+      this.rotation = { x: 0, y: 0, z: 0 };
+      this.name = '';
+    }
+    add(...objs: any[]) { this.children.push(...objs); }
+    remove(obj: any) { this.children = this.children.filter((o: any) => o !== obj); }
+    traverse(fn: (obj: any) => void) { this.children.forEach(fn); }
+    getObjectByName(name: string) { return this.children.find((o: any) => o.name === name); }
+  }
+  class Group extends Object3D {}
+  class Scene extends Object3D {}
+  class Mesh extends Object3D {
+    geometry: any;
+    material: any;
+    constructor(geometry: any, material: any) { super(); this.geometry = geometry; this.material = material; }
+  }
+  class CylinderGeometry { dispose() {} }
+  class PlaneGeometry { dispose() {} }
+  class MeshLambertMaterial { constructor(opts: any) {} dispose() {} }
+  class PerspectiveCamera extends Object3D {}
+  class AmbientLight extends Object3D {}
+  class AxesHelper extends Object3D {}
+  class BufferGeometry { dispose() {} }
+  class Material { dispose() {} }
   return {
-    Vector3: jest.fn().mockImplementation(() => {
-      return { x: 0, y: 0, z: 0 };
-    }),
-    Quaternion: jest.fn().mockImplementation(() => {
-      return {
-        x: 0, y: 0, z: 0, w: 1,
-        setFromAxisAngle: jest.fn().mockReturnThis()
-      };
-    })
+    Vector3: jest.fn().mockImplementation(() => ({ x: 0, y: 0, z: 0 })),
+    Quaternion: jest.fn().mockImplementation(() => ({ x: 0, y: 0, z: 0, w: 1, setFromAxisAngle: jest.fn().mockReturnThis() })),
+    Object3D,
+    Group,
+    Scene,
+    Mesh,
+    CylinderGeometry,
+    PlaneGeometry,
+    MeshLambertMaterial,
+    PerspectiveCamera,
+    AmbientLight,
+    AxesHelper,
+    BufferGeometry,
+    Material,
+    DoubleSide: 2
   };
 });
 
@@ -66,18 +103,18 @@ describe("FlagSimulationPlugin Studio Integration Tests", () => {
     expect(flagEntities.length).toBeGreaterThan(0);
   });
 
-  test("should initialize entities without camera configuration", () => {
+  test("should initialize entities without camera configuration", async () => {
     // Act: Initialize entities
-    flagPlugin.initializeEntities(world);
+    await flagPlugin.initializeEntities(world);
 
     // Assert: Camera should not be configured in initializeEntities (handled by systems)
     // The plugin focuses on entity creation, not camera setup
     expect(mockGraphicsManager.getCamera).not.toHaveBeenCalled();
   });
 
-  test("should create parameter panels when ParameterPanelComponent is registered", () => {
+  test("should create parameter panels when ParameterPanelComponent is registered", async () => {
     // Act: Initialize entities
-    flagPlugin.initializeEntities(world);
+    await flagPlugin.initializeEntities(world);
 
     // Assert: Parameter schema should be available
     const parameterSchema = flagPlugin.getParameterSchema();
@@ -92,7 +129,7 @@ describe("FlagSimulationPlugin Studio Integration Tests", () => {
 
     // Act & Assert: Should not throw error, but should log warning
     expect(() => {
-      newPlugin.initializeEntities(world);
+      void newPlugin.initializeEntities(world);
     }).not.toThrow();
 
     // Should not create entities when studio is not available
