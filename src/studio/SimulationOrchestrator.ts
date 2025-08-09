@@ -81,14 +81,14 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
         if (!activePluginName) {
             throw new Error("Cannot deactivate simulation: plugin name is required");
         }
-        
+
         // Clean up renderer before deactivating plugin
         const activePlugin = this.pluginManager.getPlugin(activePluginName);
         if (activePlugin && typeof (activePlugin as any).unregisterRenderer === 'function') {
             (activePlugin as any).unregisterRenderer();
             Logger.getInstance().log(`Unregistered ${activePluginName} renderer`);
         }
-        
+
         // Deactivate plugin (calls unregister internally)
         this.pluginManager.deactivatePlugin(activePluginName, this.studio);
     }
@@ -103,15 +103,15 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
         if (this.renderSystem) {
             const renderSystem = this.renderSystem as SimplifiedRenderSystem;
             const scene = renderSystem.getScene(); // Use proper method instead of private access
-            
+
             // Clear all objects from scene
             while(scene.children.length > 0) {
                 scene.remove(scene.children[0]);
             }
-            
+
             // Re-add essential persistent objects (lights, camera helpers, etc.)
             this._addPersistentSceneObjects(scene);
-            
+
             Logger.getInstance().log('🧹 Scene cleared and persistent objects restored');
         }
     }
@@ -122,14 +122,14 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
             const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
             directionalLight.position.set(10, 10, 10);
-            
+
             scene.add(ambientLight);
             scene.add(directionalLight);
-            
+
             // Add coordinate system helper
             const axesHelper = new THREE.AxesHelper(5);
             scene.add(axesHelper);
-            
+
             Logger.getInstance().log('✨ Added persistent scene objects (lights, helpers)');
         } catch (error) {
             Logger.getInstance().log('⚠️ Could not add persistent objects:', error);

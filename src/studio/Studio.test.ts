@@ -26,6 +26,11 @@ class MockStateManager {
 class MockRenderSystem {
   update = jest.fn();
   clear = jest.fn();
+  getScene = jest.fn(() => ({
+    children: [],
+    add: jest.fn(),
+    remove: jest.fn(),
+  }));
 }
 
 describe('Studio', () => {

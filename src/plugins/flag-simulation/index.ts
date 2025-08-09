@@ -53,7 +53,7 @@ class FlagSimulationPlugin implements ISimulationPlugin {
 
   unregister(): void {
     console.log("Unregistering Flag Simulation Plugin");
-    
+
     // Clean up renderer when plugin is unregistered
     this.unregisterRenderer();
   }
@@ -136,12 +136,12 @@ class FlagSimulationPlugin implements ISimulationPlugin {
         this.renderSystem.unregisterRenderer(this.registeredRenderer);
         console.log('🗑️ SimplifiedFlagRenderer unregistered from SimplifiedRenderSystem');
       }
-      
+
       // Clean up renderer resources
       if (typeof this.registeredRenderer.dispose === 'function') {
         this.registeredRenderer.dispose();
       }
-      
+
       this.registeredRenderer = null;
       this.renderSystem = null;
     }

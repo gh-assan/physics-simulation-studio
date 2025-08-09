@@ -50,24 +50,32 @@ describe('Application Initialization', () => {
     };
     const mockRenderSystem = {
       getGraphicsManager: jest.fn(() => mockGraphicsManager),
-      registerRenderer: jest.fn(), // Added for SimplifiedRenderSystem compatibility
-      unregisterRenderer: jest.fn(), // Added for SimplifiedRenderSystem compatibility
+      registerRenderer: jest.fn(),
+      unregisterRenderer: jest.fn(),
       update: jest.fn(),
-      dispose: jest.fn(), // Changed from 'clear' to 'dispose' to match SimplifiedRenderSystem
+      dispose: jest.fn(),
+      getScene: jest.fn(() => ({ children: [] })), // Added getScene mock directly here
     };
 
+    // Initialize pluginContext earlier
     const pluginContext: IPluginContext = {
       studio: undefined as any,
       world: world,
-      eventBus: eventBus,
+      eventBus: require('../../core/events/ApplicationEventBus').eventBus,
       getStateManager: () => stateManager,
     };
+
+    // Initialize studio with pluginContext
     studio = new Studio(world, pluginManager, stateManager, pluginContext);
     pluginContext.studio = studio;
-    studio.setRenderSystem(mockRenderSystem as any); // Set render system immediately after studio creation
+
+    // Set render system immediately after studio creation
+    studio.setRenderSystem(mockRenderSystem as any);
+
+    // Assign orchestratorLoadSimulationSpy earlier
+    orchestratorLoadSimulationSpy = jest.spyOn(studio as any, 'loadSimulation');
 
     loadSimulationSpy = jest.spyOn(studio, 'loadSimulation');
-    orchestratorLoadSimulationSpy = jest.spyOn(studio as any, 'loadSimulation');
 
     const pane = new Pane();
     uiManager = new UIManager(pane);
