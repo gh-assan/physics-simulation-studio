@@ -15,7 +15,13 @@
     "prepare": "npm run build",
     "pretest": "npm run build",
     "posttest": "npm run lint",
-    "style": "npx eslint . --fix"
+    "style": "npx eslint . --fix",
+    "tdd-check": "node scripts/check-tdd-compliance.js",
+    "safety-check": "npm run tdd-check && npm run build && npm test",
+    "pre-change": "node scripts/pre-change-check.js",
+    "safe-commit": "npm run safety-check && git add . && git commit",
+    "enforce-ai-protocol": "node scripts/enforce-ai-protocol.js",
+    "ai-compliance": "npm run enforce-ai-protocol"
   },
   "repository": {
     "type": "git",

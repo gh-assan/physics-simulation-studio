@@ -417,6 +417,32 @@ async function main() {
     console.log('🎯 Global immutable state management ready!');
     console.log('📋 State changes are now predictable and debuggable');
 
+    // 9. STUDIO INTEGRATION FIX: Trigger parameter display for first available plugin
+    if (registeredPlugins.length > 0) {
+      const firstPlugin = registeredPlugins[0];
+      console.log(`🔧 STUDIO FIX: Triggering parameter display for ${firstPlugin}`);
+
+      // Find the property inspector system and trigger parameter display
+      const systems = (world.systemManager as any).getSystems ? (world.systemManager as any).getSystems() : [];
+      const propertySystem = systems.find((s: any) => s.constructor.name.includes('PropertyInspector'));
+
+      if (propertySystem && typeof (propertySystem as any).showParametersForPlugin === 'function') {
+        setTimeout(() => {
+          console.log(`🎯 Triggering showParametersForPlugin(${firstPlugin})`);
+          (propertySystem as any).showParametersForPlugin(firstPlugin);
+        }, 1000); // Give UI time to render
+      } else {
+        console.warn('🔧 Property Inspector System not found or missing showParametersForPlugin method');
+
+        // Alternative approach: dispatch custom event
+        const event = new CustomEvent('force-parameter-display', {
+          detail: { pluginName: firstPlugin }
+        });
+        window.dispatchEvent(event);
+        console.log(`🎯 Dispatched force-parameter-display event for ${firstPlugin}`);
+      }
+    }
+
     Logger.getInstance().log(`Physics Simulation Studio ready with ${registeredPlugins.length} plugins and global state management`);
 
     // Run system diagnostics to ensure everything is working

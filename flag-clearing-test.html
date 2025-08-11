@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flag Rendering Clearing Test</title>
+    <style>
+        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+        #main-content { width: 800px; height: 600px; border: 1px solid #ccc; margin-bottom: 20px; }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; }
+        .controls button { padding: 10px 20px; font-size: 14px; cursor: pointer; }
+        .controls button:disabled { opacity: 0.5; cursor: not-allowed; }
+        #log { background: #f0f0f0; padding: 10px; font-family: monospace; font-size: 12px; height: 200px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>🎯 Flag Rendering Clearing Test</h1>
+    <div class="controls">
+        <button id="loadFlag" onclick="loadFlag()">Load Flag Simulation</button>
+        <button id="loadSolar" onclick="loadSolar()">Load Solar System</button>
+        <button id="unloadSim" onclick="unloadSimulation()">Unload Simulation</button>
+        <button id="clearScene" onclick="clearScene()">Clear Scene Manually</button>
+    </div>
+    <div id="main-content"></div>
+    <div id="log"></div>
+
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function loadFlag() {
+            try {
+                log('🏁 Loading Flag Simulation...');
+                if (window.studio) {
+                    await window.studio.loadSimulation('flag-simulation');
+                    log('✅ Flag simulation loaded successfully');
+                    
+                    // Start the simulation
+                    window.studio.play();
+                    log('▶️ Flag simulation started');
+                } else {
+                    log('❌ Studio not available yet');
+                }
+            } catch (error) {
+                log(`❌ Error loading flag simulation: ${error.message}`);
+            }
+        }
+
+        async function loadSolar() {
+            try {
+                log('🌟 Loading Solar System Simulation...');
+                if (window.studio) {
+                    await window.studio.loadSimulation('solar-system');
+                    log('✅ Solar system loaded successfully');
+                    
+                    // Start the simulation
+                    window.studio.play();
+                    log('▶️ Solar system simulation started');
+                } else {
+                    log('❌ Studio not available yet');
+                }
+            } catch (error) {
+                log(`❌ Error loading solar system: ${error.message}`);
+            }
+        }
+
+        async function unloadSimulation() {
+            try {
+                log('🗑️ Unloading current simulation...');
+                if (window.studio) {
+                    window.studio.unloadSimulation();
+                    log('✅ Simulation unloaded successfully');
+                } else {
+                    log('❌ Studio not available yet');
+                }
+            } catch (error) {
+                log(`❌ Error unloading simulation: ${error.message}`);
+            }
+        }
+
+        function clearScene() {
+            try {
+                log('🧹 Manually clearing scene...');
+                if (window.renderSystem && window.renderSystem.clearAll) {
+                    window.renderSystem.clearAll();
+                    log('✅ Scene cleared manually via renderSystem.clearAll()');
+                } else if (window.graphicsManager && window.graphicsManager.getScene) {
+                    const scene = window.graphicsManager.getScene();
+                    // Remove all meshes from scene
+                    const meshesToRemove = [];
+                    scene.traverse(child => {
+                        if (child.type === 'Mesh') {
+                            meshesToRemove.push(child);
+                        }
+                    });
+                    meshesToRemove.forEach(mesh => {
+                        scene.remove(mesh);
+                        if (mesh.geometry) mesh.geometry.dispose();
+                        if (mesh.material) {
+                            if (Array.isArray(mesh.material)) {
+                                mesh.material.forEach(mat => mat.dispose());
+                            } else {
+                                mesh.material.dispose();
+                            }
+                        }
+                    });
+                    log(`✅ Manually removed ${meshesToRemove.length} meshes from scene`);
+                } else {
+                    log('❌ No rendering system available for manual clearing');
+                }
+            } catch (error) {
+                log(`❌ Error clearing scene: ${error.message}`);
+            }
+        }
+
+        // Monitor scene objects
+        function monitorScene() {
+            if (window.graphicsManager && window.graphicsManager.getScene) {
+                const scene = window.graphicsManager.getScene();
+                let meshCount = 0;
+                scene.traverse(child => {
+                    if (child.type === 'Mesh') {
+                        meshCount++;
+                    }
+                });
+                
+                const lastMeshCount = window.lastMeshCount || 0;
+                if (meshCount !== lastMeshCount) {
+                    log(`📊 Scene mesh count: ${meshCount} (was ${lastMeshCount})`);
+                    window.lastMeshCount = meshCount;
+                }
+            }
+        }
+
+        // Monitor scene every 2 seconds
+        setInterval(monitorScene, 2000);
+
+        // Wait for studio to be ready
+        const waitForStudio = setInterval(() => {
+            if (window.studio) {
+                clearInterval(waitForStudio);
+                log('🚀 Studio is ready! You can now test flag rendering clearing.');
+                log('📋 Steps to test:');
+                log('1. Click "Load Flag Simulation" to load the flag');
+                log('2. Click "Load Solar System" to switch simulations');
+                log('3. Check if flag meshes are properly cleared from scene');
+                log('4. Use "Clear Scene Manually" if automatic clearing fails');
+            }
+        }, 500);
+
+        log('🔄 Waiting for studio to initialize...');
+    </script>
+    
+    <script type="module" src="/src/studio/main.ts"></script>
+</body>
+</html>

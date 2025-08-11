@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flag Rendering Debug</title>
+    <style>
+        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+        #main-content { width: 800px; height: 600px; border: 1px solid #ccc; margin-bottom: 20px; }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; }
+        .controls button { padding: 10px 20px; font-size: 14px; cursor: pointer; }
+        #debug { background: #f0f0f0; padding: 10px; font-family: monospace; font-size: 12px; height: 300px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Flag Rendering Debug</h1>
+    <div class="controls">
+        <button onclick="loadFlag()">Load Flag Simulation</button>
+        <button onclick="debugEntities()">Debug Entities</button>
+        <button onclick="debugRenderer()">Debug Renderer</button>
+        <button onclick="debugScene()">Debug Scene</button>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+    <div id="main-content"></div>
+    <div id="debug"></div>
+
+    <script>
+        function log(message) {
+            const debugDiv = document.getElementById('debug');
+            const timestamp = new Date().toLocaleTimeString();
+            debugDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            debugDiv.scrollTop = debugDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('debug').innerHTML = '';
+        }
+
+        async function loadFlag() {
+            try {
+                log('🏁 Loading Flag Simulation...');
+                if (window.studio) {
+                    await window.studio.loadSimulation('flag-simulation');
+                    window.studio.play();
+                    log('✅ Flag simulation loaded and started');
+                } else {
+                    log('❌ Studio not available');
+                }
+            } catch (error) {
+                log(`❌ Error loading flag simulation: ${error.message}`);
+                console.error(error);
+            }
+        }
+
+        function debugEntities() {
+            log('🔍 Debugging entities...');
+            try {
+                if (window.studio && window.studio.world) {
+                    const world = window.studio.world;
+                    
+                    // Get all entities
+                    const allEntities = world.getAllEntities ? world.getAllEntities() : [];
+                    log(`📊 Total entities in world: ${allEntities.length}`);
+                    
+                    // Check for flag components
+                    if (world.componentManager) {
+                        const flagEntities = world.componentManager.getEntitiesWithComponents ? 
+                            world.componentManager.getEntitiesWithComponents(['FlagComponent']) : [];
+                        log(`🏁 Flag entities found: ${flagEntities.length}`);
+                        
+                        const positionEntities = world.componentManager.getEntitiesWithComponents ? 
+                            world.componentManager.getEntitiesWithComponents(['PositionComponent']) : [];
+                        log(`📍 Position entities found: ${positionEntities.length}`);
+                        
+                        // Check each entity
+                        allEntities.slice(0, 5).forEach((entityId, i) => {
+                            const hasFlag = world.componentManager.hasComponent(entityId, 'FlagComponent');
+                            const hasPosition = world.componentManager.hasComponent(entityId, 'PositionComponent');
+                            log(`Entity ${entityId}: flag=${hasFlag}, position=${hasPosition}`);
+                        });
+                    }
+                } else {
+                    log('❌ No world available');
+                }
+            } catch (error) {
+                log(`❌ Error debugging entities: ${error.message}`);
+                console.error(error);
+            }
+        }
+
+        function debugRenderer() {
+            log('🎨 Debugging renderer...');
+            try {
+                if (window.renderSystem) {
+                    log('✅ RenderSystem found');
+                    
+                    // Check registered renderers
+                    if (window.renderSystem.renderers) {
+                        const renderers = Array.from(window.renderSystem.renderers.values());
+                        log(`📋 Registered renderers: ${renderers.length}`);
+                        renderers.forEach(renderer => {
+                            log(`  - ${renderer.name} (priority: ${renderer.priority})`);
+                        });
+                    }
+                    
+                    // Check if flag renderer is registered
+                    const flagRenderer = window.renderSystem.renderers?.get('simplified-flag-renderer');
+                    if (flagRenderer) {
+                        log('✅ Flag renderer is registered');
+                        log(`   Name: ${flagRenderer.name}`);
+                        log(`   Priority: ${flagRenderer.priority}`);
+                        log(`   NeedsRender: ${flagRenderer.needsRender ? flagRenderer.needsRender() : 'unknown'}`);
+                    } else {
+                        log('❌ Flag renderer NOT registered');
+                    }
+                } else {
+                    log('❌ No renderSystem available');
+                }
+                
+                // Check plugin renderer
+                const plugin = window.autoPluginRegistry?.getPlugin('flag-simulation');
+                if (plugin) {
+                    const pluginRenderer = plugin.getRenderer();
+                    log(`🔧 Plugin renderer: ${pluginRenderer ? 'available' : 'none'}`);
+                }
+            } catch (error) {
+                log(`❌ Error debugging renderer: ${error.message}`);
+                console.error(error);
+            }
+        }
+
+        function debugScene() {
+            log('🎬 Debugging scene...');
+            try {
+                if (window.graphicsManager && window.graphicsManager.getScene) {
+                    const scene = window.graphicsManager.getScene();
+                    let meshCount = 0;
+                    let flagMeshCount = 0;
+                    
+                    scene.traverse(child => {
+                        if (child.type === 'Mesh') {
+                            meshCount++;
+                            if (child.name && child.name.includes('flag')) {
+                                flagMeshCount++;
+                            }
+                        }
+                    });
+                    
+                    log(`🎭 Scene meshes: ${meshCount} total, ${flagMeshCount} flag-related`);
+                    
+                    // List first few objects
+                    log('🔍 Scene objects:');
+                    scene.children.slice(0, 10).forEach((child, i) => {
+                        log(`  ${i}: ${child.type} (${child.name || 'unnamed'})`);
+                    });
+                } else {
+                    log('❌ No graphics manager available');
+                }
+            } catch (error) {
+                log(`❌ Error debugging scene: ${error.message}`);
+                console.error(error);
+            }
+        }
+
+        // Auto-debug when studio is ready
+        const waitForStudio = setInterval(() => {
+            if (window.studio) {
+                clearInterval(waitForStudio);
+                log('🚀 Studio is ready!');
+                log('📋 Click buttons to debug different aspects');
+            }
+        }, 500);
+
+        log('🔄 Waiting for studio to initialize...');
+    </script>
+    
+    <script type="module" src="/src/studio/main.ts"></script>
+</body>
+</html>

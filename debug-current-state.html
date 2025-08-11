@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Current State Debug - Parameter Panels & Sim Display</title>
+    <style>
+        body {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .debug-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .debug-panel {
+            background: #252526;
+            border: 1px solid #3e3e42;
+            border-radius: 4px;
+            padding: 15px;
+        }
+        .debug-panel h3 {
+            color: #569cd6;
+            margin-top: 0;
+            border-bottom: 1px solid #3e3e42;
+            padding-bottom: 10px;
+        }
+        .status {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 3px;
+            display: inline-block;
+            margin: 5px 0;
+        }
+        .status.working { background: #0e5a0e; color: #4caf50; }
+        .status.broken { background: #5a0e0e; color: #f44336; }
+        .status.unknown { background: #5a4a0e; color: #ff9800; }
+        
+        .simulation-container {
+            background: #252526;
+            border: 1px solid #3e3e42;
+            border-radius: 4px;
+            padding: 15px;
+            height: 500px;
+        }
+        
+        #simulation-display {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #444;
+            background: #000;
+        }
+        
+        .parameter-panels {
+            background: #252526;
+            border: 1px solid #3e3e42;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .log {
+            background: #1e1e1e;
+            border: 1px solid #3e3e42;
+            padding: 10px;
+            font-size: 12px;
+            height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        .log .error { color: #f44336; }
+        .log .success { color: #4caf50; }
+        .log .warning { color: #ff9800; }
+        .log .info { color: #2196f3; }
+        
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1177bb;
+        }
+        button:disabled {
+            background: #444;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Current State Debug - Parameter Panels & Sim Display</h1>
+        
+        <div class="debug-grid">
+            <div class="debug-panel">
+                <h3>📊 System Status</h3>
+                <div id="status-checks">
+                    <div class="status unknown">🔄 Checking Studio...</div>
+                    <div class="status unknown">🔄 Checking Parameter Manager...</div>
+                    <div class="status unknown">🔄 Checking Flag Simulation...</div>
+                    <div class="status unknown">🔄 Checking Render System...</div>
+                    <div class="status unknown">🔄 Checking Parameter Panels...</div>
+                </div>
+                <button onclick="runDiagnostics()">🔧 Run Full Diagnostics</button>
+                <button onclick="clearLog()">🗑️ Clear Log</button>
+            </div>
+            
+            <div class="debug-panel">
+                <h3>🎮 Actions</h3>
+                <button onclick="loadFlagSimulation()">🏁 Load Flag Simulation</button>
+                <button onclick="checkParameterPanels()">⚙️ Check Parameter Panels</button>
+                <button onclick="testRendering()">🎨 Test Rendering</button>
+                <button onclick="testUIIntegration()">🔧 Test UI Integration</button>
+                <div class="log" id="action-log"></div>
+            </div>
+        </div>
+        
+        <div class="simulation-container">
+            <h3>🎯 Simulation Display</h3>
+            <canvas id="simulation-display"></canvas>
+        </div>
+        
+        <div class="parameter-panels">
+            <h3>⚙️ Parameter Panels</h3>
+            <div id="parameter-panels-container"></div>
+        </div>
+        
+        <div class="log" id="main-log"></div>
+    </div>
+
+    <script type="module">
+        let studio = null;
+        let flagSimulation = null;
+        let logElement = document.getElementById('main-log');
+        let actionLogElement = document.getElementById('action-log');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            console.log(logEntry);
+            
+            const logElements = [logElement, actionLogElement];
+            logElements.forEach(el => {
+                if (el) {
+                    el.innerHTML += `<div class="${type}">${logEntry}</div>`;
+                    el.scrollTop = el.scrollHeight;
+                }
+            });
+        }
+        
+        function updateStatus(index, status, message) {
+            const statusElements = document.querySelectorAll('#status-checks .status');
+            if (statusElements[index]) {
+                statusElements[index].className = `status ${status}`;
+                statusElements[index].textContent = message;
+            }
+        }
+        
+        window.clearLog = function() {
+            logElement.innerHTML = '';
+            actionLogElement.innerHTML = '';
+        };
+        
+        window.runDiagnostics = async function() {
+            log('🔍 Starting comprehensive diagnostics...', 'info');
+            
+            try {
+                // Check Studio
+                log('📊 Checking Studio instance...', 'info');
+                if (window.studio) {
+                    updateStatus(0, 'working', '✅ Studio Available');
+                    log('✅ Studio found and accessible', 'success');
+                    studio = window.studio;
+                } else {
+                    updateStatus(0, 'broken', '❌ Studio Missing');
+                    log('❌ Studio not found on window object', 'error');
+                    return;
+                }
+                
+                // Check Parameter Manager
+                log('⚙️ Checking Parameter Manager...', 'info');
+                if (studio.parameterManager) {
+                    updateStatus(1, 'working', '✅ Parameter Manager OK');
+                    log('✅ Parameter Manager accessible', 'success');
+                    
+                    // Check registered parameters
+                    const params = studio.parameterManager.getAllParameters();
+                    log(`📋 Found ${Object.keys(params).length} registered parameters`, 'info');
+                } else {
+                    updateStatus(1, 'broken', '❌ Parameter Manager Missing');
+                    log('❌ Parameter Manager not found', 'error');
+                }
+                
+                // Check Flag Simulation Plugin
+                log('🏁 Checking Flag Simulation Plugin...', 'info');
+                const flagPlugin = studio.getPlugin?.('flag-simulation');
+                if (flagPlugin) {
+                    updateStatus(2, 'working', '✅ Flag Simulation OK');
+                    log('✅ Flag simulation plugin found', 'success');
+                    
+                    // Check parameter schema
+                    if (typeof flagPlugin.getParameterSchema === 'function') {
+                        const schema = flagPlugin.getParameterSchema();
+                        log(`📋 Parameter schema has ${schema.size} parameters`, 'info');
+                        for (const [key, param] of schema) {
+                            log(`  - ${key}: ${param.type} (${param.defaultValue})`, 'info');
+                        }
+                    } else {
+                        log('⚠️ Plugin missing getParameterSchema method', 'warning');
+                    }
+                } else {
+                    updateStatus(2, 'broken', '❌ Flag Simulation Missing');
+                    log('❌ Flag simulation plugin not found', 'error');
+                }
+                
+                // Check Render System
+                log('🎨 Checking Render System...', 'info');
+                if (studio.renderManager || studio.graphics || studio.three) {
+                    updateStatus(3, 'working', '✅ Render System OK');
+                    log('✅ Render system components found', 'success');
+                    
+                    if (studio.renderManager) {
+                        log('  - RenderManager available', 'info');
+                    }
+                    if (studio.graphics) {
+                        log('  - Graphics manager available', 'info');
+                    }
+                    if (studio.three) {
+                        log('  - THREE.js integration available', 'info');
+                    }
+                } else {
+                    updateStatus(3, 'broken', '❌ Render System Missing');
+                    log('❌ Render system not found', 'error');
+                }
+                
+                // Check Parameter Panels
+                log('🔧 Checking Parameter Panel Integration...', 'info');
+                if (studio.uiManager || studio.visibilityManager) {
+                    updateStatus(4, 'working', '✅ Parameter Panels OK');
+                    log('✅ UI management system found', 'success');
+                    
+                    if (studio.uiManager) {
+                        log('  - UI Manager available', 'info');
+                    }
+                    if (studio.visibilityManager) {
+                        log('  - Visibility Manager available', 'info');
+                    }
+                } else {
+                    updateStatus(4, 'broken', '❌ Parameter Panels Missing');
+                    log('❌ UI management system not found', 'error');
+                }
+                
+                log('✅ Diagnostics complete!', 'success');
+                
+            } catch (error) {
+                log(`💥 Diagnostics failed: ${error.message}`, 'error');
+                console.error(error);
+            }
+        };
+        
+        window.loadFlagSimulation = async function() {
+            log('🏁 Loading flag simulation...', 'info');
+            
+            try {
+                if (!studio) {
+                    log('❌ Studio not available', 'error');
+                    return;
+                }
+                
+                // Try to load flag simulation
+                if (studio.loadSimulation) {
+                    await studio.loadSimulation('flag-simulation');
+                    log('✅ Flag simulation loaded via loadSimulation', 'success');
+                } else if (studio.setActiveSimulation) {
+                    await studio.setActiveSimulation('flag-simulation');
+                    log('✅ Flag simulation set via setActiveSimulation', 'success');
+                } else {
+                    log('⚠️ No simulation loading method found, trying direct approach', 'warning');
+                }
+                
+                // Check if flag simulation is now active
+                const activeSimulation = studio.getActiveSimulation?.() || studio.activeSimulation;
+                if (activeSimulation) {
+                    log(`✅ Active simulation: ${activeSimulation.name || activeSimulation}`, 'success');
+                } else {
+                    log('⚠️ No active simulation detected', 'warning');
+                }
+                
+            } catch (error) {
+                log(`❌ Failed to load flag simulation: ${error.message}`, 'error');
+            }
+        };
+        
+        window.checkParameterPanels = function() {
+            log('⚙️ Checking parameter panel status...', 'info');
+            
+            try {
+                const container = document.getElementById('parameter-panels-container');
+                container.innerHTML = '';
+                
+                if (!studio) {
+                    log('❌ Studio not available', 'error');
+                    return;
+                }
+                
+                // Check for parameter manager and panels
+                if (studio.parameterManager) {
+                    const allParams = studio.parameterManager.getAllParameters();
+                    log(`📋 Parameter Manager has ${Object.keys(allParams).length} parameters`, 'info');
+                    
+                    // Display parameters
+                    for (const [key, param] of Object.entries(allParams)) {
+                        const paramDiv = document.createElement('div');
+                        paramDiv.innerHTML = `<strong>${key}</strong>: ${param.value || param.defaultValue} (${param.type})`;
+                        paramDiv.style.padding = '5px';
+                        paramDiv.style.borderBottom = '1px solid #444';
+                        container.appendChild(paramDiv);
+                    }
+                    
+                    if (Object.keys(allParams).length === 0) {
+                        container.innerHTML = '<div style="color: #ff9800;">No parameters registered</div>';
+                    }
+                } else {
+                    log('❌ Parameter Manager not found', 'error');
+                    container.innerHTML = '<div style="color: #f44336;">Parameter Manager not available</div>';
+                }
+                
+                // Check UI panels
+                if (studio.visibilityManager) {
+                    const panels = studio.visibilityManager.getAllPanels?.();
+                    if (panels) {
+                        log(`🔧 VisibilityManager has ${panels.length} panels`, 'info');
+                    }
+                }
+                
+            } catch (error) {
+                log(`❌ Failed to check parameter panels: ${error.message}`, 'error');
+            }
+        };
+        
+        window.testRendering = function() {
+            log('🎨 Testing rendering system...', 'info');
+            
+            try {
+                const canvas = document.getElementById('simulation-display');
+                if (!canvas) {
+                    log('❌ Canvas not found', 'error');
+                    return;
+                }
+                
+                if (!studio) {
+                    log('❌ Studio not available', 'error');
+                    return;
+                }
+                
+                // Try to initialize rendering on our canvas
+                if (studio.graphics && studio.graphics.setCanvas) {
+                    studio.graphics.setCanvas(canvas);
+                    log('✅ Graphics system connected to canvas', 'success');
+                } else if (studio.three) {
+                    // Try to set up basic THREE.js rendering
+                    log('🎯 Attempting basic THREE.js setup...', 'info');
+                    // This would need more sophisticated setup
+                } else {
+                    log('⚠️ No graphics system found to connect', 'warning');
+                }
+                
+                // Try to trigger a render
+                if (studio.render) {
+                    studio.render();
+                    log('✅ Render triggered', 'success');
+                } else {
+                    log('⚠️ No render method found', 'warning');
+                }
+                
+            } catch (error) {
+                log(`❌ Rendering test failed: ${error.message}`, 'error');
+            }
+        };
+        
+        window.testUIIntegration = function() {
+            log('🔧 Testing UI integration...', 'info');
+            
+            try {
+                if (!studio) {
+                    log('❌ Studio not available', 'error');
+                    return;
+                }
+                
+                // Test parameter panel creation
+                if (studio.uiManager && studio.uiManager.createParameterPanel) {
+                    const testPanel = studio.uiManager.createParameterPanel('test', {
+                        testParam: { type: 'number', defaultValue: 1.0, min: 0, max: 10 }
+                    });
+                    
+                    if (testPanel) {
+                        log('✅ Test parameter panel created successfully', 'success');
+                        
+                        // Try to add it to our container
+                        const container = document.getElementById('parameter-panels-container');
+                        if (testPanel.element) {
+                            container.appendChild(testPanel.element);
+                            log('✅ Test panel added to container', 'success');
+                        }
+                    }
+                } else {
+                    log('⚠️ UI Manager parameter panel creation not available', 'warning');
+                }
+                
+                // Test visibility system
+                if (studio.visibilityManager) {
+                    log('✅ Visibility Manager available for panel management', 'success');
+                } else {
+                    log('⚠️ Visibility Manager not available', 'warning');
+                }
+                
+            } catch (error) {
+                log(`❌ UI integration test failed: ${error.message}`, 'error');
+            }
+        };
+        
+        // Auto-run diagnostics when page loads
+        window.addEventListener('load', () => {
+            log('🚀 Debug page loaded, waiting for Studio...', 'info');
+            
+            // Wait for Studio to be available
+            let attempts = 0;
+            const waitForStudio = () => {
+                attempts++;
+                if (window.studio) {
+                    log('✅ Studio detected, running diagnostics...', 'success');
+                    runDiagnostics();
+                } else if (attempts < 50) {
+                    setTimeout(waitForStudio, 200);
+                } else {
+                    log('❌ Studio not detected after 10 seconds', 'error');
+                    updateStatus(0, 'broken', '❌ Studio Timeout');
+                }
+            };
+            
+            setTimeout(waitForStudio, 500);
+        });
+    </script>
+</body>
+</html>
