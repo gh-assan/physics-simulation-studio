@@ -11,12 +11,15 @@ import {
   EntityId
 } from '../../core/simulation/interfaces';
 import { SimulationState } from '../../core/simulation/SimulationState';
+import { PositionComponent } from '../../core/components/PositionComponent';
+import { RenderableComponent } from '../../core/components/RenderableComponent';
+import * as THREE from 'three';
 
 /**
- * Simple Physics Algorithm Example
+ * Enhanced Simple Physics Algorithm
  *
- * This demonstrates a clean, simple physics implementation
- * following the new architecture principles.
+ * This demonstrates a clean physics implementation with proper
+ * entity state management and mesh creation integration.
  */
 class SimplePhysicsAlgorithm implements ISimulationAlgorithm {
   readonly name = 'simple-physics';
@@ -24,10 +27,12 @@ class SimplePhysicsAlgorithm implements ISimulationAlgorithm {
 
   private gravity = -9.81;
   private damping = 0.98;
+  private bounciness = 0.7;
   private entityStates = new Map<EntityId, { x: number; y: number; vx: number; vy: number }>();
+  private world: any; // IWorld reference
 
   step(state: ISimulationState, fixedDeltaTime: number): ISimulationState {
-    // Simple physics: gravity + damping
+    // Simple physics: gravity + damping + position component integration
     for (const entityId of state.entities) {
       const entityState = this.getOrCreateEntityState(entityId);
 
@@ -42,10 +47,23 @@ class SimplePhysicsAlgorithm implements ISimulationAlgorithm {
       entityState.x += entityState.vx * fixedDeltaTime;
       entityState.y += entityState.vy * fixedDeltaTime;
 
-      // Simple ground collision
+      // Simple ground collision with improved bouncing
       if (entityState.y < 0) {
         entityState.y = 0;
-        entityState.vy = -entityState.vy * 0.7; // Bounce with energy loss
+        entityState.vy = -entityState.vy * this.bounciness;
+      }
+
+      // Update the ECS PositionComponent if available
+      if (this.world && this.world.componentManager) {
+        const positionComponent = this.world.componentManager.getComponent(
+          entityId, PositionComponent.type
+        ) as PositionComponent;
+
+        if (positionComponent) {
+          positionComponent.x = entityState.x;
+          positionComponent.y = entityState.y;
+          positionComponent.z = 0; // Keep Z at 0 for 2D-like physics
+        }
       }
     }
 
@@ -96,6 +114,10 @@ class SimplePhysicsAlgorithm implements ISimulationAlgorithm {
     console.log(`🎯 Simple physics initialized with ${entities.length} entities`);
   }
 
+  setWorld(world: any): void {
+    this.world = world;
+  }
+
   dispose(): void {
     this.entityStates.clear();
   }
@@ -125,54 +147,111 @@ class SimplePhysicsAlgorithm implements ISimulationAlgorithm {
 }
 
 /**
- * Simple Renderer Example
+ * Enhanced Simple Physics Renderer
+ *
+ * This renderer creates and manages THREE.js meshes for physics entities.
+ * Meshes are created by the simulation itself, demonstrating the new architecture.
  */
-class SimpleRenderer implements ISimulationRenderer {
+class SimplePhysicsRenderer implements ISimulationRenderer {
   readonly algorithmName = 'simple-physics';
-  readonly rendererType = 'sphere';
+  readonly rendererType = 'physics-spheres';
 
-  private meshes = new Map<EntityId, any>();
+  private meshes = new Map<EntityId, THREE.Mesh>();
+  private world: any; // IWorld reference
+
+  constructor(world: any) {
+    this.world = world;
+  }
 
   canRender(entities: EntityId[]): boolean {
     return entities.length > 0;
   }
 
   render(entities: EntityId[], context: IRenderContext): void {
-    // Simple sphere rendering (placeholder - would use actual 3D library)
+    // Render physics entities with proper mesh management
     for (const entityId of entities) {
       let mesh = this.meshes.get(entityId);
 
+      // Create mesh if it doesn't exist - simulation creates its own meshes!
       if (!mesh) {
-        // Create new sphere mesh (pseudo-code)
-        mesh = context.createMesh(
-          { type: 'sphere', radius: 0.1 },
-          { color: 0x0077ff }
-        );
+        mesh = this.createEntityMesh(entityId, context);
         this.meshes.set(entityId, mesh);
+        console.log(`🎨 Simple Physics: Created mesh for entity ${entityId}`);
       }
 
-      // Update mesh position from physics state
-      // This would read from ECS components in real implementation
-      mesh.position.x = Math.sin(context.time + entityId) * 2;
-      mesh.position.y = Math.cos(context.time + entityId) * 2;
+      // Update mesh position from ECS PositionComponent
+      this.updateMeshFromECS(entityId, mesh);
+    }
+
+    // Clean up meshes for entities that no longer exist
+    this.cleanupUnusedMeshes(entities, context);
+  }
+
+  private createEntityMesh(entityId: EntityId, context: IRenderContext): THREE.Mesh {
+    // Create colorful bouncing spheres
+    const geometry = new THREE.SphereGeometry(0.2, 16, 16);
+
+    // Give each entity a unique color based on its ID
+    const hue = (entityId * 137.508) % 360; // Golden angle distribution
+    const color = new THREE.Color().setHSL(hue / 360, 0.7, 0.6);
+
+    const material = new THREE.MeshLambertMaterial({ color });
+    const mesh = new THREE.Mesh(geometry, material);
+
+    // Add mesh to scene
+    context.scene.add(mesh);
+
+    return mesh;
+  }
+
+  private updateMeshFromECS(entityId: EntityId, mesh: THREE.Mesh): void {
+    // Get position from ECS PositionComponent
+    if (this.world && this.world.componentManager) {
+      const positionComponent = this.world.componentManager.getComponent(
+        entityId, PositionComponent.type
+      ) as PositionComponent;
+
+      if (positionComponent) {
+        mesh.position.set(
+          positionComponent.x,
+          positionComponent.y,
+          positionComponent.z
+        );
+      }
+    }
+  }
+
+  private cleanupUnusedMeshes(currentEntities: EntityId[], context: IRenderContext): void {
+    const currentEntitySet = new Set(currentEntities);
+
+    for (const [entityId, mesh] of this.meshes) {
+      if (!currentEntitySet.has(entityId)) {
+        // Remove from scene and dispose
+        context.scene.remove(mesh);
+        mesh.geometry.dispose();
+        (mesh.material as THREE.Material).dispose();
+        this.meshes.delete(entityId);
+        console.log(`🧹 Simple Physics: Cleaned up mesh for entity ${entityId}`);
+      }
     }
   }
 
   updateVisualParameters(parameters: Record<string, any>): void {
-    if (parameters.color !== undefined) {
-      // Update mesh colors
+    if (parameters.sphereColor !== undefined) {
+      // Update all sphere colors
       for (const mesh of this.meshes.values()) {
-        mesh.material.color = parameters.color;
+        (mesh.material as THREE.MeshLambertMaterial).color.setHex(parameters.sphereColor);
       }
     }
   }
 
   clear(): void {
     for (const [entityId, mesh] of this.meshes) {
-      // Remove from scene (pseudo-code)
       if (mesh.parent) {
         mesh.parent.remove(mesh);
       }
+      mesh.geometry.dispose();
+      (mesh.material as THREE.Material).dispose();
     }
     this.meshes.clear();
   }
@@ -240,7 +319,7 @@ export class SimplePhysicsPlugin implements ISimulationPlugin {
   readonly dependencies: readonly string[] = [];
 
   private algorithm = new SimplePhysicsAlgorithm();
-  private renderer = new SimpleRenderer();
+  private renderer: SimplePhysicsRenderer | null = null;
   private ui = new SimpleUI();
 
   getAlgorithm(): ISimulationAlgorithm {
@@ -248,6 +327,9 @@ export class SimplePhysicsPlugin implements ISimulationPlugin {
   }
 
   getRenderer(): ISimulationRenderer {
+    if (!this.renderer) {
+      throw new Error('Renderer not initialized. Call register() first.');
+    }
     return this.renderer;
   }
 
@@ -296,6 +378,10 @@ export class SimplePhysicsPlugin implements ISimulationPlugin {
   }
 
   register(context: IPluginContext): void {
+    // Initialize renderer with world reference
+    this.renderer = new SimplePhysicsRenderer(context.world);
+    this.algorithm.setWorld(context.world);
+
     // 1. Register algorithm
     context.simulationManager.registerAlgorithm(this.algorithm);
 
@@ -322,6 +408,43 @@ export class SimplePhysicsPlugin implements ISimulationPlugin {
     );
 
     context.logger.log(`✅ ${this.name} plugin registered successfully`);
+  }
+
+  async initializeEntities(world: any): Promise<void> {
+    try {
+      console.log('🎯 Simple Physics: Creating entities with meshes');
+
+      // Create 3 bouncing physics entities
+      const numEntities = 3;
+
+      for (let i = 0; i < numEntities; i++) {
+        // Create entity
+        const entityId = world.createEntity();
+
+        // Add PositionComponent with random starting positions
+        const positionComponent = new PositionComponent(
+          Math.random() * 10 - 5,  // x: -5 to 5
+          Math.random() * 5 + 2,   // y: 2 to 7 (above ground)
+          0,                       // z: 0 (2D physics)
+          'simple-physics'         // simulationType
+        );
+        world.addComponent(entityId, PositionComponent.type, positionComponent);
+
+        // Add RenderableComponent - though mesh creation is now handled by renderer
+        const renderableComponent = new RenderableComponent(
+          'sphere',
+          `hsl(${(i * 120) % 360}, 70%, 60%)` // Different colors
+        );
+        world.addComponent(entityId, RenderableComponent.type, renderableComponent);
+
+        console.log(`✨ Simple Physics: Created entity ${entityId} with components`);
+      }
+
+      console.log(`🎯 Simple Physics: Initialized ${numEntities} bouncing entities`);
+
+    } catch (error) {
+      console.error('❌ Simple Physics: Failed to initialize entities:', error);
+    }
   }
 
   unregister(context: IPluginContext): void {

@@ -24,7 +24,56 @@ export class SimplifiedPropertyInspectorSystem extends System {
   // Initialize with UI renderer
   initialize(uiRenderer: any): void {
     this.parameterManager = new PluginParameterManager(uiRenderer);
-    console.log('✅ Simplified Property Inspector System initialized');
+
+    // Listen for simulation-loaded events to trigger parameter display
+    window.addEventListener('simulation-loaded', (event: any) => {
+      const { simulationName } = event.detail;
+      console.log(`🎯 SimplifiedPropertyInspectorSystem: Detected simulation-loaded: ${simulationName}`);
+
+      // Clear existing parameters
+      this.parameterManager?.clearAll();
+      this.lastActiveSimulation = null; // Force refresh
+
+      // Show demo parameters for the new simulation
+      this.showDemoParametersForPlugin(simulationName);
+    });
+
+    // Also listen for plugin registration events (in case simulation is pre-loaded)
+    if (window.addEventListener) {
+      window.addEventListener('plugin-registered', (event: any) => {
+        console.log(`🔌 SimplifiedPropertyInspectorSystem: Plugin registered: ${event.detail?.pluginName}`);
+
+        // If this plugin becomes the active simulation, show parameters
+        setTimeout(() => {
+          const activePlugin = this.getActivePlugin();
+          if (activePlugin && activePlugin === event.detail?.pluginName) {
+            console.log(`🎯 Auto-showing parameters for newly registered active plugin: ${activePlugin}`);
+            this.showDemoParametersForPlugin(activePlugin);
+          }
+        }, 100);
+      });
+
+      // Listen for force parameter display events
+      window.addEventListener('force-parameter-display', (event: any) => {
+        const pluginName = event.detail?.pluginName;
+        if (pluginName) {
+          console.log(`🔧 SimplifiedPropertyInspectorSystem: Force display parameters for ${pluginName}`);
+          this.showDemoParametersForPlugin(pluginName);
+        }
+      });
+    }
+
+    // Set up periodic check for active simulation changes (backup mechanism)
+    setInterval(() => {
+      const activePlugin = this.getActivePlugin();
+      if (activePlugin && activePlugin !== this.lastActiveSimulation && this.parameterManager) {
+        console.log(`🔄 Periodic check: Active simulation changed to ${activePlugin}`);
+        this.lastActiveSimulation = null; // Force refresh
+        this.showDemoParametersForActiveSimulation();
+      }
+    }, 2000); // Check every 2 seconds
+
+    console.log('✅ Simplified Property Inspector System initialized with comprehensive event listeners');
   }
 
   update(world: IWorld, deltaTime: number): void {
@@ -245,6 +294,19 @@ export class SimplifiedPropertyInspectorSystem extends System {
   forceUpdate(world: IWorld): void {
     const selectedEntity = this.findSelectedEntity(world);
     this.updateParametersForEntity(world, selectedEntity);
+
+    // Also force demo parameters for active simulation
+    const activePlugin = this.getActivePlugin();
+    if (activePlugin) {
+      console.log(`🔧 Force update: showing demo parameters for ${activePlugin}`);
+      this.showDemoParametersForPlugin(activePlugin);
+    }
+  }
+
+  // Public method to force showing demo parameters
+  showParametersForPlugin(pluginName: string): void {
+    console.log(`🎯 Public method: showParametersForPlugin(${pluginName})`);
+    this.showDemoParametersForPlugin(pluginName);
   }
 }
 

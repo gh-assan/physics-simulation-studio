@@ -1,21 +1,30 @@
 import { ISimulationPlugin } from '../../core/plugin/ISimulationPlugin';
-import { PluginParameterSchema } from '../../core/ui/PluginParameterManager';
 import { IWorld } from '../../core/ecs/IWorld';
 import { IStudio } from '../../studio/IStudio';
 import { ISystem } from '../../core/ecs/ISystem';
-import { FlagClothAlgorithm } from './FlagClothAlgorithm';
+import { FlagAlgorithm } from './FlagAlgorithm';
+import { FlagComponent } from './FlagComponent';
+import { PoleComponent } from './PoleComponent';
+import { PositionComponent } from '../../core/components/PositionComponent';
+import { RenderableComponent } from '../../core/components/RenderableComponent';
 
+/**
+ * Flag Simulation Plugin - Simplified Rendering
+ * Uses SimplifiedFlagRenderer for the new clean rendering approach
+ */
 class FlagSimulationPlugin implements ISimulationPlugin {
-  private algorithm: FlagClothAlgorithm;
+  public name = 'flag-simulation';
+  private algorithm: FlagAlgorithm;
   private registeredRenderer: any = null;
   private renderSystem: any = null;
+  private studio: IStudio | null = null; // Store studio reference
 
   constructor() {
-    this.algorithm = new FlagClothAlgorithm();
+    this.algorithm = new FlagAlgorithm();
   }
 
   getName(): string {
-    return "flag-simulation";
+    return 'flag-simulation';
   }
 
   getDependencies(): string[] {
@@ -23,104 +32,56 @@ class FlagSimulationPlugin implements ISimulationPlugin {
   }
 
   register(world: IWorld): void {
-    console.log("Registering Flag Simulation Plugin");
+    // Register core components that might not be registered elsewhere
+    world.registerComponent(PositionComponent);
+    world.registerComponent(RenderableComponent);
 
-    // Import and register components with the world
-    Promise.all([
-      import('./FlagComponent'),
-      import('../../core/components/PositionComponent')
-    ]).then(([{ FlagComponent }, { PositionComponent }]) => {
-      // Register components with the component manager
-      if (world.componentManager && world.componentManager.registerComponent) {
-        try {
-          world.componentManager.registerComponent(FlagComponent);
-          console.log("✅ FlagComponent registered during plugin registration");
-        } catch (error) {
-          console.log("FlagComponent already registered:", (error as Error).message);
-        }
-
-        try {
-          world.componentManager.registerComponent(PositionComponent);
-          console.log("✅ PositionComponent registered during plugin registration");
-        } catch (error) {
-          console.log("PositionComponent already registered:", (error as Error).message);
-        }
-      }
-    }).catch(error => {
-      console.error("❌ Error registering components:", error);
-    });
+    // Register flag-specific components
+    world.registerComponent(FlagComponent);
+    world.registerComponent(PoleComponent);
+    console.log('🏁 Flag simulation registered');
   }
 
   unregister(): void {
-    console.log("Unregistering Flag Simulation Plugin");
-
-    // Clean up renderer when plugin is unregistered
+    // Clean up renderer
     this.unregisterRenderer();
+    console.log('🗑️ FlagSimulationPlugin unregistered');
   }
 
   async initializeEntities(world: IWorld): Promise<void> {
-    // Initialize flag entities in the world
-    console.log('Initializing flag entities');
-
-    // We need to register components first - let's import them synchronously
-    const [{FlagComponent}, {PositionComponent}] = await Promise.all([
-      import('./FlagComponent'),
-      import('../../core/components/PositionComponent'),
-    ]);
-
-    // Register components with the component manager first
-    if (world.componentManager && world.componentManager.registerComponent) {
-      try {
-        world.componentManager.registerComponent(FlagComponent);
-        console.log("✅ FlagComponent registered");
-      } catch (error) {
-        console.log("FlagComponent already registered or registration failed:", (error as Error).message);
-      }
-
-      try {
-        world.componentManager.registerComponent(PositionComponent);
-        console.log("✅ PositionComponent registered");
-      } catch (error) {
-        console.log("PositionComponent already registered or registration failed:", (error as Error).message);
-      }
+    // Check if studio context is available before creating entities
+    if (!this.studio) {
+      console.log('⚠️ No studio context available, skipping flag entity creation');
+      return;
     }
 
-    // Create flag entity
-    const flagEntity = world.createEntity();
+    // Create a flag entity
+    const flag = world.createEntity();
+    world.addComponent(flag, PositionComponent.type, new PositionComponent(0, 2, 0));
+    world.addComponent(flag, FlagComponent.type, new FlagComponent());
+    world.addComponent(flag, RenderableComponent.type, new RenderableComponent('plane', '#ff4444'));
 
-    // Add flag component with default parameters
-    const flagComponent = new FlagComponent(
-      3,    // width
-      2,    // height
-      20,   // segmentsX
-      15,   // segmentsY
-      0.1,  // mass
-      0.3,  // stiffness
-      0.99, // damping
-      "",   // textureUrl
-      0,    // poleEntityId
-      { x: 0.5, y: 0, z: 0 }, // windDirection
-      { x: 0, y: -9.81, z: 0 } // gravity
-    );
+    // Create a pole entity
+    const pole = world.createEntity();
+    world.addComponent(pole, PositionComponent.type, new PositionComponent(0, 0, 0));
+    world.addComponent(pole, PoleComponent.type, new PoleComponent());
+    world.addComponent(pole, RenderableComponent.type, new RenderableComponent('cylinder', '#8B4513'));
 
-    world.componentManager.addComponent(flagEntity, FlagComponent.type, flagComponent);
+    console.log('🏁 Flag simulation entities initialized with simplified rendering');
 
-    // Add position component
-    const positionComponent = new PositionComponent(0, 2, 0, "flag-simulation");
-    world.componentManager.addComponent(flagEntity, PositionComponent.type, positionComponent);
-
-    console.log("✅ Flag entity created with ID:", flagEntity);
-
-    // 🎯 RENDERER REGISTRATION: Now handled by Studio.loadSimulation() orchestrator
-    // when this specific simulation is selected, not during plugin initialization
+    // Register renderer if this simulation is active
     await this.registerRendererIfActive(world);
+  }
 
-    console.log("✅ Flag entities initialized");
+  getSystems(studio: IStudio): ISystem[] {
+    // Store studio reference so it's available for entity initialization
+    this.studio = studio;
+    // The simplified rendering system handles everything
+    return [];
   }
 
   /**
-   * Register renderer when this simulation is specifically loaded/activated
-   * This should be called by Studio.loadSimulation() orchestrator
+   * Register renderer when this simulation is loaded/activated
    */
   public async registerRenderer(world: IWorld): Promise<void> {
     await this.autoDiscoverAndRegisterRenderer(world);
@@ -149,30 +110,32 @@ class FlagSimulationPlugin implements ISimulationPlugin {
 
   /**
    * Register renderer only if this simulation is currently active
-   * (Used during plugin initialization to check if already selected)
    */
   private async registerRendererIfActive(world: IWorld): Promise<void> {
-    // For now, don't auto-register during initialization
-    // Renderer registration will happen when simulation is explicitly loaded
-    console.log('🎯 Flag renderer will be registered when simulation is loaded');
+    const selectedSimulation = (window as any).studio?.selectedSimulation?.getSimulationName?.();
+    if (selectedSimulation === 'flag-simulation') {
+      console.log('🎯 Flag simulation is active, auto-registering renderer...');
+      await this.autoDiscoverAndRegisterRenderer(world);
+    } else {
+      console.log('🎯 Flag simulation not active, skipping renderer registration');
+    }
   }
 
   /**
-   * Auto-discover SimplifiedRenderSystem and register our renderer
+   * Auto-discover and register SimplifiedFlagRenderer with SimplifiedRenderSystem
    */
   private async autoDiscoverAndRegisterRenderer(world: IWorld): Promise<void> {
-    try {
-      // Import SimplifiedRenderSystem first to get the constructor type
-      const { SimplifiedRenderSystem } = await import('../../studio/rendering/simplified/SimplifiedRenderSystem');
+    console.log('🔍 Auto-discovering SimplifiedRenderSystem for flag renderer...');
 
-      // Look for SimplifiedRenderSystem in the world's system manager
-      const renderSystem = (world as any).systemManager?.getSystem(SimplifiedRenderSystem);
+    try {
+      // Access SimplifiedRenderSystem from the world's system manager
+      const renderSystem = (world as any).systemManager?.getSystemByType?.('SimplifiedRenderSystem');
 
       if (renderSystem && typeof renderSystem.registerRenderer === 'function') {
         console.log('🔍 Found SimplifiedRenderSystem, registering flag renderer...');
 
         // Import and create our SimplifiedFlagRenderer
-        const { SimplifiedFlagRenderer } = await import('./renderers/SimplifiedFlagRenderer');
+        const { SimplifiedFlagRenderer } = await import('./SimplifiedFlagRenderer');
         const flagRenderer = new SimplifiedFlagRenderer();
 
         // Store references for cleanup during unregister
@@ -192,21 +155,6 @@ class FlagSimulationPlugin implements ISimulationPlugin {
     }
   }
 
-  getSystems(studio: IStudio): ISystem[] {
-    // Return systems that integrate the algorithm and renderer
-
-    // Import and register components with the world
-    void import('./FlagComponent').then(({FlagComponent}) => {
-      const world = (studio as any).world;
-      if (world && world.componentManager) {
-        world.componentManager.registerComponent(FlagComponent);
-        console.log('✅ FlagComponent registered with ComponentManager');
-      }
-    });
-
-    return [];
-  }
-
   getRenderer(): any {
     return this.registeredRenderer;
   }
@@ -216,87 +164,114 @@ class FlagSimulationPlugin implements ISimulationPlugin {
   }
 
   getDescription?(): string {
-    return "Cloth simulation of a flag with wind dynamics";
+    return "Cloth simulation of a flag with wind dynamics using simplified rendering";
   }
 
   getAuthor?(): string {
     return "Physics Simulation Studio";
   }
 
-  getParameterSchema(): PluginParameterSchema {
-    const flagParameters = [
+  /**
+   * Get parameter schema for parameter panel integration
+   */
+  getParameterSchema(): any {
+    const components = new Map();
+
+    // Add FlagComponent parameters - array format expected by SimplifiedPropertyInspectorSystem
+    components.set('FlagComponent', [
       {
-        key: 'wind.strength',
-        displayName: 'Wind Strength',
-        type: 'number' as const,
-        defaultValue: 0.5,
+        key: 'windStrength',
+        label: 'Wind Strength',
+        type: 'number',
         min: 0,
-        max: 2,
+        max: 20,
         step: 0.1,
-        category: 'physics',
-        description: 'Strength of wind force affecting the flag'
+        group: 'Physics',
+        order: 1
       },
       {
-        key: 'wind.direction',
-        displayName: 'Wind Direction',
-        type: 'number' as const,
-        defaultValue: 0,
-        min: -180,
-        max: 180,
-        step: 1,
-        category: 'physics',
-        description: 'Wind direction in degrees'
+        key: 'damping',
+        label: 'Damping',
+        type: 'number',
+        min: 0.8,
+        max: 1.0,
+        step: 0.01,
+        group: 'Physics',
+        order: 2
       },
       {
-        key: 'cloth.stiffness',
-        displayName: 'Cloth Stiffness',
-        type: 'number' as const,
-        defaultValue: 0.3,
+        key: 'stiffness',
+        label: 'Stiffness',
+        type: 'number',
         min: 0.1,
-        max: 1,
-        step: 0.05,
-        category: 'physics',
-        description: 'Stiffness of the cloth material'
+        max: 2.0,
+        step: 0.1,
+        group: 'Physics',
+        order: 3
       },
       {
-        key: 'cloth.damping',
-        displayName: 'Damping',
-        type: 'number' as const,
-        defaultValue: 0.99,
-        min: 0.9,
-        max: 0.999,
-        step: 0.001,
-        category: 'physics',
-        description: 'Damping factor for cloth motion'
+        key: 'gravity.x',
+        label: 'Gravity X',
+        type: 'number',
+        min: -20,
+        max: 20,
+        step: 0.1,
+        group: 'Environment',
+        order: 4
       },
       {
-        key: 'visual.flagColor',
-        displayName: 'Flag Color',
-        type: 'color' as const,
-        defaultValue: '#ff0000',
-        category: 'visual',
-        description: 'Color of the flag'
+        key: 'gravity.y',
+        label: 'Gravity Y',
+        type: 'number',
+        min: -20,
+        max: 20,
+        step: 0.1,
+        group: 'Environment',
+        order: 5
+      },
+      {
+        key: 'gravity.z',
+        label: 'Gravity Z',
+        type: 'number',
+        min: -20,
+        max: 20,
+        step: 0.1,
+        group: 'Environment',
+        order: 6
       }
-    ];
+    ]);
+
+    // Add PoleComponent parameters - array format expected by SimplifiedPropertyInspectorSystem
+    components.set('PoleComponent', [
+      {
+        key: 'height',
+        label: 'Pole Height',
+        type: 'number',
+        min: 10,
+        max: 100,
+        step: 1,
+        group: 'Structure',
+        order: 1
+      },
+      {
+        key: 'radius',
+        label: 'Pole Radius',
+        type: 'number',
+        min: 0.1,
+        max: 5,
+        step: 0.1,
+        group: 'Structure',
+        order: 2
+      }
+    ]);
 
     return {
-      pluginId: this.getName(),
-      components: new Map([
-        ['FlagComponent', flagParameters]
-      ])
+      pluginId: this.name,
+      components: components
     };
-  }
-
-  // Access the underlying algorithm and renderer for testing
-  getAlgorithm(): FlagClothAlgorithm {
-    return this.algorithm;
-  }
-
-  getFlag(): any {
-    return this.registeredRenderer;
   }
 }
 
 // Export both the class for testing and instance for auto-discovery
 export { FlagSimulationPlugin };
-export default new FlagSimulationPlugin();
+export default FlagSimulationPlugin;

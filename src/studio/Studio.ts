@@ -59,16 +59,19 @@ export class Studio implements IStudio {
 
   public play(): void {
     this.isPlaying = true;
-    // Optionally, dispatch event via ApplicationEventBus in future
+    this.orchestrator.play();
+    Logger.getInstance().log("▶️ Studio: Simulation started");
   }
 
   public pause(): void {
     this.isPlaying = false;
-    // Optionally, dispatch event via ApplicationEventBus in future
+    this.orchestrator.pause();
+    Logger.getInstance().log("⏸️ Studio: Simulation paused");
   }
 
   public reset(): void {
-    // Optionally, dispatch event via ApplicationEventBus in future
+    this.orchestrator.reset();
+    Logger.getInstance().log("🔄 Studio: Simulation reset");
   }
 
   public async loadSimulation(pluginName: string): Promise<void> {
@@ -107,6 +110,9 @@ export class Studio implements IStudio {
   public update(deltaTime: number): void {
     if (this.isPlaying) {
       this.world.update(deltaTime);
+
+      // Step the physics simulation through the orchestrator
+      this.orchestrator.stepSimulation(deltaTime);
     }
   }
 

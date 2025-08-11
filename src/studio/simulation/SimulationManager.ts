@@ -1,6 +1,7 @@
 import { ISimulationAlgorithm, ISimulationState, ISimulationManager, EntityId } from '../../core/simulation/interfaces';
 import { SimulationState } from '../../core/simulation/SimulationState';
 import { TimeSteppingEngine, ITimeSteppingEngine } from '../../core/simulation/TimeSteppingEngine';
+import { ISimulationRenderer } from '../../core/plugin/EnhancedPluginInterfaces';
 
 /**
  * Simulation Manager - Core Algorithm Orchestration
@@ -11,6 +12,7 @@ import { TimeSteppingEngine, ITimeSteppingEngine } from '../../core/simulation/T
  */
 export class SimulationManager implements ISimulationManager {
   private algorithms: Map<string, ISimulationAlgorithm> = new Map();
+  private renderers: Map<string, ISimulationRenderer> = new Map();
   private currentState: SimulationState;
   private timeEngine: ITimeSteppingEngine;
   private isPlaying = false;
@@ -53,6 +55,34 @@ export class SimulationManager implements ISimulationManager {
     this.algorithms.delete(algorithmName);
 
     console.log(`🗑️ Algorithm unregistered: ${algorithmName}`);
+  }
+
+  /**
+   * Register a simulation renderer
+   */
+  registerRenderer(name: string, renderer: ISimulationRenderer): void {
+    this.renderers.set(name, renderer);
+    renderer.initialize(this);
+    console.log(`✅ Renderer registered: ${name}`);
+  }
+
+  /**
+   * Unregister a renderer
+   */
+  unregisterRenderer(name: string): void {
+    const renderer = this.renderers.get(name);
+    if (renderer) {
+      renderer.dispose();
+      this.renderers.delete(name);
+      console.log(`🗑️ Renderer unregistered: ${name}`);
+    }
+  }
+
+  /**
+   * Get all active renderers
+   */
+  getActiveRenderers(): ISimulationRenderer[] {
+    return Array.from(this.renderers.values());
   }
 
   /**
@@ -233,6 +263,16 @@ export class SimulationManager implements ISimulationManager {
     );
 
     this.currentState = timeUpdatedState;
+
+    // Update all renderers with new state
+    for (const renderer of this.renderers.values()) {
+      try {
+        renderer.updateFromState(this.currentState);
+      } catch (error) {
+        console.error('Error updating renderer:', error);
+      }
+    }
+
     this.notifyStateChange();
   }
 
