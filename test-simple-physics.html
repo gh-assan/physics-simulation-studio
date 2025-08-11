@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,7 +17,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-        
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -25,7 +26,7 @@
             gap: 20px;
             height: calc(100vh - 40px);
         }
-        
+
         .controls {
             background: rgba(0, 0, 0, 0.2);
             padding: 20px;
@@ -33,7 +34,7 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .viewport {
             background: rgba(0, 0, 0, 0.1);
             border-radius: 12px;
@@ -41,12 +42,12 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
         }
-        
+
         #main-content {
             width: 100%;
             height: 100%;
         }
-        
+
         h1 {
             margin: 0 0 20px 0;
             font-size: 24px;
@@ -55,7 +56,7 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+
         h2 {
             margin: 20px 0 10px 0;
             font-size: 16px;
@@ -63,7 +64,7 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
             padding-bottom: 5px;
         }
-        
+
         .status {
             font-size: 12px;
             opacity: 0.7;
@@ -73,7 +74,7 @@
             border-radius: 6px;
             border: 1px solid rgba(0, 255, 0, 0.3);
         }
-        
+
         .info {
             font-size: 11px;
             opacity: 0.6;
@@ -82,7 +83,7 @@
             background: rgba(255, 255, 255, 0.05);
             border-radius: 6px;
         }
-        
+
         .architecture-note {
             background: rgba(0, 150, 255, 0.1);
             border: 1px solid rgba(0, 150, 255, 0.3);
@@ -91,30 +92,31 @@
             margin: 15px 0;
             font-size: 12px;
         }
-        
+
         .architecture-note h3 {
             margin: 0 0 8px 0;
             font-size: 13px;
             color: #4ecdc4;
         }
-        
+
         .architecture-note ul {
             margin: 8px 0 0 0;
             padding-left: 16px;
         }
-        
+
         .architecture-note li {
             margin: 4px 0;
             font-size: 11px;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="controls">
             <h1>🎯 Simple Physics</h1>
             <div class="status">✅ Cleaner Architecture Active</div>
-            
+
             <div class="architecture-note">
                 <h3>🏗️ New Architecture Features:</h3>
                 <ul>
@@ -125,10 +127,10 @@
                     <li>Camera settings remain generic</li>
                 </ul>
             </div>
-            
+
             <h2>🎮 Controls</h2>
             <div id="ui-left-panel"></div>
-            
+
             <div class="info">
                 <strong>Test Scenario:</strong><br>
                 • 3 bouncing physics spheres<br>
@@ -144,16 +146,17 @@
                 • Clean component separation
             </div>
         </div>
-        
+
         <div class="viewport">
             <div id="main-content"></div>
         </div>
     </div>
-    
+
     <script>
         console.log('🎯 Starting Simple Physics - Cleaner Architecture Test');
         console.log('📁 Loading from build directory...');
     </script>
     <script type="module" src="/build/src/studio/main.js"></script>
 </body>
+
 </html>

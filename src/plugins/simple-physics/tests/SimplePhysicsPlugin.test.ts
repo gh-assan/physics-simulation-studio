@@ -1,9 +1,9 @@
-import { SimplePhysicsPlugin } from '../SimplePhysicsCleanPlugin';
+import * as THREE from 'three';
 import { World } from '../../../core/ecs/World';
 import { SimulationManager } from '../../../studio/simulation/SimulationManager';
 import { SimplePhysicsAlgorithm } from '../SimplePhysicsAlgorithm';
+import { SimplePhysicsPlugin } from '../SimplePhysicsCleanPlugin';
 import { SimplePhysicsRenderer } from '../SimplePhysicsRenderer';
-import * as THREE from 'three';
 
 // Mock THREE.js components for testing
 jest.mock('three', () => {

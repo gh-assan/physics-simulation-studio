@@ -9,7 +9,7 @@ console.log('========================');
 // Check if required protocol files exist
 const requiredFiles = [
     'TDD_PROTOCOL.md',
-    'CHANGE_SAFETY_CHECKLIST.md', 
+    'CHANGE_SAFETY_CHECKLIST.md',
     'ROLLBACK_STRATEGY.md',
     'SYSTEM_FAILURE_POSTMORTEM.md'
 ];
@@ -36,11 +36,11 @@ if (fs.existsSync(srcDir)) {
     const findTsFiles = (dir) => {
         const files = [];
         const items = fs.readdirSync(dir);
-        
+
         for (const item of items) {
             const fullPath = path.join(dir, item);
             const stat = fs.statSync(fullPath);
-            
+
             if (stat.isDirectory()) {
                 files.push(...findTsFiles(fullPath));
             } else if (item.endsWith('.ts') && !item.endsWith('.test.ts') && !item.endsWith('.spec.ts')) {
@@ -60,7 +60,7 @@ if (fs.existsSync(srcDir)) {
     console.log(`\n📊 Test Coverage Analysis:`);
     console.log(`Source files: ${sourceFiles.length}`);
     console.log(`Test files: ${testFiles.length}`);
-    
+
     if (testFiles.length === 0 && sourceFiles.length > 0) {
         console.warn('⚠️  WARNING: No test files found for existing source code');
         console.warn('   Consider adding tests to follow TDD practices');

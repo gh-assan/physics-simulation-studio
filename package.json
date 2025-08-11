@@ -21,7 +21,9 @@
     "pre-change": "node scripts/pre-change-check.js",
     "safe-commit": "npm run safety-check && git add . && git commit",
     "enforce-ai-protocol": "node scripts/enforce-ai-protocol.js",
-    "ai-compliance": "npm run enforce-ai-protocol"
+    "ai-compliance": "npm run enforce-ai-protocol",
+    "log-learning": "node scripts/log-learning.js",
+    "show-learning": "cat AI_LEARNING_POSTMORTEM.md"
   },
   "repository": {
     "type": "git",

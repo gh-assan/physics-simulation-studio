@@ -1,18 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flag Rendering Clearing Test</title>
     <style>
-        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-        #main-content { width: 800px; height: 600px; border: 1px solid #ccc; margin-bottom: 20px; }
-        .controls { display: flex; gap: 10px; margin-bottom: 20px; }
-        .controls button { padding: 10px 20px; font-size: 14px; cursor: pointer; }
-        .controls button:disabled { opacity: 0.5; cursor: not-allowed; }
-        #log { background: #f0f0f0; padding: 10px; font-family: monospace; font-size: 12px; height: 200px; overflow-y: auto; }
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        #main-content {
+            width: 800px;
+            height: 600px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .controls button {
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .controls button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #log {
+            background: #f0f0f0;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            height: 200px;
+            overflow-y: auto;
+        }
     </style>
 </head>
+
 <body>
     <h1>🎯 Flag Rendering Clearing Test</h1>
     <div class="controls">
@@ -38,7 +72,7 @@
                 if (window.studio) {
                     await window.studio.loadSimulation('flag-simulation');
                     log('✅ Flag simulation loaded successfully');
-                    
+
                     // Start the simulation
                     window.studio.play();
                     log('▶️ Flag simulation started');
@@ -56,7 +90,7 @@
                 if (window.studio) {
                     await window.studio.loadSimulation('solar-system');
                     log('✅ Solar system loaded successfully');
-                    
+
                     // Start the simulation
                     window.studio.play();
                     log('▶️ Solar system simulation started');
@@ -127,7 +161,7 @@
                         meshCount++;
                     }
                 });
-                
+
                 const lastMeshCount = window.lastMeshCount || 0;
                 if (meshCount !== lastMeshCount) {
                     log(`📊 Scene mesh count: ${meshCount} (was ${lastMeshCount})`);
@@ -154,7 +188,8 @@
 
         log('🔄 Waiting for studio to initialize...');
     </script>
-    
+
     <script type="module" src="/src/studio/main.ts"></script>
 </body>
+
 </html>

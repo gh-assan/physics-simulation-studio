@@ -16,7 +16,7 @@ class ProtocolEnforcer {
 
   enforceProtocol() {
     console.log('\n🔍 Checking protocol compliance...');
-    
+
     // Check if protocol file exists
     if (!fs.existsSync(this.protocolFile)) {
       this.addViolation('CRITICAL: AI_ASSISTANT_PROTOCOL.md is missing!');
@@ -26,7 +26,7 @@ class ProtocolEnforcer {
     // Check required protocol files
     const requiredFiles = [
       'TDD_PROTOCOL.md',
-      'CHANGE_SAFETY_CHECKLIST.md', 
+      'CHANGE_SAFETY_CHECKLIST.md',
       'ROLLBACK_STRATEGY.md',
       'DEVELOPMENT_PROTOCOL.md'
     ];
@@ -50,7 +50,7 @@ class ProtocolEnforcer {
     // Check NPM scripts
     const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
     const requiredScripts = ['pre-change', 'tdd-check', 'safety-check', 'safe-commit'];
-    
+
     for (const script of requiredScripts) {
       if (!packageJson.scripts[script]) {
         this.addViolation(`Required NPM script missing: ${script}`);
@@ -81,17 +81,17 @@ class ProtocolEnforcer {
       console.log('\n✅ PROTOCOL COMPLIANCE: PASSED');
       console.log('✅ AI assistants are required to follow established protocols');
       console.log('✅ All enforcement mechanisms are in place');
-      
+
       this.displayProtocolReminder();
       return true;
     } else {
       console.log('\n❌ PROTOCOL COMPLIANCE: FAILED');
       console.log('❌ The following violations were detected:');
-      
+
       for (const violation of this.violations) {
         console.log(`   • ${violation}`);
       }
-      
+
       console.log('\n🚨 AI assistants CANNOT proceed until violations are fixed');
       return false;
     }
@@ -105,7 +105,7 @@ class ProtocolEnforcer {
     console.log('4. Commit using: npm run safe-commit');
     console.log('5. NEVER delete files without understanding them');
     console.log('6. Use rollback if anything fails');
-    
+
     console.log('\n🔒 ENFORCEMENT ACTIVE: All protocols are automatically enforced');
   }
 

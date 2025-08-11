@@ -1,6 +1,4 @@
 import { FlagSimulationPlugin } from '../index';
-import { FlagComponent } from '../FlagComponent';
-import { PoleComponent } from '../PoleComponent';
 
 describe('FlagSimulationPlugin Parameter Schema', () => {
   test('should provide parameter schema with FlagComponent parameters', () => {

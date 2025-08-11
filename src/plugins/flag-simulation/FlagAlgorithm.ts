@@ -1,6 +1,6 @@
-import { ISimulationState, ISimulationAlgorithm } from '../../core/plugin/EnhancedPluginInterfaces';
-import { SimulationManager } from '../../studio/simulation/SimulationManager';
 import { IWorld } from '../../core/ecs/IWorld';
+import { ISimulationAlgorithm, ISimulationState } from '../../core/plugin/EnhancedPluginInterfaces';
+import { SimulationManager } from '../../studio/simulation/SimulationManager';
 import { Vector3 } from './utils/Vector3';
 
 // Internal types for cloth physics
@@ -33,7 +33,7 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
   private readonly gravity = new Vector3(0, -9.81, 0);
   private readonly wind = new Vector3(2, 0, 1);
   private readonly damping = 0.99;
-  private readonly timestep = 1/60;
+  private readonly timestep = 1 / 60;
 
   // Flag dimensions
   private readonly flagWidth = 10;  // Number of points across

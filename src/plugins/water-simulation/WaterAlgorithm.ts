@@ -1,6 +1,6 @@
-import { ISimulationState, ISimulationAlgorithm } from '../../core/plugin/EnhancedPluginInterfaces';
-import { SimulationManager } from '../../studio/simulation/SimulationManager';
 import { IWorld } from '../../core/ecs/IWorld';
+import { ISimulationAlgorithm, ISimulationState } from '../../core/plugin/EnhancedPluginInterfaces';
+import { SimulationManager } from '../../studio/simulation/SimulationManager';
 import { Vector3 } from './utils/Vector3';
 
 /**
@@ -113,9 +113,9 @@ export class WaterAlgorithm implements ISimulationAlgorithm {
           this.particles.push({
             id: id++,
             position: new Vector3(
-              (x - gridSize/2) * spacing,
+              (x - gridSize / 2) * spacing,
               y * spacing + 2.0, // Start above ground
-              (z - gridSize/2) * spacing
+              (z - gridSize / 2) * spacing
             ),
             velocity: new Vector3(0, 0, 0),
             density: this.restDensity,
