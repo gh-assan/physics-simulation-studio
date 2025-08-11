@@ -1,9 +1,9 @@
-import {FlagSimulationPlugin} from '../FlagSimulationPlugin';
-import {World} from '../../../core/ecs/World';
-import {SimulationManager} from '../../../studio/simulation/SimulationManager';
-import {FlagAlgorithm} from '../FlagAlgorithm';
-import {FlagCleanRenderer} from '../FlagCleanRenderer';
 import * as THREE from 'three';
+import { World } from '../../../core/ecs/World';
+import { SimulationManager } from '../../../studio/simulation/SimulationManager';
+import { FlagAlgorithm } from '../FlagAlgorithm';
+import { FlagCleanRenderer } from '../FlagCleanRenderer';
+import { FlagSimulationPlugin } from '../FlagSimulationPlugin';
 
 // Mock THREE.js BufferAttribute for testing
 jest.mock('three', () => {
@@ -113,7 +113,7 @@ describe('FlagSimulationPlugin - Clean Architecture', () => {
       algorithm.initialize(simulationManager);
 
       const initialState = algorithm.getState();
-      algorithm.update(1/60); // One timestep
+      algorithm.update(1 / 60); // One timestep
 
       const updatedState = algorithm.getState();
       // Points should have moved or changed from physics
@@ -224,7 +224,7 @@ describe('FlagSimulationPlugin - Clean Architecture', () => {
 
       // Run multiple timesteps
       for (let i = 0; i < 10; i++) {
-        algorithm.update(1/60);
+        algorithm.update(1 / 60);
       }
 
       const state = algorithm.getState();

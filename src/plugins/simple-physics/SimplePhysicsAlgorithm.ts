@@ -1,6 +1,6 @@
 import { ISimulationAlgorithm, ISimulationState } from '../../core/plugin/EnhancedPluginInterfaces';
-import { SimulationManager } from '../../studio/simulation/SimulationManager';
 import { Vector3 } from '../../core/utils/Vector3';
+import { SimulationManager } from '../../studio/simulation/SimulationManager';
 
 interface SimplePhysicsParticle {
   position: Vector3;

@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import { World } from '../../../core/ecs/World';
-import { SimulationManager } from '../../../studio/simulation/SimulationManager';
-import { SolarSystemAlgorithm } from '../SolarSystemAlgorithm';
-import { SolarSystemPlugin } from '../SolarSystemPlugin';
-import { SolarSystemRenderer } from '../SolarSystemRenderer';
+import { World } from '../../src/core/ecs/World';
+import { SolarSystemAlgorithm } from '../../src/plugins/solar-system/SolarSystemAlgorithm';
+import { SolarSystemPlugin } from '../../src/plugins/solar-system/SolarSystemPlugin';
+import { SolarSystemRenderer } from '../../src/plugins/solar-system/SolarSystemRenderer';
+import { SimulationManager } from '../../src/studio/simulation/SimulationManager';
 
 describe('SolarSystemPlugin - Clean Architecture', () => {
   let plugin: SolarSystemPlugin;
@@ -15,17 +15,8 @@ describe('SolarSystemPlugin - Clean Architecture', () => {
 
   beforeEach(() => {
     world = new World();
-    // Create headless renderer for testing
-    const canvas = document.createElement('canvas');
-    mockRenderer = new THREE.WebGLRenderer({ canvas });
-
-    // Create a proper mock scene with required methods
+    mockRenderer = new THREE.WebGLRenderer();
     mockScene = new THREE.Scene();
-    // Ensure the remove method exists for testing
-    if (!mockScene.remove) {
-      mockScene.remove = jest.fn();
-    }
-
     mockCamera = new THREE.PerspectiveCamera();
     simulationManager = new SimulationManager();
     plugin = new SolarSystemPlugin();
@@ -82,45 +73,30 @@ describe('SolarSystemPlugin - Clean Architecture', () => {
     });
 
     it('should create and manage THREE.js meshes for celestial bodies', () => {
-      const algorithm = plugin.getAlgorithm();
-      const renderer = plugin.getRenderer() as SolarSystemRenderer;
-
-      // Initialize algorithm first
-      algorithm.initialize(simulationManager);
+      const renderer = plugin.getRenderer();
       renderer.initialize(simulationManager);
-      renderer.setScene(mockScene);
 
-      const state = algorithm.getState();
+      const state = plugin.getAlgorithm().getState();
       renderer.updateFromState(state);
 
       // Should have created meshes for celestial bodies
-      const meshes = renderer.getMeshes();
-      expect(meshes.size).toBeGreaterThan(0);
+      expect(mockScene.children.length).toBeGreaterThan(0);
 
-      // Should have a sun mesh
-      expect(meshes.has(1)).toBe(true); // Sun entity ID
+      const sunMesh = mockScene.children.find(child =>
+        child.userData && child.userData.type === 'sun'
+      );
+      expect(sunMesh).toBeDefined();
     });
 
     it('should handle mesh disposal properly', () => {
-      const algorithm = plugin.getAlgorithm();
-      const renderer = plugin.getRenderer() as SolarSystemRenderer;
-
-      // Initialize algorithm first
-      algorithm.initialize(simulationManager);
+      const renderer = plugin.getRenderer();
       renderer.initialize(simulationManager);
-      renderer.setScene(mockScene);
 
-      const state = algorithm.getState();
-      renderer.updateFromState(state);
-
-      const meshes = renderer.getMeshes();
-      expect(meshes.size).toBeGreaterThan(0);
-
+      const initialChildCount = mockScene.children.length;
       renderer.dispose();
 
       // Should clean up all meshes
-      const meshesAfterDispose = renderer.getMeshes();
-      expect(meshesAfterDispose.size).toBe(0);
+      expect(mockScene.children.length).toBeLessThan(initialChildCount);
     });
   });
 

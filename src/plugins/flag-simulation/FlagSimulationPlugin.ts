@@ -1,15 +1,15 @@
+import { PositionComponent } from '@core/components/PositionComponent';
+import { RenderableComponent } from '@core/components/RenderableComponent';
+import { ISystem } from '@core/ecs/ISystem';
+import { IWorld } from '@core/ecs/IWorld';
 import { ISimulationPlugin } from '@core/plugin/ISimulationPlugin';
 import { IEnhancedSimulationPlugin, ISimulationAlgorithm, ISimulationRenderer } from '../../core/plugin/EnhancedPluginInterfaces';
-import { IWorld } from '@core/ecs/IWorld';
-import { ISystem } from '@core/ecs/ISystem';
 import { IStudio } from '../../studio/IStudio';
 import { SimulationManager } from '../../studio/simulation/SimulationManager';
 import { FlagAlgorithm } from './FlagAlgorithm';
 import { FlagCleanRenderer } from './FlagCleanRenderer';
 import { FlagComponent } from './FlagComponent';
 import { PoleComponent } from './PoleComponent';
-import { PositionComponent } from '@core/components/PositionComponent';
-import { RenderableComponent } from '@core/components/RenderableComponent';
 
 /**
  * Enhanced Flag Simulation Plugin with Clean Architecture

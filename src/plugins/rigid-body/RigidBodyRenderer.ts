@@ -1,10 +1,10 @@
+import * as THREE from 'three';
 import {
   ISimulationRenderer,
   ISimulationState
 } from '../../core/plugin/EnhancedPluginInterfaces';
-import { SimulationManager } from '../../studio/simulation/SimulationManager';
 import { Vector3 } from '../../core/utils/Vector3';
-import * as THREE from 'three';
+import { SimulationManager } from '../../studio/simulation/SimulationManager';
 
 interface RigidBody {
   position: Vector3;

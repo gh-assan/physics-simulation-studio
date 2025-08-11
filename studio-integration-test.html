@@ -1,322 +1,337 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studio Integration Test - Parameter Panel Fix</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 20px;
-            font-family: Arial, sans-serif;
-            background: #1a1a1a;
-            color: #ffffff;
-        }
-        
-        .container {
-            display: flex;
-            gap: 20px;
-            height: 80vh;
-        }
-        
-        #left-panel {
-            width: 300px;
-            background: #2a2a2a;
-            border-radius: 8px;
-            padding: 10px;
-            overflow-y: auto;
-        }
-        
-        #main-content {
-            flex: 1;
-            background: #333333;
-            border-radius: 8px;
-            position: relative;
-        }
-        
-        .test-info {
-            background: #0d47a1;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        
-        .test-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .test-button {
-            padding: 10px 20px;
-            background: #1976d2;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        
-        .test-button:hover {
-            background: #1565c0;
-        }
-        
-        .test-results {
-            background: #2e2e2e;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 12px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        
-        .success { color: #4caf50; }
-        .error { color: #f44336; }
-        .warning { color: #ff9800; }
-        .info { color: #2196f3; }
-    </style>
-</head>
-<body>
-    <div class="test-info">
-        <h2>🎯 Studio Integration Test - Parameter Panel Fix</h2>
-        <p>This test verifies that Studio properly connects plugin parameter schemas to the UI system.</p>
-        <p><strong>Expected Result:</strong> Flag simulation parameters should appear in the left panel when simulation is loaded.</p>
-    </div>
-    
-    <div class="test-buttons">
-        <button class="test-button" onclick="testParameterIntegration()">Test Parameter Integration</button>
-        <button class="test-button" onclick="loadFlagSimulation()">Load Flag Simulation</button>
-        <button class="test-button" onclick="checkStudioState()">Check Studio State</button>
-        <button class="test-button" onclick="forceParameterDisplay()">Force Parameter Display</button>
-    </div>
-    
-    <div class="container">
-        <div id="left-panel">
-            <!-- Parameter panels will be rendered here by Tweakpane -->
-        </div>
-        <div id="main-content">
-            <!-- Three.js canvas will be inserted here -->
-        </div>
-    </div>
-    
-    <div class="test-results" id="test-results">
-        <div class="info">🚀 Studio Integration Test Ready</div>
-        <div class="info">Click "Test Parameter Integration" to begin diagnosis</div>
-        <div class="info">Click "Load Flag Simulation" to test the actual integration</div>
-    </div>
 
-    <!-- Include the built Studio code -->
-    <script type="module">
-        // Test functions to verify Studio integration
-        window.testParameterIntegration = function() {
-            log('🎯 TESTING STUDIO PARAMETER INTEGRATION', 'info');
-            
-            // Check if Studio is available
-            if (typeof window.studio === 'undefined') {
-                log('❌ Studio not initialized - waiting for main.js to load...', 'error');
-                setTimeout(() => testParameterIntegration(), 1000);
-                return;
-            }
-            
-            const studio = window.studio;
-            const pluginManager = window.pluginManager;
-            
-            log('✅ Studio initialized', 'success');
-            
-            // Check available simulations
-            const availableSimulations = studio.getAvailableSimulationNames();
-            log(`📋 Available simulations: ${availableSimulations.join(', ')}`, 'info');
-            
-            // Check if flag simulation is available
-            if (availableSimulations.includes('flag-simulation')) {
-                log('✅ Flag simulation plugin found', 'success');
-                
-                // Get the flag plugin
-                const flagPlugin = pluginManager.getPlugin('flag-simulation');
-                if (flagPlugin && typeof flagPlugin.getParameterSchema === 'function') {
-                    log('✅ Flag plugin has getParameterSchema method', 'success');
-                    
-                    const schema = flagPlugin.getParameterSchema();
-                    log(`📝 Parameter schema: ${JSON.stringify({
-                        pluginId: schema.pluginId,
-                        componentCount: schema.components.size
-                    }, null, 2)}`, 'info');
-                    
-                    // Check specific components
-                    for (const [componentType, params] of schema.components) {
-                        log(`   📦 ${componentType}: ${params.length} parameters`, 'info');
-                    }
-                } else {
-                    log('❌ Flag plugin missing getParameterSchema method', 'error');
-                }
-            } else {
-                log('❌ Flag simulation plugin not found', 'error');
-            }
-            
-            // Check if SimplifiedPropertyInspectorSystem is working
-            checkPropertyInspectorSystem();
-        };
-        
-        window.loadFlagSimulation = async function() {
-            log('🎮 LOADING FLAG SIMULATION', 'info');
-            
-            if (typeof window.studio === 'undefined') {
-                log('❌ Studio not initialized', 'error');
-                return;
-            }
-            
-            try {
-                const studio = window.studio;
-                await studio.loadSimulation('flag-simulation');
-                log('✅ Flag simulation loaded successfully', 'success');
-                
-                // Wait a moment for parameters to appear
-                setTimeout(() => {
-                    checkParameterPanels();
-                }, 1000);
-                
-            } catch (error) {
-                log(`❌ Failed to load flag simulation: ${error.message}`, 'error');
-            }
-        };
-        
-        window.checkStudioState = function() {
-            log('🔍 CHECKING STUDIO STATE', 'info');
-            
-            if (typeof window.studio === 'undefined') {
-                log('❌ Studio not initialized', 'error');
-                return;
-            }
-            
-            const studio = window.studio;
-            const world = window.world;
-            
-            // Check current simulation
-            const activeSimulation = studio.getActiveSimulationName();
-            log(`🎮 Active simulation: ${activeSimulation || 'None'}`, 'info');
-            
-            // Check world state
-            const entities = world.componentManager.getAllEntities();
-            log(`🌍 World entities: ${entities.length}`, 'info');
-            
-            // Check systems
-            const systems = world.systemManager.getSystems();
-            log(`⚙️  Active systems: ${systems.length}`, 'info');
-            
-            // Check for property inspector system
-            const propertySystem = systems.find(s => s.constructor.name.includes('PropertyInspector'));
-            if (propertySystem) {
-                log('✅ Property Inspector System found', 'success');
-                if (typeof propertySystem.showParametersForPlugin === 'function') {
-                    log('✅ showParametersForPlugin method available', 'success');
-                } else {
-                    log('❌ showParametersForPlugin method missing', 'error');
-                }
-            } else {
-                log('❌ Property Inspector System not found', 'error');
-            }
-        };
-        
-        window.forceParameterDisplay = function() {
-            log('🔧 FORCING PARAMETER DISPLAY', 'info');
-            
-            if (typeof window.studio === 'undefined') {
-                log('❌ Studio not initialized', 'error');
-                return;
-            }
-            
-            const world = window.world;
-            const systems = world.systemManager.getSystems();
-            
-            // Find property inspector system
-            const propertySystem = systems.find(s => s.constructor.name.includes('PropertyInspector'));
-            if (propertySystem && typeof propertySystem.showParametersForPlugin === 'function') {
-                try {
-                    propertySystem.showParametersForPlugin('flag-simulation');
-                    log('✅ Forced parameter display for flag-simulation', 'success');
-                    
-                    setTimeout(() => {
-                        checkParameterPanels();
-                    }, 500);
-                } catch (error) {
-                    log(`❌ Failed to force parameter display: ${error.message}`, 'error');
-                }
-            } else {
-                log('❌ Cannot force parameter display - method not available', 'error');
-            }
-        };
-        
-        function checkPropertyInspectorSystem() {
-            const world = window.world;
-            if (!world) {
-                log('❌ World not available', 'error');
-                return;
-            }
-            
-            const systems = world.systemManager.getSystems();
-            const propertySystem = systems.find(s => s.constructor.name.includes('PropertyInspector'));
-            
-            if (propertySystem) {
-                log(`✅ Property Inspector System: ${propertySystem.constructor.name}`, 'success');
-                
-                // Check if it has the necessary methods
-                const hasShowParams = typeof propertySystem.showParametersForPlugin === 'function';
-                const hasForceUpdate = typeof propertySystem.forceUpdate === 'function';
-                
-                log(`   📋 showParametersForPlugin: ${hasShowParams ? '✅' : '❌'}`, hasShowParams ? 'success' : 'error');
-                log(`   🔧 forceUpdate: ${hasForceUpdate ? '✅' : '❌'}`, hasForceUpdate ? 'success' : 'error');
-            } else {
-                log('❌ Property Inspector System not found in systems', 'error');
-            }
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Studio Integration Test - Parameter Panel Fix</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #1a1a1a;
+      color: #ffffff;
+    }
+
+    .container {
+      display: flex;
+      gap: 20px;
+      height: 80vh;
+    }
+
+    #left-panel {
+      width: 300px;
+      background: #2a2a2a;
+      border-radius: 8px;
+      padding: 10px;
+      overflow-y: auto;
+    }
+
+    #main-content {
+      flex: 1;
+      background: #333333;
+      border-radius: 8px;
+      position: relative;
+    }
+
+    .test-info {
+      background: #0d47a1;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .test-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .test-button {
+      padding: 10px 20px;
+      background: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .test-button:hover {
+      background: #1565c0;
+    }
+
+    .test-results {
+      background: #2e2e2e;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .success {
+      color: #4caf50;
+    }
+
+    .error {
+      color: #f44336;
+    }
+
+    .warning {
+      color: #ff9800;
+    }
+
+    .info {
+      color: #2196f3;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="test-info">
+    <h2>🎯 Studio Integration Test - Parameter Panel Fix</h2>
+    <p>This test verifies that Studio properly connects plugin parameter schemas to the UI system.</p>
+    <p><strong>Expected Result:</strong> Flag simulation parameters should appear in the left panel when simulation is
+      loaded.</p>
+  </div>
+
+  <div class="test-buttons">
+    <button class="test-button" onclick="testParameterIntegration()">Test Parameter Integration</button>
+    <button class="test-button" onclick="loadFlagSimulation()">Load Flag Simulation</button>
+    <button class="test-button" onclick="checkStudioState()">Check Studio State</button>
+    <button class="test-button" onclick="forceParameterDisplay()">Force Parameter Display</button>
+  </div>
+
+  <div class="container">
+    <div id="left-panel">
+      <!-- Parameter panels will be rendered here by Tweakpane -->
+    </div>
+    <div id="main-content">
+      <!-- Three.js canvas will be inserted here -->
+    </div>
+  </div>
+
+  <div class="test-results" id="test-results">
+    <div class="info">🚀 Studio Integration Test Ready</div>
+    <div class="info">Click "Test Parameter Integration" to begin diagnosis</div>
+    <div class="info">Click "Load Flag Simulation" to test the actual integration</div>
+  </div>
+
+  <!-- Include the built Studio code -->
+  <script type="module">
+    // Test functions to verify Studio integration
+    window.testParameterIntegration = function () {
+      log('🎯 TESTING STUDIO PARAMETER INTEGRATION', 'info');
+
+      // Check if Studio is available
+      if (typeof window.studio === 'undefined') {
+        log('❌ Studio not initialized - waiting for main.js to load...', 'error');
+        setTimeout(() => testParameterIntegration(), 1000);
+        return;
+      }
+
+      const studio = window.studio;
+      const pluginManager = window.pluginManager;
+
+      log('✅ Studio initialized', 'success');
+
+      // Check available simulations
+      const availableSimulations = studio.getAvailableSimulationNames();
+      log(`📋 Available simulations: ${availableSimulations.join(', ')}`, 'info');
+
+      // Check if flag simulation is available
+      if (availableSimulations.includes('flag-simulation')) {
+        log('✅ Flag simulation plugin found', 'success');
+
+        // Get the flag plugin
+        const flagPlugin = pluginManager.getPlugin('flag-simulation');
+        if (flagPlugin && typeof flagPlugin.getParameterSchema === 'function') {
+          log('✅ Flag plugin has getParameterSchema method', 'success');
+
+          const schema = flagPlugin.getParameterSchema();
+          log(`📝 Parameter schema: ${JSON.stringify({
+            pluginId: schema.pluginId,
+            componentCount: schema.components.size
+          }, null, 2)}`, 'info');
+
+          // Check specific components
+          for (const [componentType, params] of schema.components) {
+            log(`   📦 ${componentType}: ${params.length} parameters`, 'info');
+          }
+        } else {
+          log('❌ Flag plugin missing getParameterSchema method', 'error');
         }
-        
-        function checkParameterPanels() {
-            log('🔍 CHECKING PARAMETER PANELS', 'info');
-            
-            const leftPanel = document.getElementById('left-panel');
-            if (!leftPanel) {
-                log('❌ Left panel element not found', 'error');
-                return;
-            }
-            
-            // Check for Tweakpane elements
-            const tweakpaneElements = leftPanel.querySelectorAll('.tp-fldv, .tp-lblv, .tp-brkv');
-            log(`📝 Tweakpane elements found: ${tweakpaneElements.length}`, tweakpaneElements.length > 0 ? 'success' : 'warning');
-            
-            // Check for specific parameter controls
-            const parameterControls = leftPanel.querySelectorAll('input, select, button');
-            log(`🎛️  Parameter controls found: ${parameterControls.length}`, parameterControls.length > 0 ? 'success' : 'warning');
-            
-            if (tweakpaneElements.length === 0) {
-                log('❌ No parameter panels visible - Studio integration issue confirmed', 'error');
-                log('💡 This is the issue we need to fix!', 'warning');
-            } else {
-                log('✅ Parameter panels are visible - Studio integration working!', 'success');
-            }
+      } else {
+        log('❌ Flag simulation plugin not found', 'error');
+      }
+
+      // Check if SimplifiedPropertyInspectorSystem is working
+      checkPropertyInspectorSystem();
+    };
+
+    window.loadFlagSimulation = async function () {
+      log('🎮 LOADING FLAG SIMULATION', 'info');
+
+      if (typeof window.studio === 'undefined') {
+        log('❌ Studio not initialized', 'error');
+        return;
+      }
+
+      try {
+        const studio = window.studio;
+        await studio.loadSimulation('flag-simulation');
+        log('✅ Flag simulation loaded successfully', 'success');
+
+        // Wait a moment for parameters to appear
+        setTimeout(() => {
+          checkParameterPanels();
+        }, 1000);
+
+      } catch (error) {
+        log(`❌ Failed to load flag simulation: ${error.message}`, 'error');
+      }
+    };
+
+    window.checkStudioState = function () {
+      log('🔍 CHECKING STUDIO STATE', 'info');
+
+      if (typeof window.studio === 'undefined') {
+        log('❌ Studio not initialized', 'error');
+        return;
+      }
+
+      const studio = window.studio;
+      const world = window.world;
+
+      // Check current simulation
+      const activeSimulation = studio.getActiveSimulationName();
+      log(`🎮 Active simulation: ${activeSimulation || 'None'}`, 'info');
+
+      // Check world state
+      const entities = world.componentManager.getAllEntities();
+      log(`🌍 World entities: ${entities.length}`, 'info');
+
+      // Check systems
+      const systems = world.systemManager.getSystems();
+      log(`⚙️  Active systems: ${systems.length}`, 'info');
+
+      // Check for property inspector system
+      const propertySystem = systems.find(s => s.constructor.name.includes('PropertyInspector'));
+      if (propertySystem) {
+        log('✅ Property Inspector System found', 'success');
+        if (typeof propertySystem.showParametersForPlugin === 'function') {
+          log('✅ showParametersForPlugin method available', 'success');
+        } else {
+          log('❌ showParametersForPlugin method missing', 'error');
         }
-        
-        function log(message, type = 'info') {
-            const results = document.getElementById('test-results');
-            const div = document.createElement('div');
-            div.className = type;
-            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
-            results.appendChild(div);
-            results.scrollTop = results.scrollHeight;
-            
-            // Also log to console for debugging
-            console.log(`[${type.toUpperCase()}] ${message}`);
+      } else {
+        log('❌ Property Inspector System not found', 'error');
+      }
+    };
+
+    window.forceParameterDisplay = function () {
+      log('🔧 FORCING PARAMETER DISPLAY', 'info');
+
+      if (typeof window.studio === 'undefined') {
+        log('❌ Studio not initialized', 'error');
+        return;
+      }
+
+      const world = window.world;
+      const systems = world.systemManager.getSystems();
+
+      // Find property inspector system
+      const propertySystem = systems.find(s => s.constructor.name.includes('PropertyInspector'));
+      if (propertySystem && typeof propertySystem.showParametersForPlugin === 'function') {
+        try {
+          propertySystem.showParametersForPlugin('flag-simulation');
+          log('✅ Forced parameter display for flag-simulation', 'success');
+
+          setTimeout(() => {
+            checkParameterPanels();
+          }, 500);
+        } catch (error) {
+          log(`❌ Failed to force parameter display: ${error.message}`, 'error');
         }
-        
-        // Auto-start basic checks when page loads
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                log('🚀 Page loaded, waiting for Studio to initialize...', 'info');
-                setTimeout(() => testParameterIntegration(), 2000);
-            }, 1000);
-        });
-    </script>
-    
-    <!-- Load the main Studio application -->
-    <script type="module" src="./build/src/studio/main.js"></script>
+      } else {
+        log('❌ Cannot force parameter display - method not available', 'error');
+      }
+    };
+
+    function checkPropertyInspectorSystem() {
+      const world = window.world;
+      if (!world) {
+        log('❌ World not available', 'error');
+        return;
+      }
+
+      const systems = world.systemManager.getSystems();
+      const propertySystem = systems.find(s => s.constructor.name.includes('PropertyInspector'));
+
+      if (propertySystem) {
+        log(`✅ Property Inspector System: ${propertySystem.constructor.name}`, 'success');
+
+        // Check if it has the necessary methods
+        const hasShowParams = typeof propertySystem.showParametersForPlugin === 'function';
+        const hasForceUpdate = typeof propertySystem.forceUpdate === 'function';
+
+        log(`   📋 showParametersForPlugin: ${hasShowParams ? '✅' : '❌'}`, hasShowParams ? 'success' : 'error');
+        log(`   🔧 forceUpdate: ${hasForceUpdate ? '✅' : '❌'}`, hasForceUpdate ? 'success' : 'error');
+      } else {
+        log('❌ Property Inspector System not found in systems', 'error');
+      }
+    }
+
+    function checkParameterPanels() {
+      log('🔍 CHECKING PARAMETER PANELS', 'info');
+
+      const leftPanel = document.getElementById('left-panel');
+      if (!leftPanel) {
+        log('❌ Left panel element not found', 'error');
+        return;
+      }
+
+      // Check for Tweakpane elements
+      const tweakpaneElements = leftPanel.querySelectorAll('.tp-fldv, .tp-lblv, .tp-brkv');
+      log(`📝 Tweakpane elements found: ${tweakpaneElements.length}`, tweakpaneElements.length > 0 ? 'success' : 'warning');
+
+      // Check for specific parameter controls
+      const parameterControls = leftPanel.querySelectorAll('input, select, button');
+      log(`🎛️  Parameter controls found: ${parameterControls.length}`, parameterControls.length > 0 ? 'success' : 'warning');
+
+      if (tweakpaneElements.length === 0) {
+        log('❌ No parameter panels visible - Studio integration issue confirmed', 'error');
+        log('💡 This is the issue we need to fix!', 'warning');
+      } else {
+        log('✅ Parameter panels are visible - Studio integration working!', 'success');
+      }
+    }
+
+    function log(message, type = 'info') {
+      const results = document.getElementById('test-results');
+      const div = document.createElement('div');
+      div.className = type;
+      div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+      results.appendChild(div);
+      results.scrollTop = results.scrollHeight;
+
+      // Also log to console for debugging
+      console.log(`[${type.toUpperCase()}] ${message}`);
+    }
+
+    // Auto-start basic checks when page loads
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        log('🚀 Page loaded, waiting for Studio to initialize...', 'info');
+        setTimeout(() => testParameterIntegration(), 2000);
+      }, 1000);
+    });
+  </script>
+
+  <!-- Load the main Studio application -->
+  <script type="module" src="./build/src/studio/main.js"></script>
 </body>
+
 </html>

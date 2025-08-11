@@ -10,7 +10,7 @@ console.log('===========================');
 console.log('\n1. Checking protocol files...');
 const requiredFiles = [
     'TDD_PROTOCOL.md',
-    'CHANGE_SAFETY_CHECKLIST.md', 
+    'CHANGE_SAFETY_CHECKLIST.md',
     'ROLLBACK_STRATEGY.md'
 ];
 

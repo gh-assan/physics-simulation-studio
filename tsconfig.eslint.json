@@ -3,6 +3,7 @@
   "include": [
     "src/**/*.ts",
     "test/**/*.ts",
+    "tests/**/*.ts",
     "jest.setup.ts",
     "vite.config.ts",
     ".eslintrc.json",

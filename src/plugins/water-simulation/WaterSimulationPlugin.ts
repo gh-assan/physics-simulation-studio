@@ -1,14 +1,14 @@
+import { PositionComponent } from '@core/components/PositionComponent';
+import { RenderableComponent } from '@core/components/RenderableComponent';
+import { ISystem } from '@core/ecs/ISystem';
+import { IWorld } from '@core/ecs/IWorld';
 import { ISimulationPlugin } from '@core/plugin/ISimulationPlugin';
 import { IEnhancedSimulationPlugin, ISimulationAlgorithm, ISimulationRenderer } from '../../core/plugin/EnhancedPluginInterfaces';
-import { IWorld } from '@core/ecs/IWorld';
-import { ISystem } from '@core/ecs/ISystem';
 import { IStudio } from '../../studio/IStudio';
 import { SimulationManager } from '../../studio/simulation/SimulationManager';
 import { WaterAlgorithm } from './WaterAlgorithm';
-import { WaterRenderer } from './WaterRenderer';
 import { WaterBodyComponent, WaterDropletComponent } from './WaterComponents';
-import { PositionComponent } from '@core/components/PositionComponent';
-import { RenderableComponent } from '@core/components/RenderableComponent';
+import { WaterRenderer } from './WaterRenderer';
 
 /**
  * Enhanced Water Simulation Plugin with Clean Architecture

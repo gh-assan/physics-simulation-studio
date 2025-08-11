@@ -73,7 +73,17 @@ jest.mock('three', () => {
   };
   const mockMesh = {
     position: { set: jest.fn() },
-    rotation: { setFromQuaternion: jest.fn() }
+    rotation: { setFromQuaternion: jest.fn() },
+    geometry: {
+      setAttribute: jest.fn(),
+      getAttribute: jest.fn(() => ({
+        array: new Float32Array([]),
+        needsUpdate: false
+      })),
+      setIndex: jest.fn(),
+      computeVertexNormals: jest.fn(),
+      dispose: jest.fn()
+    }
   };
   const mockQuaternion = {
     x: 0,
@@ -90,10 +100,25 @@ jest.mock('three', () => {
     BoxGeometry: jest.fn(),
     SphereGeometry: jest.fn(),
     PlaneGeometry: jest.fn(),
+    BufferGeometry: jest.fn(() => ({
+      setAttribute: jest.fn(),
+      getAttribute: jest.fn(() => ({
+        array: new Float32Array([]),
+        needsUpdate: false
+      })),
+      setIndex: jest.fn(),
+      computeVertexNormals: jest.fn(),
+      dispose: jest.fn()
+    })),
     MeshBasicMaterial: jest.fn(() => ({})),
+    MeshPhongMaterial: jest.fn(() => ({})),
     Mesh: jest.fn(() => mockMesh),
     Color: jest.fn(),
-    Quaternion: jest.fn(() => mockQuaternion)
+    Quaternion: jest.fn(() => mockQuaternion),
+    BufferAttribute: jest.fn(() => ({})),
+    Float32BufferAttribute: jest.fn(() => ({})),
+    Float32Array: jest.fn(),
+    DoubleSide: 2 // THREE.DoubleSide constant
   };
 });
 

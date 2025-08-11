@@ -3,10 +3,10 @@
  */
 
 import * as THREE from "three";
-import { BaseRenderer, RenderContext } from "../../studio/rendering/simplified/SimplifiedInterfaces";
-import { IWorld } from "../../core/ecs/IWorld";
-import { FlagComponent } from "./FlagComponent";
 import { PositionComponent } from "../../core/components/PositionComponent";
+import { IWorld } from "../../core/ecs/IWorld";
+import { BaseRenderer, RenderContext } from "../../studio/rendering/simplified/SimplifiedInterfaces";
+import { FlagComponent } from "./FlagComponent";
 
 export class SimplifiedFlagRenderer extends BaseRenderer {
   readonly name = "simplified-flag-renderer";

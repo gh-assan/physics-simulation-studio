@@ -1,6 +1,6 @@
+import * as THREE from 'three';
 import { ISimulationRenderer, ISimulationState } from '../../core/plugin/EnhancedPluginInterfaces';
 import { SimulationManager } from '../../studio/simulation/SimulationManager';
-import * as THREE from 'three';
 
 /**
  * Solar System Renderer - Handles THREE.js visualization of celestial bodies

@@ -1,16 +1,16 @@
+import { PositionComponent } from '@core/components/PositionComponent';
+import { RenderableComponent } from '@core/components/RenderableComponent';
+import { ISystem } from '@core/ecs/ISystem';
+import { IWorld } from '@core/ecs/IWorld';
 import { ISimulationPlugin } from '@core/plugin/ISimulationPlugin';
 import { IEnhancedSimulationPlugin, ISimulationAlgorithm, ISimulationRenderer } from '../../core/plugin/EnhancedPluginInterfaces';
-import { IWorld } from '@core/ecs/IWorld';
-import { ISystem } from '@core/ecs/ISystem';
 import { IStudio } from '../../studio/IStudio';
 import { SimulationManager } from '../../studio/simulation/SimulationManager';
+import { ComponentPropertyRegistry } from '../../studio/utils/ComponentPropertyRegistry';
 import { SolarSystemAlgorithm } from './SolarSystemAlgorithm';
 import { SolarSystemRenderer } from './SolarSystemRenderer';
 import { CelestialBodyComponent, OrbitComponent } from './components';
-import { PositionComponent } from '@core/components/PositionComponent';
-import { RenderableComponent } from '@core/components/RenderableComponent';
-import { ComponentPropertyRegistry } from '../../studio/utils/ComponentPropertyRegistry';
-import { positionComponentProperties, celestialBodyComponentProperties, orbitComponentProperties } from './solarSystemComponentProperties';
+import { celestialBodyComponentProperties, orbitComponentProperties, positionComponentProperties } from './solarSystemComponentProperties';
 
 /**
  * Enhanced Solar System Plugin with Clean Architecture

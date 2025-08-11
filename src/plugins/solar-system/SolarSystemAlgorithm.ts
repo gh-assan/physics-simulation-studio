@@ -1,9 +1,7 @@
-import { ISimulationState, ISimulationAlgorithm } from '../../core/plugin/EnhancedPluginInterfaces';
-import { SimulationManager } from '../../studio/simulation/SimulationManager';
-import { IWorld } from '../../core/ecs/IWorld';
 import { PositionComponent } from '../../core/components/PositionComponent';
-import { CelestialBodyComponent, OrbitComponent } from './components';
-import { RenderableComponent } from '../../core/components/RenderableComponent';
+import { IWorld } from '../../core/ecs/IWorld';
+import { ISimulationAlgorithm, ISimulationState } from '../../core/plugin/EnhancedPluginInterfaces';
+import { SimulationManager } from '../../studio/simulation/SimulationManager';
 
 /**
  * Solar System Algorithm - Pure physics calculations without rendering

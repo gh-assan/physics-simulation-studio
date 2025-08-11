@@ -1,9 +1,9 @@
-import {WaterSimulationPlugin} from '../WaterSimulationPlugin';
+import * as THREE from 'three';
 import { World } from '../../../core/ecs/World';
 import { SimulationManager } from '../../../studio/simulation/SimulationManager';
 import { WaterAlgorithm } from '../WaterAlgorithm';
 import { WaterRenderer } from '../WaterRenderer';
-import * as THREE from 'three';
+import { WaterSimulationPlugin } from '../WaterSimulationPlugin';
 
 describe('WaterSimulationPlugin - Clean Architecture', () => {
   let plugin: WaterSimulationPlugin;
@@ -75,7 +75,7 @@ describe('WaterSimulationPlugin - Clean Architecture', () => {
       algorithm.initialize(simulationManager);
 
       const initialState = algorithm.getState();
-      algorithm.update(1/60); // One timestep
+      algorithm.update(1 / 60); // One timestep
 
       const updatedState = algorithm.getState();
       // Particles should have moved or changed
@@ -177,7 +177,7 @@ describe('WaterSimulationPlugin - Clean Architecture', () => {
 
       // Run several timesteps
       for (let i = 0; i < 10; i++) {
-        algorithm.update(1/60);
+        algorithm.update(1 / 60);
       }
 
       const finalState = algorithm.getState();
@@ -190,7 +190,7 @@ describe('WaterSimulationPlugin - Clean Architecture', () => {
 
       // Run simulation for a while
       for (let i = 0; i < 100; i++) {
-        algorithm.update(1/60);
+        algorithm.update(1 / 60);
       }
 
       const state = algorithm.getState();
