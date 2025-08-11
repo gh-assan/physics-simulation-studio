@@ -4,8 +4,6 @@
  * Following TDD protocol: Write minimal failing tests to identify exactly what's broken
  */
 
-import { describe, it, expect, beforeEach } from '@jest/globals';
-
 describe('FOCUSED: Parameter Panel and Sim Display Issues', () => {
 
   describe('Parameter Panel Integration Issue', () => {
@@ -31,16 +29,23 @@ describe('FOCUSED: Parameter Panel and Sim Display Issues', () => {
 
       const flagParams = schema.components.get('FlagComponent');
       expect(flagParams).toBeDefined();
-      expect(flagParams.parameters).toBeDefined();
+      expect(Array.isArray(flagParams)).toBe(true);
 
       // Critical parameters that should be available for parameter panels
-      expect(flagParams.parameters.windStrength).toBeDefined();
-      expect(flagParams.parameters.damping).toBeDefined();
-      expect(flagParams.parameters.stiffness).toBeDefined();
+      const windStrengthParam = flagParams.find((p: any) => p.key === 'windStrength');
+      const dampingParam = flagParams.find((p: any) => p.key === 'damping');
+      const stiffnessParam = flagParams.find((p: any) => p.key === 'stiffness');
+
+      expect(windStrengthParam).toBeDefined();
+      expect(dampingParam).toBeDefined();
+      expect(stiffnessParam).toBeDefined();
 
       const poleParams = schema.components.get('PoleComponent');
       expect(poleParams).toBeDefined();
-      expect(poleParams.parameters.height).toBeDefined();
+      expect(Array.isArray(poleParams)).toBe(true);
+
+      const heightParam = poleParams.find((p: any) => p.key === 'height');
+      expect(heightParam).toBeDefined();
     });
   });
 
