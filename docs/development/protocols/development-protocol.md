@@ -55,10 +55,10 @@ or use VS Code Task: `🔒 Safe Commit`
 
 ### **💡 Protocol Files Reference:**
 
-- `TDD_PROTOCOL.md` - Test-First Development Rules
-- `CHANGE_SAFETY_CHECKLIST.md` - Pre-change analysis requirements
-- `ROLLBACK_STRATEGY.md` - Emergency recovery procedures  
-- `SYSTEM_FAILURE_POSTMORTEM.md` - Learning from past failures
+- `docs/development/protocols/tdd-protocol.md` - Test-First Development Rules
+- `docs/development/protocols/change-safety.md` - Pre-change analysis requirements
+- `docs/development/protocols/rollback-strategy.md` - Emergency recovery procedures  
+- `docs/reports/postmortems/system-failures.md` - Learning from past failures
 
 ## **⚡ This System Prevents:**
 

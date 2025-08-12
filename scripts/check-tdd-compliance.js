@@ -8,10 +8,10 @@ console.log('========================');
 
 // Check if required protocol files exist
 const requiredFiles = [
-    'TDD_PROTOCOL.md',
-    'CHANGE_SAFETY_CHECKLIST.md',
-    'ROLLBACK_STRATEGY.md',
-    'SYSTEM_FAILURE_POSTMORTEM.md'
+    'docs/development/protocols/tdd-protocol.md',
+    'docs/development/protocols/change-safety.md',
+    'docs/development/protocols/rollback-strategy.md',
+    'docs/reports/postmortems/system-failures.md'
 ];
 
 let allFilesExist = true;

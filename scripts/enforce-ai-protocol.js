@@ -25,10 +25,10 @@ class ProtocolEnforcer {
 
     // Check required protocol files
     const requiredFiles = [
-      'TDD_PROTOCOL.md',
-      'CHANGE_SAFETY_CHECKLIST.md',
-      'ROLLBACK_STRATEGY.md',
-      'DEVELOPMENT_PROTOCOL.md'
+      'docs/development/protocols/tdd-protocol.md',
+      'docs/development/protocols/change-safety.md',
+      'docs/development/protocols/rollback-strategy.md',
+      'docs/development/protocols/development-protocol.md'
     ];
 
     for (const file of requiredFiles) {
@@ -115,9 +115,9 @@ class ProtocolEnforcer {
       compliance: this.compliance,
       violations: this.violations,
       protocolFiles: {
-        'AI_ASSISTANT_PROTOCOL.md': fs.existsSync('AI_ASSISTANT_PROTOCOL.md'),
-        'TDD_PROTOCOL.md': fs.existsSync('TDD_PROTOCOL.md'),
-        'DEVELOPMENT_PROTOCOL.md': fs.existsSync('DEVELOPMENT_PROTOCOL.md')
+        'docs/development/protocols/assistant-protocol.md': fs.existsSync('docs/development/protocols/assistant-protocol.md'),
+        'docs/development/protocols/tdd-protocol.md': fs.existsSync('docs/development/protocols/tdd-protocol.md'),
+        'docs/development/protocols/development-protocol.md': fs.existsSync('docs/development/protocols/development-protocol.md')
       },
       enforcementMechanisms: {
         gitHooks: fs.existsSync('.githooks/pre-commit'),

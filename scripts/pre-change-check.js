@@ -9,9 +9,9 @@ console.log('===========================');
 // Step 1: Verify all protocol files exist
 console.log('\n1. Checking protocol files...');
 const requiredFiles = [
-    'TDD_PROTOCOL.md',
-    'CHANGE_SAFETY_CHECKLIST.md',
-    'ROLLBACK_STRATEGY.md'
+    'docs/development/protocols/tdd-protocol.md',
+    'docs/development/protocols/change-safety.md',
+    'docs/development/protocols/rollback-strategy.md'
 ];
 
 for (const file of requiredFiles) {

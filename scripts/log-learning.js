@@ -60,7 +60,7 @@ class PostmortemLogger {
     appendToPostmortem(entry) {
         const content = fs.readFileSync(POSTMORTEM_FILE, 'utf8');
         const insertPosition = content.lastIndexOf('---\n\n**Remember:**');
-        
+
         const newContent = content.slice(0, insertPosition) + entry + '\n' + content.slice(insertPosition);
         fs.writeFileSync(POSTMORTEM_FILE, newContent);
     }
@@ -72,10 +72,10 @@ class PostmortemLogger {
         const content = fs.readFileSync(POSTMORTEM_FILE, 'utf8');
         const commandSectionStart = content.indexOf('## 📚 **COMMON MISTAKES & CORRECT SOLUTIONS**');
         const nextSectionStart = content.indexOf('---', commandSectionStart + 1);
-        
+
         const beforeSection = content.slice(0, nextSectionStart);
         const afterSection = content.slice(nextSectionStart);
-        
+
         const newContent = beforeSection + mistake + '\n' + afterSection;
         fs.writeFileSync(POSTMORTEM_FILE, newContent);
     }

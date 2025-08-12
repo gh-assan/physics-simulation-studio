@@ -14,7 +14,16 @@ The core vision is to create a digital sandbox that is fundamentally extensible.
 - **Data-Driven:** The entire state of a simulation can be serialized to JSON, allowing for robust save/load functionality and sharing of complex scenes via URL.
 - **Decoupled Rendering:** Simulation logic is strictly separated from rendering logic, allowing for the use of best-in-class rendering libraries like **Three.js** (for 3D) and **Pixi.js** (for 2D).
 
-For a complete overview of the project's design and technical foundation, please see the [Architectural Blueprint](./architecture/ARCHITECTURE.md).
+## 📚 Documentation
+
+This project uses a comprehensive documentation system. For complete information:
+
+- **[Documentation Hub](./docs/README.md)** - Main documentation index with navigation to all project docs
+- **[Architecture Overview](./docs/architecture/ARCHITECTURE.md)** - Technical architecture and design
+- **[Getting Started Guide](./docs/development/guides/getting-started.md)** - Project setup and development guide
+- **[Development Protocols](./docs/development/protocols/)** - Development processes and standards
+
+For a complete overview of the project's design and technical foundation, please see the [Architectural Blueprint](./docs/architecture/ARCHITECTURE.md).
 
 ## Getting Started
 
