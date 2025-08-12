@@ -59,6 +59,8 @@ export class SimplifiedRenderSystem extends System {
   update(world: IWorld, deltaTime: number): void {
     const currentTime = performance.now();
 
+    console.log('🎬 SimplifiedRenderSystem.update() called'); // DEBUG: Confirm system is called
+
     // Only render when needed
     const didRender = this.renderManager.render(world, deltaTime);
 
@@ -68,6 +70,8 @@ export class SimplifiedRenderSystem extends System {
 
       const renderTime = performance.now() - currentTime;
       console.log(`🎬 Frame rendered in ${renderTime.toFixed(2)}ms`);
+    } else {
+      console.log('🎬 No rendering needed - no active renderers or no changes'); // DEBUG: Why no render
     }
 
     this.lastRenderTime = currentTime;

@@ -26,8 +26,6 @@ export class SimplifiedRenderManager {
    * Register a renderer
    */
   registerRenderer(renderer: IRenderer): void {
-    console.log(`📝 Registering renderer: ${renderer.name}`);
-
     this.renderers.set(renderer.name, renderer);
     this.markDirty(renderer.name);
 
@@ -99,11 +97,7 @@ export class SimplifiedRenderManager {
 
       if (needsRender) {
         try {
-          const startTime = performance.now();
           renderer.render(context);
-          const endTime = performance.now();
-
-          console.log(`🎨 ${renderer.name}: ${(endTime - startTime).toFixed(2)}ms`);
           didRender = true;
         } catch (error) {
           console.error(`❌ Renderer error (${renderer.name}):`, error);

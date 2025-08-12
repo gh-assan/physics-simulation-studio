@@ -7,22 +7,22 @@ import { IEnhancedSimulationPlugin, ISimulationAlgorithm, ISimulationRenderer } 
 import { IStudio } from '../../studio/IStudio';
 import { SimulationManager } from '../../studio/simulation/SimulationManager';
 import { FlagAlgorithm } from './FlagAlgorithm';
-import { FlagCleanRenderer } from './FlagCleanRenderer';
+import { SimplifiedFlagRenderer } from './SimplifiedFlagRenderer';
 import { FlagComponent } from './FlagComponent';
 import { PoleComponent } from './PoleComponent';
 
 /**
  * Enhanced Flag Simulation Plugin with Clean Architecture
- * Separates algorithm (cloth physics) from renderer (mesh visualization)
+ * Now uses SimplifiedFlagRenderer for compatibility with SimplifiedRenderSystem
  */
 export class FlagSimulationPlugin implements ISimulationPlugin, IEnhancedSimulationPlugin {
   public name = 'flag-simulation';
   private algorithm: FlagAlgorithm;
-  private renderer: FlagCleanRenderer;
+  private renderer: SimplifiedFlagRenderer;
 
   constructor() {
     this.algorithm = new FlagAlgorithm();
-    this.renderer = new FlagCleanRenderer();
+    this.renderer = new SimplifiedFlagRenderer();
   }
 
   getName(): string {

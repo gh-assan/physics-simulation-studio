@@ -11,6 +11,22 @@ import { Logger } from "../core/utils/Logger";
 import { SimplifiedRenderSystem } from "./rendering/simplified/SimplifiedRenderSystem";
 
 export class Studio implements IStudio {
+  /**
+   * Inject a SimulationManager instance into the orchestrator (for test and integration correctness)
+   */
+  public setOrchestratorSimulationManager(simulationManager: any): void {
+    if (this.orchestrator && typeof (this.orchestrator as any).simulationManager !== 'undefined') {
+      (this.orchestrator as any).simulationManager = simulationManager;
+    }
+  }
+  /**
+   * Set the render system on the orchestrator (for test and integration correctness)
+   */
+  public setOrchestratorRenderSystem(renderSystem: SimplifiedRenderSystem): void {
+    if (this.orchestrator && typeof this.orchestrator.setRenderSystem === 'function') {
+      this.orchestrator.setRenderSystem(renderSystem);
+    }
+  }
   private _world: IWorld;
   private pluginManager: IPluginManager;
   private renderSystem?: SimplifiedRenderSystem;

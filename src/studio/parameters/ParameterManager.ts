@@ -28,8 +28,6 @@ export class ParameterManager implements IParameterManager {
     // Set default value
     const algorithmValues = this.parameterValues.get(algorithmName)!;
     algorithmValues.set(parameter.name, parameter.defaultValue);
-
-    console.log(`⚙️ Parameter registered: ${algorithmName}.${parameter.name} = ${parameter.defaultValue}`);
   }
 
   /**
@@ -50,8 +48,6 @@ export class ParameterManager implements IParameterManager {
     this.parameterDefinitions.delete(algorithmName);
     this.parameterValues.delete(algorithmName);
     this.listeners.delete(algorithmName);
-
-    console.log(`🗑️ Parameters unregistered: ${algorithmName} (${paramCount} parameters)`);
   }
 
   /**
@@ -111,8 +107,6 @@ export class ParameterManager implements IParameterManager {
 
     this.updateParameterValue(algorithmName, paramName, value);
     this.notifyParameterChange(algorithmName, paramName, value);
-
-    console.log(`⚙️ Parameter updated: ${algorithmName}.${paramName} = ${value}`);
   }
 
   /**
@@ -160,8 +154,6 @@ export class ParameterManager implements IParameterManager {
     for (const param of parameters) {
       this.resetParameter(algorithmName, param.name);
     }
-
-    console.log(`🔄 All parameters reset for: ${algorithmName}`);
   }
 
   /**

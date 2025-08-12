@@ -1,23 +1,31 @@
 /**
- * SimplifiedFlagRenderer - Clean flag rendering for the simplified render system
+ * SimplifiedFlagRenderer - Clean flag rendering that works with both systems
  */
 
 import * as THREE from "three";
 import { PositionComponent } from "../../core/components/PositionComponent";
 import { IWorld } from "../../core/ecs/IWorld";
 import { BaseRenderer, RenderContext } from "../../studio/rendering/simplified/SimplifiedInterfaces";
+import { ISimulationRenderer, ISimulationState } from "../../core/plugin/EnhancedPluginInterfaces";
+import { SimulationManager } from "../../studio/simulation/SimulationManager";
 import { FlagComponent } from "./FlagComponent";
 
-export class SimplifiedFlagRenderer extends BaseRenderer {
+/**
+ * Flag renderer that implements both old and new interfaces for compatibility
+ */
+export class SimplifiedFlagRenderer extends BaseRenderer implements ISimulationRenderer {
   readonly name = "simplified-flag-renderer";
   readonly priority = 10;
 
   private flagMeshes = new Map<number, THREE.Mesh>();
   private flagMaterial: THREE.MeshPhongMaterial | null = null;
+  private simulationManager: SimulationManager | null = null;
 
   constructor() {
     super();
   }
+
+  // === BaseRenderer interface (new system) ===
 
   /**
    * Check if we can render this entity
@@ -34,9 +42,39 @@ export class SimplifiedFlagRenderer extends BaseRenderer {
   }
 
   /**
-   * Main render method - simple and direct
+   * Check if this renderer needs to render this frame
+   * For animated flag simulation, we always need to render
    */
-  render(context: RenderContext): void {
+  needsRender(): boolean {
+    // For animated cloth simulation, we should render every frame
+    // Also render if we need to check for new entities
+    console.log(`🔍 SimplifiedFlagRenderer.needsRender(): flagMeshes.size = ${this.flagMeshes.size}`);
+    return true; // Always check for new flag entities and render
+  }
+
+  /**
+   * Main render method for new system - simple and direct
+   */
+  render(context: RenderContext): void;
+  /**
+   * Render method for old system - delegates to updateFromState
+   */
+  render(state: ISimulationState): void;
+  /**
+   * Combined render implementation
+   */
+  render(contextOrState: RenderContext | ISimulationState): void {
+    // Handle new system (RenderContext)
+    if ('scene' in contextOrState) {
+      const context = contextOrState as RenderContext;
+      this.renderWithContext(context);
+    } else {
+      // Handle old system (ISimulationState)
+      this.updateFromState(contextOrState as ISimulationState);
+    }
+  }
+
+  private renderWithContext(context: RenderContext): void {
     const { scene, world } = context;
 
     // Debug: Log render call
@@ -61,6 +99,32 @@ export class SimplifiedFlagRenderer extends BaseRenderer {
 
     // Mark as clean after rendering
     this.markClean();
+  }
+
+  // === ISimulationRenderer interface (old system) ===
+
+  /**
+   * Initialize with simulation manager (old system)
+   */
+  initialize(simulationManager: SimulationManager): void {
+    this.simulationManager = simulationManager;
+    console.log('🎨 SimplifiedFlagRenderer initialized with SimulationManager');
+  }
+
+  /**
+   * Set scene for old system
+   */
+  setScene(scene: THREE.Scene): void {
+    // Store scene if needed for old system compatibility
+  }
+
+  /**
+   * Update from simulation state (old system)
+   */
+  updateFromState(state: ISimulationState): void {
+    // For now, this is a no-op since we're using ECS-based rendering
+    // But if needed, we could bridge to the new system here
+    console.log('🎨 SimplifiedFlagRenderer.updateFromState() called (old system)');
   }
 
   /**
@@ -201,11 +265,16 @@ export class SimplifiedFlagRenderer extends BaseRenderer {
   /**
    * Dispose of all resources
    */
-  dispose(): void {
+  dispose(): void;
+  dispose(scene?: THREE.Scene): void;
+  dispose(scene?: THREE.Scene): void {
     console.log('🗑️ Disposing SimplifiedFlagRenderer');
 
     // Dispose of all meshes
     for (const [entityId, mesh] of this.flagMeshes) {
+      if (scene) {
+        scene.remove(mesh);
+      }
       mesh.geometry.dispose();
       if (mesh.material instanceof THREE.Material) {
         mesh.material.dispose();

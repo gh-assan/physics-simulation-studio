@@ -135,7 +135,7 @@ export class CleanArchitectureDemo {
     // Initialize core managers
     this.logger = new SimpleLogger();
     this.eventBus = new SimpleEventBus();
-    this.simulationManager = new SimulationManager();
+    this.simulationManager = SimulationManager.getInstance();
     this.renderManager = new SimulationRenderManager();
     this.parameterManager = new ParameterManager();
 

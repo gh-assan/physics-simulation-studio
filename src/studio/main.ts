@@ -91,9 +91,10 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
   (window as any).visibilityManager = visibilityManager;
 
   const globalControlsFolder = pane.addFolder({ title: "Global Controls" });
-  const playButton = globalControlsFolder.addButton({ title: "Play" }).on("click", () => {
+  const playButton = globalControlsFolder.addButton({ title: "Play" }).on("click", async () => {
     console.log('Play button clicked');
-    studio.play();
+    const { handlePlayButtonClick } = await import('./ui/PlayButtonHandler');
+    await handlePlayButtonClick(studio, stateManager);
   });
   const pauseButton = globalControlsFolder.addButton({ title: "Pause" }).on("click", () => {
     console.log('Pause button clicked');
@@ -105,15 +106,13 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
   });
 
   // Function to update button states based on simulation selection
-  function updateControlButtonStates() {
-    const hasSimulation = !!stateManager.selectedSimulation.state.name?.length;
-    playButton.disabled = !hasSimulation;
-    pauseButton.disabled = !hasSimulation;
-    resetButton.disabled = !hasSimulation;
+  async function updateControlButtonStates() {
+    const { updatePlayButtonStates } = await import('./ui/PlayButtonHandler');
+    updatePlayButtonStates(stateManager, playButton, pauseButton, resetButton);
   }
 
   // Initialize button states
-  updateControlButtonStates();
+  void updateControlButtonStates();
 
   // Register Global Controls panel with VisibilityManager
   visibilityManager.registerGlobalPanel(
@@ -139,7 +138,7 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
     if (options.length === 0) {
       simulationSelectionFolder.addButton({ title: "No simulations available" }).disabled = true;
       stateManager.selectedSimulation.state.name = "";
-      updateControlButtonStates();
+      void updateControlButtonStates();
       return;
     }
 
@@ -159,12 +158,12 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
 
         if (!ev.value || ev.value === "") {
           studio.unloadSimulation();
-          updateControlButtonStates();
+          void updateControlButtonStates();
           return;
         }
 
         void studio.loadSimulation(ev.value);
-        updateControlButtonStates();
+        void updateControlButtonStates();
       });
   }
 
@@ -173,11 +172,14 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
 
   // Listen for simulation state changes to update button states
   stateManager.selectedSimulation.onChange(() => {
-    updateControlButtonStates();
+    void updateControlButtonStates();
   });
 
   // Listen for plugin registration to update simulation selector
-  pluginManager.on(PluginManagerEvent.PLUGIN_REGISTERED, updateSimulationSelector);
+  pluginManager.on(PluginManagerEvent.PLUGIN_REGISTERED, () => {
+    updateSimulationSelector();
+    void updateControlButtonStates();
+  });
 
   return { uiManager, visibilityManager, pane };
 }
