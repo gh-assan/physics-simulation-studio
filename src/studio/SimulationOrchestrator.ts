@@ -17,13 +17,12 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
     private studio: IStudio;
     private simulationManager: ISimulationManager;
 
-    constructor(world: IWorld, pluginManager: IPluginManager, studio: IStudio) {
+    constructor(world: IWorld, pluginManager: IPluginManager, studio: IStudio, simulationManager?: ISimulationManager) {
         this.world = world;
         this.pluginManager = pluginManager;
         this.studio = studio;
-
-        // Initialize simulation manager with 60 FPS target
-        this.simulationManager = new SimulationManager(1/60);
+        // Use injected instance for tests, otherwise singleton
+        this.simulationManager = simulationManager ?? SimulationManager.getInstance();
         Logger.getInstance().log("✅ SimulationOrchestrator: Simulation manager initialized");
     }
 
@@ -41,7 +40,14 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
 
             // Initialize entities FIRST - plugins create their own meshes
             if (activePlugin?.initializeEntities) {
-                await activePlugin.initializeEntities(this.world);
+                // Always pass the singleton SimulationManager instance if two arguments are expected
+                const { SimulationManager } = require('./simulation/SimulationManager');
+                const singletonManager = SimulationManager.getInstance();
+                if (activePlugin.initializeEntities.length >= 2) {
+                    await (activePlugin as any).initializeEntities(this.world, singletonManager);
+                } else {
+                    await activePlugin.initializeEntities(this.world);
+                }
                 Logger.getInstance().log(`🏗️ ${pluginName}: Entities and meshes initialized`);
             }
 
@@ -180,5 +186,11 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
 
     public setRenderSystem(renderSystem: SimplifiedRenderSystem): void {
         this.renderSystem = renderSystem;
+        if (this.simulationManager && typeof (this.simulationManager as any).setRenderSystem === 'function') {
+            (this.simulationManager as any).setRenderSystem(renderSystem);
+        }
+        if (this.simulationManager && typeof (this.simulationManager as any).setRenderSystem === 'function') {
+            (this.simulationManager as any).setRenderSystem(renderSystem);
+        }
     }
 }

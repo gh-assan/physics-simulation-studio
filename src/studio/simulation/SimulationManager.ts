@@ -11,6 +11,14 @@ import { ISimulationRenderer } from '../../core/plugin/EnhancedPluginInterfaces'
  * no nested conditions and clear single responsibilities.
  */
 export class SimulationManager implements ISimulationManager {
+  private static _instance: SimulationManager | undefined;
+
+  public static getInstance(): SimulationManager {
+    if (!SimulationManager._instance) {
+      SimulationManager._instance = new SimulationManager(1/60);
+    }
+    return SimulationManager._instance;
+  }
   private algorithms: Map<string, ISimulationAlgorithm> = new Map();
   private renderers: Map<string, ISimulationRenderer> = new Map();
   private currentState: SimulationState;
@@ -18,6 +26,7 @@ export class SimulationManager implements ISimulationManager {
   private isPlaying = false;
   private listeners: ((state: ISimulationState) => void)[] = [];
   private initialState: SimulationState;
+  private renderSystem?: any; // Use correct type if available
 
   constructor(
     fixedTimestep: number = 1/60,
@@ -58,11 +67,22 @@ export class SimulationManager implements ISimulationManager {
   }
 
   /**
-   * Register a simulation renderer
+   * Set the render system for bridging renderer registration
+   */
+  setRenderSystem(renderSystem: any): void {
+    this.renderSystem = renderSystem;
+  }
+
+  /**
+   * Register a simulation renderer and bridge to render system
    */
   registerRenderer(name: string, renderer: ISimulationRenderer): void {
     this.renderers.set(name, renderer);
     renderer.initialize(this);
+    if (this.renderSystem && typeof this.renderSystem.registerRenderer === 'function') {
+      this.renderSystem.registerRenderer(renderer);
+      console.log(`✅ Renderer also registered with render system: ${name}`);
+    }
     console.log(`✅ Renderer registered: ${name}`);
   }
 

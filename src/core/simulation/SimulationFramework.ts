@@ -69,7 +69,7 @@ export class SimulationFramework {
 
     // Initialize core components
     this.timeEngine = new TimeSteppingEngine(1 / this.config.targetFPS);
-    this.simulationManager = new SimulationManager();
+    this.simulationManager = SimulationManager.getInstance();
 
     // Initialize advanced components if enabled
     this.profiler = new SimulationProfiler();
