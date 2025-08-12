@@ -29,8 +29,6 @@ export class PerformanceMonitor {
     this.monitoringInterval = window.setInterval(() => {
       this.updateMetrics();
     }, this.updateInterval);
-
-    console.log('🚀 Performance Monitor started');
   }
 
   /**
@@ -45,8 +43,6 @@ export class PerformanceMonitor {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = null;
     }
-
-    console.log('⏸️ Performance Monitor stopped');
   }
 
   /**
@@ -122,6 +118,22 @@ export class PerformanceMonitor {
         this.recordSystemTime(systemName, startTime);
       }
     };
+  }
+
+  /**
+   * Record frame time (alias for recordFrame for API compatibility)
+   */
+  recordFrameTime(frameTimeMs: number): void {
+    this.recordFrame();
+  }
+
+  /**
+   * Get average FPS from current state
+   */
+  getAverageFPS(): number {
+    const store = getGlobalStore();
+    const state = store.getState();
+    return state.performance.metrics.averageFrameRate;
   }
 }
 

@@ -52,13 +52,10 @@ export class ErrorManager {
     // Log to console based on level
     if (level === 'critical') {
       Logger.getInstance().error(`[CRITICAL][${context.source}] ${message}`, context);
-      console.error('💥 CRITICAL ERROR:', message, context);
     } else if (level === 'error') {
       Logger.getInstance().error(`[ERROR][${context.source}] ${message}`, context);
-      console.error('❌ ERROR:', message, context);
     } else {
       Logger.getInstance().warn(`[WARNING][${context.source}] ${message}`, context);
-      console.warn('⚠️ WARNING:', message, context);
     }
   }
 
@@ -197,13 +194,8 @@ export class ErrorManager {
    * Handle critical errors
    */
   private handleCriticalError(message: string, context: ErrorContext, error?: Error): void {
-    // Here you could integrate with external error reporting services
-    // like Sentry, Bugsnag, etc.
-
-    console.error('💥💥💥 CRITICAL ERROR REPORTED 💥💥💥');
-    console.error('Message:', message);
-    console.error('Context:', context);
-    console.error('Error:', error);
+    // Log critical error details for debugging
+    Logger.getInstance().error('CRITICAL ERROR REPORTED', { message, context, error });
 
     // Optionally show user notification for critical errors
     this.showUserNotification('A critical error occurred. Please save your work and refresh the page.');
@@ -219,6 +211,15 @@ export class ErrorManager {
         window.alert(`⚠️ ${message}`);
       }, 100);
     }
+  }
+
+  /**
+   * Get the current error count from the global store
+   */
+  getErrorCount(): number {
+    const store = getGlobalStore();
+    const state = store.getState();
+    return state.errors.errors.length;
   }
 }
 

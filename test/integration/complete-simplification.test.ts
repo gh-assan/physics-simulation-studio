@@ -222,16 +222,40 @@ describe('Complete Plugin Simplification', () => {
   });
 
   test('should have complete state management for performance and errors', () => {
-    // This test will fail initially, showing what state management is missing
-    // For now, just verify that the state management system would be testable
+    // This test verifies the complete state management implementation
+    // This should FAIL initially, then PASS after implementation
 
-    // Check if we can import state management components
-    expect(() => {
-      require('../../src/studio/state/ErrorManager');
-      require('../../src/studio/state/PreferencesManager');
-    }).not.toThrow();
+    try {
+      // Test ErrorManager functionality
+      const { ErrorManager } = require('../../src/studio/state/ErrorManager');
+      const errorManager = ErrorManager.getInstance();
 
-    // Note: Full state manager integration pending
-    console.log('Note: Complete state management integration is planned for next phase');
+      // Should handle error reporting without console pollution
+      errorManager.reportError('Test error', 'warning', { source: 'TestPlugin' });
+      expect(errorManager.getErrorCount()).toBeGreaterThan(0);
+
+      // Test PreferencesManager functionality
+      const { PreferencesManager } = require('../../src/studio/state/PreferencesManager');
+      const prefsManager = PreferencesManager.getInstance();
+
+      // Should handle preferences without console pollution
+      prefsManager.setPreference('test.setting', 'testValue');
+      expect(prefsManager.getPreference('test.setting')).toBe('testValue');
+
+      // Test performance monitoring state
+      const { PerformanceMonitor } = require('../../src/studio/state/PerformanceMonitor');
+      const perfMonitor = new PerformanceMonitor();
+
+      // Should track performance without console pollution
+      perfMonitor.recordFrameTime(16.67); // 60fps
+      expect(perfMonitor.getAverageFPS()).toBeGreaterThan(0);
+
+      console.log('✅ All state management systems functional');
+    } catch (error) {
+      // This will initially fail - showing what needs to be implemented
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.log('❌ State management incomplete:', errorMessage);
+      throw new Error(`State management systems not fully implemented: ${errorMessage}`);
+    }
   });
 });
