@@ -96,11 +96,10 @@ npm test  # Verify system restored
 Before starting ANY development work, AI assistant MUST:
 
 1. Confirm all protocol files exist:
-   - `TDD_PROTOCOL.md`
-   - `CHANGE_SAFETY_CHECKLIST.md`
-   - `ROLLBACK_STRATEGY.md`
-   - `SYSTEM_FAILURE_POSTMORTEM.md`
-   - `AI_LEARNING_POSTMORTEM.md` ⭐ **NEW: Check common mistakes and correct commands**
+   - `docs/development/protocols/tdd-protocol.md`
+   - `docs/development/protocols/change-safety.md`
+   - `docs/development/protocols/rollback-strategy.md`
+   - `docs/reports/postmortems/system-failures.md`
 
 2. **Read the Learning Postmortem** to avoid repeating common mistakes:
    - Review command reference card

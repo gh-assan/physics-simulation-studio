@@ -3,9 +3,9 @@
   "compliance": true,
   "violations": [],
   "protocolFiles": {
-    "AI_ASSISTANT_PROTOCOL.md": true,
-    "TDD_PROTOCOL.md": true,
-    "DEVELOPMENT_PROTOCOL.md": true
+    "docs/development/protocols/assistant-protocol.md": true,
+    "docs/development/protocols/tdd-protocol.md": true,
+    "docs/development/protocols/development-protocol.md": true
   },
   "enforcementMechanisms": {
     "gitHooks": true,

@@ -75,13 +75,16 @@ jest.mock('three', () => {
     position: { set: jest.fn() },
     rotation: { setFromQuaternion: jest.fn() },
     geometry: {
-      setAttribute: jest.fn(),
       getAttribute: jest.fn(() => ({
-        array: new Float32Array([]),
+        array: new Float32Array([0, 0, 0]),
         needsUpdate: false
       })),
+      setAttribute: jest.fn(),
       setIndex: jest.fn(),
       computeVertexNormals: jest.fn(),
+      dispose: jest.fn()
+    },
+    material: {
       dispose: jest.fn()
     }
   };
@@ -93,6 +96,41 @@ jest.mock('three', () => {
     set: jest.fn()
   };
 
+  const MockBufferGeometry = jest.fn(() => ({
+    setAttribute: jest.fn(),
+    setIndex: jest.fn(),
+    computeVertexNormals: jest.fn(),
+    dispose: jest.fn(), // Add dispose method
+    getAttribute: jest.fn(() => ({
+      array: new Float32Array([0, 0, 0]),
+      needsUpdate: false
+    })),
+    attributes: {},
+    index: null
+  }));
+
+  const MockMaterial = jest.fn(() => ({
+    dispose: jest.fn()
+  }));
+
+  const MockMeshPhongMaterial = jest.fn(() => ({
+    dispose: jest.fn(),
+    color: { r: 1, g: 0, b: 0 },
+    side: 2 // DoubleSide
+  }));
+
+  const MockFloat32BufferAttribute = jest.fn((array, itemSize) => ({
+    array: array instanceof Array ? new Float32Array(array) : array,
+    itemSize,
+    needsUpdate: false
+  }));
+
+  const MockBufferAttribute = jest.fn((array, itemSize) => ({
+    array: array instanceof Array ? new Float32Array(array) : array,
+    itemSize,
+    needsUpdate: false
+  }));
+
   return {
     Scene: jest.fn(() => mockScene),
     PerspectiveCamera: jest.fn(() => mockCamera),
@@ -100,25 +138,16 @@ jest.mock('three', () => {
     BoxGeometry: jest.fn(),
     SphereGeometry: jest.fn(),
     PlaneGeometry: jest.fn(),
-    BufferGeometry: jest.fn(() => ({
-      setAttribute: jest.fn(),
-      getAttribute: jest.fn(() => ({
-        array: new Float32Array([]),
-        needsUpdate: false
-      })),
-      setIndex: jest.fn(),
-      computeVertexNormals: jest.fn(),
-      dispose: jest.fn()
-    })),
+    BufferGeometry: MockBufferGeometry,
+    Material: MockMaterial,
     MeshBasicMaterial: jest.fn(() => ({})),
-    MeshPhongMaterial: jest.fn(() => ({})),
+    MeshPhongMaterial: MockMeshPhongMaterial,
     Mesh: jest.fn(() => mockMesh),
     Color: jest.fn(),
     Quaternion: jest.fn(() => mockQuaternion),
-    BufferAttribute: jest.fn(() => ({})),
-    Float32BufferAttribute: jest.fn(() => ({})),
-    Float32Array: jest.fn(),
-    DoubleSide: 2 // THREE.DoubleSide constant
+    Float32BufferAttribute: MockFloat32BufferAttribute,
+    BufferAttribute: MockBufferAttribute,
+    DoubleSide: 2
   };
 });
 

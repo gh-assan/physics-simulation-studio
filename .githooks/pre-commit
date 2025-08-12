@@ -7,8 +7,8 @@ echo "🛡️  TDD PROTOCOL ENFORCEMENT CHECK"
 echo "=================================="
 
 # Check if TDD_PROTOCOL.md exists and is being followed
-if [ ! -f "TDD_PROTOCOL.md" ]; then
-    echo "❌ ERROR: TDD_PROTOCOL.md missing!"
+if [ ! -f "docs/development/protocols/tdd-protocol.md" ]; then
+    echo "❌ ERROR: docs/development/protocols/tdd-protocol.md missing!"
     echo "This commit violates safety protocols."
     exit 1
 fi
