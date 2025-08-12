@@ -55,12 +55,18 @@ jest.mock('tweakpane', () => {
 jest.mock('three', () => {
   const mockScene = {
     add: jest.fn(),
+    remove: jest.fn(),
+    children: [],
     background: null
   };
   const mockCamera = {
-    position: { z: 0 },
+    position: {
+      z: 0,
+      set: jest.fn()
+    },
     aspect: 0,
-    updateProjectionMatrix: jest.fn()
+    updateProjectionMatrix: jest.fn(),
+    lookAt: jest.fn()
   };
   const mockRenderer = {
     setSize: jest.fn((width, height) => {
@@ -144,10 +150,32 @@ jest.mock('three', () => {
     MeshPhongMaterial: MockMeshPhongMaterial,
     Mesh: jest.fn(() => mockMesh),
     Color: jest.fn(),
+    Vector3: jest.fn(() => ({
+      x: 0,
+      y: 0,
+      z: 0,
+      set: jest.fn(),
+      copy: jest.fn(),
+      clone: jest.fn()
+    })),
     Quaternion: jest.fn(() => mockQuaternion),
     Float32BufferAttribute: MockFloat32BufferAttribute,
     BufferAttribute: MockBufferAttribute,
-    DoubleSide: 2
+    DoubleSide: 2,
+    PointLight: jest.fn(() => ({
+      position: { set: jest.fn() }
+    })),
+    AmbientLight: jest.fn(() => ({})),
+    DirectionalLight: jest.fn(() => ({
+      position: { set: jest.fn() },
+      lookAt: jest.fn()
+    })),
+    GridHelper: jest.fn(() => ({
+      name: ""
+    })),
+    AxesHelper: jest.fn(() => ({
+      name: ""
+    }))
   };
 });
 

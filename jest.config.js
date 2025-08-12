@@ -13,7 +13,7 @@ module.exports = {
   
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
-    "three/examples/jsm/controls/OrbitControls": "<rootDir>/node_modules/three/examples/jsm/controls/OrbitControls.js",
+    "three/examples/jsm/controls/OrbitControls": "<rootDir>/test/mocks/OrbitControls.ts",
     '@core/(.*)': '<rootDir>/src/core/$1',
     '@plugins/(.*)': '<rootDir>/src/plugins/$1',
     '@studio/(.*)': '<rootDir>/src/studio/$1',
