@@ -2,6 +2,8 @@
 
 ## A Modular, Web-Based Sandbox for Physical Phenomena
 
+> **🚨 AI ASSISTANTS:** Before making any code changes, you MUST read and follow the [AI Assistant Protocol](./docs/development/protocols/assistant-protocol.md). Run `npm run pre-change` first!
+
 Physics Simulation Studio is an open-source project to build a flexible, high-performance, and user-friendly environment where creators can design, simulate, and share a wide array of physical phenomena directly in the browser.
 
 The core vision is to create a digital sandbox that is fundamentally extensible. The architecture is designed to allow entirely new types of simulations—from rigid-body dynamics to optics, fluid dynamics, or soft-body physics—to be integrated as self-contained modules without requiring modification of the core application.

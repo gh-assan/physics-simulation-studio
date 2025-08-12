@@ -9,7 +9,7 @@ console.log('==================================');
 
 class ProtocolEnforcer {
   constructor() {
-    this.protocolFile = 'AI_ASSISTANT_PROTOCOL.md';
+    this.protocolFile = 'docs/development/protocols/assistant-protocol.md';
     this.violations = [];
     this.compliance = true;
   }
@@ -19,7 +19,7 @@ class ProtocolEnforcer {
 
     // Check if protocol file exists
     if (!fs.existsSync(this.protocolFile)) {
-      this.addViolation('CRITICAL: AI_ASSISTANT_PROTOCOL.md is missing!');
+      this.addViolation(`CRITICAL: ${this.protocolFile} is missing!`);
       return false;
     }
 

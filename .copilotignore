@@ -1,0 +1,22 @@
+# Protect AI Protocol files from AI modification
+docs/development/protocols/assistant-protocol.md
+docs/development/protocols/tdd-protocol.md
+docs/development/protocols/change-safety.md
+docs/development/protocols/rollback-strategy.md
+
+# Protect enforcement scripts
+scripts/enforce-ai-protocol.js
+scripts/pre-change-check.js
+scripts/check-tdd-compliance.js
+
+# Protect VS Code configuration that enforces protocol
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/typescript.json
+
+# Protect git hooks that enforce safety
+.githooks/pre-commit
+
+# Protect learning and compliance records
+AI_LEARNING_POSTMORTEM.md
+protocol-compliance-report.json
