@@ -59,21 +59,13 @@ export class VisibilityManager {
     type: 'global' | 'plugin' | 'system' = 'system',
     metadata?: PanelRegistration['metadata']
   ): boolean {
-    console.log(`[VisibilityManager] registerPanel called:`, { panelId, element, container, type });
-
     if (this.panels.has(panelId)) {
       console.warn(`Panel with ID '${panelId}' is already registered`);
       return false;
     }
 
     // Mount the element to the container if not already mounted
-    if (container.contains(element)) {
-      console.log(`[VisibilityManager] Element already in container`);
-      // Still need to register the panel
-    }
-
     if (!container.contains(element)) {
-      console.log(`[VisibilityManager] Appending element to container`);
       container.appendChild(element);
     }
 
@@ -85,8 +77,6 @@ export class VisibilityManager {
       type,
       metadata
     });
-
-    console.log(`[VisibilityManager] Panel registered. Total panels:`, this.panels.size);
 
     // Apply initial responsive layout
     this.applyResponsiveLayout(element);

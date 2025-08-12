@@ -126,6 +126,73 @@ describe('Complete Plugin Simplification', () => {
     expect([...systemPollution, ...paramPollution]).toHaveLength(0);
   });
 
+  test('should have clean console output from rendering and UI systems', async () => {
+    // This test identifies remaining console pollution from rendering & UI systems
+    consoleLogs = [];
+
+    // Test SimplifiedRenderManager (identified as major polluter)
+    const { SimplifiedRenderManager } = await import('../../src/studio/rendering/simplified/SimplifiedRenderManager');
+
+    // Create mock THREE.js objects for testing
+    const mockScene = new (class MockScene {
+      add() {}
+      remove() {}
+      children = [];
+    })();
+    const mockCamera = new (class MockCamera {
+      updateProjectionMatrix() {}
+    })();
+
+    const renderManager = new SimplifiedRenderManager(mockScene as any, mockCamera as any);
+
+    // Register a mock renderer to trigger console logs
+    const mockRenderer = {
+      name: 'test-renderer',
+      priority: 1,
+      canRender: () => true,
+      render: () => {},
+      dispose: () => {}
+    };
+    renderManager.registerRenderer(mockRenderer);
+
+    // Simulate render call
+    const mockWorld = { entities: [] };
+    renderManager.render(mockWorld as any, 16.67); // Simulate 60fps frame
+
+    // Test VisibilityManager
+    const { VisibilityManager } = await import('../../src/studio/ui/VisibilityManager');
+    const visibilityManager = new VisibilityManager();
+    const testElement = document.createElement('div');
+    const testContainer = document.createElement('div');
+
+    visibilityManager.registerPanel('test-panel', testElement, testContainer, 'system');
+
+    // Check for pollution sources
+    const renderPollution = consoleLogs.filter(log =>
+      log.includes('📝') || log.includes('🎨') ||
+      log.includes('Registering renderer') || log.includes('ms')
+    );
+
+    const visibilityPollution = consoleLogs.filter(log =>
+      log.includes('[VisibilityManager]') || log.includes('registerPanel') ||
+      log.includes('Appending element') || log.includes('Panel registered')
+    );
+
+    // Report findings
+    if (renderPollution.length > 0) {
+      console.log('🚨 SimplifiedRenderManager pollution:');
+      renderPollution.forEach(log => console.log(`  - ${log}`));
+    }
+
+    if (visibilityPollution.length > 0) {
+      console.log('🚨 VisibilityManager pollution:');
+      visibilityPollution.forEach(log => console.log(`  - ${log}`));
+    }
+
+    // This should fail initially, then pass after cleanup
+    expect([...renderPollution, ...visibilityPollution]).toHaveLength(0);
+  });
+
   test('should support plugin-owned parameters without central registry', () => {
     // This test verifies the clean parameter architecture
     // Parameters should be defined within plugins, not in core
