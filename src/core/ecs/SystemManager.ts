@@ -27,18 +27,14 @@ export class SystemManager implements ISystemManager {
    * @param world The world the system is being registered with
    */
   public registerSystem(system: ISystem, world?: IWorld): void {
-    console.log(`[SystemManager] Registering system: ${system.constructor.name} with priority ${system.priority}`);
     this.systems.push(system);
-    console.log(`[SystemManager] Total systems after registration: ${this.systems.length}`);
 
     // Call the system's onRegister method if a world is provided
     if (world && system.onRegister) {
-      console.log(`[SystemManager] Calling onRegister for ${system.constructor.name}`);
       system.onRegister(world);
     }
 
     this.emitSystemRegistered(system);
-    console.log(`[SystemManager] System registration complete for ${system.constructor.name}`);
   }
 
   /**

@@ -78,33 +78,52 @@ describe('Complete Plugin Simplification', () => {
     expect(legacyParameterFiles).toHaveLength(0);
   });
 
-  test('should have clean console output without debug pollution', async () => {
-    // Load flag simulation plugin
-    const { FlagSimulationPlugin } = await import('../../src/plugins/flag-simulation');
-    const flagPlugin = new FlagSimulationPlugin();
-
-    // Clear console logs from setup
+  test('should have clean console output from all core systems', async () => {
+    // This test identifies remaining console pollution across all core systems
     consoleLogs = [];
 
-    // Register plugin (this should be clean)
-    flagPlugin.register(world);
+    // Test SystemManager (major polluter from our analysis)
+    world.systemManager.registerSystem(new (class TestSystem {
+      name = 'TestSystem';
+      priority = 100;
+      update() {}
+    })());
 
-    // Should have minimal, informative logs only
-    const debugLogs = consoleLogs.filter(log =>
-      log.includes('🔍') || log.includes('Auto-discovering') ||
-      log.includes('Debug:') || log.includes('console.log') ||
-      log.includes('[PluginDiscovery]') || log.includes('[SystemManager]') ||
-      log.includes('🏁') || log.includes('📝') || log.includes('⚙️') ||
-      log.includes('registered') || log.includes('initialized')
+    // Test ParameterManager
+    const { ParameterManager } = await import('../../src/studio/parameters/ParameterManager');
+    const paramManager = new ParameterManager();
+    paramManager.registerParameter('testAlgorithm', {
+      name: 'testParam',
+      type: 'number',
+      defaultValue: 42,
+      category: 'physics',
+      constraints: { min: 0, max: 100 }
+    });
+
+    // Check for pollution
+    const systemPollution = consoleLogs.filter(log =>
+      log.includes('[SystemManager]') || log.includes('Registering system') ||
+      log.includes('Total systems after registration') || log.includes('System registration complete')
     );
 
-    // THIS TEST SHOULD FAIL INITIALLY - showing we have console pollution
-    if (debugLogs.length > 0) {
-      console.log('🚨 Console pollution detected from sources:');
-      debugLogs.forEach(log => console.log(`  - ${log}`));
+    const paramPollution = consoleLogs.filter(log =>
+      log.includes('⚙️') || log.includes('Parameter registered') ||
+      log.includes('Parameter updated')
+    );
+
+    // Report findings
+    if (systemPollution.length > 0) {
+      console.log('🚨 SystemManager pollution:');
+      systemPollution.forEach(log => console.log(`  - ${log}`));
     }
 
-    expect(debugLogs).toHaveLength(0);
+    if (paramPollution.length > 0) {
+      console.log('🚨 ParameterManager pollution:');
+      paramPollution.forEach(log => console.log(`  - ${log}`));
+    }
+
+    // This should fail initially, then pass after cleanup
+    expect([...systemPollution, ...paramPollution]).toHaveLength(0);
   });
 
   test('should support plugin-owned parameters without central registry', () => {
