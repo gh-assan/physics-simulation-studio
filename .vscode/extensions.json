@@ -1,0 +1,46 @@
+{
+  "recommendations": [
+    // AI and Copilot extensions
+    "github.copilot",
+    "github.copilot-chat",
+    
+    // Testing and TDD support
+    "ms-vscode.vscode-jest",
+    "orta.vscode-jest",
+    "hbenl.vscode-test-explorer",
+    
+    // Code quality and safety
+    "ms-vscode.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    
+    // Git and version control
+    "eamodio.gitlens",
+    "donjayamanne.githistory",
+    
+    // Development workflow
+    "alefragnani.project-manager",
+    "formulahendry.auto-rename-tag",
+    "christian-kohler.path-intellisense",
+    
+    // TypeScript support
+    "ms-vscode.vscode-typescript-next",
+    
+    // Markdown support for protocol documentation
+    "yzhang.markdown-all-in-one",
+    "davidanson.vscode-markdownlint",
+    
+    // Task and terminal management
+    "ms-vscode.task-buttons",
+    "fabiospampinato.vscode-terminals",
+    
+    // Protocol enforcement helpers
+    "gruntfuggly.todo-tree",
+    "aaron-bond.better-comments"
+  ],
+  
+  // These extensions help with protocol compliance
+  "unwantedRecommendations": [
+    "ms-vscode.vscode-json"
+  ]
+}
