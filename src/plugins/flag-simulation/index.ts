@@ -39,19 +39,16 @@ class FlagSimulationPlugin implements ISimulationPlugin {
     // Register flag-specific components
     world.registerComponent(FlagComponent);
     world.registerComponent(PoleComponent);
-    console.log('🏁 Flag simulation registered');
   }
 
   unregister(): void {
     // Clean up renderer
     this.unregisterRenderer();
-    console.log('🗑️ FlagSimulationPlugin unregistered');
   }
 
   async initializeEntities(world: IWorld): Promise<void> {
     // Check if studio context is available before creating entities
     if (!this.studio) {
-      console.log('⚠️ No studio context available, skipping flag entity creation');
       return;
     }
 
@@ -66,8 +63,6 @@ class FlagSimulationPlugin implements ISimulationPlugin {
     world.addComponent(pole, PositionComponent.type, new PositionComponent(0, 0, 0));
     world.addComponent(pole, PoleComponent.type, new PoleComponent());
     world.addComponent(pole, RenderableComponent.type, new RenderableComponent('cylinder', '#8B4513'));
-
-    console.log('🏁 Flag simulation entities initialized with simplified rendering');
 
     // Register renderer if this simulation is active
     await this.registerRendererIfActive(world);
@@ -95,7 +90,6 @@ class FlagSimulationPlugin implements ISimulationPlugin {
       // Unregister renderer from SimplifiedRenderSystem
       if (typeof this.renderSystem.unregisterRenderer === 'function') {
         this.renderSystem.unregisterRenderer(this.registeredRenderer);
-        console.log('🗑️ SimplifiedFlagRenderer unregistered from SimplifiedRenderSystem');
       }
 
       // Clean up renderer resources
@@ -114,10 +108,7 @@ class FlagSimulationPlugin implements ISimulationPlugin {
   private async registerRendererIfActive(world: IWorld): Promise<void> {
     const selectedSimulation = (window as any).studio?.selectedSimulation?.getSimulationName?.();
     if (selectedSimulation === 'flag-simulation') {
-      console.log('🎯 Flag simulation is active, auto-registering renderer...');
       await this.autoDiscoverAndRegisterRenderer(world);
-    } else {
-      console.log('🎯 Flag simulation not active, skipping renderer registration');
     }
   }
 
@@ -125,15 +116,11 @@ class FlagSimulationPlugin implements ISimulationPlugin {
    * Auto-discover and register SimplifiedFlagRenderer with SimplifiedRenderSystem
    */
   private async autoDiscoverAndRegisterRenderer(world: IWorld): Promise<void> {
-    console.log('🔍 Auto-discovering SimplifiedRenderSystem for flag renderer...');
-
     try {
       // Access SimplifiedRenderSystem from the world's system manager
       const renderSystem = (world as any).systemManager?.getSystemByType?.('SimplifiedRenderSystem');
 
       if (renderSystem && typeof renderSystem.registerRenderer === 'function') {
-        console.log('🔍 Found SimplifiedRenderSystem, registering flag renderer...');
-
         // Import and create our SimplifiedFlagRenderer
         const { SimplifiedFlagRenderer } = await import('./SimplifiedFlagRenderer');
         const flagRenderer = new SimplifiedFlagRenderer();
@@ -144,13 +131,9 @@ class FlagSimulationPlugin implements ISimulationPlugin {
 
         // Register with the simplified render system
         renderSystem.registerRenderer(flagRenderer);
-
-        console.log('✅ SimplifiedFlagRenderer registered with SimplifiedRenderSystem');
-      } else {
-        console.log('⚠️ SimplifiedRenderSystem not found, flag rendering may not work');
-        console.log('Available systems:', (world as any).systemManager?.getAllSystems?.().map((s: any) => s.constructor.name) || 'No systems found');
       }
     } catch (error) {
+      // Only log actual errors, not debug information
       console.error('❌ Failed to auto-register flag renderer:', error);
     }
   }

@@ -8,7 +8,37 @@ This document captures recurring mistakes and lessons learned to prevent future 
 
 ## 📚 **COMMON MISTAKES & CORRECT SOLUTIONS**
 
-### **1. LINT COMMAND ERRORS**
+### **1. CONSOLE POLLUTION IN PRODUCTION CODE**
+
+❌ **WRONG APPROACH:**
+```typescript
+// Debug logging in production systems
+console.log('[PluginDiscovery] Plugin system ready...');
+console.log('[SystemManager] Registering system...');
+console.log('🏁 Flag simulation registered');
+console.log('📝 Registering renderer...');
+console.log('⚙️ Parameter registered...');
+```
+
+✅ **CORRECT APPROACH:**
+```typescript
+// Use proper logging with levels
+Logger.getInstance().debug('[PluginDiscovery] Plugin system ready');
+// Or remove debug logs entirely from production code
+// Only keep critical error/warning messages
+```
+
+**IDENTIFIED CONSOLE POLLUTION SOURCES (Dec 2025):**
+1. **PluginDiscoveryService.ts** - Lines 51, 75, 129 (registration messages)
+2. **SystemManager.ts** - Lines 30, 32, 41 (system registration)
+3. **FlagSimulationPlugin** - Lines 42, 70, 120 (emoji status messages)
+4. **SimplifiedRenderManager.ts** - Lines 29, 106, 109 (render timing logs)
+5. **ParameterManager.ts** - Lines 32, 115, 164, 54 (parameter operations)
+6. **VisibilityManager.ts** - Lines 62, 76, 89, 65, 138, 180 (panel management)
+
+**LESSON LEARNED:** Debug console.log statements should be removed from production code or replaced with proper logging levels. Test environments reveal production logging pollution.
+
+### **2. TEST FILE LOCATION ERRORS**
 
 ❌ **WRONG COMMANDS COMMONLY USED:**
 ```bash

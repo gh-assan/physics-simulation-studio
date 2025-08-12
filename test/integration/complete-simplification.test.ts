@@ -92,8 +92,17 @@ describe('Complete Plugin Simplification', () => {
     // Should have minimal, informative logs only
     const debugLogs = consoleLogs.filter(log =>
       log.includes('🔍') || log.includes('Auto-discovering') ||
-      log.includes('Debug:') || log.includes('console.log')
+      log.includes('Debug:') || log.includes('console.log') ||
+      log.includes('[PluginDiscovery]') || log.includes('[SystemManager]') ||
+      log.includes('🏁') || log.includes('📝') || log.includes('⚙️') ||
+      log.includes('registered') || log.includes('initialized')
     );
+
+    // THIS TEST SHOULD FAIL INITIALLY - showing we have console pollution
+    if (debugLogs.length > 0) {
+      console.log('🚨 Console pollution detected from sources:');
+      debugLogs.forEach(log => console.log(`  - ${log}`));
+    }
 
     expect(debugLogs).toHaveLength(0);
   });
