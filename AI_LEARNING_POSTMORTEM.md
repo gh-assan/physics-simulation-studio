@@ -43,7 +43,41 @@ npm run style        # For ESLint fixing (npx eslint . --fix)
 
 ---
 
-### **2. TEST COMMAND PATTERNS**
+### **2. TEST FILE LOCATION ERRORS**
+
+❌ **WRONG TEST LOCATION:**
+```
+src/tests/                    # This causes linting issues!
+src/tests/integration/        # NOT included in tsconfig include paths
+```
+
+✅ **CORRECT TEST LOCATION:**
+```
+test/                         # Correct location as per tsconfig.json
+test/integration/            # This is properly included in tsconfig
+tests/                       # Alternative correct location
+```
+
+**LESSON LEARNED:** Always check `tsconfig.json` "include" paths before placing test files. Incorrect test placement causes linting failures and is not recognized by the build system.
+
+**CURRENT CORRECT PATHS FROM tsconfig.json:**
+- `"include": ["src/**/*.ts", "test/**/*.ts", "jest.setup.ts", "vite.config.ts"]`
+- Tests should be in `test/` directory, NOT `src/tests/`
+
+❌ **WRONG:** `src/tests/integration/my-test.ts`
+✅ **CORRECT:** `test/integration/my-test.ts`
+**Context:** Test files in wrong locations cause "extraneous import" errors and linting failures
+
+**CRITICAL PROTOCOL REMINDER:** 
+- **ALWAYS check tsconfig.json include paths before creating test files**
+- **ALWAYS check jest.config.js testMatch patterns before placing test files**
+- **ALWAYS verify file locations match project structure conventions**
+- **Test files in wrong locations will break linting and CI/CD**
+- **Jest testMatch must include all test directories: both src/**/*.test.ts AND test/**/*.test.ts**
+
+---
+
+### **3. TEST COMMAND PATTERNS**
 
 ❌ **COMMON MISTAKES:**
 ```bash

@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 console.log('\n🚨🚨🚨 AI ASSISTANT PROTOCOL ENFORCEMENT 🚨🚨🚨');
-console.log('=' .repeat(60));
+console.log('='.repeat(60));
 
 console.log(`
 🤖 ATTENTION ALL AI ASSISTANTS (INCLUDING COPILOT):
@@ -50,7 +50,7 @@ try {
   console.log('❌ Protocol Enforcement: ERROR');
 }
 
-console.log('\n' + '=' .repeat(60));
+console.log('\n' + '='.repeat(60));
 console.log('🔒 PROTOCOL ENFORCEMENT IS NOW ACTIVE');
 console.log('🤖 All AI assistants must comply');
-console.log('=' .repeat(60) + '\n');
+console.log('='.repeat(60) + '\n');
