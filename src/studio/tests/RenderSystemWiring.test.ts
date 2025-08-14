@@ -1,6 +1,9 @@
 import { Studio } from "../Studio";
 import { World } from "../../core/ecs/World";
 import { StateManager } from "../state/StateManager";
+import { ThreeGraphicsManager } from "../graphics/ThreeGraphicsManager";
+import { RenderSystem } from "../rendering/RenderSystem";
+import { RenderSystemAdapter } from "../rendering/RenderSystemAdapter";
 
 class MockPluginManager {
   plugins: Record<string, any> = {};
@@ -56,5 +59,58 @@ describe("Studio RenderSystem wiring (TDD)", () => {
     const simInfo = studio.getSimulationDebugInfo();
     expect(simInfo).toHaveProperty('algorithmsCount');
     expect(simInfo).toHaveProperty('entityCount');
+  });
+
+  it("adapts minimal RenderSystem to legacy surface (register + debug)", () => {
+    const world = new World();
+    const pluginManager = new MockPluginManager();
+    const stateManager = StateManager.getInstance();
+
+    const gfx = new ThreeGraphicsManager();
+    const inner = new RenderSystem(gfx.getScene());
+    const adapter = new RenderSystemAdapter(gfx, inner);
+
+    const minimalRenderer = {
+      name: 'minimal',
+      priority: 5,
+      update: jest.fn(),
+      dispose: jest.fn()
+    };
+
+    adapter.registerRenderer(minimalRenderer);
+    adapter.update(world as any, 0);
+    expect(minimalRenderer.update).toHaveBeenCalled();
+    const info = adapter.getDebugInfo();
+    expect(info.rendererCount).toBe(1);
+    expect(info.renderers[0].name).toBe('minimal');
+  });
+
+  it("SimulationManager forwards minimal renderer to adapter-backed RenderSystem", () => {
+    const gfx = new ThreeGraphicsManager();
+    const inner = new RenderSystem(gfx.getScene());
+    const adapter = new RenderSystemAdapter(gfx, inner);
+
+    // Fresh SimulationManager instance to avoid singleton cross-test state
+    const { SimulationManager } = require('../simulation/SimulationManager');
+    const simManager = new SimulationManager();
+    simManager.setRenderSystem(adapter as any);
+
+    const minimalRenderer = {
+      name: 'from-sim-manager',
+      priority: 1,
+      update: jest.fn(),
+      dispose: jest.fn(),
+    };
+
+    // Register via SimulationManager – should be forwarded to adapter/inner system
+    simManager.registerRenderer('from-sim-manager', minimalRenderer as any);
+
+    // Tick once
+    adapter.update({} as any, 0);
+
+    expect(minimalRenderer.update).toHaveBeenCalled();
+    const info = adapter.getDebugInfo();
+    expect(info.rendererCount).toBe(1);
+    expect(info.renderers[0].name).toBe('from-sim-manager');
   });
 });

@@ -76,14 +76,26 @@ export class SimulationManager implements ISimulationManager {
   /**
    * Register a simulation renderer and bridge to render system
    */
-  registerRenderer(name: string, renderer: ISimulationRenderer): void {
-    this.renderers.set(name, renderer);
-    renderer.initialize(this);
+  registerRenderer(name: string, renderer: ISimulationRenderer | any): void {
+    const hasSimInit = renderer && typeof renderer.initialize === 'function';
+    const hasSimUpdate = renderer && typeof renderer.updateFromState === 'function';
+
+    // Only store in simulation manager if it supports simulation renderer contract
+    if (hasSimInit && hasSimUpdate) {
+      this.renderers.set(name, renderer as ISimulationRenderer);
+      try {
+        renderer.initialize(this);
+      } catch (err) {
+        console.error('Error initializing simulation renderer:', err);
+      }
+      console.log(`✅ Renderer registered: ${name}`);
+    }
+
+    // Always forward to render system if present (supports both legacy/minimal via adapter)
     if (this.renderSystem && typeof this.renderSystem.registerRenderer === 'function') {
       this.renderSystem.registerRenderer(renderer);
       console.log(`✅ Renderer also registered with render system: ${name}`);
     }
-    console.log(`✅ Renderer registered: ${name}`);
   }
 
   /**
