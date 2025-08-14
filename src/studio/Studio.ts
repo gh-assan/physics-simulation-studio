@@ -9,6 +9,7 @@ import { IGraphicsManager } from "./IGraphicsManager";
 import { IPluginContext } from "./IPluginContext";
 import { Logger } from "../core/utils/Logger";
 import { SimplifiedRenderSystem } from "./rendering/simplified/SimplifiedRenderSystem";
+import { buildRenderSystem, RenderSystemMode } from './rendering/RenderSystemFactory';
 
 export class Studio implements IStudio {
   /**
@@ -60,6 +61,15 @@ export class Studio implements IStudio {
     if (this.orchestrator && typeof this.orchestrator.setRenderSystem === 'function') {
       this.orchestrator.setRenderSystem(renderSystem as any);
     }
+  }
+
+  /**
+   * Convenience: choose and set the render system by mode ('legacy' | 'adapter').
+   * Defaults to 'legacy' to preserve current behavior.
+   */
+  public configureRenderSystem(mode: RenderSystemMode = 'legacy'): void {
+    const system = buildRenderSystem(mode);
+    this.setRenderSystem(system as any);
   }
 
   /**
