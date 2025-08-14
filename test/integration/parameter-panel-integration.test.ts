@@ -7,11 +7,11 @@
  * This test should PASS after we fix the Studio integration.
  */
 
-import { Studio } from '../../src/studio/Studio';
 import { World } from '../../src/core/ecs/World';
 import { PluginManager } from '../../src/core/plugin/PluginManager';
-import { SimplifiedPropertyInspectorSystem } from '../../src/studio/systems/SimplifiedPropertyInspectorSystem';
 import FlagSimulationPlugin from '../../src/plugins/flag-simulation/index';
+import { Studio } from '../../src/studio/Studio';
+import { SimplifiedPropertyInspectorSystem } from '../../src/studio/systems/SimplifiedPropertyInspectorSystem';
 
 describe('Parameter Panel Integration', () => {
   let studio: Studio;

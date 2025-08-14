@@ -10,7 +10,6 @@
  */
 
 import { World } from '../../src/core/ecs/World';
-import { SimplifiedRenderSystem } from '../../src/studio/rendering/simplified/SimplifiedRenderSystem';
 
 describe('Complete Plugin Simplification', () => {
   let world: World;
@@ -86,7 +85,7 @@ describe('Complete Plugin Simplification', () => {
     world.systemManager.registerSystem(new (class TestSystem {
       name = 'TestSystem';
       priority = 100;
-      update() {}
+      update() { }
     })());
 
     // Test ParameterManager
@@ -135,12 +134,12 @@ describe('Complete Plugin Simplification', () => {
 
     // Create mock THREE.js objects for testing
     const mockScene = new (class MockScene {
-      add() {}
-      remove() {}
+      add() { }
+      remove() { }
       children = [];
     })();
     const mockCamera = new (class MockCamera {
-      updateProjectionMatrix() {}
+      updateProjectionMatrix() { }
     })();
 
     const renderManager = new SimplifiedRenderManager(mockScene as any, mockCamera as any);
@@ -150,8 +149,8 @@ describe('Complete Plugin Simplification', () => {
       name: 'test-renderer',
       priority: 1,
       canRender: () => true,
-      render: () => {},
-      dispose: () => {}
+      render: () => { },
+      dispose: () => { }
     };
     renderManager.registerRenderer(mockRenderer);
 

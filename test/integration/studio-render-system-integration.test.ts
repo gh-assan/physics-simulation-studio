@@ -8,13 +8,13 @@
  * EXPECTED FIX: Add renderSystem.update() to Studio.update() method
  */
 
-import {World} from '../../src/core/ecs/World';
-import {StateManager} from '../../src/studio/state/StateManager';
-import {PluginManager} from '../../src/core/plugin/PluginManager';
-import {MockThreeGraphicsManager} from '../mocks/MockThreeGraphicsManager';
-import {SimplifiedRenderSystem} from '../../src/studio/rendering/simplified/SimplifiedRenderSystem';
-import {Studio} from '../../src/studio/Studio';
-import {IPluginContext} from '../../src/studio/IPluginContext';
+import { World } from '../../src/core/ecs/World';
+import { PluginManager } from '../../src/core/plugin/PluginManager';
+import { IPluginContext } from '../../src/studio/IPluginContext';
+import { SimplifiedRenderSystem } from '../../src/studio/rendering/simplified/SimplifiedRenderSystem';
+import { StateManager } from '../../src/studio/state/StateManager';
+import { Studio } from '../../src/studio/Studio';
+import { MockThreeGraphicsManager } from '../mocks/MockThreeGraphicsManager';
 
 // Mock DOM environment
 const mockDocument = {
@@ -42,7 +42,7 @@ const mockDocument = {
     offsetWidth: 800,
     offsetHeight: 600,
     getContext: jest.fn(() => ({
-      canvas: {width: 800, height: 600},
+      canvas: { width: 800, height: 600 },
       clearRect: jest.fn(),
       fillRect: jest.fn(),
       strokeRect: jest.fn(),

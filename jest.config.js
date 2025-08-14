@@ -18,4 +18,6 @@ module.exports = {
     '@plugins/(.*)': '<rootDir>/src/plugins/$1',
     '@studio/(.*)': '<rootDir>/src/studio/$1',
   },
+  // Prevent picking up compiled mocks from build/
+  modulePathIgnorePatterns: ['<rootDir>/build/'],
 };

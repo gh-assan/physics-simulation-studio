@@ -7,9 +7,9 @@
  * - Provides proper button state management
  */
 
+import { Logger } from '../../core/utils/Logger';
 import { Studio } from '../Studio';
 import { StateManager } from '../state/StateManager';
-import { Logger } from '../../core/utils/Logger';
 
 /**
  * Handle play button click with intelligent auto-loading

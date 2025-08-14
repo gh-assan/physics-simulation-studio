@@ -6,15 +6,15 @@
  * to animation frame rendering.
  */
 
-import {Studio} from '../../src/studio/Studio';
-import {World} from '../../src/core/ecs/World';
-import {StateManager} from '../../src/studio/state/StateManager';
-import {PluginManager} from '../../src/core/plugin/PluginManager';
-import {MockThreeGraphicsManager} from '../mocks/MockThreeGraphicsManager';
-import {SimplifiedRenderSystem} from '../../src/studio/rendering/simplified/SimplifiedRenderSystem';
-import {handlePlayButtonClick} from '../../src/studio/ui/PlayButtonHandler';
-import {IPluginContext} from '../../src/studio/IPluginContext';
-import {FlagSimulationPlugin} from '../../src/plugins/flag-simulation/FlagSimulationPlugin';
+import { World } from '../../src/core/ecs/World';
+import { PluginManager } from '../../src/core/plugin/PluginManager';
+import { FlagSimulationPlugin } from '../../src/plugins/flag-simulation/FlagSimulationPlugin';
+import { IPluginContext } from '../../src/studio/IPluginContext';
+import { SimplifiedRenderSystem } from '../../src/studio/rendering/simplified/SimplifiedRenderSystem';
+import { StateManager } from '../../src/studio/state/StateManager';
+import { Studio } from '../../src/studio/Studio';
+import { handlePlayButtonClick } from '../../src/studio/ui/PlayButtonHandler';
+import { MockThreeGraphicsManager } from '../mocks/MockThreeGraphicsManager';
 
 // Mock DOM environment
 const mockDocument = {
@@ -42,7 +42,7 @@ const mockDocument = {
     offsetWidth: 800,
     offsetHeight: 600,
     getContext: jest.fn(() => ({
-      canvas: {width: 800, height: 600},
+      canvas: { width: 800, height: 600 },
       clearRect: jest.fn(),
       fillRect: jest.fn(),
       strokeRect: jest.fn(),

@@ -7,14 +7,14 @@
  * 3. Renderer registration works through the singleton
  */
 
-import { SimulationManager } from '../../src/studio/simulation/SimulationManager';
-import { SimulationOrchestrator } from '../../src/studio/SimulationOrchestrator';
-import { Studio } from '../../src/studio/Studio';
 import { World } from '../../src/core/ecs/World';
 import { PluginManager } from '../../src/core/plugin/PluginManager';
-import { StateManager } from '../../src/studio/state/StateManager';
-import { MockThreeGraphicsManager } from '../mocks/MockThreeGraphicsManager';
 import { SimplifiedRenderSystem } from '../../src/studio/rendering/simplified/SimplifiedRenderSystem';
+import { SimulationManager } from '../../src/studio/simulation/SimulationManager';
+import { SimulationOrchestrator } from '../../src/studio/SimulationOrchestrator';
+import { StateManager } from '../../src/studio/state/StateManager';
+import { Studio } from '../../src/studio/Studio';
+import { MockThreeGraphicsManager } from '../mocks/MockThreeGraphicsManager';
 
 describe('🔒 Singleton Enforcement Validation', () => {
   beforeEach(() => {

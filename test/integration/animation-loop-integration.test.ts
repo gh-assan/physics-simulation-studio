@@ -5,11 +5,11 @@
  */
 
 import { World } from '../../src/core/ecs/World';
-import { Studio } from '../../src/studio/Studio';
-import { StateManager } from '../../src/studio/state/StateManager';
 import { PluginManager } from '../../src/core/plugin/PluginManager';
-import { SimplifiedRenderSystem } from '../../src/studio/rendering/simplified/SimplifiedRenderSystem';
 import { FlagSimulationPlugin } from '../../src/plugins/flag-simulation/FlagSimulationPlugin';
+import { Studio } from '../../src/studio/Studio';
+import { SimplifiedRenderSystem } from '../../src/studio/rendering/simplified/SimplifiedRenderSystem';
+import { StateManager } from '../../src/studio/state/StateManager';
 
 // Mock ThreeGraphicsManager to avoid Three.js issues in tests
 const createMockGraphicsManager = () => ({

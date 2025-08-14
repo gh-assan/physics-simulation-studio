@@ -53,18 +53,27 @@ jest.mock('tweakpane', () => {
 });
 
 jest.mock('three', () => {
-  const mockScene = {
+  const mockScene: any = {
     add: jest.fn(),
     remove: jest.fn(),
     children: [],
-    background: null
+    background: null,
+    traverse: jest.fn(),
+    type: 'Scene',
+    uuid: 'mock-scene-uuid',
+    isScene: true
   };
   const mockCamera = {
     position: {
+      x: 0,
+      y: 0,
       z: 0,
-      set: jest.fn()
+      set: jest.fn(),
+      clone: jest.fn(() => ({ x: 0, y: 0, z: 0 })),
+      length: jest.fn(() => 0)
     },
     aspect: 0,
+    fov: 75,
     updateProjectionMatrix: jest.fn(),
     lookAt: jest.fn()
   };
@@ -74,8 +83,39 @@ jest.mock('three', () => {
       mockRenderer.domElement.width = width;
       mockRenderer.domElement.height = height;
     }),
-    domElement: document.createElement('canvas'),
-    render: jest.fn()
+    domElement: (() => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1024;
+      canvas.height = 768;
+
+      // Mock getContext to simulate rendering
+      const originalGetContext = canvas.getContext;
+      canvas.getContext = function (contextType: string): any {
+        if (contextType === '2d') {
+          const ctx = originalGetContext.call(this, '2d') as CanvasRenderingContext2D;
+          if (ctx && mockScene.children.length > 0) {
+            // Simulate that we've drawn something when there are objects in the scene
+            ctx.fillStyle = 'red';
+            ctx.fillRect(100, 100, 50, 50); // Draw a simple rectangle to simulate rendered content
+          }
+          return ctx;
+        }
+        return originalGetContext.call(this, contextType);
+      };
+
+      return canvas;
+    })(),
+    render: jest.fn((scene, camera) => {
+      // Mock render to simulate drawing when there are objects in the scene
+      if (scene && scene.children && scene.children.length > 0) {
+        const canvas = mockRenderer.domElement;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = 'red';
+          ctx.fillRect(100 + Math.random() * 200, 100 + Math.random() * 200, 50, 50);
+        }
+      }
+    })
   };
   const mockMesh = {
     position: { set: jest.fn() },

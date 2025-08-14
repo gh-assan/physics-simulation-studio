@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio Graphics Manager Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #222;
+            color: white;
+        }
+
+        #container {
+            width: 800px;
+            height: 600px;
+            margin: 20px auto;
+            border: 2px solid #444;
+            background: #111;
+        }
+
+        #info {
+            text-align: center;
+            margin: 20px;
+            color: white;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🎬 Studio Graphics Manager Test</h1>
+    <div id="container"></div>
+    <div id="info">Testing our graphics manager...</div>
+
+    <script type="module">
+        const info = document.getElementById('info');
+
+        function log(message) {
+            info.innerHTML += `<div>${message}</div>`;
+            console.log(message);
+        }
+
+        try {
+            log('🔍 Testing ThreeGraphicsManager...');
+
+            // Import our graphics manager
+            const { ThreeGraphicsManager } = await import('./build/src/studio/graphics/ThreeGraphicsManager.js');
+            log('✅ ThreeGraphicsManager imported');
+
+            // Create graphics manager
+            const graphics = new ThreeGraphicsManager();
+            log('✅ Graphics manager created');
+
+            // Initialize with container
+            const container = document.getElementById('container');
+            graphics.initialize(container);
+            log('✅ Graphics manager initialized');
+
+            // Get scene, camera, renderer
+            const scene = graphics.getScene();
+            const camera = graphics.getCamera();
+            const renderer = graphics.getRenderer();
+
+            log(`📊 Scene children: ${scene.children.length}`);
+            log(`📊 Camera position: (${camera.position.x}, ${camera.position.y}, ${camera.position.z})`);
+            log(`📊 Renderer size: ${renderer.domElement.width}x${renderer.domElement.height}`);
+
+            // Add a test cube directly to the scene
+            const THREE = await import('https://cdn.skypack.dev/three@0.152.0');
+            const geometry = new THREE.BoxGeometry();
+            const material = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+            const cube = new THREE.Mesh(geometry, material);
+            cube.position.set(0, 0, 0);
+            scene.add(cube);
+
+            log('✅ Test cube added to scene');
+            log(`📊 Scene children after cube: ${scene.children.length}`);
+
+            // Start render loop
+            function animate() {
+                cube.rotation.x += 0.01;
+                cube.rotation.y += 0.01;
+
+                renderer.render(scene, camera);
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+            log('✅ Render loop started with our graphics manager!');
+
+        } catch (error) {
+            log(`❌ Error: ${error.message}`);
+            log(`❌ Stack: ${error.stack}`);
+            console.error(error);
+        }
+    </script>
+</body>
+
+</html>

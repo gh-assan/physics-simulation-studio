@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio Simulation Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #222;
+            color: white;
+        }
+
+        #container {
+            width: 800px;
+            height: 600px;
+            margin: 20px auto;
+            border: 2px solid #444;
+            background: #111;
+        }
+
+        #info {
+            text-align: left;
+            margin: 20px auto;
+            width: 800px;
+            color: white;
+            font-family: monospace;
+            font-size: 11px;
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🏗️ Studio Simulation Test</h1>
+    <div id="container"></div>
+    <div id="info">Testing Studio creation and simulation loading...</div>
+
+    <script type="module">
+        const info = document.getElementById('info');
+
+        function log(message) {
+            info.innerHTML += `<div>${new Date().toLocaleTimeString()} - ${message}</div>`;
+            info.scrollTop = info.scrollHeight;
+            console.log(message);
+        }
+
+        async function testStudio() {
+            try {
+                log('🔍 Starting Studio test...');
+
+                // Import all required modules
+                log('📦 Importing World...');
+                const { World } = await import('./build/src/core/ecs/World.js');
+
+                log('📦 Importing PluginManager...');
+                const { PluginManager } = await import('./build/src/core/plugin/PluginManager.js');
+
+                log('📦 Importing StateManager...');
+                const { StateManager } = await import('./build/src/studio/state/StateManager.js');
+
+                log('📦 Importing Studio...');
+                const { Studio } = await import('./build/src/studio/Studio.js');
+
+                log('✅ All modules imported successfully');
+
+                // Create instances step by step
+                log('🌍 Creating World...');
+                const world = new World();
+
+                log('🔌 Creating PluginManager...');
+                const pluginManager = new PluginManager(world);
+
+                log('🗄️ Getting StateManager...');
+                const stateManager = StateManager.getInstance();
+
+                log('🎭 Creating plugin context...');
+                const pluginContext = {
+                    studio: null,
+                    world,
+                    eventBus: {
+                        emit: (event, data) => log(`📡 Event: ${event}`),
+                        on: (event, handler) => log(`👂 Listening: ${event}`),
+                        off: (event, handler) => log(`🔇 Unsubscribe: ${event}`),
+                        once: (event, handler) => log(`👂 Once: ${event}`)
+                    },
+                    getStateManager: () => stateManager,
+                };
+
+                log('🏗️ Creating Studio...');
+                const studio = new Studio(world, pluginManager, stateManager, pluginContext);
+                pluginContext.studio = studio;
+
+                log('✅ Studio created successfully');
+
+                // Initialize with container
+                log('🎬 Initializing Studio with container...');
+                const container = document.getElementById('container');
+                studio.initialize(container);
+
+                log('✅ Studio initialized');
+
+                // Check if graphics manager was created
+                const graphics = studio.getGraphicsManager();
+                log(`📊 Graphics manager: ${graphics ? 'Created' : 'Missing!'}`);
+
+                if (graphics) {
+                    const scene = graphics.getScene();
+                    const camera = graphics.getCamera();
+                    const renderer = graphics.getRenderer();
+
+                    log(`📊 Scene: ${scene ? 'OK' : 'Missing'} (${scene?.children.length || 0} children)`);
+                    log(`📊 Camera: ${camera ? 'OK' : 'Missing'} at (${camera?.position.x}, ${camera?.position.y}, ${camera?.position.z})`);
+                    log(`📊 Renderer: ${renderer ? 'OK' : 'Missing'} ${renderer?.domElement.width}x${renderer?.domElement.height}`);
+
+                    // Check if canvas is in the container
+                    const canvasInContainer = container.querySelector('canvas');
+                    log(`📊 Canvas in container: ${canvasInContainer ? 'YES' : 'NO'}`);
+                }
+
+                // Try loading simulation
+                log('🏁 Attempting to load flag-simulation...');
+
+                try {
+                    await studio.loadSimulation('flag-simulation');
+                    log('✅ Flag simulation loaded!');
+
+                    // Check entities and scene after loading
+                    const entities = world.getEntities();
+                    const scene = graphics.getScene();
+
+                    log(`📊 World entities after load: ${entities.length}`);
+                    log(`📊 Scene children after load: ${scene.children.length}`);
+
+                    // List all scene objects
+                    scene.children.forEach((child, i) => {
+                        log(`  └ Scene[${i}]: ${child.type} "${child.name || 'unnamed'}" pos(${child.position?.x?.toFixed(1) || '?'}, ${child.position?.y?.toFixed(1) || '?'}, ${child.position?.z?.toFixed(1) || '?'})`);
+                    });
+
+                    // Start render loop
+                    log('🎬 Starting render loop...');
+                    let frameCount = 0;
+                    function animate() {
+                        try {
+                            studio.update(0.016);
+                            studio.render();
+                            frameCount++;
+
+                            if (frameCount === 60) {
+                                log(`🎯 Frame 60: Still rendering... Scene has ${scene.children.length} objects`);
+                            }
+                        } catch (renderError) {
+                            log(`❌ Render error: ${renderError.message}`);
+                            return;
+                        }
+                        requestAnimationFrame(animate);
+                    }
+
+                    animate();
+                    log('✅ Render loop started - simulation should be visible!');
+
+                } catch (simError) {
+                    log(`❌ Simulation load error: ${simError.message}`);
+                }
+
+            } catch (error) {
+                log(`❌ Fatal error: ${error.message}`);
+                log(`❌ Stack: ${error.stack}`);
+                console.error(error);
+            }
+        }
+
+        // Start test when page loads
+        window.addEventListener('load', () => {
+            setTimeout(testStudio, 500);
+        });
+    </script>
+</body>
+
+</html>

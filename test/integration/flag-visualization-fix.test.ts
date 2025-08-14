@@ -8,14 +8,13 @@
  */
 
 import { World } from '../../src/core/ecs/World';
-import { Studio } from '../../src/studio/Studio';
-import { StateManager } from '../../src/studio/state/StateManager';
 import { PluginManager } from '../../src/core/plugin/PluginManager';
-import { AutoPluginRegistry } from '../../src/core/plugin/AutoPluginRegistry';
-import { SimplifiedRenderSystem } from '../../src/studio/rendering/simplified/SimplifiedRenderSystem';
-import { ThreeGraphicsManager } from '../../src/studio/graphics/ThreeGraphicsManager';
 import { FlagSimulationPlugin } from '../../src/plugins/flag-simulation/FlagSimulationPlugin';
 import { SimplifiedFlagRenderer } from '../../src/plugins/flag-simulation/SimplifiedFlagRenderer';
+import { Studio } from '../../src/studio/Studio';
+import { ThreeGraphicsManager } from '../../src/studio/graphics/ThreeGraphicsManager';
+import { SimplifiedRenderSystem } from '../../src/studio/rendering/simplified/SimplifiedRenderSystem';
+import { StateManager } from '../../src/studio/state/StateManager';
 
 describe('🔧 Flag Visualization Fix - TDD Analysis', () => {
   let world: World;
