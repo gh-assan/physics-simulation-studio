@@ -9,6 +9,7 @@ export interface IStudio {
   getWorld(): IWorld;
   getPluginManager(): IPluginManager;
   setRenderSystem(renderSystem: SimplifiedRenderSystem): void;
+  getRenderSystemDebugInfo(): any;
   clearRenderer(): void;
   play(): void;
   pause(): void;

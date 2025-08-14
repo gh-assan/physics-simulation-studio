@@ -158,6 +158,13 @@ export class Studio implements IStudio {
     return Array.from(this.pluginManager.getAvailablePluginNames());
   }
 
+  public getRenderSystemDebugInfo(): any {
+    if (!this.renderSystem) {
+      throw new Error("RenderSystem is not set in Studio. Cannot get debug info.");
+    }
+    return (this.renderSystem as any).getDebugInfo?.() ?? {};
+  }
+
     public getGraphicsManager(): IGraphicsManager {
     if (!this.renderSystem) {
       throw new Error("RenderSystem is not set in Studio. Cannot get GraphicsManager.");
