@@ -10,6 +10,7 @@ export interface IStudio {
   getPluginManager(): IPluginManager;
   setRenderSystem(renderSystem: SimplifiedRenderSystem): void;
   getRenderSystemDebugInfo(): any;
+  getSimulationDebugInfo(): any;
   clearRenderer(): void;
   play(): void;
   pause(): void;

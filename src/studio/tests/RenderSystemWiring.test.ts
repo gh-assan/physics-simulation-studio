@@ -37,4 +37,24 @@ describe("Studio RenderSystem wiring (TDD)", () => {
     expect(info.rendererCount).toBe(1);
     expect(info.renderers[0].name).toBe('mock');
   });
+
+  it("exposes simulation debug info via Studio", () => {
+    const world = new World();
+    const pluginManager = new MockPluginManager();
+    const stateManager = StateManager.getInstance();
+
+    const pluginContext = {
+      studio: undefined as any,
+      world,
+      eventBus: undefined,
+      getStateManager: () => stateManager,
+    } as any;
+
+    const studio = new Studio(world as any, pluginManager as any, stateManager as any, pluginContext);
+    pluginContext.studio = studio;
+
+    const simInfo = studio.getSimulationDebugInfo();
+    expect(simInfo).toHaveProperty('algorithmsCount');
+    expect(simInfo).toHaveProperty('entityCount');
+  });
 });

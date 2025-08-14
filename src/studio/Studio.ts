@@ -165,6 +165,19 @@ export class Studio implements IStudio {
     return (this.renderSystem as any).getDebugInfo?.() ?? {};
   }
 
+  public getSimulationDebugInfo(): any {
+    const orchestrator: any = this.orchestrator as any;
+    // Prefer a direct method on orchestrator if available
+    if (typeof orchestrator.getSimulationDebugInfo === 'function') {
+      return orchestrator.getSimulationDebugInfo();
+    }
+    // Fallback: access simulationManager.getDebugInfo() if exposed
+    if (orchestrator?.simulationManager?.getDebugInfo) {
+      return orchestrator.simulationManager.getDebugInfo();
+    }
+    return {};
+  }
+
     public getGraphicsManager(): IGraphicsManager {
     if (!this.renderSystem) {
       throw new Error("RenderSystem is not set in Studio. Cannot get GraphicsManager.");

@@ -193,4 +193,11 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
             (this.simulationManager as any).setRenderSystem(renderSystem);
         }
     }
+
+        public getSimulationDebugInfo(): any {
+            if (typeof (this.simulationManager as any)?.getDebugInfo === 'function') {
+                return (this.simulationManager as any).getDebugInfo();
+            }
+            return {};
+        }
 }
