@@ -113,4 +113,51 @@ describe("Studio RenderSystem wiring (TDD)", () => {
     expect(info.rendererCount).toBe(1);
     expect(info.renderers[0].name).toBe('from-sim-manager');
   });
+
+  it("Studio/Orchestrator can use adapter-backed RenderSystem (end-to-end forwarding)", () => {
+    const world = new World();
+    const pluginManager = new MockPluginManager();
+    const stateManager = StateManager.getInstance();
+
+    const pluginContext = {
+      studio: undefined as any,
+      world,
+      eventBus: undefined,
+      getStateManager: () => stateManager,
+    } as any;
+
+    const studio = new Studio(world as any, pluginManager as any, stateManager as any, pluginContext);
+    pluginContext.studio = studio;
+
+    // Prepare adapter-backed minimal render system
+    const gfx = new ThreeGraphicsManager();
+    const inner = new RenderSystem(gfx.getScene());
+    const adapter = new RenderSystemAdapter(gfx, inner);
+
+    // Inject fresh SimulationManager into orchestrator for isolation
+    const { SimulationManager } = require('../simulation/SimulationManager');
+    const simManager = new SimulationManager();
+    studio.setOrchestratorSimulationManager(simManager);
+
+    // Configure Studio/Orchestrator to use the adapter-backed system
+    studio.setRenderSystem(adapter as any);
+
+    // Register a minimal renderer via SimulationManager and verify it forwards
+    const minimalRenderer = {
+      name: 'studio-e2e',
+      priority: 2,
+      update: jest.fn(),
+      dispose: jest.fn(),
+    };
+
+    simManager.registerRenderer('studio-e2e', minimalRenderer as any);
+
+    // Tick adapter once to drive inner updates
+    adapter.update(world as any, 0);
+
+    expect(minimalRenderer.update).toHaveBeenCalled();
+    const info = (studio as any).getRenderSystemDebugInfo();
+    expect(info.rendererCount).toBe(1);
+    expect(info.renderers[0].name).toBe('studio-e2e');
+  });
 });
