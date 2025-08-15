@@ -9,10 +9,9 @@ class MockPluginManager {
   getAvailablePluginNames = jest.fn(() => Object.keys(this.plugins));
 }
 import { RenderSystemAdapter } from '../rendering/RenderSystemAdapter';
-import { SimplifiedRenderSystem } from '../rendering/simplified/SimplifiedRenderSystem';
 
 describe('Studio RenderSystem configuration', () => {
-  it('defaults to legacy when no mode provided', () => {
+  it('defaults to adapter when no mode provided', () => {
     const world = new World();
     const pluginManager = new MockPluginManager();
     const stateManager = StateManager.getInstance();
@@ -27,12 +26,10 @@ describe('Studio RenderSystem configuration', () => {
     const studio = new Studio(world as any, pluginManager as any, stateManager as any, pluginContext);
     pluginContext.studio = studio;
 
-    studio.configureRenderSystem();
-    const gfx = studio.getGraphicsManager();
-    expect(gfx).toBeDefined();
-    // The type is SimplifiedRenderSystem via legacy mode
-    // Access internal for test by asking orchestrator to tick update; presence is enough here
-    expect((studio as any).renderSystem).toBeInstanceOf(SimplifiedRenderSystem);
+  studio.configureRenderSystem();
+  const gfx = studio.getGraphicsManager();
+  expect(gfx).toBeDefined();
+  expect((studio as any).renderSystem).toBeInstanceOf(RenderSystemAdapter);
   });
 
   it('can select adapter mode and forwards minimal renderer from SimulationManager', () => {

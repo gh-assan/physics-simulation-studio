@@ -160,4 +160,39 @@ describe("Studio RenderSystem wiring (TDD)", () => {
     expect(info.rendererCount).toBe(1);
     expect(info.renderers[0].name).toBe('studio-e2e');
   });
+
+  it("Adapter can unregister minimal renderer by name", () => {
+    const world = new World();
+    const gfx = new ThreeGraphicsManager();
+    const inner = new RenderSystem(gfx.getScene());
+    const adapter = new RenderSystemAdapter(gfx, inner);
+
+    const r = { name: 'temp', priority: 1, update: jest.fn(), dispose: jest.fn() };
+    adapter.registerRenderer(r as any);
+    adapter.update(world as any, 0);
+    expect(r.update).toHaveBeenCalledTimes(1);
+
+    // Unregister by name and verify it's no longer updated
+    adapter.unregisterRenderer('temp');
+    adapter.update(world as any, 0);
+    expect(r.update).toHaveBeenCalledTimes(1); // no new calls
+    const info = adapter.getDebugInfo();
+    expect(info.rendererCount).toBe(0);
+  });
+
+  it("Adapter.dispose() disposes inner minimal renderers and clears registry", () => {
+    const gfx = new ThreeGraphicsManager();
+    const inner = new RenderSystem(gfx.getScene());
+    const adapter = new RenderSystemAdapter(gfx, inner);
+
+    const r = { name: 'to-dispose', priority: 1, update: jest.fn(), dispose: jest.fn() };
+    adapter.registerRenderer(r as any);
+    const before = adapter.getDebugInfo();
+    expect(before.rendererCount).toBe(1);
+
+    adapter.dispose();
+    expect(r.dispose).toHaveBeenCalled();
+    const after = adapter.getDebugInfo();
+    expect(after.rendererCount).toBe(0);
+  });
 });

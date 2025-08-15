@@ -2,7 +2,6 @@ import { IPluginManager } from '../core/plugin/IPluginManager';
 import { IWorld } from "../core/ecs/IWorld";
 import { World } from '../core/ecs/World';
 import { Logger } from "../core/utils/Logger";
-import { SimplifiedRenderSystem } from './rendering/simplified/SimplifiedRenderSystem';
 import { IStudio } from './IStudio';
 import { ISimulationOrchestrator } from './ISimulationOrchestrator';
 import { IRenderer } from './rendering/simplified/SimplifiedInterfaces';
@@ -13,7 +12,7 @@ import * as THREE from 'three';
 export class SimulationOrchestrator implements ISimulationOrchestrator {
     private world: IWorld;
     private pluginManager: IPluginManager;
-    private renderSystem: SimplifiedRenderSystem | null = null;
+    private renderSystem: any | null = null;
     private studio: IStudio;
     private simulationManager: ISimulationManager;
 
@@ -124,12 +123,12 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
         console.log('🔄 Clearing everything for new simulation (clean slate approach)');
 
         // Clear the world entities but preserve systems - new simulation will populate fresh entities
-        this.world.clear(false); // Preserve systems like SimplifiedRenderSystem
+    this.world.clear(false); // Preserve registered systems
 
         // Clear the scene completely - higher level abstraction approach
-        if (this.renderSystem) {
-            const renderSystem = this.renderSystem as SimplifiedRenderSystem;
-            const scene = renderSystem.getScene(); // Use proper method instead of private access
+        if (this.renderSystem && typeof (this.renderSystem as any).getScene === 'function') {
+            const renderSystem = this.renderSystem as any;
+            const scene = renderSystem.getScene();
 
             // Clear all objects from scene
             while(scene.children.length > 0) {
@@ -184,7 +183,7 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
         this.simulationManager.step(deltaTime);
     }
 
-    public setRenderSystem(renderSystem: SimplifiedRenderSystem): void {
+    public setRenderSystem(renderSystem: any): void {
         this.renderSystem = renderSystem;
         if (this.simulationManager && typeof (this.simulationManager as any).setRenderSystem === 'function') {
             (this.simulationManager as any).setRenderSystem(renderSystem);

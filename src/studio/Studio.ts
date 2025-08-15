@@ -8,7 +8,7 @@ import { IStudio } from "./IStudio";
 import { IGraphicsManager } from "./IGraphicsManager";
 import { IPluginContext } from "./IPluginContext";
 import { Logger } from "../core/utils/Logger";
-import { SimplifiedRenderSystem } from "./rendering/simplified/SimplifiedRenderSystem";
+// Decoupled from legacy simplified type
 import { buildRenderSystem, RenderSystemMode } from './rendering/RenderSystemFactory';
 
 export class Studio implements IStudio {
@@ -23,14 +23,14 @@ export class Studio implements IStudio {
   /**
    * Set the render system on the orchestrator (for test and integration correctness)
    */
-  public setOrchestratorRenderSystem(renderSystem: SimplifiedRenderSystem): void {
+  public setOrchestratorRenderSystem(renderSystem: any): void {
     if (this.orchestrator && typeof this.orchestrator.setRenderSystem === 'function') {
       this.orchestrator.setRenderSystem(renderSystem);
     }
   }
   private _world: IWorld;
   private pluginManager: IPluginManager;
-  private renderSystem?: SimplifiedRenderSystem;
+  private renderSystem?: any;
   private isPlaying = true;
   private selectedSimulation: ISelectedSimulationStateManager;
   private orchestrator: ISimulationOrchestrator;
@@ -56,7 +56,7 @@ export class Studio implements IStudio {
     return this.pluginManager;
   }
 
-  public setRenderSystem(renderSystem: SimplifiedRenderSystem): void {
+  public setRenderSystem(renderSystem: any): void {
     this.renderSystem = renderSystem;
     if (this.orchestrator && typeof this.orchestrator.setRenderSystem === 'function') {
       this.orchestrator.setRenderSystem(renderSystem as any);
@@ -64,10 +64,10 @@ export class Studio implements IStudio {
   }
 
   /**
-   * Convenience: choose and set the render system by mode ('legacy' | 'adapter').
-   * Defaults to 'legacy' to preserve current behavior.
+   * Convenience: choose and set the render system by mode (adapter-only).
+   * Defaults to 'adapter'.
    */
-  public configureRenderSystem(mode: RenderSystemMode = 'legacy'): void {
+  public configureRenderSystem(mode: RenderSystemMode = 'adapter'): void {
     const system = buildRenderSystem(mode);
     this.setRenderSystem(system as any);
   }

@@ -1,5 +1,5 @@
 import { VisibilityManager } from "../ui/VisibilityManager";
-import { SimplifiedRenderSystem } from "../rendering/simplified/SimplifiedRenderSystem";
+import { RenderSystemAdapter } from "../rendering/RenderSystemAdapter";
 import { Logger } from "../../core/utils/Logger";
 
 /**
@@ -8,10 +8,10 @@ import { Logger } from "../../core/utils/Logger";
  */
 export class VisibilityOrchestrator {
   private visibilityManager: VisibilityManager;
-  private renderSystem: SimplifiedRenderSystem;
+  private renderSystem: RenderSystemAdapter;
   private initialized = false;
 
-  constructor(visibilityManager: VisibilityManager, renderSystem: SimplifiedRenderSystem) {
+  constructor(visibilityManager: VisibilityManager, renderSystem: RenderSystemAdapter) {
     this.visibilityManager = visibilityManager;
     this.renderSystem = renderSystem;
   }
@@ -37,7 +37,7 @@ export class VisibilityOrchestrator {
   public showAll(): void {
     this.visibilityManager.showAllGlobalPanels();
     this.visibilityManager.showAllPluginPanels();
-    // Note: SimplifiedRenderSystem doesn't need explicit render requests - it renders automatically
+  // Adapter-backed system ticks with studio.update -> orchestrator; no explicit render needed here
   }
 
   /**
@@ -47,7 +47,7 @@ export class VisibilityOrchestrator {
     Logger.getInstance().log("[VisibilityOrchestrator] Hiding all panels");
     this.visibilityManager.hideAllGlobalPanels();
     this.visibilityManager.hideAllPluginPanels();
-    // Keep rendering active for 3D scene - SimplifiedRenderSystem handles this automatically
+  // Keep rendering active for 3D scene via adapter path
   }
 
   /**
@@ -97,7 +97,7 @@ export class VisibilityOrchestrator {
    */
   public getVisibilityState(): VisibilityState {
     const panelStates = this.visibilityManager.getAllPanelStates();
-    const sceneDebugInfo = this.renderSystem.getDebugInfo();
+  const sceneDebugInfo: any = this.renderSystem.getDebugInfo();
 
     // Convert panel states to array format
     const panelEntries = Object.entries(panelStates);
@@ -117,8 +117,8 @@ export class VisibilityOrchestrator {
       },
       scene: {
         rendererCount: sceneDebugInfo.rendererCount || 0,
-        lastRenderTime: sceneDebugInfo.lastRenderTime || 0,
-        renderingEnabled: true // SimplifiedRenderSystem is always ready to render
+  lastRenderTime: sceneDebugInfo?.lastRenderTime ?? 0,
+  renderingEnabled: true // Adapter is always ready to render
       },
       initialized: this.initialized
     };
@@ -157,7 +157,7 @@ export class VisibilityOrchestrator {
   /**
    * Get the render system for direct access
    */
-  public getRenderSystem(): SimplifiedRenderSystem {
+  public getRenderSystem(): RenderSystemAdapter {
     return this.renderSystem;
   }
 
@@ -169,7 +169,9 @@ export class VisibilityOrchestrator {
     this.visibilityManager.on('visibilityChanged', ({ panelId, visible }) => {
       Logger.getInstance().log(`[VisibilityOrchestrator] Panel ${panelId} visibility changed to ${visible}`);
       // Mark all renderers as dirty to ensure they re-render on next update
-      this.renderSystem.markAllDirty();
+  // Mark all known renderers as dirty if inner system supports it
+  const inner: any = (this.renderSystem as any).inner;
+  if (inner?.markAllDirty) inner.markAllDirty();
     });
 
     // Additional coordination can be added here as needed

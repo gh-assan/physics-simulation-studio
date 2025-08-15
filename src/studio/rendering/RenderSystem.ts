@@ -14,11 +14,14 @@ export class RenderSystem {
     this.renderers.sort((a, b) => a.priority - b.priority);
   }
 
-  unregisterRenderer(renderer: IRenderer): void {
-    const index = this.renderers.indexOf(renderer);
-    if (index !== -1) {
-      this.renderers.splice(index, 1);
+  unregisterRenderer(rendererOrName: IRenderer | string): void {
+    if (typeof rendererOrName === 'string') {
+      const idx = this.renderers.findIndex(r => r.name === rendererOrName);
+      if (idx !== -1) this.renderers.splice(idx, 1);
+      return;
     }
+    const index = this.renderers.indexOf(rendererOrName);
+    if (index !== -1) this.renderers.splice(index, 1);
   }
 
   update(): void {

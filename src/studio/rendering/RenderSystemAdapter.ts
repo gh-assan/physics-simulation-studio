@@ -17,6 +17,7 @@ type MinimalRenderer = {
 
 export class RenderSystemAdapter {
   private unsupportedRegistrations = 0;
+  private minimalRenderersByName: Map<string, MinimalRenderer> = new Map();
 
   constructor(
     private graphicsManager: ThreeGraphicsManager,
@@ -26,6 +27,10 @@ export class RenderSystemAdapter {
   // Accept both minimal and legacy-like renderers; forward minimal, warn for legacy for now
   registerRenderer(renderer: LegacyRenderer | MinimalRenderer): void {
     if (this.isMinimalRenderer(renderer)) {
+      // Track by name to allow unregister via name later
+      if (renderer.name) {
+        this.minimalRenderersByName.set(renderer.name, renderer);
+      }
       this.inner.registerRenderer(renderer);
       return;
     }
@@ -33,8 +38,12 @@ export class RenderSystemAdapter {
     console.warn('RenderSystemAdapter: legacy renderer types are not supported yet');
   }
 
-  unregisterRenderer(_name: string): void {
-    // Not supported by minimal RenderSystem without reference; no-op
+  unregisterRenderer(name: string): void {
+    const ref = this.minimalRenderersByName.get(name);
+    if (ref) {
+      this.inner.unregisterRenderer(ref);
+      this.minimalRenderersByName.delete(name);
+    }
   }
 
   getGraphicsManager(): ThreeGraphicsManager {
@@ -62,6 +71,7 @@ export class RenderSystemAdapter {
 
   dispose(): void {
     this.inner.dispose();
+  this.minimalRenderersByName.clear();
   }
 
   private isMinimalRenderer(r: any): r is MinimalRenderer {
