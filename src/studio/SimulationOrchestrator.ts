@@ -4,7 +4,6 @@ import { World } from '../core/ecs/World';
 import { Logger } from "../core/utils/Logger";
 import { IStudio } from './IStudio';
 import { ISimulationOrchestrator } from './ISimulationOrchestrator';
-import { IRenderer } from './rendering/simplified/SimplifiedInterfaces';
 import { SimulationManager } from './simulation/SimulationManager';
 import { ISimulationManager } from '../core/simulation/interfaces';
 import * as THREE from 'three';
@@ -61,9 +60,9 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
                 else if (activePlugin.getRenderer) {
                     const pluginRenderer = activePlugin.getRenderer();
                     if (pluginRenderer && typeof pluginRenderer === 'object') {
-                        // Check if it's a new-style IRenderer
-                        if (pluginRenderer.name && pluginRenderer.canRender && pluginRenderer.render) {
-                            this.renderSystem.registerRenderer(pluginRenderer as IRenderer);
+                        // Check if it's a renderer-like object (adapter supports both)
+                        if (pluginRenderer.name && (pluginRenderer.canRender || pluginRenderer.update) && (pluginRenderer.render || pluginRenderer.update)) {
+                            this.renderSystem.registerRenderer(pluginRenderer as any);
                             Logger.getInstance().log(`🎨 ${pluginName}: Registered renderer: ${pluginRenderer.name}`);
                         }
                     }

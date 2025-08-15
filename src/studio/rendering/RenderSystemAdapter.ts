@@ -1,11 +1,15 @@
 import { RenderSystem } from './RenderSystem';
 import { IWorld } from '../../core/ecs/IWorld';
 import { ThreeGraphicsManager } from '../graphics/ThreeGraphicsManager';
+import * as THREE from 'three';
 
 type LegacyRenderer = {
   name?: string;
   canRender?: Function;
   render?: Function;
+  needsRender?: () => boolean;
+  markDirty?: () => void;
+  dispose?: (scene?: THREE.Scene) => void;
 };
 
 type MinimalRenderer = {
@@ -18,6 +22,8 @@ type MinimalRenderer = {
 export class RenderSystemAdapter {
   private unsupportedRegistrations = 0;
   private minimalRenderersByName: Map<string, MinimalRenderer> = new Map();
+  private legacyRenderersByName: Map<string, LegacyRenderer> = new Map();
+  private frameNumber = 0;
 
   constructor(
     private graphicsManager: ThreeGraphicsManager,
@@ -34,15 +40,49 @@ export class RenderSystemAdapter {
       this.inner.registerRenderer(renderer);
       return;
     }
+    // Support legacy-like renderers by calling their render(context) during update
+    if (renderer && typeof (renderer as LegacyRenderer).render === 'function') {
+      const name = (renderer as LegacyRenderer).name ?? `legacy-${this.legacyRenderersByName.size + 1}`;
+      this.legacyRenderersByName.set(name, renderer as LegacyRenderer);
+      return;
+    }
     this.unsupportedRegistrations++;
     console.warn('RenderSystemAdapter: legacy renderer types are not supported yet');
   }
 
-  unregisterRenderer(name: string): void {
-    const ref = this.minimalRenderersByName.get(name);
-    if (ref) {
-      this.inner.unregisterRenderer(ref);
-      this.minimalRenderersByName.delete(name);
+  unregisterRenderer(nameOrRenderer: string | MinimalRenderer | LegacyRenderer): void {
+    // Unregister minimal by name or instance
+    if (typeof nameOrRenderer === 'string') {
+      const ref = this.minimalRenderersByName.get(nameOrRenderer);
+      if (ref) {
+        this.inner.unregisterRenderer(ref);
+        this.minimalRenderersByName.delete(nameOrRenderer);
+      }
+      if (this.legacyRenderersByName.has(nameOrRenderer)) {
+        // Dispose legacy renderer if it supports it
+        const legacy = this.legacyRenderersByName.get(nameOrRenderer)!;
+        try { legacy.dispose?.(this.getScene()); } catch (e) {
+          // ignore dispose error for legacy renderer
+        }
+        this.legacyRenderersByName.delete(nameOrRenderer);
+      }
+      return;
+    }
+    // Instance based
+    if (this.isMinimalRenderer(nameOrRenderer)) {
+      this.inner.unregisterRenderer(nameOrRenderer);
+      if (nameOrRenderer.name) this.minimalRenderersByName.delete(nameOrRenderer.name);
+      return;
+    }
+    // Legacy instance: find by value
+    for (const [key, val] of this.legacyRenderersByName) {
+      if (val === nameOrRenderer) {
+        try { val.dispose?.(this.getScene()); } catch (e) {
+          // ignore dispose error for legacy renderer
+        }
+        this.legacyRenderersByName.delete(key);
+        break;
+      }
     }
   }
 
@@ -54,9 +94,32 @@ export class RenderSystemAdapter {
     return this.graphicsManager.getScene();
   }
 
-  update(_world: IWorld, _deltaTime: number): void {
-    // Adapter ignores world/delta for now and just ticks the inner system
+  update(world: IWorld, deltaTime: number): void {
+    // Tick minimal renderers via inner system
     this.inner.update();
+
+    // Then tick legacy-style renderers with a constructed context
+    if (this.legacyRenderersByName.size > 0) {
+      const scene = this.graphicsManager.getScene();
+      const camera = this.graphicsManager.getCamera();
+      this.frameNumber++;
+      const context = {
+        scene,
+        camera,
+        world,
+        deltaTime,
+        frameNumber: this.frameNumber
+      };
+      for (const renderer of this.legacyRenderersByName.values()) {
+        try {
+          // Optional needsRender gate
+          if (renderer.needsRender && renderer.needsRender() === false) continue;
+          renderer.render!(context);
+        } catch (e) {
+          console.error('RenderSystemAdapter: legacy renderer failed during render()', e);
+        }
+      }
+    }
   }
 
   getDebugInfo() {
@@ -71,7 +134,15 @@ export class RenderSystemAdapter {
 
   dispose(): void {
     this.inner.dispose();
-  this.minimalRenderersByName.clear();
+    // Dispose legacy renderers if they support it
+    const scene = this.getScene();
+    for (const r of this.legacyRenderersByName.values()) {
+      try { r.dispose?.(scene); } catch (e) {
+        // ignore dispose error for legacy renderer
+      }
+    }
+    this.legacyRenderersByName.clear();
+    this.minimalRenderersByName.clear();
   }
 
   private isMinimalRenderer(r: any): r is MinimalRenderer {
