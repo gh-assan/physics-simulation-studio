@@ -9,7 +9,7 @@ import { World } from '../../src/core/ecs/World';
 import { PluginManager } from '../../src/core/plugin/PluginManager';
 import { FlagSimulationPlugin } from '../../src/plugins/flag-simulation/FlagSimulationPlugin';
 import { ThreeGraphicsManager } from '../../src/studio/graphics/ThreeGraphicsManager';
-import { SimplifiedRenderSystem } from '../../src/studio/rendering/simplified/SimplifiedRenderSystem';
+import { createAdapterRenderSystem } from '../../src/studio/rendering/createAdapterRenderSystem';
 import { StateManager } from '../../src/studio/state/StateManager';
 import { Studio } from '../../src/studio/Studio';
 
@@ -75,12 +75,12 @@ describe('🔗 Scene Reference Chain Diagnostic', () => {
       constructor: originalScene?.constructor?.name
     });
 
-    // 2. Create SimplifiedRenderSystem and check its scene
-    const renderSystem = new SimplifiedRenderSystem(graphicsManager);
+  // 2. Create adapter render system and check its scene
+  const renderSystem = createAdapterRenderSystem(graphicsManager);
     studio.setOrchestratorRenderSystem(renderSystem);
 
     const renderSystemScene = renderSystem.getScene();
-    console.log('2️⃣ Scene from SimplifiedRenderSystem:', {
+  console.log('2⃣ Scene from RenderSystemAdapter:', {
       exists: !!renderSystemScene,
       type: typeof renderSystemScene,
       id: renderSystemScene?.id,

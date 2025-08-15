@@ -11,7 +11,7 @@ import { PluginManager } from '../../src/core/plugin/PluginManager';
 import { FlagSimulationPlugin } from '../../src/plugins/flag-simulation/FlagSimulationPlugin';
 import { Studio } from '../../src/studio/Studio';
 import { ThreeGraphicsManager } from '../../src/studio/graphics/ThreeGraphicsManager';
-import { SimplifiedRenderSystem } from '../../src/studio/rendering/simplified/SimplifiedRenderSystem';
+import { createAdapterRenderSystem } from '../../src/studio/rendering/createAdapterRenderSystem';
 import { StateManager } from '../../src/studio/state/StateManager';
 
 describe('🕵️ Scene Reference Deep Debug', () => {
@@ -46,12 +46,12 @@ describe('🕵️ Scene Reference Deep Debug', () => {
       childrenCount: originalScene?.children?.length
     });
 
-    // 3. Create render system
-    const renderSystem = new SimplifiedRenderSystem(graphicsManager);
+  // 3. Create render system (adapter)
+  const renderSystem = createAdapterRenderSystem(graphicsManager);
     studio.setOrchestratorRenderSystem(renderSystem);
 
     const renderSystemScene = renderSystem.getScene();
-    console.log('🎬 Render System Scene:', {
+  console.log('🎬 Render System Scene:', {
       uuid: renderSystemScene?.uuid,
       type: renderSystemScene?.type,
       isThreeScene: renderSystemScene instanceof THREE.Scene,
@@ -95,7 +95,7 @@ describe('🕵️ Scene Reference Deep Debug', () => {
     });
 
     // 10. Check if mesh was added anywhere else
-    console.log('🔍 Checking render system scene separately...');
+    console.log('� Checking render system scene separately...');
     console.log('📊 Render system scene children:', renderSystemScene.children.length);
     renderSystemScene.traverse((object: any) => {
       console.log('  - RS:', object.type, object.name || 'unnamed', object.uuid);
@@ -137,7 +137,7 @@ describe('🕵️ Scene Reference Deep Debug', () => {
       return scene; // Return scene for chaining
     });
 
-    const renderSystem = new SimplifiedRenderSystem(graphicsManager);
+  const renderSystem = createAdapterRenderSystem(graphicsManager);
     studio.setOrchestratorRenderSystem(renderSystem);
 
     // Load plugin

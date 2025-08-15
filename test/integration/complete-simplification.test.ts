@@ -34,19 +34,9 @@ describe('Complete Plugin Simplification', () => {
     console.log = originalConsole;
   });
 
-  test('should use only SimplifiedRenderSystem, no legacy systems', async () => {
-    // This test should PASS once we complete the migration
-    try {
-      // Import the simplified render system
-      const { SimplifiedRenderSystem } = await import('../../src/studio/rendering/simplified/SimplifiedRenderSystem');
-
-      // Should be able to create it without graphics manager for testing
-      // Just verify the class exists and has the right interface
-      expect(SimplifiedRenderSystem).toBeDefined();
-      expect(SimplifiedRenderSystem.prototype.registerRenderer).toBeDefined();
-    } catch (error) {
-      fail(`SimplifiedRenderSystem should be importable: ${error}`);
-    }
+  test('should expose adapter-based render system API', async () => {
+    const { createAdapterRenderSystem } = await import('../../src/studio/rendering/createAdapterRenderSystem');
+    expect(createAdapterRenderSystem).toBeDefined();
   });
 
   test('should have no legacy parameter panels in plugin directories', () => {
@@ -129,34 +119,29 @@ describe('Complete Plugin Simplification', () => {
     // This test identifies remaining console pollution from rendering & UI systems
     consoleLogs = [];
 
-    // Test SimplifiedRenderManager (identified as major polluter)
-    const { SimplifiedRenderManager } = await import('../../src/studio/rendering/simplified/SimplifiedRenderManager');
+    // Use adapter-based render system (should be silent)
+    const { createAdapterRenderSystem } = await import('../../src/studio/rendering/createAdapterRenderSystem');
+    const mockGraphicsManager = {
+      getScene: () => ({ add() {}, remove() {}, children: [] }),
+      getCamera: () => ({}),
+      render: () => {},
+      initialize: () => {}
+    };
+    const renderSystem = createAdapterRenderSystem(mockGraphicsManager as any);
 
-    // Create mock THREE.js objects for testing
-    const mockScene = new (class MockScene {
-      add() { }
-      remove() { }
-      children = [];
-    })();
-    const mockCamera = new (class MockCamera {
-      updateProjectionMatrix() { }
-    })();
-
-    const renderManager = new SimplifiedRenderManager(mockScene as any, mockCamera as any);
-
-    // Register a mock renderer to trigger console logs
+    // Register a mock renderer (legacy-style) to ensure no logs
     const mockRenderer = {
       name: 'test-renderer',
-      priority: 1,
+      initialize: () => {},
       canRender: () => true,
-      render: () => { },
-      dispose: () => { }
+      render: () => {},
+      dispose: () => {}
     };
-    renderManager.registerRenderer(mockRenderer);
+    renderSystem.registerRenderer(mockRenderer as any);
 
-    // Simulate render call
-    const mockWorld = { entities: [] };
-    renderManager.render(mockWorld as any, 16.67); // Simulate 60fps frame
+    // Simulate one frame
+    const mockWorld = { componentManager: { getEntitiesWithComponentTypes: () => [] } };
+    renderSystem.update(mockWorld as any, 16.67);
 
     // Test VisibilityManager
     const { VisibilityManager } = await import('../../src/studio/ui/VisibilityManager');

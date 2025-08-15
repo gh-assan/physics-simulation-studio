@@ -10,7 +10,6 @@
  */
 
 import { World } from '../../../core/ecs/World';
-import { SimplifiedRenderSystem } from '../../../studio/rendering/simplified/SimplifiedRenderSystem';
 import { SimulationOrchestrator } from '../../../studio/SimulationOrchestrator';
 import { PluginManager } from '../../../core/plugin/PluginManager';
 import { FlagSimulationPlugin } from '../index';

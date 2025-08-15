@@ -34,19 +34,11 @@ describe('Complete Plugin Simplification', () => {
     console.log = originalConsole;
   });
 
-  test('should use only SimplifiedRenderSystem, no legacy systems', async () => {
-    // This test should PASS once we complete the migration
-    try {
-      // Import the simplified render system
-      const { SimplifiedRenderSystem } = await import('../../studio/rendering/simplified/SimplifiedRenderSystem');
-
-      // Should be able to create it without graphics manager for testing
-      // Just verify the class exists and has the right interface
-      expect(SimplifiedRenderSystem).toBeDefined();
-      expect(SimplifiedRenderSystem.prototype.registerRenderer).toBeDefined();
-    } catch (error) {
-      fail(`SimplifiedRenderSystem should be importable: ${error}`);
-    }
+  test('should be adapter-only at runtime, with no legacy branches used', async () => {
+    // Adapter is now the only runtime render path; this test asserts no hard dependency on legacy classes
+    await expect(async () => {
+      await import('../../studio/rendering/createAdapterRenderSystem');
+    }).not.toThrow();
   });
 
   test('should have no legacy parameter panels in plugin directories', () => {

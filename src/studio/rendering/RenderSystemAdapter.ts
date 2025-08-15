@@ -110,13 +110,23 @@ export class RenderSystemAdapter {
         deltaTime,
         frameNumber: this.frameNumber
       };
+      let didRender = false;
       for (const renderer of this.legacyRenderersByName.values()) {
         try {
           // Optional needsRender gate
           if (renderer.needsRender && renderer.needsRender() === false) continue;
           renderer.render!(context);
+          didRender = true;
         } catch (e) {
           console.error('RenderSystemAdapter: legacy renderer failed during render()', e);
+        }
+      }
+      // If any legacy renderer ran, present the frame via Three.js
+      if (didRender) {
+        try {
+          this.graphicsManager.render();
+        } catch (_e) {
+          // Swallow render exceptions to avoid breaking simulation loop
         }
       }
     }
@@ -128,6 +138,10 @@ export class RenderSystemAdapter {
       ...info,
       adapter: {
         unsupportedRegistrations: this.unsupportedRegistrations,
+        legacyCount: this.legacyRenderersByName.size,
+        legacyRenderers: Array.from(this.legacyRenderersByName.keys()),
+        minimalCount: this.minimalRenderersByName.size,
+        minimalRenderers: Array.from(this.minimalRenderersByName.keys()),
       }
     };
   }

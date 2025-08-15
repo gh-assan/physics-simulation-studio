@@ -11,7 +11,7 @@
 import { World } from '../../src/core/ecs/World';
 import { PluginManager } from '../../src/core/plugin/PluginManager';
 import { IPluginContext } from '../../src/studio/IPluginContext';
-import { SimplifiedRenderSystem } from '../../src/studio/rendering/simplified/SimplifiedRenderSystem';
+import { createAdapterRenderSystem } from '../../src/studio/rendering/createAdapterRenderSystem';
 import { StateManager } from '../../src/studio/state/StateManager';
 import { Studio } from '../../src/studio/Studio';
 import { MockThreeGraphicsManager } from '../mocks/MockThreeGraphicsManager';
@@ -101,7 +101,7 @@ if (!global.window) {
 describe('🎯 Phase 2: Studio-RenderSystem Integration Fix', () => {
   let world: World;
   let studio: Studio;
-  let renderSystem: SimplifiedRenderSystem;
+  let renderSystem: any;
   let pluginManager: PluginManager;
   let stateManager: StateManager;
   let mockContext: IPluginContext;
@@ -127,11 +127,11 @@ describe('🎯 Phase 2: Studio-RenderSystem Integration Fix', () => {
     } as any;
 
     // Create render system with mocked graphics manager
-    const mockGraphicsManager = new MockThreeGraphicsManager();
-    renderSystem = new SimplifiedRenderSystem(mockGraphicsManager as any);
+  const mockGraphicsManager = new MockThreeGraphicsManager();
+  renderSystem = createAdapterRenderSystem(mockGraphicsManager as any);
 
     // Create spy BEFORE registering with world
-    renderSystemUpdateSpy = jest.spyOn(renderSystem, 'update');
+  renderSystemUpdateSpy = jest.spyOn(renderSystem, 'update');
 
     // Register render system with world
     world.registerSystem(renderSystem);
