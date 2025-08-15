@@ -2,7 +2,6 @@ import { Studio } from './Studio';
 import { World } from '../core/ecs/World';
 import { PluginManager } from '../core/plugin/PluginManager';
 import { StateManager } from './state/StateManager';
-import { SimplifiedRenderSystem } from './rendering/simplified/SimplifiedRenderSystem';
 
 // Mocks
 class MockPlugin {
