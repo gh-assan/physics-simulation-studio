@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direct Flag Simulation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #222;
+            color: white;
+        }
+
+        #container {
+            width: 800px;
+            height: 600px;
+            margin: 20px auto;
+            border: 2px solid #444;
+            background: #111;
+        }
+
+        #info {
+            background: #333;
+            padding: 15px;
+            margin: 20px auto;
+            width: 770px;
+            font-family: monospace;
+            font-size: 11px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🏁 Direct Flag Simulation</h1>
+    <div id="container"></div>
+    <div id="info">Loading simulation directly...</div>
+
+    <script type="module">
+        const info = document.getElementById('info');
+
+        function log(message) {
+            info.innerHTML += `<div>${new Date().toLocaleTimeString()} - ${message}</div>`;
+            info.scrollTop = info.scrollHeight;
+            console.log(message);
+        }
+
+        async function loadDirectly() {
+            try {
+                log('🚀 Starting direct simulation load...');
+
+                // Import using TypeScript paths (like the working main.ts does)
+                log('📦 Importing core modules...');
+                const { World } = await import('/src/core/ecs/World.ts');
+                const { PluginManager } = await import('/src/core/plugin/PluginManager.ts');
+                const { StateManager } = await import('/src/studio/state/StateManager.ts');
+                const { Studio } = await import('/src/studio/Studio.ts');
+
+                log('✅ Core modules imported');
+
+                // Import the flag simulation plugin directly
+                log('📦 Importing FlagSimulationPlugin...');
+                const { FlagSimulationPlugin } = await import('/src/plugins/flag-simulation/FlagSimulationPlugin.ts');
+
+                log('✅ FlagSimulationPlugin imported');
+
+                // Create minimal setup
+                const world = new World();
+                const pluginManager = new PluginManager(world);
+                const stateManager = StateManager.getInstance();
+
+                const pluginContext = {
+                    studio: null,
+                    world,
+                    eventBus: { emit() { }, on() { }, off() { }, once() { } },
+                    getStateManager: () => stateManager,
+                };
+
+                const studio = new Studio(world, pluginManager, stateManager, pluginContext);
+                pluginContext.studio = studio;
+
+                log('✅ Studio created');
+
+                // Initialize
+                const container = document.getElementById('container');
+                studio.initialize(container);
+                log('✅ Studio initialized');
+
+                // Register the flag plugin directly
+                log('🔌 Registering flag plugin...');
+                const flagPlugin = new FlagSimulationPlugin();
+                pluginManager.registerPlugin(flagPlugin);
+                log('✅ Flag plugin registered');
+
+                // Load the simulation
+                log('🏁 Loading flag simulation...');
+                await studio.loadSimulation('flag-simulation');
+                log('✅ Simulation loaded');
+
+                // Check what we have
+                const graphics = studio.getGraphicsManager();
+                const scene = graphics.getScene();
+                const entities = world.getEntities();
+
+                log(`📊 Entities: ${entities.length}`);
+                log(`📊 Scene children: ${scene.children.length}`);
+
+                scene.children.forEach((child, i) => {
+                    log(`  └ Scene[${i}]: ${child.type} "${child.name || 'unnamed'}"`);
+                });
+
+                // Start render loop
+                log('🎬 Starting render loop...');
+                function animate() {
+                    studio.update(0.016);
+                    studio.render();
+                    requestAnimationFrame(animate);
+                }
+                animate();
+
+                log('🎉 Simulation running! You should see the flag.');
+
+            } catch (error) {
+                log(`❌ Error: ${error.message}`);
+                log(`❌ Stack: ${error.stack}`);
+                console.error(error);
+            }
+        }
+
+        window.addEventListener('load', () => {
+            setTimeout(loadDirectly, 500);
+        });
+    </script>
+</body>
+
+</html>

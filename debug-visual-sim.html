@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Simulation Debug</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .debug-info {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .simulation-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        #simulation-canvas {
+            width: 100%;
+            height: 500px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background: #007acc;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #005a99;
+        }
+
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-line;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="debug-info">
+            <h1>🔍 Visual Simulation Debug</h1>
+            <p>Testing if the flag simulation actually renders visually in the browser.</p>
+        </div>
+
+        <div class="simulation-container">
+            <div id="simulation-canvas"></div>
+            <div class="controls">
+                <button onclick="loadFlagSimulation()">Load Flag Simulation</button>
+                <button onclick="loadSolarSystemSimulation()">Load Solar System</button>
+                <button onclick="clearSimulation()">Clear</button>
+                <button onclick="inspectScene()">Inspect Scene</button>
+            </div>
+            <div id="status" class="status">Ready to test...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { Studio } from './build/src/studio/Studio.js';
+        import { FlagSimulationPlugin } from './build/src/plugins/flag-simulation/FlagSimulationPlugin.js';
+        import { SolarSystemPlugin } from './build/src/plugins/solar-system/SolarSystemPlugin.js';
+
+        let studio = null;
+        let animationId = null;
+
+        function log(message) {
+            const status = document.getElementById('status');
+            const timestamp = new Date().toLocaleTimeString();
+            status.textContent += `[${timestamp}] ${message}\n`;
+            status.scrollTop = status.scrollHeight;
+            console.log(message);
+        }
+
+        window.loadFlagSimulation = async function () {
+            try {
+                log('🏁 Loading Flag Simulation...');
+
+                if (studio) {
+                    studio.dispose();
+                }
+
+                // Create new studio instance
+                studio = new Studio();
+
+                // Initialize with canvas container
+                const container = document.getElementById('simulation-canvas');
+                container.innerHTML = ''; // Clear previous content
+
+                studio.initialize(container);
+                log('✅ Studio initialized');
+
+                // Load flag simulation
+                await studio.loadSimulation('flag-simulation');
+                log('✅ Flag simulation loaded');
+
+                // Start render loop
+                startRenderLoop();
+                log('🎬 Render loop started');
+
+                // Inspect what's in the scene
+                setTimeout(() => inspectScene(), 1000);
+
+            } catch (error) {
+                log('❌ Error loading flag simulation: ' + error.message);
+                console.error(error);
+            }
+        };
+
+        window.loadSolarSystemSimulation = async function () {
+            try {
+                log('🌍 Loading Solar System Simulation...');
+
+                if (studio) {
+                    studio.dispose();
+                }
+
+                studio = new Studio();
+                const container = document.getElementById('simulation-canvas');
+                container.innerHTML = '';
+
+                studio.initialize(container);
+                log('✅ Studio initialized');
+
+                await studio.loadSimulation('solar-system');
+                log('✅ Solar system loaded');
+
+                startRenderLoop();
+                log('🎬 Render loop started');
+
+                setTimeout(() => inspectScene(), 1000);
+
+            } catch (error) {
+                log('❌ Error loading solar system: ' + error.message);
+                console.error(error);
+            }
+        };
+
+        window.clearSimulation = function () {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            if (studio) {
+                studio.dispose();
+                studio = null;
+            }
+            const container = document.getElementById('simulation-canvas');
+            container.innerHTML = '';
+            log('🧹 Simulation cleared');
+        };
+
+        window.inspectScene = function () {
+            if (!studio) {
+                log('❌ No studio instance to inspect');
+                return;
+            }
+
+            try {
+                const graphics = studio.getGraphicsManager();
+                const scene = graphics.getScene();
+                const camera = graphics.getCamera();
+                const renderer = graphics.getRenderer();
+
+                log('🔍 Scene Inspection:');
+                log(`  - Scene children: ${scene.children.length}`);
+                log(`  - Scene type: ${scene.type}`);
+                log(`  - Camera position: (${camera.position.x.toFixed(2)}, ${camera.position.y.toFixed(2)}, ${camera.position.z.toFixed(2)})`);
+                log(`  - Renderer size: ${renderer.domElement.width}x${renderer.domElement.height}`);
+
+                // List all objects in the scene
+                scene.children.forEach((child, index) => {
+                    log(`  - Child ${index}: ${child.type} - ${child.name || 'unnamed'}`);
+                });
+
+                // Check if canvas has any content
+                const canvas = renderer.domElement;
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                if (gl) {
+                    const pixels = new Uint8Array(4);
+                    gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+                    log(`  - Sample pixel: rgba(${pixels[0]}, ${pixels[1]}, ${pixels[2]}, ${pixels[3]})`);
+                }
+
+            } catch (error) {
+                log('❌ Error inspecting scene: ' + error.message);
+                console.error(error);
+            }
+        };
+
+        function startRenderLoop() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+
+            function animate() {
+                if (studio) {
+                    studio.update(16.67); // 60 FPS
+                    studio.render();
+                }
+                animationId = requestAnimationFrame(animate);
+            }
+
+            animate();
+        }
+
+        // Auto-load flag simulation on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                loadFlagSimulation();
+            }, 500);
+        });
+    </script>
+</body>
+
+</html>

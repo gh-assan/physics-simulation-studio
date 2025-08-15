@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Flag Simulation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #222;
+            color: white;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #container {
+            width: 800px;
+            height: 600px;
+            margin: 20px auto;
+            border: 2px solid #444;
+            background: #111;
+            position: relative;
+        }
+
+        #debug {
+            width: 800px;
+            margin: 0 auto;
+            background: #333;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .error {
+            color: #ff6b6b;
+        }
+
+        .success {
+            color: #51cf66;
+        }
+
+        .info {
+            color: #74c0fc;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🏁 Debug Flag Simulation</h1>
+    <div id="container"></div>
+    <div id="debug"></div>
+
+    <script type="module">
+        const debugEl = document.getElementById('debug');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${timestamp}] ${message}`;
+            debugEl.appendChild(div);
+            debugEl.scrollTop = debugEl.scrollHeight;
+            console.log(`[${type.toUpperCase()}]`, message);
+        }
+
+        async function debugSimulation() {
+            try {
+                log('🚀 Starting debug process...');
+
+                // Try importing modules one by one
+                log('📦 Importing World...');
+                const { World } = await import('./build/src/core/ecs/World.js');
+                log('✅ World imported', 'success');
+
+                log('📦 Importing PluginManager...');
+                const { PluginManager } = await import('./build/src/core/plugin/PluginManager.js');
+                log('✅ PluginManager imported', 'success');
+
+                log('📦 Importing StateManager...');
+                const { StateManager } = await import('./build/src/studio/state/StateManager.js');
+                log('✅ StateManager imported', 'success');
+
+                log('📦 Importing Studio...');
+                const { Studio } = await import('./build/src/studio/Studio.js');
+                log('✅ Studio imported', 'success');
+
+                // Create instances
+                log('🏗️ Creating World instance...');
+                const world = new World();
+                log('✅ World created', 'success');
+
+                log('🏗️ Creating PluginManager...');
+                const pluginManager = new PluginManager(world);
+                log('✅ PluginManager created', 'success');
+
+                log('🏗️ Getting StateManager...');
+                const stateManager = StateManager.getInstance();
+                log('✅ StateManager obtained', 'success');
+
+                log('🏗️ Creating plugin context...');
+                const pluginContext = {
+                    studio: null,
+                    world,
+                    eventBus: {
+                        emit: () => log('EventBus.emit called'),
+                        on: () => log('EventBus.on called'),
+                        off: () => log('EventBus.off called'),
+                        once: () => log('EventBus.once called')
+                    },
+                    getStateManager: () => stateManager,
+                };
+                log('✅ Plugin context created', 'success');
+
+                log('🏗️ Creating Studio...');
+                const studio = new Studio(world, pluginManager, stateManager, pluginContext);
+                pluginContext.studio = studio;
+                log('✅ Studio created', 'success');
+
+                log('🖥️ Getting container element...');
+                const container = document.getElementById('container');
+                if (!container) {
+                    throw new Error('Container element not found!');
+                }
+                log('✅ Container found', 'success');
+
+                log('🎬 Initializing Studio with container...');
+                studio.initialize(container);
+                log('✅ Studio initialized', 'success');
+
+                // Check if canvas was created
+                const canvas = container.querySelector('canvas');
+                if (canvas) {
+                    log(`✅ Canvas created: ${canvas.width}x${canvas.height}`, 'success');
+                } else {
+                    log('❌ No canvas found in container!', 'error');
+                }
+
+                log('🏁 Loading flag simulation...');
+                await studio.loadSimulation('flag-simulation');
+                log('✅ Flag simulation loaded', 'success');
+
+                // Check scene contents
+                const graphics = studio.getGraphicsManager();
+                const scene = graphics.getScene();
+                const entities = world.getEntities();
+
+                log(`📊 Scene children: ${scene.children.length}`, 'info');
+                log(`📊 World entities: ${entities.length}`, 'info');
+
+                // List scene objects
+                scene.children.forEach((child, i) => {
+                    log(`  └ Scene[${i}]: ${child.type} "${child.name || 'unnamed'}"`, 'info');
+                });
+
+                // Start animation
+                log('🎬 Starting render loop...', 'info');
+                let frameCount = 0;
+                function animate() {
+                    try {
+                        studio.update(0.016);
+                        studio.render();
+                        frameCount++;
+
+                        if (frameCount % 60 === 0) {
+                            log(`🎯 Frame ${frameCount}: Still running...`, 'info');
+                        }
+                    } catch (error) {
+                        log(`❌ Animation error: ${error.message}`, 'error');
+                        return;
+                    }
+                    requestAnimationFrame(animate);
+                }
+                animate();
+
+                log('🎉 Debug complete - animation running!', 'success');
+
+            } catch (error) {
+                log(`❌ Fatal error: ${error.message}`, 'error');
+                log(`❌ Stack: ${error.stack}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Start when page loads
+        window.addEventListener('load', () => {
+            setTimeout(debugSimulation, 100);
+        });
+
+        // Catch any unhandled errors
+        window.addEventListener('error', (event) => {
+            log(`❌ Global error: ${event.message}`, 'error');
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+            log(`❌ Unhandled promise rejection: ${event.reason}`, 'error');
+        });
+    </script>
+</body>
+
+</html>

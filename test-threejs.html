@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direct THREE.js Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #222;
+            color: white;
+        }
+
+        #container {
+            width: 800px;
+            height: 600px;
+            margin: 20px auto;
+            border: 2px solid #444;
+            background: #111;
+        }
+
+        #info {
+            text-align: center;
+            margin: 20px;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Direct THREE.js Test</h1>
+    <div id="container"></div>
+    <div id="info">Loading...</div>
+
+    <script type="module">
+        const info = document.getElementById('info');
+
+        function log(message) {
+            info.textContent = message;
+            console.log(message);
+        }
+
+        try {
+            log('Testing direct THREE.js import...');
+
+            // Import THREE.js directly from CDN to test basic rendering
+            const THREE = await import('https://cdn.skypack.dev/three@0.152.0');
+            log('✅ THREE.js imported successfully');
+
+            // Create basic scene
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, 800 / 600, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer();
+
+            renderer.setSize(800, 600);
+            renderer.setClearColor(0x002244);
+
+            const container = document.getElementById('container');
+            container.appendChild(renderer.domElement);
+
+            log('✅ Scene, camera, renderer created');
+
+            // Create a simple red cube (like our flag mesh)
+            const geometry = new THREE.BoxGeometry();
+            const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
+
+            // Position camera
+            camera.position.z = 5;
+
+            log('✅ Cube added to scene');
+
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+
+                cube.rotation.x += 0.01;
+                cube.rotation.y += 0.01;
+
+                renderer.render(scene, camera);
+            }
+
+            animate();
+            log('✅ Animation started - you should see a spinning red cube!');
+
+        } catch (error) {
+            log(`❌ Error: ${error.message}`);
+            console.error(error);
+        }
+    </script>
+</body>
+
+</html>

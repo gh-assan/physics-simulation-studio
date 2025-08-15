@@ -5,7 +5,7 @@
 import * as THREE from "three";
 import { PositionComponent } from "../../core/components/PositionComponent";
 import { IWorld } from "../../core/ecs/IWorld";
-import { BaseRenderer, RenderContext } from "../../studio/rendering/simplified/SimplifiedInterfaces";
+// Legacy-style renderer consumed by RenderSystemAdapter via render(context)
 import { ISimulationRenderer, ISimulationState } from "../../core/plugin/EnhancedPluginInterfaces";
 import { SimulationManager } from "../../studio/simulation/SimulationManager";
 import { FlagComponent } from "./FlagComponent";
@@ -13,7 +13,7 @@ import { FlagComponent } from "./FlagComponent";
 /**
  * Flag renderer that implements both old and new interfaces for compatibility
  */
-export class SimplifiedFlagRenderer extends BaseRenderer implements ISimulationRenderer {
+export class SimplifiedFlagRenderer implements ISimulationRenderer {
   readonly name = "simplified-flag-renderer";
   readonly priority = 10;
 
@@ -21,15 +21,9 @@ export class SimplifiedFlagRenderer extends BaseRenderer implements ISimulationR
   private flagMaterial: THREE.MeshPhongMaterial | null = null;
   private simulationManager: SimulationManager | null = null;
 
-  constructor() {
-    super();
-  }
+  constructor() {}
 
-  // === BaseRenderer interface (new system) ===
-
-  /**
-   * Check if we can render this entity
-   */
+  // New minimal renderer API compatibility gate used by adapter legacy bridge
   canRender(entityId: number, world: IWorld): boolean {
     const hasFlag = world.componentManager.hasComponent(entityId, FlagComponent.type);
     const hasPosition = world.componentManager.hasComponent(entityId, PositionComponent.type);
@@ -41,44 +35,13 @@ export class SimplifiedFlagRenderer extends BaseRenderer implements ISimulationR
     return hasFlag && hasPosition;
   }
 
-  /**
-   * Check if this renderer needs to render this frame
-   * For animated flag simulation, we always need to render
-   */
   needsRender(): boolean {
-    // For animated cloth simulation, we should render every frame
-    // Also render if we need to check for new entities
-    console.log(`🔍 SimplifiedFlagRenderer.needsRender(): flagMeshes.size = ${this.flagMeshes.size}`);
-    return true; // Always check for new flag entities and render
+    return true;
   }
 
-  /**
-   * Main render method for new system - simple and direct
-   */
-  render(context: RenderContext): void;
-  /**
-   * Render method for old system - delegates to updateFromState
-   */
-  render(state: ISimulationState): void;
-  /**
-   * Combined render implementation
-   */
-  render(contextOrState: RenderContext | ISimulationState): void {
-    // Handle new system (RenderContext)
-    if ('scene' in contextOrState) {
-      const context = contextOrState as RenderContext;
-      this.renderWithContext(context);
-    } else {
-      // Handle old system (ISimulationState)
-      this.updateFromState(contextOrState as ISimulationState);
-    }
-  }
-
-  private renderWithContext(context: RenderContext): void {
+  // Adapter will call this via legacy bridge with a context containing scene/world
+  render(context: any): void {
     const { scene, world } = context;
-
-    // Debug: Log render call
-    console.log('🎨 SimplifiedFlagRenderer.render() called');
 
     // Get all flag entities efficiently
     const flagEntities = world.componentManager.getEntitiesWithComponentTypes([
@@ -86,29 +49,22 @@ export class SimplifiedFlagRenderer extends BaseRenderer implements ISimulationR
       PositionComponent.type
     ]);
 
-    console.log(`🔍 Found ${flagEntities.length} flag entities with both components`);
-
     // Clean up deleted entities
     this.cleanupDeletedMeshes(flagEntities, scene);
 
     // Render each flag
     for (const entityId of flagEntities) {
-      console.log(`🏁 Rendering flag entity ${entityId}`);
       this.renderFlagEntity(entityId, world, scene);
     }
 
-    // Mark as clean after rendering
-    this.markClean();
+  // No-op: adapter drives cadence; always re-render for animation
   }
-
-  // === ISimulationRenderer interface (old system) ===
 
   /**
    * Initialize with simulation manager (old system)
    */
   initialize(simulationManager: SimulationManager): void {
     this.simulationManager = simulationManager;
-    console.log('🎨 SimplifiedFlagRenderer initialized with SimulationManager');
   }
 
   /**
@@ -124,7 +80,6 @@ export class SimplifiedFlagRenderer extends BaseRenderer implements ISimulationR
   updateFromState(state: ISimulationState): void {
     // For now, this is a no-op since we're using ECS-based rendering
     // But if needed, we could bridge to the new system here
-    console.log('🎨 SimplifiedFlagRenderer.updateFromState() called (old system)');
   }
 
   /**
@@ -171,8 +126,6 @@ export class SimplifiedFlagRenderer extends BaseRenderer implements ISimulationR
    * Create flag mesh from component
    */
   private createFlagMesh(flagComponent: FlagComponent): THREE.Mesh {
-    console.log('🎯 Creating flag mesh with segments:', flagComponent.segmentsX, 'x', flagComponent.segmentsY);
-
     const geometry = new THREE.BufferGeometry();
     const material = this.getFlagMaterial();
 
@@ -180,8 +133,6 @@ export class SimplifiedFlagRenderer extends BaseRenderer implements ISimulationR
     this.initializeFlagGeometry(geometry, flagComponent);
 
     const mesh = new THREE.Mesh(geometry, material);
-    console.log('✅ Flag mesh created successfully');
-
     return mesh;
   }
 

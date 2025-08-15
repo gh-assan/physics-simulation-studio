@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Loading Simulation Debug</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .debug-info {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .simulation-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            height: 600px;
+            position: relative;
+        }
+
+        .simulation-container canvas {
+            width: 100% !important;
+            height: 500px !important;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-line;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .error {
+            background: #fee;
+            border: 1px solid #fcc;
+        }
+
+        .success {
+            background: #efe;
+            border: 1px solid #cfc;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="debug-info">
+            <h1>🔍 Auto-Loading Simulation Debug</h1>
+            <p>This page automatically loads the flag simulation and shows detailed debug info.</p>
+        </div>
+
+        <div class="simulation-container" id="simulation-container">
+            <div id="status" class="status">Initializing...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { World } from './build/src/core/ecs/World.js';
+        import { PluginManager } from './build/src/core/plugin/PluginManager.js';
+        import { StateManager } from './build/src/studio/state/StateManager.js';
+        import { Studio } from './build/src/studio/Studio.js';
+        import { FlagSimulationPlugin } from './build/src/plugins/flag-simulation/FlagSimulationPlugin.js';
+
+        let studio = null;
+        let animationId = null;
+
+        function log(message, type = 'info') {
+            const status = document.getElementById('status');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
+            status.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            status.scrollTop = status.scrollHeight;
+            console.log(message);
+        }
+
+        async function initializeStudio() {
+            try {
+                log('🚀 Starting Studio Initialization...');
+
+                // Create core systems
+                const world = new World();
+                const pluginManager = new PluginManager(world);
+                const stateManager = StateManager.getInstance();
+
+                log('✅ Core systems created');
+
+                // Create plugin context
+                const pluginContext = {
+                    studio: undefined,
+                    world: world,
+                    eventBus: {
+                        emit: () => { },
+                        on: () => { },
+                        off: () => { },
+                        once: () => { }
+                    },
+                    getStateManager: () => stateManager,
+                };
+
+                // Create studio
+                studio = new Studio(world, pluginManager, stateManager, pluginContext);
+                pluginContext.studio = studio;
+
+                log('✅ Studio instance created');
+
+                // Get container for rendering
+                const container = document.getElementById('simulation-container');
+
+                // Initialize studio with container
+                studio.initialize(container);
+                log('✅ Studio initialized with container');
+
+                // Register flag simulation plugin
+                const flagPlugin = new FlagSimulationPlugin();
+                pluginManager.registerPlugin(flagPlugin);
+                log('✅ Flag simulation plugin registered');
+
+                // Wait a moment for registration to complete
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                // Load flag simulation
+                log('🏁 Loading flag simulation...');
+                await studio.loadSimulation('flag-simulation');
+                log('✅ Flag simulation loaded', 'success');
+
+                // Start render loop
+                startRenderLoop();
+                log('🎬 Render loop started');
+
+                // Perform detailed inspection after a moment
+                setTimeout(() => performDetailedInspection(), 1000);
+
+            } catch (error) {
+                log(`❌ Error during initialization: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        function startRenderLoop() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+
+            let lastTime = 0;
+            function animate(currentTime) {
+                if (studio) {
+                    const deltaTime = (currentTime - lastTime) / 1000;
+                    lastTime = currentTime;
+                    studio.update(deltaTime);
+                    studio.render();
+                }
+                animationId = requestAnimationFrame(animate);
+            }
+
+            animate(0);
+        }
+
+        function performDetailedInspection() {
+            log('🔍 Performing detailed inspection...');
+
+            try {
+                if (!studio) {
+                    log('❌ No studio instance', 'error');
+                    return;
+                }
+
+                const graphics = studio.getGraphicsManager();
+                const scene = graphics.getScene();
+                const camera = graphics.getCamera();
+                const renderer = graphics.getRenderer();
+
+                log(`📊 Scene children count: ${scene.children.length}`);
+                log(`📊 Scene type: ${scene.type}`);
+                log(`📊 Camera position: (${camera.position.x.toFixed(2)}, ${camera.position.y.toFixed(2)}, ${camera.position.z.toFixed(2)})`);
+
+                if (renderer && renderer.domElement) {
+                    log(`📊 Canvas size: ${renderer.domElement.width}x${renderer.domElement.height}`);
+                    log(`📊 Canvas in DOM: ${document.contains(renderer.domElement)}`);
+                } else {
+                    log('❌ No renderer or canvas found', 'error');
+                }
+
+                // List all scene children
+                scene.children.forEach((child, index) => {
+                    log(`  └ Child ${index}: ${child.type} "${child.name || 'unnamed'}"`);
+                });
+
+                // Check world entities
+                const world = studio.getWorld();
+                const entityCount = world.getEntities().length;
+                log(`🌍 World entities: ${entityCount}`);
+
+                if (entityCount > 0) {
+                    log('✅ Entities exist - simulation should be running', 'success');
+                } else {
+                    log('❌ No entities found - simulation not initialized', 'error');
+                }
+
+            } catch (error) {
+                log(`❌ Error during inspection: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Start the initialization
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                initializeStudio();
+            }, 100);
+        });
+    </script>
+</body>
+
+</html>

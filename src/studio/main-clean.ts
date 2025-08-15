@@ -25,7 +25,7 @@ import { IPluginContext } from "./IPluginContext";
 import { ThreeGraphicsManager } from "./graphics/ThreeGraphicsManager";
 import { VisibilityManager } from "./ui/VisibilityManager";
 import { SystemDiagnostics } from "./utils/SystemDiagnostics";
-import { SimplifiedRenderSystem } from "./rendering/simplified/SimplifiedRenderSystem";
+import { getSelectedRenderMode } from './rendering/getSelectedRenderMode';
 import { VisibilityOrchestrator } from "./orchestration/VisibilityOrchestrator";
 import { PluginDiscoveryService } from "./plugins/PluginDiscoveryService";
 
@@ -192,18 +192,19 @@ function registerComponentsAndSystems(world: World, studio: Studio, pluginManage
     }
     graphicsManager.initialize(mainContent);
 
-    // Create simplified render system (much cleaner!)
-    const renderSystem = new SimplifiedRenderSystem(graphicsManager);
-
-    // Set the RenderSystem in Studio
-    studio.setRenderSystem(renderSystem);
+    // Build adapter-backed system using the same graphics manager (adapter-only)
+    // Use require to avoid top-level await constraints in some build/test environments
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { buildRenderSystem } = require('./rendering/RenderSystemFactory');
+    const renderSystem = buildRenderSystem('adapter', graphicsManager as any);
+    studio.setRenderSystem(renderSystem as any);
 
     // Create centralized visibility orchestrator with simplified system
     const visibilityOrchestrator = new VisibilityOrchestrator(visibilityManager, renderSystem as any);
     visibilityOrchestrator.initialize();
 
-    // Register the simplified render system
-    world.registerSystem(renderSystem);
+  // Register the chosen render system
+  world.registerSystem(renderSystem);
 
     const selectionSystem = new SelectionSystem(studio, world as World);
     world.registerSystem(selectionSystem);

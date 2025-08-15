@@ -79,7 +79,7 @@ class FlagSimulationPlugin implements ISimulationPlugin {
    * Register renderer when this simulation is loaded/activated
    */
   public async registerRenderer(world: IWorld): Promise<void> {
-    await this.autoDiscoverAndRegisterRenderer(world);
+  await this.autoDiscoverAndRegisterRenderer(world);
   }
 
   /**
@@ -87,9 +87,9 @@ class FlagSimulationPlugin implements ISimulationPlugin {
    */
   public unregisterRenderer(): void {
     if (this.renderSystem && this.registeredRenderer) {
-      // Unregister renderer from SimplifiedRenderSystem
+      // Unregister renderer from active render system (adapter supports instance or name)
       if (typeof this.renderSystem.unregisterRenderer === 'function') {
-        this.renderSystem.unregisterRenderer(this.registeredRenderer);
+        this.renderSystem.unregisterRenderer(this.registeredRenderer.name ?? this.registeredRenderer);
       }
 
       // Clean up renderer resources
@@ -117,20 +117,35 @@ class FlagSimulationPlugin implements ISimulationPlugin {
    */
   private async autoDiscoverAndRegisterRenderer(world: IWorld): Promise<void> {
     try {
-      // Access SimplifiedRenderSystem from the world's system manager
-      const renderSystem = (world as any).systemManager?.getSystemByType?.('SimplifiedRenderSystem');
+      // Import and create our SimplifiedFlagRenderer
+      const { SimplifiedFlagRenderer } = await import('./SimplifiedFlagRenderer');
+      const flagRenderer = new SimplifiedFlagRenderer();
 
-      if (renderSystem && typeof renderSystem.registerRenderer === 'function') {
-        // Import and create our SimplifiedFlagRenderer
-        const { SimplifiedFlagRenderer } = await import('./SimplifiedFlagRenderer');
-        const flagRenderer = new SimplifiedFlagRenderer();
-
-        // Store references for cleanup during unregister
+      // Prefer adapter-friendly registration via SimulationManager bridge if available
+      try {
+        const { SimulationManager } = await import('../../studio/simulation/SimulationManager');
+        const simManager = SimulationManager.getInstance();
+        simManager.registerRenderer('flag-simulation', flagRenderer as any);
         this.registeredRenderer = flagRenderer;
-        this.renderSystem = renderSystem;
+        // Best-effort: capture render system from sim manager if already set
+        this.renderSystem = (simManager as any)['renderSystem'] ?? null;
+        return;
+      } catch {
+        // Fall back to legacy world lookup
+      }
 
-        // Register with the simplified render system
-        renderSystem.registerRenderer(flagRenderer);
+  // Legacy fallback: Access SimplifiedRenderSystem from the world's system manager
+      const legacyRenderSystem = (world as any).systemManager?.getSystemByType?.('SimplifiedRenderSystem');
+      if (legacyRenderSystem && typeof legacyRenderSystem.registerRenderer === 'function') {
+        this.registeredRenderer = flagRenderer;
+        this.renderSystem = legacyRenderSystem;
+        legacyRenderSystem.registerRenderer(flagRenderer);
+      } else if ((window as any).studio?.['renderSystem']?.registerRenderer) {
+        // Fallback: attempt direct studio render system if exposed
+        const rs = (window as any).studio['renderSystem'];
+        rs.registerRenderer(flagRenderer);
+        this.registeredRenderer = flagRenderer;
+        this.renderSystem = rs;
       }
     } catch (error) {
       // Only log actual errors, not debug information

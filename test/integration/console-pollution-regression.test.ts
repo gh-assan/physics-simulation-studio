@@ -65,13 +65,13 @@ describe('Console Pollution Regression Test', () => {
 
     try {
       // Import some studio components that might cause pollution
-      const { VisibilityManager } = await import('../../src/studio/ui/VisibilityManager');
-      const { SimplifiedRenderManager } = await import('../../src/studio/rendering/simplified/SimplifiedRenderManager');
+  const { VisibilityManager } = await import('../../src/studio/ui/VisibilityManager');
+  const { createAdapterRenderSystem } = await import('../../src/studio/rendering/createAdapterRenderSystem');
 
-      // Reset after imports
+  // Reset after imports
       consoleLogs = [];
 
-      // Check for any remaining pollution during operations
+  // Check for any remaining pollution during operations
       const pollutionLogs = consoleLogs.filter(log =>
         log.includes('✅') ||
         log.includes('🎨') ||
@@ -85,7 +85,7 @@ describe('Console Pollution Regression Test', () => {
       expect(pollutionLogs).toHaveLength(0);
 
     } catch (error) {
-      // If modules don't exist, that's fine
+  // If modules don't exist, that's fine
       originalConsole.log('Some studio modules not found, skipping test');
     }
   });

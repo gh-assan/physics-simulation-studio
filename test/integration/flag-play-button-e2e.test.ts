@@ -18,7 +18,7 @@ describe('Flag Simulation Play Button E2E', () => {
 
   beforeEach(() => {
     // Capture console logs to verify no debug pollution
-    originalConsole = {...console};
+    originalConsole = { ...console };
     consoleLogs = [];
     console.log = (...args: any[]) => {
       consoleLogs.push(args.join(' '));
@@ -69,7 +69,7 @@ describe('Flag Simulation Play Button E2E', () => {
     // Mock state manager
     mockStateManager = {
       selectedSimulation: {
-        state: {name: ''},
+        state: { name: '' },
         getSimulationName: jest.fn().mockReturnValue(''),
         setSimulation: jest.fn((name: string) => {
           mockStateManager.selectedSimulation.state.name = name;
@@ -84,7 +84,7 @@ describe('Flag Simulation Play Button E2E', () => {
 
   test('should complete full play workflow for flag simulation', async () => {
     // Import the play button handler
-    const {handlePlayButtonClick} = await import(
+    const { handlePlayButtonClick } = await import(
       '../../src/studio/ui/PlayButtonHandler'
     );
 
@@ -113,9 +113,9 @@ describe('Flag Simulation Play Button E2E', () => {
     } = await import('../../src/studio/ui/PlayButtonHandler');
 
     // Mock button elements
-    const mockPlayButton = {disabled: false};
-    const mockPauseButton = {disabled: true};
-    const mockResetButton = {disabled: true};
+    const mockPlayButton = { disabled: false };
+    const mockPauseButton = { disabled: true };
+    const mockResetButton = { disabled: true };
 
     // Test initial state (no simulation)
     expect(isPlayButtonEnabled(mockStateManager)).toBe(true);
@@ -150,7 +150,7 @@ describe('Flag Simulation Play Button E2E', () => {
   });
 
   test('should have clean console output during play workflow', async () => {
-    const {handlePlayButtonClick} = await import(
+    const { handlePlayButtonClick } = await import(
       '../../src/studio/ui/PlayButtonHandler'
     );
 
@@ -175,7 +175,7 @@ describe('Flag Simulation Play Button E2E', () => {
   });
 
   test('should handle multiple play button clicks gracefully', async () => {
-    const {handlePlayButtonClick} = await import(
+    const { handlePlayButtonClick } = await import(
       '../../src/studio/ui/PlayButtonHandler'
     );
 

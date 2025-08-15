@@ -16,5 +16,6 @@
     "types": ["jest", "node", "@types/three"],
     "lib": ["es2020", "dom"]
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "jest.setup.ts", "vite.config.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts", "jest.setup.ts", "vite.config.ts"],
+  "exclude": ["src/examples/**"]
 }

@@ -5,10 +5,6 @@
  * We'll create a failing test that proves the render system IS being called.
  */
 
-import { Studio } from '../../src/studio/Studio';
-import { World } from '../../src/core/ecs/World';
-import { StateManager } from '../../src/studio/state/StateManager';
-import { PluginManager } from '../../src/core/plugin/PluginManager';
 
 describe('🎯 Animation Loop Verification', () => {
 
