@@ -2,6 +2,7 @@ import { ISimulationAlgorithm, ISimulationState, ISimulationManager, EntityId } 
 import { SimulationState } from '../../core/simulation/SimulationState';
 import { TimeSteppingEngine, ITimeSteppingEngine } from '../../core/simulation/TimeSteppingEngine';
 import { ISimulationRenderer } from '../../core/plugin/EnhancedPluginInterfaces';
+import { Logger } from '../../core/utils/Logger';
 
 /**
  * Simulation Manager - Core Algorithm Orchestration
@@ -46,7 +47,7 @@ export class SimulationManager implements ISimulationManager {
     this.algorithms.set(algorithm.name, algorithm);
     this.initializeAlgorithm(algorithm);
 
-    console.log(`✅ Algorithm registered: ${algorithm.name} v${algorithm.version}`);
+    Logger.getInstance().debug(`Algorithm registered: ${algorithm.name} v${algorithm.version}`);
   }
 
   /**
@@ -56,7 +57,7 @@ export class SimulationManager implements ISimulationManager {
     const algorithm = this.algorithms.get(algorithmName);
 
     if (!algorithm) {
-      console.warn(`⚠️ Algorithm not found: ${algorithmName}`);
+      Logger.getInstance().warn(`Algorithm not found: ${algorithmName}`);
       return;
     }
 
@@ -86,15 +87,15 @@ export class SimulationManager implements ISimulationManager {
       try {
         renderer.initialize(this);
       } catch (err) {
-        console.error('Error initializing simulation renderer:', err);
+        Logger.getInstance().error('Error initializing simulation renderer:', err);
       }
-      console.log(`✅ Renderer registered: ${name}`);
+      Logger.getInstance().debug(`Renderer registered: ${name}`);
     }
 
     // Always forward to render system if present (supports both legacy/minimal via adapter)
     if (this.renderSystem && typeof this.renderSystem.registerRenderer === 'function') {
       this.renderSystem.registerRenderer(renderer);
-      console.log(`✅ Renderer also registered with render system: ${name}`);
+      Logger.getInstance().debug(`Renderer also registered with render system: ${name}`);
     }
   }
 
@@ -148,7 +149,7 @@ export class SimulationManager implements ISimulationManager {
     this.isPlaying = true;
     this.updateSimulationState(state => state.withRunning(true));
 
-    console.log('▶️ Simulation started');
+    Logger.getInstance().debug('Simulation started');
   }
 
   /**
@@ -162,7 +163,7 @@ export class SimulationManager implements ISimulationManager {
     this.isPlaying = false;
     this.updateSimulationState(state => state.withRunning(false));
 
-    console.log('⏸️ Simulation paused');
+    Logger.getInstance().debug('Simulation paused');
   }
 
   /**
@@ -176,7 +177,7 @@ export class SimulationManager implements ISimulationManager {
     this.reinitializeAlgorithms();
     this.notifyStateChange();
 
-    console.log('🔄 Simulation reset');
+    Logger.getInstance().debug('Simulation reset');
   }
 
   /**

@@ -71,7 +71,7 @@ function setupCoreSystems(): { world: World; pluginManager: PluginManager; state
   return { world, pluginManager, stateManager, studio, pluginDiscovery };
 }
 
-function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager): { uiManager: UIManager; visibilityManager: VisibilityManager; pane: Pane } {
+function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager): { uiManager: UIManager; visibilityManager: VisibilityManager; pane: Pane; updateSimulationSelector: () => void } {
   // Initialize core UI and ensure left panel exists
   const visibilityManager = new VisibilityManager();
   visibilityManager.initializeCoreUI();
@@ -181,10 +181,10 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
     void updateControlButtonStates();
   });
 
-  return { uiManager, visibilityManager, pane };
+  return { uiManager, visibilityManager, pane, updateSimulationSelector };
 }
 
-function registerComponentsAndSystems(world: World, studio: Studio, pluginManager: PluginManager, visibilityManager: VisibilityManager, pane: Pane): VisibilityOrchestrator {
+async function registerComponentsAndSystems(world: World, studio: Studio, pluginManager: PluginManager, visibilityManager: VisibilityManager, pane: Pane): Promise<VisibilityOrchestrator> {
   // Register Core Components Only - Plugin components are registered by plugins themselves
   world.registerComponent((PositionComponent as any).type ? PositionComponent : class extends PositionComponent { static type = "PositionComponent"; });
   world.registerComponent((RenderableComponent as any).type ? RenderableComponent : class extends RenderableComponent { static type = "RenderableComponent"; });
@@ -204,14 +204,13 @@ function registerComponentsAndSystems(world: World, studio: Studio, pluginManage
     graphicsManager.initialize(mainContent);
 
   // Build adapter-backed system using the same graphics manager (adapter-only)
-  // Use require to avoid top-level await constraints in some build/test environments
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { buildRenderSystem } = require('./rendering/RenderSystemFactory');
+  // Use dynamic import to avoid top-level await constraints in some build/test environments
+  const { buildRenderSystem } = await import('./rendering/RenderSystemFactory');
   const renderSystem = buildRenderSystem('adapter', graphicsManager as any);
   studio.setRenderSystem(renderSystem as any);
 
-  // Register the chosen render system
-  world.registerSystem(renderSystem);
+  // Register the chosen render system (cast to ISystem to handle interface compatibility)
+  world.registerSystem(renderSystem as any);
 
     // Create visibility manager (simplified without orchestrator dependency)
   const visibilityOrchestrator = new VisibilityOrchestrator(visibilityManager, renderSystem as any);
@@ -376,8 +375,8 @@ async function main() {
     (window as any).stateSynchronizer = stateSynchronizer;
 
     // 4. Set up UI and other systems
-    const { uiManager, visibilityManager, pane } = setupUI(studio, stateManager, pluginManager);
-    const visibilityOrchestrator = registerComponentsAndSystems(world as World, studio, pluginManager as PluginManager, visibilityManager, pane);
+    const { uiManager, visibilityManager, pane, updateSimulationSelector } = setupUI(studio, stateManager, pluginManager);
+    const visibilityOrchestrator = await registerComponentsAndSystems(world as World, studio, pluginManager as PluginManager, visibilityManager, pane);
 
     // 5. Set up state change listeners for debugging and reactive updates
     setupStateChangeListeners(globalStore, studio);
@@ -417,6 +416,11 @@ async function main() {
     console.log(`✅ Auto-registered ${registeredPlugins.length} plugins total`);
     console.log('🎯 Global immutable state management ready!');
     console.log('📋 State changes are now predictable and debuggable');
+
+    // 🔧 CRITICAL FIX: Update simulation selector after plugin discovery
+    console.log("🔄 Updating simulation selector with discovered plugins...");
+    updateSimulationSelector();
+    console.log("✅ Simulation selector updated!");
 
     // 9. STUDIO INTEGRATION FIX: Trigger parameter display for first available plugin
     if (registeredPlugins.length > 0) {

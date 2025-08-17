@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { IWorld } from '../../core/ecs/IWorld';
 import { ThreeGraphicsManager } from '../graphics/ThreeGraphicsManager';
 import { RenderSystem } from './RenderSystem';
+import { Logger } from '../../core/utils/Logger';
 
 type LegacyRenderer = {
   name?: string;
@@ -47,7 +48,7 @@ export class RenderSystemAdapter {
       return;
     }
     this.unsupportedRegistrations++;
-    console.warn('RenderSystemAdapter: legacy renderer types are not supported yet');
+    Logger.getInstance().warn('RenderSystemAdapter: legacy renderer types are not supported yet');
   }
 
   unregisterRenderer(nameOrRenderer: string | MinimalRenderer | LegacyRenderer): void {
@@ -118,7 +119,7 @@ export class RenderSystemAdapter {
           renderer.render!(context);
           didRender = true;
         } catch (e) {
-          console.error('RenderSystemAdapter: legacy renderer failed during render()', e);
+          Logger.getInstance().error('RenderSystemAdapter: legacy renderer failed during render()', e);
         }
       }
       // If any legacy renderer ran, present the frame via Three.js

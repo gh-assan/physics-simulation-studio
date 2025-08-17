@@ -39,7 +39,7 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
             // Initialize entities FIRST - plugins create their own meshes
             if (activePlugin?.initializeEntities) {
                 // Always pass the singleton SimulationManager instance if two arguments are expected
-                const { SimulationManager } = require('./simulation/SimulationManager');
+                const { SimulationManager } = await import('./simulation/SimulationManager');
                 const singletonManager = SimulationManager.getInstance();
                 if (activePlugin.initializeEntities.length >= 2) {
                     await (activePlugin as any).initializeEntities(this.world, singletonManager);
@@ -119,7 +119,7 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
     }
 
     private _clearWorldAndRenderSystem(): void {
-        console.log('🔄 Clearing everything for new simulation (clean slate approach)');
+        Logger.getInstance().debug('Clearing everything for new simulation (clean slate approach)');
 
         // Clear the world entities but preserve systems - new simulation will populate fresh entities
     this.world.clear(false); // Preserve registered systems

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plugin Discovery Test</title>
+</head>
+<body>
+    <h1>Plugin Discovery Debug Test</h1>
+    <div id="status">Loading...</div>
+    <div id="results"></div>
+    
+    <script type="module">
+        async function testPluginDiscovery() {
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                statusDiv.textContent = 'Testing AutoPluginRegistry...';
+                
+                // Import the AutoPluginRegistry
+                const { AutoPluginRegistry } = await import('./src/core/plugin/AutoPluginRegistry.ts');
+                
+                statusDiv.textContent = 'Running plugin discovery...';
+                
+                // Test the discovery
+                const registry = AutoPluginRegistry.getInstance();
+                await registry.discoverPlugins();
+                
+                // Get discovered plugins
+                const discoveredPlugins = Array.from(registry.discoveredPlugins?.keys() || []);
+                
+                statusDiv.textContent = 'Plugin discovery complete!';
+                resultsDiv.innerHTML = `
+                    <h2>Discovered ${discoveredPlugins.length} plugins:</h2>
+                    <ul>
+                        ${discoveredPlugins.map(name => `<li>${name}</li>`).join('')}
+                    </ul>
+                `;
+                
+                console.log('✅ Plugin discovery successful:', discoveredPlugins);
+                
+            } catch (error) {
+                statusDiv.textContent = 'Error during plugin discovery!';
+                resultsDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+                console.error('❌ Plugin discovery failed:', error);
+            }
+        }
+        
+        // Run the test
+        testPluginDiscovery();
+    </script>
+</body>
+</html>

@@ -11,10 +11,11 @@
 
 import { World } from '../core/ecs/World';
 import { PluginManager } from '../core/plugin/PluginManager';
+import FlagSimulationPlugin from '../plugins/flag-simulation';
+import { createAdapterRenderSystem } from '../studio/rendering/createAdapterRenderSystem';
+import { Logger } from '../core/utils/Logger';
 import { StateManager } from '../studio/state/StateManager';
 import { Studio } from '../studio/Studio';
-import { createAdapterRenderSystem } from '../studio/rendering/createAdapterRenderSystem';
-import FlagSimulationPlugin from '../plugins/flag-simulation';
 
 // Mock ThreeGraphicsManager to avoid DOM issues in tests
 const createMockGraphicsManager = () => ({
@@ -65,7 +66,7 @@ describe('🎯 Final Acceptance Test - App Functionality', () => {
     studio.setRenderSystem(renderSystem);
     world.registerSystem(renderSystem);
 
-    console.log('✅ Core systems initialized');
+    Logger.getInstance().debug('Core systems initialized');
   });
 
   describe('✅ ACCEPTANCE CRITERIA VALIDATION', () => {
@@ -188,7 +189,7 @@ describe('🎯 Final Acceptance Test - App Functionality', () => {
       // Check renderer registration
       const debugInfo = renderSystem.getDebugInfo();
       const totalRenderers = (debugInfo.adapter?.legacyCount || 0) +
-                            (debugInfo.adapter?.minimalCount || 0);
+        (debugInfo.adapter?.minimalCount || 0);
 
       expect(totalRenderers).toBeGreaterThan(0);
       console.log('   ✅ Plugin renderer registered with render system');
@@ -245,7 +246,7 @@ describe('🎯 Final Acceptance Test - App Functionality', () => {
       // 4. Check renderer activity
       const debugInfo = renderSystem.getDebugInfo();
       const hasRenderers = (debugInfo.adapter?.legacyCount || 0) +
-                          (debugInfo.adapter?.minimalCount || 0) > 0;
+        (debugInfo.adapter?.minimalCount || 0) > 0;
       expect(hasRenderers).toBe(true);
       console.log('4️⃣ ✅ Renderers active');
 

@@ -25,7 +25,8 @@
     "ai-protocol-startup": "node scripts/ai-protocol-startup.js",
     "postinstall": "npm run ai-protocol-startup",
     "log-learning": "node scripts/log-learning.js",
-    "show-learning": "cat AI_LEARNING_POSTMORTEM.md"
+    "show-learning": "cat AI_LEARNING_POSTMORTEM.md",
+    "generate-plugins": "node scripts/generate-plugin-discovery.js"
   },
   "repository": {
     "type": "git",
