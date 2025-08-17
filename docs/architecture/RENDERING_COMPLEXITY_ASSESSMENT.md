@@ -1,5 +1,7 @@
 # 🎯 **Senior Engineer Assessment: Rendering System Complexity Analysis**
 
+> Status (2025-08-17): The adapter-only rendering path has replaced the legacy "simplified" manager/system in runtime. See `docs/reports/ADAPTER_RENDERING_STATUS_2025-08-17.md` for current status and cleanup steps. Tables below reference legacy pieces which are now deprecated.
+
 ## 📊 **Current System Architecture Audit**
 
 ### **Current Complexity Score: 8.5/10 (Very Complex)**

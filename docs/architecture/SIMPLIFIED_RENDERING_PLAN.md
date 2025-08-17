@@ -1,5 +1,7 @@
 # 🚀 Simplified Rendering System - Complete Implementation Plan
 
+> Deprecation notice (2025-08-17): This plan has been superseded by the adapter-only rendering architecture. See `docs/reports/ADAPTER_RENDERING_STATUS_2025-08-17.md` for the current status, remaining work, and cleanup steps. The legacy “simplified” manager/system/interfaces are no longer used at runtime and are slated for removal.
+
 ## 🎯 **Senior Engineer Analysis Summary**
 
 After deep analysis of the current rendering system, the root problem is **over-abstraction** and **fragmented responsibility**. The system has evolved into a complex web of interfaces and managers that obscure rather than clarify the rendering flow.
