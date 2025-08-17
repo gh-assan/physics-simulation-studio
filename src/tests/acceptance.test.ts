@@ -11,9 +11,9 @@
 
 import { World } from '../core/ecs/World';
 import { PluginManager } from '../core/plugin/PluginManager';
+import { Logger } from '../core/utils/Logger';
 import FlagSimulationPlugin from '../plugins/flag-simulation';
 import { createAdapterRenderSystem } from '../studio/rendering/createAdapterRenderSystem';
-import { Logger } from '../core/utils/Logger';
 import { StateManager } from '../studio/state/StateManager';
 import { Studio } from '../studio/Studio';
 

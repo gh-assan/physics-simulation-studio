@@ -14,7 +14,7 @@ const path = require('path');
 
 function generatePluginDiscoveryCode() {
   const pluginsDir = path.join(__dirname, '../src/plugins');
-  
+
   // Check if plugins directory exists
   if (!fs.existsSync(pluginsDir)) {
     console.error('Plugins directory not found:', pluginsDir);
@@ -35,8 +35,8 @@ function generatePluginDiscoveryCode() {
 
   // Generate the plugin discovery map code
   const mapEntries = pluginFolders.map(folderName => `    '${folderName}',`).join('\n');
-  
-  const switchCases = pluginFolders.map(folderName => 
+
+  const switchCases = pluginFolders.map(folderName =>
     `      case '${folderName}':\n        return () => import('../../plugins/${folderName}');`
   ).join('\n');
 

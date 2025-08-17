@@ -325,6 +325,13 @@ export const Actions = {
     metadata: { source },
   }),
 
+  simulationStateChanged: (stateChanges: Partial<SimulationState>, source = 'Studio'): SimulationStateChangedAction => ({
+    type: 'SIMULATION_STATE_CHANGED',
+    payload: stateChanges,
+    timestamp: Date.now(),
+    metadata: { source },
+  }),
+
   // Viewport actions
   cameraMoved: (position: { x: number; y: number; z: number }, target: { x: number; y: number; z: number }, zoom: number, source = 'CameraControls'): CameraMovedAction => ({
     type: 'CAMERA_MOVED',

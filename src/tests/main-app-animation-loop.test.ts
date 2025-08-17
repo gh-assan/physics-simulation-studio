@@ -13,11 +13,11 @@
 
 import { World } from '../core/ecs/World';
 import { PluginManager } from '../core/plugin/PluginManager';
-import { StateManager } from '../studio/state/StateManager';
-import { Studio } from '../studio/Studio';
+import FlagSimulationPlugin from '../plugins/flag-simulation';
 import { ThreeGraphicsManager } from '../studio/graphics/ThreeGraphicsManager';
 import { createAdapterRenderSystem } from '../studio/rendering/createAdapterRenderSystem';
-import FlagSimulationPlugin from '../plugins/flag-simulation';
+import { StateManager } from '../studio/state/StateManager';
+import { Studio } from '../studio/Studio';
 
 // Mock requestAnimationFrame for testing
 let mockRAF: jest.SpyInstance;

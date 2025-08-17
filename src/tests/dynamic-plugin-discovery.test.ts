@@ -3,8 +3,7 @@
  * Tests the dynamic folder-scanning plugin discovery system
  */
 
-import {AutoPluginRegistry} from '../core/plugin/AutoPluginRegistry';
-import {Logger} from '../core/utils/Logger';
+import { AutoPluginRegistry } from '../core/plugin/AutoPluginRegistry';
 
 // Mock Logger to avoid console noise
 jest.mock('../core/utils/Logger', () => ({

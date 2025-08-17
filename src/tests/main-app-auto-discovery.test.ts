@@ -3,13 +3,12 @@
  * Tests the auto-discovery functionality to identify why plugins aren't being found
  */
 
-import {AutoPluginRegistry} from '../core/plugin/AutoPluginRegistry';
-import {PluginManager} from '../core/plugin/PluginManager';
-import {World} from '../core/ecs/World';
-import {Studio} from '../studio/Studio';
-import {Logger} from '../core/utils/Logger';
-import {StateManager} from '../studio/state/StateManager';
-import {IPluginContext} from '../studio/IPluginContext';
+import { World } from '../core/ecs/World';
+import { AutoPluginRegistry } from '../core/plugin/AutoPluginRegistry';
+import { PluginManager } from '../core/plugin/PluginManager';
+import { IPluginContext } from '../studio/IPluginContext';
+import { StateManager } from '../studio/state/StateManager';
+import { Studio } from '../studio/Studio';
 
 // Mock Logger completely
 jest.mock('../core/utils/Logger', () => ({
