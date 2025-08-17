@@ -66,4 +66,21 @@ describe('Browser Compatibility Fix', () => {
     console.log('✅ RenderSystemFactory uses dynamic import');
     console.log('✅ No CommonJS require for RenderSystemFactory');
   });
+
+  test('should not use CommonJS require() in SimulationOrchestrator.ts', () => {
+    // Read the SimulationOrchestrator.ts file content
+    const orchestratorPath = join(__dirname, '../studio/SimulationOrchestrator.ts');
+    const orchestratorContent = readFileSync(orchestratorPath, 'utf-8');
+
+    // Verify no CommonJS require statements
+    const hasRequire = orchestratorContent.includes('require(');
+    expect(hasRequire).toBe(false);
+
+    // Verify we're using ES6 import syntax instead for SimulationManager
+    const hasDynamicImport = orchestratorContent.includes("await import('./simulation/SimulationManager')");
+    expect(hasDynamicImport).toBe(true);
+
+    console.log('✅ SimulationOrchestrator browser compatibility verified');
+    console.log('✅ SimulationManager uses dynamic import');
+  });
 });

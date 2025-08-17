@@ -39,7 +39,7 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
             // Initialize entities FIRST - plugins create their own meshes
             if (activePlugin?.initializeEntities) {
                 // Always pass the singleton SimulationManager instance if two arguments are expected
-                const { SimulationManager } = require('./simulation/SimulationManager');
+                const { SimulationManager } = await import('./simulation/SimulationManager');
                 const singletonManager = SimulationManager.getInstance();
                 if (activePlugin.initializeEntities.length >= 2) {
                     await (activePlugin as any).initializeEntities(this.world, singletonManager);
