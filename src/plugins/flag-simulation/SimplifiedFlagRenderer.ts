@@ -21,7 +21,7 @@ export class SimplifiedFlagRenderer implements ISimulationRenderer {
   private flagMaterial: THREE.MeshPhongMaterial | null = null;
   private simulationManager: SimulationManager | null = null;
 
-  constructor() {}
+  constructor() { }
 
   // New minimal renderer API compatibility gate used by adapter legacy bridge
   canRender(entityId: number, world: IWorld): boolean {
@@ -57,7 +57,7 @@ export class SimplifiedFlagRenderer implements ISimulationRenderer {
       this.renderFlagEntity(entityId, world, scene);
     }
 
-  // No-op: adapter drives cadence; always re-render for animation
+    // No-op: adapter drives cadence; always re-render for animation
   }
 
   /**
@@ -240,5 +240,117 @@ export class SimplifiedFlagRenderer implements ISimulationRenderer {
     }
 
     console.log('✅ SimplifiedFlagRenderer disposed');
+  }
+
+  // Sprint 4: Real-time Visual Parameter Feedback Methods
+
+  /**
+   * Update visualization in response to parameter changes
+   */
+  updateVisualization(updateData: { parameter: string, value: any, timestamp: number }): void {
+    console.log(`👁️ Updating visualization for ${updateData.parameter} = ${updateData.value}`);
+
+    // Update material properties based on parameter changes
+    if (this.flagMaterial) {
+      switch (updateData.parameter) {
+        case 'windStrength': {
+          // Could update material opacity or color to show wind effect
+          const windIntensity = Math.min(updateData.value / 20, 1); // Normalize to 0-1
+          this.flagMaterial.opacity = 0.7 + windIntensity * 0.3; // More opaque = more wind
+          break;
+        }
+
+        case 'damping': {
+          // Could update material properties to show damping effect
+          const dampingEffect = updateData.value;
+          this.flagMaterial.transparent = dampingEffect < 0.95;
+          break;
+        }
+
+        case 'stiffness': {
+          // Could update material shininess to show stiffness
+          const stiffnessEffect = updateData.value * 100;
+          this.flagMaterial.shininess = stiffnessEffect;
+          break;
+        }
+      }
+    }
+
+    // Force re-render of all flag meshes
+    this.flagMeshes.forEach(mesh => {
+      if (mesh.material instanceof THREE.Material) {
+        mesh.material.needsUpdate = true;
+      }
+    });
+  }
+
+  /**
+   * Show validation error in renderer
+   */
+  showValidationError(parameter: string, value: any, errorType: string): void {
+    console.warn(`🔴 Validation error in renderer: ${parameter} = ${value} (${errorType})`);
+
+    // Could temporarily change material color to indicate error
+    if (this.flagMaterial) {
+      const originalColor = this.flagMaterial.color.clone();
+      this.flagMaterial.color.setHex(0xff0000); // Red for error
+
+      // Revert after short delay
+      setTimeout(() => {
+        if (this.flagMaterial) {
+          this.flagMaterial.color = originalColor;
+        }
+      }, 200);
+    }
+  }
+
+  /**
+   * Highlight control in renderer
+   */
+  highlightControl(parameter: string, status: string): void {
+    console.log(`✨ Highlighting ${parameter} with status: ${status}`);
+
+    // Could add visual highlights to the rendered flag
+    if (this.flagMaterial && status === 'success') {
+      const originalEmissive = this.flagMaterial.emissive.clone();
+      this.flagMaterial.emissive.setHex(0x004400); // Green highlight
+
+      // Revert after short delay
+      setTimeout(() => {
+        if (this.flagMaterial) {
+          this.flagMaterial.emissive = originalEmissive;
+        }
+      }, 300);
+    }
+  }
+
+  /**
+   * Update parameter indicator in renderer
+   */
+  updateIndicator(parameter: string, value: any, format: any): void {
+    console.log(`📊 Updating visual indicator: ${parameter} = ${value} ${format.unit || ''}`);
+
+    // Could add text overlays or visual indicators to show parameter values
+    // For now, just log the update
+  }
+
+  /**
+   * Show undo feedback in renderer
+   */
+  showUndoFeedback(parameter: string, oldValue: any, newValue: any): void {
+    console.log(`↶ Visual undo feedback: ${parameter} ${oldValue} → ${newValue}`);
+
+    // Could show a visual animation or indicator for undo operations
+    if (this.flagMaterial) {
+      const originalEmissive = this.flagMaterial.emissive.clone();
+      this.flagMaterial.emissive.setHex(0x444400); // Yellow for undo
+
+      // Revert after short delay
+      setTimeout(() => {
+        if (this.flagMaterial) {
+          this.flagMaterial.emissive = originalEmissive;
+        }
+      }, 400);
+    }
   }
 }

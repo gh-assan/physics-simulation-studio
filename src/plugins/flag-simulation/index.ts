@@ -1,12 +1,12 @@
-import { ISimulationPlugin } from '../../core/plugin/ISimulationPlugin';
-import { IWorld } from '../../core/ecs/IWorld';
-import { IStudio } from '../../studio/IStudio';
+import { PositionComponent } from '../../core/components/PositionComponent';
+import { RenderableComponent } from '../../core/components/RenderableComponent';
 import { ISystem } from '../../core/ecs/ISystem';
+import { IWorld } from '../../core/ecs/IWorld';
+import { ISimulationPlugin } from '../../core/plugin/ISimulationPlugin';
+import { IStudio } from '../../studio/IStudio';
 import { FlagAlgorithm } from './FlagAlgorithm';
 import { FlagComponent } from './FlagComponent';
 import { PoleComponent } from './PoleComponent';
-import { PositionComponent } from '../../core/components/PositionComponent';
-import { RenderableComponent } from '../../core/components/RenderableComponent';
 
 /**
  * Flag Simulation Plugin - Simplified Rendering
@@ -47,10 +47,9 @@ class FlagSimulationPlugin implements ISimulationPlugin {
   }
 
   async initializeEntities(world: IWorld): Promise<void> {
-    // Check if studio context is available before creating entities
-    if (!this.studio) {
-      return;
-    }
+    // TDD Fix: Remove studio context check to enable entity creation in demos and tests
+    // Previous code: if (!this.studio) { return; }
+    // This enables flag simulation to work without studio context
 
     // Create a flag entity
     const flag = world.createEntity();
@@ -79,7 +78,7 @@ class FlagSimulationPlugin implements ISimulationPlugin {
    * Register renderer when this simulation is loaded/activated
    */
   public async registerRenderer(world: IWorld): Promise<void> {
-  await this.autoDiscoverAndRegisterRenderer(world);
+    await this.autoDiscoverAndRegisterRenderer(world);
   }
 
   /**
@@ -134,7 +133,7 @@ class FlagSimulationPlugin implements ISimulationPlugin {
         // Fall back to legacy world lookup
       }
 
-  // Legacy fallback: Access SimplifiedRenderSystem from the world's system manager
+      // Legacy fallback: Access SimplifiedRenderSystem from the world's system manager
       const legacyRenderSystem = (world as any).systemManager?.getSystemByType?.('SimplifiedRenderSystem');
       if (legacyRenderSystem && typeof legacyRenderSystem.registerRenderer === 'function') {
         this.registeredRenderer = flagRenderer;

@@ -13,9 +13,9 @@
 
 import { World } from '../core/ecs/World';
 import { PluginManager } from '../core/plugin/PluginManager';
+import FlagSimulationPlugin from '../plugins/flag-simulation';
 import { StateManager } from '../studio/state/StateManager';
 import { Studio } from '../studio/Studio';
-import FlagSimulationPlugin from '../plugins/flag-simulation';
 
 describe('Main App Plugin Discovery', () => {
   let world: World;

@@ -1,10 +1,12 @@
 import { World } from '../../../core/ecs/World';
 import { FlagComponent } from '../FlagComponent';
+import { PoleComponent } from '../PoleComponent';
 import { FlagSimulationPlugin } from '../index';
 
 describe('FlagSimulationPlugin Studio Context Handling', () => {
-  test('should not create entities when initializeEntities is called without studio context', async () => {
-    // TDD: This test should initially fail
+  test('should create entities even when initializeEntities is called without studio context', async () => {
+    // UPDATED TEST: After removing studio context requirement
+    // Flag simulation should work in demos and standalone environments
     const plugin = new FlagSimulationPlugin();
     const world = new World();
 
@@ -13,9 +15,15 @@ describe('FlagSimulationPlugin Studio Context Handling', () => {
     // Act: Initialize entities without providing studio context
     await plugin.initializeEntities(world);
 
-    // Assert: Should not create flag entities without studio context
-    const flagEntities = world.componentManager.getEntitiesWithComponents([FlagComponent]);
-    expect(flagEntities.length).toBe(0);
+    // Assert: Should create flag entities even without studio context (post-fix behavior)
+    const flagEntities = world.componentManager.getEntitiesWithComponents([
+      FlagComponent,
+    ]);
+    const poleEntities = world.componentManager.getEntitiesWithComponents([
+      PoleComponent,
+    ]);
+    expect(flagEntities.length).toBeGreaterThan(0);
+    expect(poleEntities.length).toBeGreaterThan(0);
   });
 
   test('should create entities when studio context is available', async () => {

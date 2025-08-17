@@ -3,7 +3,7 @@
  * These define all possible state changes in the application
  */
 
-import { PluginInfo, SystemInfo, ComponentInfo, UIState, SimulationState, ViewportState } from './AppState';
+import { ComponentInfo, PluginInfo, SimulationState, SystemInfo, ViewportState } from './AppState';
 
 // Base action interface
 export interface BaseAction {
@@ -321,6 +321,13 @@ export const Actions = {
 
   simulationUnloaded: (source = 'Studio'): SimulationUnloadedAction => ({
     type: 'SIMULATION_UNLOADED',
+    timestamp: Date.now(),
+    metadata: { source },
+  }),
+
+  simulationStateChanged: (stateChanges: Partial<SimulationState>, source = 'Studio'): SimulationStateChangedAction => ({
+    type: 'SIMULATION_STATE_CHANGED',
+    payload: stateChanges,
     timestamp: Date.now(),
     metadata: { source },
   }),
