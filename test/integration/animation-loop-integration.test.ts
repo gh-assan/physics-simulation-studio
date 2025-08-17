@@ -53,8 +53,8 @@ describe('🎬 Animation Loop and Renderer Integration', () => {
     pluginContext.studio = studio;
 
     // Set up mock graphics and render system
-  mockGraphicsManager = createMockGraphicsManager();
-  renderSystem = createAdapterRenderSystem(mockGraphicsManager as any);
+    mockGraphicsManager = createMockGraphicsManager();
+    renderSystem = createAdapterRenderSystem(mockGraphicsManager as any);
     studio.setRenderSystem(renderSystem);
     world.registerSystem(renderSystem);
   });

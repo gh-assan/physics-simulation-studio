@@ -14,6 +14,6 @@ export class BaseRenderer implements IRenderer {
     this.priority = priority;
   }
 
-  update(): void {}
-  dispose(): void {}
+  update(): void { }
+  dispose(): void { }
 }

@@ -13,8 +13,8 @@ import { FlagSimulationPlugin } from '../../src/plugins/flag-simulation/FlagSimu
 import { SimplifiedFlagRenderer } from '../../src/plugins/flag-simulation/SimplifiedFlagRenderer';
 import { Studio } from '../../src/studio/Studio';
 import { createAdapterRenderSystem } from '../../src/studio/rendering/createAdapterRenderSystem';
-import { MockThreeGraphicsManager } from '../mocks/MockThreeGraphicsManager';
 import { StateManager } from '../../src/studio/state/StateManager';
+import { MockThreeGraphicsManager } from '../mocks/MockThreeGraphicsManager';
 
 describe('🔧 Flag Visualization Fix - TDD Analysis', () => {
   let world: World;
@@ -48,8 +48,8 @@ describe('🔧 Flag Visualization Fix - TDD Analysis', () => {
     pluginContext.studio = studio;
 
     // Set up graphics and render system
-  graphicsManager = new MockThreeGraphicsManager();
-  renderSystem = createAdapterRenderSystem(graphicsManager as any);
+    graphicsManager = new MockThreeGraphicsManager();
+    renderSystem = createAdapterRenderSystem(graphicsManager as any);
     studio.setRenderSystem(renderSystem);
     world.registerSystem(renderSystem);
   });
@@ -118,20 +118,20 @@ describe('🔧 Flag Visualization Fix - TDD Analysis', () => {
     console.log('   - Created entities:', allEntities.length);
 
     // Check if renderers are registered
-  const debugInfo = (renderSystem as any).getDebugInfo();
-  console.log('   - Registered renderers (adapter):', debugInfo.adapter);
+    const debugInfo = (renderSystem as any).getDebugInfo();
+    console.log('   - Registered renderers (adapter):', debugInfo.adapter);
 
     // THIS SHOULD PASS and now does because the renderer interface is fixed!
     // The logs show: "🏁 Rendering flag entity 0" and "✅ Flag mesh created successfully"
-  const total = (debugInfo.adapter?.legacyCount || 0) + (debugInfo.adapter?.minimalCount || 0);
-  expect(total).toBeGreaterThan(0); // ✅ This now passes - renderers are registered!
+    const total = (debugInfo.adapter?.legacyCount || 0) + (debugInfo.adapter?.minimalCount || 0);
+    expect(total).toBeGreaterThan(0); // ✅ This now passes - renderers are registered!
   });
 
   test('ROOT CAUSE: SimplifiedRenderSystem expects BaseRenderer interface', () => {
     console.log('\n4. ROOT CAUSE ANALYSIS:');
 
     // Show what SimplifiedRenderSystem expects
-  console.log('   - Render system expects compatible renderer interface');
+    console.log('   - Render system expects compatible renderer interface');
     console.log('   - IRenderer interface requires: canRender(), render(), priority, name');
 
     // Show what FlagSimulationPlugin provides

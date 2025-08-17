@@ -161,7 +161,7 @@ describe('🎯 Simulation Visualization Diagnostic', () => {
     const mainContent = document.getElementById('main-content')!;
     graphicsManager.initialize(mainContent);
 
-  renderSystem = createAdapterRenderSystem(graphicsManager as any);
+    renderSystem = createAdapterRenderSystem(graphicsManager as any);
 
     // Create plugin context similar to main.ts
     pluginContext = {

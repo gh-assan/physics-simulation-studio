@@ -1,7 +1,7 @@
-import { RenderSystem } from './RenderSystem';
+import * as THREE from 'three';
 import { IWorld } from '../../core/ecs/IWorld';
 import { ThreeGraphicsManager } from '../graphics/ThreeGraphicsManager';
-import * as THREE from 'three';
+import { RenderSystem } from './RenderSystem';
 
 type LegacyRenderer = {
   name?: string;
@@ -28,7 +28,7 @@ export class RenderSystemAdapter {
   constructor(
     private graphicsManager: ThreeGraphicsManager,
     private inner: RenderSystem
-  ) {}
+  ) { }
 
   // Accept both minimal and legacy-like renderers; forward minimal, warn for legacy for now
   registerRenderer(renderer: LegacyRenderer | MinimalRenderer): void {

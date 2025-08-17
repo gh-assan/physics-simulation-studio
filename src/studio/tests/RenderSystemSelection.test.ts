@@ -1,14 +1,14 @@
 import { World } from '../../core/ecs/World';
 import { Studio } from '../Studio';
+import { RenderSystemAdapter } from '../rendering/RenderSystemAdapter';
 import { StateManager } from '../state/StateManager';
 class MockPluginManager {
   plugins: Record<string, any> = {};
-  activatePlugin = jest.fn(async (_name: string, _studio: any) => {});
-  deactivatePlugin = jest.fn((_name: string, _studio: any) => {});
+  activatePlugin = jest.fn(async (_name: string, _studio: any) => { });
+  deactivatePlugin = jest.fn((_name: string, _studio: any) => { });
   getPlugin = jest.fn((name: string) => this.plugins[name]);
   getAvailablePluginNames = jest.fn(() => Object.keys(this.plugins));
 }
-import { RenderSystemAdapter } from '../rendering/RenderSystemAdapter';
 
 describe('Studio RenderSystem configuration', () => {
   it('defaults to adapter when no mode provided', () => {
@@ -26,10 +26,10 @@ describe('Studio RenderSystem configuration', () => {
     const studio = new Studio(world as any, pluginManager as any, stateManager as any, pluginContext);
     pluginContext.studio = studio;
 
-  studio.configureRenderSystem();
-  const gfx = studio.getGraphicsManager();
-  expect(gfx).toBeDefined();
-  expect((studio as any).renderSystem).toBeInstanceOf(RenderSystemAdapter);
+    studio.configureRenderSystem();
+    const gfx = studio.getGraphicsManager();
+    expect(gfx).toBeDefined();
+    expect((studio as any).renderSystem).toBeInstanceOf(RenderSystemAdapter);
   });
 
   it('can select adapter mode and forwards minimal renderer from SimulationManager', () => {

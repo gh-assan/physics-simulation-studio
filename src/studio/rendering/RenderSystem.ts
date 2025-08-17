@@ -7,7 +7,7 @@ import { IRenderer } from './IRenderer';
 export class RenderSystem {
   private renderers: IRenderer[] = [];
 
-  constructor(private scene: THREE.Scene) {}
+  constructor(private scene: THREE.Scene) { }
 
   registerRenderer(renderer: IRenderer): void {
     this.renderers.push(renderer);

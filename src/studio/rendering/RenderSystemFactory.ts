@@ -1,6 +1,6 @@
+import { ThreeGraphicsManager } from '../graphics/ThreeGraphicsManager';
 import { RenderSystemAdapter } from './RenderSystemAdapter';
 import { createAdapterRenderSystem } from './createAdapterRenderSystem';
-import { ThreeGraphicsManager } from '../graphics/ThreeGraphicsManager';
 
 export type RenderSystemMode = 'adapter';
 
