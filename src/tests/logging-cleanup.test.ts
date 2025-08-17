@@ -13,7 +13,7 @@ describe('Logging Cleanup', () => {
 
   test('should silence Logger class output during tests', () => {
     const logger = Logger.getInstance();
-    
+
     // Capture console output
     const originalLog = console.log;
     const originalWarn = console.warn;
@@ -48,7 +48,7 @@ describe('Logging Cleanup', () => {
     // Based on our analysis, these are the main sources of log noise:
     const issuesFound = [
       'SimulationManager.registerAlgorithm() logs every algorithm registration',
-      'SimulationManager.registerRenderer() logs every renderer registration', 
+      'SimulationManager.registerRenderer() logs every renderer registration',
       'SimulationManager.play/pause/reset() logs state changes',
       'World.registerSystem() logs every system registration',
       'VisibilityManager.registerPanel() warns about duplicate panels',
@@ -58,7 +58,7 @@ describe('Logging Cleanup', () => {
 
     // After cleanup, we should either:
     // 1. Remove unnecessary debug logs entirely
-    // 2. Convert important logs to use Logger.getInstance() 
+    // 2. Convert important logs to use Logger.getInstance()
     // 3. Silence test-specific logs during test runs
     expect(issuesFound.length).toBeGreaterThan(0);
   });

@@ -71,7 +71,7 @@ function setupCoreSystems(): { world: World; pluginManager: PluginManager; state
   return { world, pluginManager, stateManager, studio, pluginDiscovery };
 }
 
-function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager): { uiManager: UIManager; visibilityManager: VisibilityManager; pane: Pane } {
+function setupUI(studio: Studio, stateManager: StateManager, pluginManager: PluginManager): { uiManager: UIManager; visibilityManager: VisibilityManager; pane: Pane; updateSimulationSelector: () => void } {
   // Initialize core UI and ensure left panel exists
   const visibilityManager = new VisibilityManager();
   visibilityManager.initializeCoreUI();
@@ -181,7 +181,7 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
     void updateControlButtonStates();
   });
 
-  return { uiManager, visibilityManager, pane };
+  return { uiManager, visibilityManager, pane, updateSimulationSelector };
 }
 
 function registerComponentsAndSystems(world: World, studio: Studio, pluginManager: PluginManager, visibilityManager: VisibilityManager, pane: Pane): VisibilityOrchestrator {
@@ -376,7 +376,7 @@ async function main() {
     (window as any).stateSynchronizer = stateSynchronizer;
 
     // 4. Set up UI and other systems
-    const { uiManager, visibilityManager, pane } = setupUI(studio, stateManager, pluginManager);
+    const { uiManager, visibilityManager, pane, updateSimulationSelector } = setupUI(studio, stateManager, pluginManager);
     const visibilityOrchestrator = registerComponentsAndSystems(world as World, studio, pluginManager as PluginManager, visibilityManager, pane);
 
     // 5. Set up state change listeners for debugging and reactive updates
@@ -417,6 +417,11 @@ async function main() {
     console.log(`✅ Auto-registered ${registeredPlugins.length} plugins total`);
     console.log('🎯 Global immutable state management ready!');
     console.log('📋 State changes are now predictable and debuggable');
+
+    // 🔧 CRITICAL FIX: Update simulation selector after plugin discovery
+    console.log("🔄 Updating simulation selector with discovered plugins...");
+    updateSimulationSelector();
+    console.log("✅ Simulation selector updated!");
 
     // 9. STUDIO INTEGRATION FIX: Trigger parameter display for first available plugin
     if (registeredPlugins.length > 0) {
