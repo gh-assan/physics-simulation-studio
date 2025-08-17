@@ -122,18 +122,19 @@ describe("FlagSimulationPlugin Studio Integration Tests", () => {
     expect(parameterSchema.pluginId).toBe('flag-simulation');
   });
 
-  test("should handle missing studio context gracefully", () => {
+  test('should create entities regardless of studio context availability', async () => {
+    // UPDATED TEST: After removing studio context requirement
     // Arrange: Create a new plugin without studio context
     const newPlugin = new FlagSimulationPlugin();
     newPlugin.register(world); // Register components but don't call getSystems
 
-    // Act & Assert: Should not throw error, but should log warning
-    expect(() => {
-      void newPlugin.initializeEntities(world);
-    }).not.toThrow();
+    // Act: Should create entities even without studio context
+    await newPlugin.initializeEntities(world);
 
-    // Should not create entities when studio is not available
-    const flagEntities = world.componentManager.getEntitiesWithComponents([FlagComponent]);
-    expect(flagEntities.length).toBe(0);
+    // Assert: Should now create entities even when studio is not available (post-fix behavior)
+    const flagEntities = world.componentManager.getEntitiesWithComponents([
+      FlagComponent,
+    ]);
+    expect(flagEntities.length).toBeGreaterThan(0);
   });
 });

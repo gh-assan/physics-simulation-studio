@@ -47,10 +47,9 @@ class FlagSimulationPlugin implements ISimulationPlugin {
   }
 
   async initializeEntities(world: IWorld): Promise<void> {
-    // Check if studio context is available before creating entities
-    if (!this.studio) {
-      return;
-    }
+    // TDD Fix: Remove studio context check to enable entity creation in demos and tests
+    // Previous code: if (!this.studio) { return; }
+    // This enables flag simulation to work without studio context
 
     // Create a flag entity
     const flag = world.createEntity();
