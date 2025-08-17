@@ -1,7 +1,14 @@
 import { IWorld } from '../../core/ecs/IWorld';
 import { ISimulationAlgorithm, ISimulationState } from '../../core/plugin/EnhancedPluginInterfaces';
 import { SimulationManager } from '../../studio/simulation/SimulationManager';
+import { GlobalStateStore, StateChangeListener } from '../../studio/state/GlobalStore';
+import { SimulationSelectors } from '../../studio/state/Selectors';
 import { Vector3 } from './utils/Vector3';
+
+// Type for subscription cleanup
+interface Subscription {
+  unsubscribe(): void;
+}
 
 // Internal types for cloth physics
 interface ClothPoint {
@@ -29,6 +36,13 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
   private points: ClothPoint[] = [];
   private springs: ClothSpring[] = [];
 
+  // State management integration
+  private stateStore: GlobalStateStore | null = null;
+  private stateSubscription: Subscription | null = null;
+  private isAlgorithmRunning = false;
+  private isAlgorithmPaused = false;
+  private isAlgorithmInitialized = false;
+
   // Cloth physics constants
   private readonly gravity = new Vector3(0, -9.81, 0);
   private readonly wind = new Vector3(2, 0, 1);
@@ -43,6 +57,7 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
   initialize(simulationManager: SimulationManager): void {
     this.simulationManager = simulationManager;
     this.initializeClothMesh();
+    this.isAlgorithmInitialized = true;
     console.log('🏁 FlagAlgorithm initialized with Verlet cloth physics');
   }
 
@@ -55,6 +70,115 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
   reset(): void {
     this.initializeClothMesh();
     console.log('🔄 Flag simulation reset to initial state');
+  }
+
+  // State Management Integration Methods
+
+  /**
+   * Subscribe to global state changes to make algorithm state-driven
+   */
+  subscribeToState(store: GlobalStateStore): void {
+    this.stateStore = store;
+
+    // Create state change listener
+    const stateChangeListener: StateChangeListener = (newState, previousState, action) => {
+      const wasRunning = this.isAlgorithmRunning;
+      const wasPaused = this.isAlgorithmPaused;
+
+      // Update algorithm state based on global simulation state
+      const isRunning = SimulationSelectors.isSimulationRunning(newState);
+      const isPaused = SimulationSelectors.isSimulationPaused(newState);
+
+      this.isAlgorithmRunning = isRunning;
+      this.isAlgorithmPaused = isPaused;
+
+      // Log state transitions for debugging
+      if (wasRunning !== isRunning || wasPaused !== isPaused) {
+        console.log(`🏁 FlagAlgorithm state: running=${isRunning}, paused=${isPaused}`);
+      }
+    };
+
+    // Subscribe to state changes
+    this.stateSubscription = store.subscribe(stateChangeListener);
+
+    // Initialize current state
+    const currentState = store.getState();
+    this.isAlgorithmRunning = SimulationSelectors.isSimulationRunning(currentState);
+    this.isAlgorithmPaused = SimulationSelectors.isSimulationPaused(currentState);
+  }
+
+  /**
+   * Check if algorithm is subscribed to state changes
+   */
+  isSubscribedToState(): boolean {
+    return this.stateStore !== null && this.stateSubscription !== null;
+  }
+
+  /**
+   * Get current running state (state-driven)
+   */
+  isRunning(): boolean {
+    return this.isAlgorithmRunning;
+  }
+
+  /**
+   * Get current paused state (state-driven)
+   */
+  isPaused(): boolean {
+    return this.isAlgorithmPaused;
+  }
+
+  /**
+   * Check if algorithm is initialized
+   */
+  isInitialized(): boolean {
+    return this.isAlgorithmInitialized;
+  }
+
+  /**
+   * Handle state-driven update calls - only executes when state allows
+   */
+  handleUpdate(world: IWorld, deltaTime: number): void {
+    // Only update if algorithm is running (not paused or stopped)
+    if (this.isAlgorithmRunning && !this.isAlgorithmPaused) {
+      this.update(deltaTime);
+    }
+  }
+
+  /**
+   * Clean up state subscription
+   */
+  dispose(): void {
+    if (this.stateSubscription) {
+      this.stateSubscription.unsubscribe();
+      this.stateSubscription = null;
+    }
+    this.stateStore = null;
+    this.isAlgorithmRunning = false;
+    this.isAlgorithmPaused = false;
+  }
+
+  // Backward compatibility methods (legacy support during transition)
+
+  /**
+   * Legacy start method - state should take precedence
+   */
+  start(): void {
+    console.log('🏁 FlagAlgorithm.start() called (legacy) - state management should control this');
+  }
+
+  /**
+   * Legacy pause method - state should take precedence
+   */
+  pause(): void {
+    console.log('🏁 FlagAlgorithm.pause() called (legacy) - state management should control this');
+  }
+
+  /**
+   * Legacy stop method - state should take precedence
+   */
+  stop(): void {
+    console.log('🏁 FlagAlgorithm.stop() called (legacy) - state management should control this');
   }
 
   getState(): ISimulationState {
