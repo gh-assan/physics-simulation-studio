@@ -184,7 +184,7 @@ function setupUI(studio: Studio, stateManager: StateManager, pluginManager: Plug
   return { uiManager, visibilityManager, pane, updateSimulationSelector };
 }
 
-function registerComponentsAndSystems(world: World, studio: Studio, pluginManager: PluginManager, visibilityManager: VisibilityManager, pane: Pane): VisibilityOrchestrator {
+async function registerComponentsAndSystems(world: World, studio: Studio, pluginManager: PluginManager, visibilityManager: VisibilityManager, pane: Pane): Promise<VisibilityOrchestrator> {
   // Register Core Components Only - Plugin components are registered by plugins themselves
   world.registerComponent((PositionComponent as any).type ? PositionComponent : class extends PositionComponent { static type = "PositionComponent"; });
   world.registerComponent((RenderableComponent as any).type ? RenderableComponent : class extends RenderableComponent { static type = "RenderableComponent"; });
@@ -204,14 +204,13 @@ function registerComponentsAndSystems(world: World, studio: Studio, pluginManage
     graphicsManager.initialize(mainContent);
 
   // Build adapter-backed system using the same graphics manager (adapter-only)
-  // Use require to avoid top-level await constraints in some build/test environments
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { buildRenderSystem } = require('./rendering/RenderSystemFactory');
+  // Use dynamic import to avoid top-level await constraints in some build/test environments
+  const { buildRenderSystem } = await import('./rendering/RenderSystemFactory');
   const renderSystem = buildRenderSystem('adapter', graphicsManager as any);
   studio.setRenderSystem(renderSystem as any);
 
-  // Register the chosen render system
-  world.registerSystem(renderSystem);
+  // Register the chosen render system (cast to ISystem to handle interface compatibility)
+  world.registerSystem(renderSystem as any);
 
     // Create visibility manager (simplified without orchestrator dependency)
   const visibilityOrchestrator = new VisibilityOrchestrator(visibilityManager, renderSystem as any);
@@ -377,7 +376,7 @@ async function main() {
 
     // 4. Set up UI and other systems
     const { uiManager, visibilityManager, pane, updateSimulationSelector } = setupUI(studio, stateManager, pluginManager);
-    const visibilityOrchestrator = registerComponentsAndSystems(world as World, studio, pluginManager as PluginManager, visibilityManager, pane);
+    const visibilityOrchestrator = await registerComponentsAndSystems(world as World, studio, pluginManager as PluginManager, visibilityManager, pane);
 
     // 5. Set up state change listeners for debugging and reactive updates
     setupStateChangeListeners(globalStore, studio);
