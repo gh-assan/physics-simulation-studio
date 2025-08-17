@@ -119,7 +119,7 @@ export class SimulationOrchestrator implements ISimulationOrchestrator {
     }
 
     private _clearWorldAndRenderSystem(): void {
-        console.log('🔄 Clearing everything for new simulation (clean slate approach)');
+        Logger.getInstance().debug('Clearing everything for new simulation (clean slate approach)');
 
         // Clear the world entities but preserve systems - new simulation will populate fresh entities
     this.world.clear(false); // Preserve registered systems
