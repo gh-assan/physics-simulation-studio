@@ -46,12 +46,12 @@ describe('🕵️ Scene Reference Deep Debug', () => {
       childrenCount: originalScene?.children?.length
     });
 
-  // 3. Create render system (adapter)
-  const renderSystem = createAdapterRenderSystem(graphicsManager);
+    // 3. Create render system (adapter)
+    const renderSystem = createAdapterRenderSystem(graphicsManager);
     studio.setOrchestratorRenderSystem(renderSystem);
 
     const renderSystemScene = renderSystem.getScene();
-  console.log('🎬 Render System Scene:', {
+    console.log('🎬 Render System Scene:', {
       uuid: renderSystemScene?.uuid,
       type: renderSystemScene?.type,
       isThreeScene: renderSystemScene instanceof THREE.Scene,
@@ -137,7 +137,7 @@ describe('🕵️ Scene Reference Deep Debug', () => {
       return scene; // Return scene for chaining
     });
 
-  const renderSystem = createAdapterRenderSystem(graphicsManager);
+    const renderSystem = createAdapterRenderSystem(graphicsManager);
     studio.setOrchestratorRenderSystem(renderSystem);
 
     // Load plugin

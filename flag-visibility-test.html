@@ -54,7 +54,8 @@
 
     <script type="module">
         import { World } from './build/src/core/World.js';
-        import { SimplifiedRenderSystem } from './build/src/rendering/SimplifiedRenderSystem.js';
+        import { createAdapterRenderSystem } from './build/src/studio/rendering/createAdapterRenderSystem.js';
+        import { ThreeGraphicsManager } from './build/src/studio/graphics/ThreeGraphicsManager.js';
         import { SystemManager } from './build/src/core/SystemManager.js';
         import { ComponentManager } from './build/src/core/ComponentManager.js';
         import { EntityManager } from './build/src/core/EntityManager.js';
@@ -87,11 +88,13 @@
 
                 log("✅ World created with SystemManager");
 
-                // Create and register SimplifiedRenderSystem
-                statusElement.textContent = "🔄 Creating SimplifiedRenderSystem...";
-                const renderSystem = new SimplifiedRenderSystem(document.getElementById('container'));
+                // Create graphics manager and adapter render system
+                statusElement.textContent = "🔄 Creating Adapter RenderSystem...";
+                const graphicsManager = new ThreeGraphicsManager();
+                graphicsManager.initialize(document.getElementById('container'));
+                const renderSystem = createAdapterRenderSystem(graphicsManager);
                 systemManager.addSystem(renderSystem);
-                log("✅ SimplifiedRenderSystem created and added to SystemManager");
+                log("✅ Adapter RenderSystem created and added to SystemManager");
 
                 // Create and register FlagSimulationPlugin
                 statusElement.textContent = "🔄 Registering FlagSimulationPlugin...";

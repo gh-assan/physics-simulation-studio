@@ -75,12 +75,12 @@ describe('🔗 Scene Reference Chain Diagnostic', () => {
       constructor: originalScene?.constructor?.name
     });
 
-  // 2. Create adapter render system and check its scene
-  const renderSystem = createAdapterRenderSystem(graphicsManager);
+    // 2. Create adapter render system and check its scene
+    const renderSystem = createAdapterRenderSystem(graphicsManager);
     studio.setOrchestratorRenderSystem(renderSystem);
 
     const renderSystemScene = renderSystem.getScene();
-  console.log('2⃣ Scene from RenderSystemAdapter:', {
+    console.log('2⃣ Scene from RenderSystemAdapter:', {
       exists: !!renderSystemScene,
       type: typeof renderSystemScene,
       id: renderSystemScene?.id,

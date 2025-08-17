@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import { BaseRenderer } from '../../studio/rendering/IRenderer';
 
 /**

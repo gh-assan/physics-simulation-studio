@@ -1,14 +1,14 @@
-import { Studio } from "../Studio";
 import { World } from "../../core/ecs/World";
-import { StateManager } from "../state/StateManager";
 import { ThreeGraphicsManager } from "../graphics/ThreeGraphicsManager";
 import { RenderSystem } from "../rendering/RenderSystem";
 import { RenderSystemAdapter } from "../rendering/RenderSystemAdapter";
+import { StateManager } from "../state/StateManager";
+import { Studio } from "../Studio";
 
 class MockPluginManager {
   plugins: Record<string, any> = {};
-  activatePlugin = jest.fn(async (_name: string, _studio: any) => {});
-  deactivatePlugin = jest.fn((_name: string, _studio: any) => {});
+  activatePlugin = jest.fn(async (_name: string, _studio: any) => { });
+  deactivatePlugin = jest.fn((_name: string, _studio: any) => { });
   getPlugin = jest.fn((name: string) => this.plugins[name]);
   getAvailablePluginNames = jest.fn(() => Object.keys(this.plugins));
 }

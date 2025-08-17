@@ -5,7 +5,7 @@ exports.TestClass = class TestClass {
   }
 };
 
-exports.testFunction = function() {
+exports.testFunction = function () {
   return 'test';
 };
 

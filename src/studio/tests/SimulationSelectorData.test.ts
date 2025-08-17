@@ -4,9 +4,9 @@
  */
 import { World } from '../../core/ecs/World';
 import { PluginManager } from '../../core/plugin/PluginManager';
+import FlagSimulationPlugin from '../../plugins/flag-simulation';
 import { StateManager } from '../state/StateManager';
 import { Studio } from '../Studio';
-import FlagSimulationPlugin from '../../plugins/flag-simulation';
 
 describe('Simulation selector data via Studio', () => {
   it('returns plugin names registered in PluginManager', () => {
@@ -37,9 +37,9 @@ describe('Simulation selector data via Studio', () => {
     class DummyPlugin {
       getName() { return 'dummy-sim'; }
       getDependencies() { return []; }
-      register() {/* no-op */}
-      unregister() {/* no-op */}
-      async initializeEntities() {/* no-op */}
+      register() {/* no-op */ }
+      unregister() {/* no-op */ }
+      async initializeEntities() {/* no-op */ }
       getSystems() { return []; }
     }
     pluginManager.registerPlugin(new DummyPlugin() as any);

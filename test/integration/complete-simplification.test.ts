@@ -122,20 +122,20 @@ describe('Complete Plugin Simplification', () => {
     // Use adapter-based render system (should be silent)
     const { createAdapterRenderSystem } = await import('../../src/studio/rendering/createAdapterRenderSystem');
     const mockGraphicsManager = {
-      getScene: () => ({ add() {}, remove() {}, children: [] }),
+      getScene: () => ({ add() { }, remove() { }, children: [] }),
       getCamera: () => ({}),
-      render: () => {},
-      initialize: () => {}
+      render: () => { },
+      initialize: () => { }
     };
     const renderSystem = createAdapterRenderSystem(mockGraphicsManager as any);
 
     // Register a mock renderer (legacy-style) to ensure no logs
     const mockRenderer = {
       name: 'test-renderer',
-      initialize: () => {},
+      initialize: () => { },
       canRender: () => true,
-      render: () => {},
-      dispose: () => {}
+      render: () => { },
+      dispose: () => { }
     };
     renderSystem.registerRenderer(mockRenderer as any);
 

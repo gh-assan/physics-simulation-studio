@@ -127,11 +127,11 @@ describe('🎯 Phase 2: Studio-RenderSystem Integration Fix', () => {
     } as any;
 
     // Create render system with mocked graphics manager
-  const mockGraphicsManager = new MockThreeGraphicsManager();
-  renderSystem = createAdapterRenderSystem(mockGraphicsManager as any);
+    const mockGraphicsManager = new MockThreeGraphicsManager();
+    renderSystem = createAdapterRenderSystem(mockGraphicsManager as any);
 
     // Create spy BEFORE registering with world
-  renderSystemUpdateSpy = jest.spyOn(renderSystem, 'update');
+    renderSystemUpdateSpy = jest.spyOn(renderSystem, 'update');
 
     // Register render system with world
     world.registerSystem(renderSystem);
