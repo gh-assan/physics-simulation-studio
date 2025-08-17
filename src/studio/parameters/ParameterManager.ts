@@ -10,9 +10,21 @@ import {
  * with clear separation between physics and visual parameters.
  */
 export class ParameterManager implements IParameterManager {
+  private static instance: ParameterManager;
+
   private parameterDefinitions: Map<string, Map<string, IParameterDefinition>> = new Map();
   private parameterValues: Map<string, Map<string, any>> = new Map();
   private listeners: Map<string, ((algorithmName: string, paramName: string, value: any) => void)[]> = new Map();
+
+  /**
+   * Get singleton instance
+   */
+  static getInstance(): ParameterManager {
+    if (!ParameterManager.instance) {
+      ParameterManager.instance = new ParameterManager();
+    }
+    return ParameterManager.instance;
+  }
 
   /**
    * Register parameter definition for an algorithm
@@ -343,6 +355,14 @@ export class ParameterManager implements IParameterManager {
     const algorithmValues = this.parameterValues.get(algorithmName);
 
     if (algorithmValues) {
+      // Track history if enabled
+      if (this.historyEnabled) {
+        const oldValue = algorithmValues.get(paramName);
+        if (oldValue !== value) {
+          this.addToHistory(algorithmName, paramName, oldValue, value);
+        }
+      }
+
       algorithmValues.set(paramName, value);
     }
   }
@@ -367,4 +387,108 @@ export class ParameterManager implements IParameterManager {
       console.error(`Error in parameter change listener for ${algorithmName}.${paramName}:`, error);
     }
   }
+
+  /**
+   * UI Integration Methods - Sprint 3
+   */
+
+  /**
+   * Get parameter schemas organized by category for UI creation
+   */
+  getSchemasByCategory(algorithmName: string): IParameterDefinition[] {
+    return this.getParameters(algorithmName);
+  }
+
+  /**
+   * Update parameter value with UI integration
+   */
+  updateParameter(parameterKey: string, value: any): void {
+    const [algorithmName, paramName] = parameterKey.split('.');
+    if (!algorithmName || !paramName) {
+      throw new Error(`Invalid parameter key format: ${parameterKey}. Expected: 'algorithm.parameter'`);
+    }
+
+    this.setParameter(algorithmName, paramName, value);
+  }
+
+  /**
+   * Set global state dispatch for integration with state management
+   */
+  setGlobalStateDispatch(dispatch: (action: any) => void): void {
+    this.globalStateDispatch = dispatch;
+  }
+
+  /**
+   * Parameter History Management
+   */
+  enableParameterHistory(): void {
+    this.historyEnabled = true;
+    this.parameterHistory = [];
+    this.historyIndex = -1;
+  }
+
+  /**
+   * Undo last parameter change
+   */
+  undoLastParameterChange(): void {
+    if (!this.historyEnabled || this.historyIndex < 0) return;
+
+    const historyEntry = this.parameterHistory[this.historyIndex];
+    this.historyIndex--;
+
+    // Apply previous value without adding to history
+    this.updateParameterValue(historyEntry.algorithmName, historyEntry.paramName, historyEntry.oldValue);
+    this.notifyParameterChange(historyEntry.algorithmName, historyEntry.paramName, historyEntry.oldValue);
+  }
+
+  /**
+   * Redo last parameter change
+   */
+  redoLastParameterChange(): void {
+    if (!this.historyEnabled || this.historyIndex >= this.parameterHistory.length - 1) return;
+
+    this.historyIndex++;
+    const historyEntry = this.parameterHistory[this.historyIndex];
+
+    // Apply new value without adding to history
+    this.updateParameterValue(historyEntry.algorithmName, historyEntry.paramName, historyEntry.newValue);
+    this.notifyParameterChange(historyEntry.algorithmName, historyEntry.paramName, historyEntry.newValue);
+  }
+
+  /**
+   * Add parameter change to history
+   */
+  private addToHistory(algorithmName: string, paramName: string, oldValue: any, newValue: any): void {
+    // Remove any history beyond current index (for redo functionality)
+    this.parameterHistory = this.parameterHistory.slice(0, this.historyIndex + 1);
+
+    // Add new history entry
+    this.parameterHistory.push({
+      algorithmName,
+      paramName,
+      oldValue,
+      newValue,
+      timestamp: Date.now()
+    });
+
+    this.historyIndex++;
+
+    // Limit history size to prevent memory issues
+    const maxHistorySize = 50;
+    if (this.parameterHistory.length > maxHistorySize) {
+      this.parameterHistory = this.parameterHistory.slice(-maxHistorySize);
+      this.historyIndex = this.parameterHistory.length - 1;
+    }
+  }
+
+  private globalStateDispatch?: (action: any) => void;
+  private historyEnabled = false;
+  private parameterHistory: Array<{
+    algorithmName: string;
+    paramName: string;
+    oldValue: any;
+    newValue: any;
+    timestamp: number;
+  }> = [];
+  private historyIndex = -1;
 }

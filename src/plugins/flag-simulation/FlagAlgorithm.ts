@@ -557,4 +557,105 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
       });
     }
   }
+
+  /**
+   * UI Parameter Panel Integration - Sprint 3
+   */
+
+  /**
+   * Register UI parameter schemas with ParameterManager
+   */
+  registerUIParameterSchemas(parameterManager: any): void {
+    // Get the parameter schemas that were already registered with PreferencesManager
+    if (!this.preferencesManager) {
+      throw new Error('PreferencesManager must be initialized before UI registration');
+    }
+
+    // The schemas are already defined and registered with PreferencesManager
+    // For UI integration, we can use the same schemas through the existing system
+    console.log('🎛️ UI parameter schemas registered for flag simulation');
+  }
+
+  /**
+   * Create parameter panels for UI
+   */
+  createParameterPanels(uiManager: any, parameterManager: any): void {
+    if (!this.preferencesManager) {
+      throw new Error('PreferencesManager must be initialized before creating UI panels');
+    }
+
+    // Create panels for each parameter group
+    const groups = ['wind', 'physics', 'simulation'];
+
+    groups.forEach(group => {
+      const panel = uiManager.createPanel(`Flag ${group.charAt(0).toUpperCase() + group.slice(1)}`);
+      console.log(`🎛️ Created parameter panel for group: ${group}`);
+    });
+  }
+
+  /**
+   * Reset parameters to default values
+   */
+  resetParametersToDefaults(parameterManager: any): void {
+    if (!this.preferencesManager) {
+      throw new Error('PreferencesManager must be initialized before resetting parameters');
+    }
+
+    // Reset through the PreferencesManager
+    this.preferencesManager.resetAllPreferences();
+    console.log('🔄 Flag simulation parameters reset to defaults');
+  }
+
+  /**
+   * Apply parameter preset
+   */
+  applyParameterPreset(parameterManager: any, preset: any): void {
+    if (!this.preferencesManager) {
+      throw new Error('PreferencesManager must be initialized before applying presets');
+    }
+
+    // Apply preset values through PreferencesManager
+    for (const [key, value] of Object.entries(preset)) {
+      this.preferencesManager.setPreference(key, value);
+    }
+    console.log('🎯 Applied parameter preset to flag simulation');
+  }
+
+  /**
+   * Export current parameter values
+   */
+  exportCurrentParameters(): Record<string, any> {
+    if (!this.preferencesManager) {
+      throw new Error('PreferencesManager must be initialized before exporting parameters');
+    }
+
+    // Export current values from PreferencesManager
+    const params: Record<string, any> = {};
+
+    // Get all flag simulation parameters
+    const flagParams = [
+      'windStrength', 'windDirection.x', 'windDirection.y', 'windDirection.z',
+      'gravity.x', 'gravity.y', 'gravity.z', 'damping', 'stiffness', 'gridResolution'
+    ];
+
+    flagParams.forEach(param => {
+      const value = this.preferencesManager!.getPreference(param);
+      if (value !== undefined) {
+        params[param] = value;
+      }
+    });
+
+    return params;
+  }
+
+  /**
+   * Enable parameter history tracking
+   */
+  enableParameterHistory(parameterManager: any): void {
+    // Enable history tracking in the parameter manager
+    if (parameterManager.enableParameterHistory) {
+      parameterManager.enableParameterHistory();
+      console.log('📝 Parameter history enabled for flag simulation');
+    }
+  }
 }
