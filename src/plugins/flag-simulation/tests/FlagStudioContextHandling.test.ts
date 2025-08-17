@@ -1,7 +1,7 @@
-import {World} from '../../../core/ecs/World';
-import {FlagComponent} from '../FlagComponent';
-import {PoleComponent} from '../PoleComponent';
-import {FlagSimulationPlugin} from '../index';
+import { World } from '../../../core/ecs/World';
+import { FlagComponent } from '../FlagComponent';
+import { PoleComponent } from '../PoleComponent';
+import { FlagSimulationPlugin } from '../index';
 
 describe('FlagSimulationPlugin Studio Context Handling', () => {
   test('should create entities even when initializeEntities is called without studio context', async () => {

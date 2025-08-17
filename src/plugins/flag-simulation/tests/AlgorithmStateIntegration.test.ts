@@ -11,11 +11,11 @@
  * 4. Remove direct method calls, use state-driven execution
  */
 
-import { FlagAlgorithm } from '../FlagAlgorithm';
-import { GlobalStateStore, getGlobalStore, resetGlobalStore } from '../../../studio/state/GlobalStore';
-import { Actions } from '../../../studio/state/Actions';
-import { Selectors, SimulationSelectors } from '../../../studio/state/Selectors';
 import { World } from '../../../core/ecs/World';
+import { Actions } from '../../../studio/state/Actions';
+import { GlobalStateStore, getGlobalStore, resetGlobalStore } from '../../../studio/state/GlobalStore';
+import { SimulationSelectors } from '../../../studio/state/Selectors';
+import { FlagAlgorithm } from '../FlagAlgorithm';
 
 describe('Phase 3: Algorithm State Integration', () => {
   let algorithm: FlagAlgorithm;

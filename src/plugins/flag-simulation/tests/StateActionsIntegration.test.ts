@@ -3,11 +3,11 @@
  * Testing missing simulationStateChanged action integration with flag simulation
  */
 
-import { GlobalStateStore, getGlobalStore, resetGlobalStore } from '../../../studio/state/GlobalStore';
+import { World } from '../../../core/ecs/World';
 import { Actions } from '../../../studio/state/Actions';
+import { GlobalStateStore, getGlobalStore, resetGlobalStore } from '../../../studio/state/GlobalStore';
 import { Selectors } from '../../../studio/state/Selectors';
 import { FlagSimulationPlugin } from '../FlagSimulationPlugin';
-import { World } from '../../../core/ecs/World';
 
 describe('🔄 Phase 2: State Actions Integration - TDD', () => {
   let store: GlobalStateStore;

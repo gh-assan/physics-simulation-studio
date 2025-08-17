@@ -11,10 +11,10 @@
  * 4. Implement parameter persistence and validation
  */
 
-import { FlagAlgorithm } from '../FlagAlgorithm';
+import { World } from '../../../core/ecs/World';
 import { GlobalStateStore, getGlobalStore, resetGlobalStore } from '../../../studio/state/GlobalStore';
 import { getPreferencesManager } from '../../../studio/state/PreferencesManager';
-import { World } from '../../../core/ecs/World';
+import { FlagAlgorithm } from '../FlagAlgorithm';
 
 describe('Sprint 2: Parameter State Management', () => {
   let algorithm: FlagAlgorithm;
@@ -122,7 +122,7 @@ describe('Sprint 2: Parameter State Management', () => {
       algorithm.registerParameterSchemas(preferencesManager);
       preferencesManager.setPreference('flag-simulation.damping', 0.95);
       preferencesManager.setPreference('flag-simulation.stiffness', 0.6);
-      preferencesManager.setPreference('flag-simulation.timestep', 1/120); // 120fps
+      preferencesManager.setPreference('flag-simulation.timestep', 1 / 120); // 120fps
 
       // Act: Initialize with dynamic parameters
       algorithm.initializeWithPreferences(preferencesManager);
@@ -130,7 +130,7 @@ describe('Sprint 2: Parameter State Management', () => {
       // Assert: Physics values should be updated
       expect(algorithm.getDamping()).toBe(0.95);
       expect(algorithm.getStiffness()).toBe(0.6);
-      expect(algorithm.getTimestep()).toBe(1/120);
+      expect(algorithm.getTimestep()).toBe(1 / 120);
     });
   });
 

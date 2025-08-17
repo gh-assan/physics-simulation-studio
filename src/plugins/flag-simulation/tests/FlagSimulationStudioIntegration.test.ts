@@ -1,9 +1,8 @@
 import { World } from "../../../core/ecs/World";
-import flagSimulationPluginInstance, { FlagSimulationPlugin } from "../index";
-import { ParameterPanelComponent } from "../../../core/components/ParameterPanelComponent";
-import { FlagComponent } from "../FlagComponent";
 import { IStudio } from "../../../studio/IStudio";
 import { ThreeGraphicsManager } from "../../../studio/graphics/ThreeGraphicsManager";
+import { FlagComponent } from "../FlagComponent";
+import { FlagSimulationPlugin } from "../index";
 
 // Mock THREE library
 jest.mock("three", () => {
@@ -23,21 +22,21 @@ jest.mock("three", () => {
     traverse(fn: (obj: any) => void) { this.children.forEach(fn); }
     getObjectByName(name: string) { return this.children.find((o: any) => o.name === name); }
   }
-  class Group extends Object3D {}
-  class Scene extends Object3D {}
+  class Group extends Object3D { }
+  class Scene extends Object3D { }
   class Mesh extends Object3D {
     geometry: any;
     material: any;
     constructor(geometry: any, material: any) { super(); this.geometry = geometry; this.material = material; }
   }
-  class CylinderGeometry { dispose() {} }
-  class PlaneGeometry { dispose() {} }
-  class MeshLambertMaterial { constructor(opts: any) {} dispose() {} }
-  class PerspectiveCamera extends Object3D {}
-  class AmbientLight extends Object3D {}
-  class AxesHelper extends Object3D {}
-  class BufferGeometry { dispose() {} }
-  class Material { dispose() {} }
+  class CylinderGeometry { dispose() { } }
+  class PlaneGeometry { dispose() { } }
+  class MeshLambertMaterial { constructor(opts: any) { } dispose() { } }
+  class PerspectiveCamera extends Object3D { }
+  class AmbientLight extends Object3D { }
+  class AxesHelper extends Object3D { }
+  class BufferGeometry { dispose() { } }
+  class Material { dispose() { } }
   return {
     Vector3: jest.fn().mockImplementation(() => ({ x: 0, y: 0, z: 0 })),
     Quaternion: jest.fn().mockImplementation(() => ({ x: 0, y: 0, z: 0, w: 1, setFromAxisAngle: jest.fn().mockReturnThis() })),

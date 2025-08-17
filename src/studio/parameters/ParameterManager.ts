@@ -1,6 +1,6 @@
 import {
-  IParameterManager,
-  IParameterDefinition
+  IParameterDefinition,
+  IParameterManager
 } from '../../core/simulation/interfaces';
 
 /**

@@ -3,7 +3,7 @@
  * These define all possible state changes in the application
  */
 
-import { PluginInfo, SystemInfo, ComponentInfo, UIState, SimulationState, ViewportState } from './AppState';
+import { ComponentInfo, PluginInfo, SimulationState, SystemInfo, ViewportState } from './AppState';
 
 // Base action interface
 export interface BaseAction {

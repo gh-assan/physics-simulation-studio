@@ -6,8 +6,8 @@
  * that prevents the flag simulation from working in demos and tests.
  */
 
-import {FlagSimulationPlugin} from '../index';
-import {World} from '../../../core/ecs/World';
+import { World } from '../../../core/ecs/World';
+import { FlagSimulationPlugin } from '../index';
 
 describe('Flag Simulation Studio Context Removal (TDD Phase 1)', () => {
   let plugin: FlagSimulationPlugin;

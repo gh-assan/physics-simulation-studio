@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import { World } from '../../../core/ecs/World';
 import { SimulationManager } from '../../../studio/simulation/SimulationManager';
 import { FlagAlgorithm } from '../FlagAlgorithm';
-import { SimplifiedFlagRenderer } from '../SimplifiedFlagRenderer';
 import { FlagSimulationPlugin } from '../FlagSimulationPlugin';
+import { SimplifiedFlagRenderer } from '../SimplifiedFlagRenderer';
 
 // Mock THREE.js BufferAttribute for testing
 jest.mock('three', () => {

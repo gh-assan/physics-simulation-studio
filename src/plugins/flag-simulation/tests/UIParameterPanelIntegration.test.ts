@@ -3,16 +3,13 @@
  * Tests the integration between FlagAlgorithm and UI parameter controls
  */
 
-import { FlagSimulationPlugin } from '../FlagSimulationPlugin';
-import { FlagAlgorithm } from '../FlagAlgorithm';
-import { EntityManager } from '../../../core/ecs/EntityManager';
-import { ComponentManager } from '../../../core/ecs/ComponentManager';
-import { SystemManager } from '../../../core/ecs/SystemManager';
 import { World } from '../../../core/ecs/World';
+import { ParameterManager } from '../../../studio/parameters/ParameterManager';
 import { SimulationManager } from '../../../studio/simulation/SimulationManager';
 import { PreferencesManager } from '../../../studio/state/PreferencesManager';
-import { ParameterManager } from '../../../studio/parameters/ParameterManager';
 import { UIManager } from '../../../studio/uiManager';
+import { FlagAlgorithm } from '../FlagAlgorithm';
+import { FlagSimulationPlugin } from '../FlagSimulationPlugin';
 
 describe('Sprint 3: UI Parameter Panel Integration', () => {
   let world: World;
