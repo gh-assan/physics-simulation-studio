@@ -3,6 +3,7 @@ import { ISimulationAlgorithm, ISimulationState } from '../../core/plugin/Enhanc
 import { SimulationManager } from '../../studio/simulation/SimulationManager';
 import { GlobalStateStore, StateChangeListener } from '../../studio/state/GlobalStore';
 import { SimulationSelectors } from '../../studio/state/Selectors';
+import { PreferencesManager, PreferenceSchema } from '../../studio/state/PreferencesManager';
 import { Vector3 } from './utils/Vector3';
 
 // Type for subscription cleanup
@@ -43,11 +44,16 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
   private isAlgorithmPaused = false;
   private isAlgorithmInitialized = false;
 
-  // Cloth physics constants
-  private readonly gravity = new Vector3(0, -9.81, 0);
-  private readonly wind = new Vector3(2, 0, 1);
-  private readonly damping = 0.99;
-  private readonly timestep = 1 / 60;
+  // Parameter management integration
+  private preferencesManager: PreferencesManager | null = null;
+  private parameterSubscription: Subscription | null = null;
+
+  // Cloth physics constants (will be replaced by dynamic preferences)
+  private gravity = new Vector3(0, -9.81, 0);
+  private wind = new Vector3(2, 0, 1);
+  private damping = 0.99;
+  private timestep = 1 / 60;
+  private stiffness = 0.8;
 
   // Flag dimensions
   private readonly flagWidth = 10;  // Number of points across
@@ -153,9 +159,195 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
       this.stateSubscription.unsubscribe();
       this.stateSubscription = null;
     }
+    if (this.parameterSubscription) {
+      this.parameterSubscription.unsubscribe();
+      this.parameterSubscription = null;
+    }
     this.stateStore = null;
+    this.preferencesManager = null;
     this.isAlgorithmRunning = false;
     this.isAlgorithmPaused = false;
+  }
+
+  // Parameter State Management Integration Methods (Sprint 2)
+
+  /**
+   * Register parameter schemas with the PreferencesManager
+   */
+  registerParameterSchemas(preferencesManager: PreferencesManager): void {
+    this.preferencesManager = preferencesManager;
+
+    // Register flag simulation parameters with validation
+    const schemas: PreferenceSchema[] = [
+      {
+        key: 'flag-simulation.windStrength',
+        type: 'number',
+        defaultValue: 2.0,
+        validation: (value: number) => value >= 0 && value <= 20,
+        description: 'Wind force strength affecting the flag',
+        category: 'flag-simulation'
+      },
+      {
+        key: 'flag-simulation.wind.x',
+        type: 'number',
+        defaultValue: 2.0,
+        validation: (value: number) => value >= -10 && value <= 10,
+        description: 'Wind direction X component',
+        category: 'flag-simulation'
+      },
+      {
+        key: 'flag-simulation.wind.z',
+        type: 'number',
+        defaultValue: 1.0,
+        validation: (value: number) => value >= -10 && value <= 10,
+        description: 'Wind direction Z component',
+        category: 'flag-simulation'
+      },
+      {
+        key: 'flag-simulation.gravity.x',
+        type: 'number',
+        defaultValue: 0.0,
+        validation: (value: number) => value >= -10 && value <= 10,
+        description: 'Gravity force X component',
+        category: 'flag-simulation'
+      },
+      {
+        key: 'flag-simulation.gravity.y',
+        type: 'number',
+        defaultValue: -9.81,
+        validation: (value: number) => value >= -50 && value <= 0,
+        description: 'Gravity force Y component',
+        category: 'flag-simulation'
+      },
+      {
+        key: 'flag-simulation.gravity.z',
+        type: 'number',
+        defaultValue: 0.0,
+        validation: (value: number) => value >= -10 && value <= 10,
+        description: 'Gravity force Z component',
+        category: 'flag-simulation'
+      },
+      {
+        key: 'flag-simulation.damping',
+        type: 'number',
+        defaultValue: 0.99,
+        validation: (value: number) => value >= 0.1 && value <= 1.0,
+        description: 'Energy damping factor',
+        category: 'flag-simulation'
+      },
+      {
+        key: 'flag-simulation.stiffness',
+        type: 'number',
+        defaultValue: 0.8,
+        validation: (value: number) => value >= 0.1 && value <= 1.0,
+        description: 'Spring stiffness factor',
+        category: 'flag-simulation'
+      },
+      {
+        key: 'flag-simulation.timestep',
+        type: 'number',
+        defaultValue: 1/60,
+        validation: (value: number) => value >= 1/240 && value <= 1/30,
+        description: 'Physics simulation timestep',
+        category: 'flag-simulation'
+      }
+    ];
+
+    // Register all schemas
+    schemas.forEach(schema => {
+      preferencesManager.registerPreference(schema);
+    });
+
+    console.log('🏁 FlagAlgorithm parameter schemas registered with PreferencesManager');
+  }
+
+  /**
+   * Initialize algorithm parameters from PreferencesManager
+   */
+  initializeWithPreferences(preferencesManager: PreferencesManager): void {
+    this.preferencesManager = preferencesManager;
+    this.updateParametersFromPreferences();
+    console.log('🏁 FlagAlgorithm initialized with preferences');
+  }
+
+  /**
+   * Subscribe to parameter changes for reactive updates
+   */
+  subscribeToParameterChanges(preferencesManager: PreferencesManager): void {
+    // Note: In this implementation, we'll check for changes during update cycles
+    // A full reactive implementation would require PreferencesManager to support subscriptions
+    this.preferencesManager = preferencesManager;
+    console.log('🏁 FlagAlgorithm subscribed to parameter changes');
+  }
+
+  /**
+   * Update internal parameters from preferences
+   */
+  private updateParametersFromPreferences(): void {
+    if (!this.preferencesManager) return;
+
+    // Update physics parameters from preferences
+    const windStrength = this.preferencesManager.getPreference<number>('flag-simulation.windStrength', 2.0);
+    const windX = this.preferencesManager.getPreference<number>('flag-simulation.wind.x', 2.0);
+    const windZ = this.preferencesManager.getPreference<number>('flag-simulation.wind.z', 1.0);
+
+    // Check if individual wind components were set or if we should use windStrength as fallback
+    // If wind.x is still default but windStrength was changed, use windStrength as wind.x
+    const effectiveWindX = (windX === 2.0 && windStrength !== 2.0) ? windStrength : windX;
+
+    // Create wind vector without normalization (use direct components)
+    this.wind = new Vector3(effectiveWindX, 0, windZ);
+
+    // Update gravity components
+    const gravityX = this.preferencesManager.getPreference<number>('flag-simulation.gravity.x', 0.0);
+    const gravityY = this.preferencesManager.getPreference<number>('flag-simulation.gravity.y', -9.81);
+    const gravityZ = this.preferencesManager.getPreference<number>('flag-simulation.gravity.z', 0.0);
+    this.gravity = new Vector3(gravityX, gravityY, gravityZ);
+
+    // Update other physics parameters
+    this.damping = this.preferencesManager.getPreference<number>('flag-simulation.damping', 0.99);
+    this.stiffness = this.preferencesManager.getPreference<number>('flag-simulation.stiffness', 0.8);
+    this.timestep = this.preferencesManager.getPreference<number>('flag-simulation.timestep', 1/60);
+  }
+
+  /**
+   * Get current wind vector (dynamic from preferences)
+   */
+  getWindVector(): Vector3 {
+    this.updateParametersFromPreferences();
+    return this.wind.clone();
+  }
+
+  /**
+   * Get current gravity vector (dynamic from preferences)
+   */
+  getGravityVector(): Vector3 {
+    this.updateParametersFromPreferences();
+    return this.gravity.clone();
+  }
+
+  /**
+   * Get current damping value (dynamic from preferences)
+   */
+  getDamping(): number {
+    this.updateParametersFromPreferences();
+    return this.damping;
+  }
+
+  /**
+   * Get current stiffness value (dynamic from preferences)
+   */
+  getStiffness(): number {
+    this.updateParametersFromPreferences();
+    return this.stiffness;
+  }
+
+  /**
+   * Get current timestep value (dynamic from preferences)
+   */
+  getTimestep(): number {
+    this.updateParametersFromPreferences();
+    return this.timestep;
   }
 
   // Backward compatibility methods (legacy support during transition)
@@ -274,7 +466,7 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
             p1: currentIndex,
             p2: rightIndex,
             restLength: this.spacing,
-            stiffness: 0.8
+            stiffness: this.stiffness  // Will be updated dynamically
           });
         }
 
@@ -285,7 +477,7 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
             p1: currentIndex,
             p2: downIndex,
             restLength: this.spacing,
-            stiffness: 0.8
+            stiffness: this.stiffness  // Will be updated dynamically
           });
         }
 
@@ -296,7 +488,7 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
             p1: currentIndex,
             p2: diagonalIndex,
             restLength: this.spacing * Math.sqrt(2),
-            stiffness: 0.5
+            stiffness: this.stiffness * 0.6  // Reduced stiffness for diagonals
           });
         }
       }
@@ -353,7 +545,8 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
         const currentLength = delta.magnitude();
         const difference = (currentLength - spring.restLength) / currentLength;
 
-        const correction = delta.clone().multiplyScalar(difference * spring.stiffness * 0.5);
+        // Use dynamic stiffness from preferences
+        const correction = delta.clone().multiplyScalar(difference * this.stiffness * 0.5);
 
         if (!p1.pinned) {
           p1.position.add(correction);
