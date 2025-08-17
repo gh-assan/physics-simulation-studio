@@ -44,9 +44,10 @@ describe('Sprint 3: UI Parameter Panel Integration', () => {
     plugin = new FlagSimulationPlugin();
     algorithm = plugin.getAlgorithm() as FlagAlgorithm;
 
-    // Initialize the algorithm with simulation manager
-    algorithm.initialize(simulationManager);
-    algorithm.registerParameterSchemas(preferencesManager);
+  // Create flag entity for test
+  const flag = world.createEntity();
+  algorithm.initialize([flag]);
+  algorithm.registerParameterSchemas(preferencesManager);
   });
 
   describe('Basic UI Integration Methods', () => {

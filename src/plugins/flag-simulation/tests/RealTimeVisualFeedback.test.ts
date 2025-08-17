@@ -53,11 +53,12 @@ describe('Sprint 4: Real-time Visual Parameter Feedback', () => {
     algorithm = plugin.getAlgorithm() as FlagAlgorithm;
     renderer = plugin.getRenderer() as SimplifiedFlagRenderer;
 
-    // Initialize systems
-    algorithm.initialize(simulationManager);
-    algorithm.registerParameterSchemas(preferencesManager);
-    algorithm.registerUIParameterSchemas(parameterManager);
-    algorithm.createParameterPanels(uiManager, parameterManager);
+  // Create flag entity for test
+  const flag = world.createEntity();
+  algorithm.initialize([flag]);
+  algorithm.registerParameterSchemas(preferencesManager);
+  algorithm.registerUIParameterSchemas(parameterManager);
+  algorithm.createParameterPanels(uiManager, parameterManager);
   });
 
   afterEach(() => {

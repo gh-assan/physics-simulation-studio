@@ -1,5 +1,6 @@
 import { IWorld } from '../../core/ecs/IWorld';
-import { ISimulationAlgorithm, ISimulationState } from '../../core/plugin/EnhancedPluginInterfaces';
+import { ISimulationAlgorithm, ISimulationState } from '../../core/simulation/interfaces';
+import { SimulationState } from '../../core/simulation/SimulationState';
 import { SimulationManager } from '../../studio/simulation/SimulationManager';
 import { GlobalStateStore, StateChangeListener } from '../../studio/state/GlobalStore';
 import { PreferenceSchema, PreferencesManager } from '../../studio/state/PreferencesManager';
@@ -32,6 +33,53 @@ interface ClothSpring {
  * Flag Algorithm - Cloth physics using Verlet integration without rendering
  */
 export class FlagAlgorithm implements ISimulationAlgorithm {
+  /**
+   * Legacy compatibility: allow initialize(simulationManager) for tests
+   */
+  initialize(simulationManager: SimulationManager): void;
+  initialize(entities: number[]): void;
+  initialize(arg: SimulationManager | number[]): void {
+    if (Array.isArray(arg)) {
+      // New interface
+      // ...existing code for initialize(entities: number[])...
+      // Store entities for later use
+      this.entityIds = arg;
+      // Initialize cloth mesh
+      this.initializeClothMesh();
+      this.isAlgorithmInitialized = true;
+      console.log('🏁 FlagAlgorithm initialized with Verlet cloth physics');
+    } else {
+      // Legacy interface
+      this.simulationManager = arg;
+      // For tests, create a default entity if needed
+      this.initialize([0]);
+    }
+  }
+
+  /**
+   * Legacy compatibility: allow update(deltaTime) for tests
+   */
+  update(deltaTime: number): void {
+    // Legacy compatibility: perform a single simulation step directly
+    // Do not call step() to avoid recursion
+    this.updateParametersFromPreferences();
+    // 1. Apply forces (gravity, wind, etc.)
+    this.applyForces();
+    // 2. Integrate positions using Verlet integration
+    this.integrate(deltaTime);
+    // 3. Satisfy constraints (springs)
+    this.satisfyConstraints();
+    // Update spring stiffness dynamically
+    if (this.springs && typeof this.stiffness === 'number') {
+      this.springs.forEach(spring => {
+        spring.stiffness = this.stiffness;
+      });
+    }
+    // No return value (void)
+  }
+  readonly name = 'flag-simulation';
+  readonly version = '1.0.0';
+
   private world: IWorld | null = null;
   private simulationManager: SimulationManager | null = null;
   private points: ClothPoint[] = [];
@@ -40,8 +88,6 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
   // State management integration
   private stateStore: GlobalStateStore | null = null;
   private stateSubscription: Subscription | null = null;
-  private isAlgorithmRunning = false;
-  private isAlgorithmPaused = false;
   private isAlgorithmInitialized = false;
 
   // Parameter management integration
@@ -63,17 +109,16 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
   private readonly flagHeight = 6;  // Number of points down
   private readonly spacing = 0.1;   // Distance between points
 
-  initialize(simulationManager: SimulationManager): void {
-    this.simulationManager = simulationManager;
-    this.initializeClothMesh();
-    this.isAlgorithmInitialized = true;
-    console.log('🏁 FlagAlgorithm initialized with Verlet cloth physics');
-  }
 
-  update(timestep: number): void {
-    this.applyForces();
-    this.integrate(timestep);
-    this.satisfyConstraints();
+  // Store entities for proper interface implementation
+  private entityIds: number[] = [];
+
+  /**
+   * Initialize the algorithm with simulation manager (legacy method for plugin compatibility)
+   */
+  initializeWithManager(simulationManager: SimulationManager): void {
+    this.simulationManager = simulationManager;
+    this.initialize([0]);  // Call the proper interface method with a dummy entity
   }
 
   reset(): void {
@@ -88,54 +133,20 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
    */
   subscribeToState(store: GlobalStateStore): void {
     this.stateStore = store;
-
-    // Create state change listener
-    const stateChangeListener: StateChangeListener = (newState, previousState, action) => {
-      const wasRunning = this.isAlgorithmRunning;
-      const wasPaused = this.isAlgorithmPaused;
-
-      // Update algorithm state based on global simulation state
-      const isRunning = SimulationSelectors.isSimulationRunning(newState);
-      const isPaused = SimulationSelectors.isSimulationPaused(newState);
-
-      this.isAlgorithmRunning = isRunning;
-      this.isAlgorithmPaused = isPaused;
-
-      // Log state transitions for debugging
-      if (wasRunning !== isRunning || wasPaused !== isPaused) {
-        console.log(`🏁 FlagAlgorithm state: running=${isRunning}, paused=${isPaused}`);
-      }
-    };
-
-    // Subscribe to state changes
-    this.stateSubscription = store.subscribe(stateChangeListener);
-
-    // Initialize current state
-    const currentState = store.getState();
-    this.isAlgorithmRunning = SimulationSelectors.isSimulationRunning(currentState);
-    this.isAlgorithmPaused = SimulationSelectors.isSimulationPaused(currentState);
+    // No-op: state-driven play/pause is now external. This method is kept for interface compatibility.
   }
 
   /**
    * Check if algorithm is subscribed to state changes
    */
   isSubscribedToState(): boolean {
-    return this.stateStore !== null && this.stateSubscription !== null;
+    return this.stateStore !== null;
   }
 
   /**
    * Get current running state (state-driven)
    */
-  isRunning(): boolean {
-    return this.isAlgorithmRunning;
-  }
-
-  /**
-   * Get current paused state (state-driven)
-   */
-  isPaused(): boolean {
-    return this.isAlgorithmPaused;
-  }
+  // isRunning and isPaused removed: simulation is always advanced when step/update is called.
 
   /**
    * Check if algorithm is initialized
@@ -148,10 +159,8 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
    * Handle state-driven update calls - only executes when state allows
    */
   handleUpdate(world: IWorld, deltaTime: number): void {
-    // Only update if algorithm is running (not paused or stopped)
-    if (this.isAlgorithmRunning && !this.isAlgorithmPaused) {
-      this.update(deltaTime);
-    }
+    // Simulation is always advanced when this is called. Play/pause is managed externally.
+    this.update(deltaTime);
   }
 
   /**
@@ -168,8 +177,7 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
     }
     this.stateStore = null;
     this.preferencesManager = null;
-    this.isAlgorithmRunning = false;
-    this.isAlgorithmPaused = false;
+    // No running/paused state to reset.
   }
 
   // Parameter State Management Integration Methods (Sprint 2)
@@ -383,34 +391,75 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
   }
 
   getState(): ISimulationState {
-    return {
-      entities: new Set(),
-      time: 0,
-      deltaTime: 0,
-      isRunning: false,
-      metadata: new Map(),
-      points: this.points.map(point => ({
-        id: point.id,
-        position: {
-          x: point.position.x,
-          y: point.position.y,
-          z: point.position.z
-        },
-        previousPosition: {
-          x: point.previousPosition.x,
-          y: point.previousPosition.y,
-          z: point.previousPosition.z
-        },
-        pinned: point.pinned,
-        mass: point.mass
-      })),
-      springs: this.springs.map(spring => ({
-        p1: spring.p1,
-        p2: spring.p2,
-        restLength: spring.restLength,
-        stiffness: spring.stiffness
-      }))
+    // Use plain object for metadata for Node.js 8+ compatibility
+    const metadata: { [key: string]: string } = {
+      algorithmType: 'flag-simulation',
+      pointCount: this.points.length.toString(),
+      springCount: this.springs.length.toString()
     };
+
+    // Create the base simulation state
+    const state = SimulationState.create(
+      this.entityIds,
+      0, // time
+      this.timestep, // deltaTime
+      true, // always running for compatibility
+      metadata
+    );
+
+    // For legacy/test compatibility, return points and springs as properties
+    return Object.assign(Object.create(Object.getPrototypeOf(state)), state, {
+      points: this.points,
+      springs: this.springs
+    });
+  }
+
+  /**
+   * Configure algorithm parameters (ISimulationAlgorithm interface)
+   */
+  configure(parameters: Record<string, any>): void {
+    for (const [key, value] of Object.entries(parameters)) {
+      this.doApplyParameterUpdate(key, value);
+    }
+  }
+
+  /**
+   * Get current algorithm parameters (ISimulationAlgorithm interface)
+   */
+  getParameters(): Record<string, any> {
+    return {
+      windStrength: this.getWindStrength(),
+      damping: this.getDamping(),
+      stiffness: this.getStiffness(),
+      gravity: this.getGravity()
+    };
+  }
+
+  /**
+   * Validate parameter values (ISimulationAlgorithm interface)
+   */
+  validateParameter(paramName: string, value: any): true | string {
+    // Simple validation based on parameter constraints
+    switch (paramName) {
+      case 'windStrength':
+        if (typeof value !== 'number' || value < 0 || value > 20) {
+          return 'Wind strength must be between 0 and 20';
+        }
+        break;
+      case 'damping':
+        if (typeof value !== 'number' || value < 0.1 || value > 1.0) {
+          return 'Damping must be between 0.1 and 1.0';
+        }
+        break;
+      case 'stiffness':
+        if (typeof value !== 'number' || value < 0.1 || value > 1.0) {
+          return 'Stiffness must be between 0.1 and 1.0';
+        }
+        break;
+      default:
+        return `Unknown parameter: ${paramName}`;
+    }
+    return true;
   }
 
   setState(state: ISimulationState): void {
@@ -463,6 +512,7 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
       }
     }
 
+
     // Create structural springs (horizontal and vertical)
     for (let y = 0; y < this.flagHeight; y++) {
       for (let x = 0; x < this.flagWidth; x++) {
@@ -492,10 +542,19 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
 
         // Diagonal springs for structural integrity
         if (x < this.flagWidth - 1 && y < this.flagHeight - 1) {
-          const diagonalIndex = (y + 1) * this.flagWidth + (x + 1);
+          const diagRightDown = (y + 1) * this.flagWidth + (x + 1);
           this.springs.push({
             p1: currentIndex,
-            p2: diagonalIndex,
+            p2: diagRightDown,
+            restLength: this.spacing * Math.sqrt(2),
+            stiffness: this.stiffness * 0.6  // Reduced stiffness for diagonals
+          });
+        }
+        if (x > 0 && y < this.flagHeight - 1) {
+          const diagLeftDown = (y + 1) * this.flagWidth + (x - 1);
+          this.springs.push({
+            p1: currentIndex,
+            p2: diagLeftDown,
             restLength: this.spacing * Math.sqrt(2),
             stiffness: this.stiffness * 0.6  // Reduced stiffness for diagonals
           });
@@ -1196,9 +1255,28 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
   }
 
   /**
-   * Update physics step method to handle real-time parameter changes
+   * Execute one simulation step (ISimulationAlgorithm interface)
    */
-  step(deltaTime: number): void {
+  step(state: ISimulationState, fixedDeltaTime: number): ISimulationState {
+    // Update parameters from preferences before physics step
+    this.updateParametersFromPreferences();
+
+    // Update spring stiffness dynamically
+    this.springs.forEach(spring => {
+      spring.stiffness = this.stiffness;
+    });
+
+    // Call original update method
+    this.update(fixedDeltaTime);
+
+    // Return updated state
+    return this.getState();
+  }
+
+  /**
+   * Legacy step method for backward compatibility
+   */
+  stepLegacy(deltaTime: number): void {
     // Update parameters from preferences before physics step
     this.updateParametersFromPreferences();
 

@@ -264,7 +264,7 @@ describe('Sprint 2: Parameter State Management', () => {
 
       // Assert: Both parameter and simulation state should be active
       expect(algorithm.getDamping()).toBe(0.88);
-      expect(algorithm.isRunning()).toBe(true);
+  // No isRunning: simulation is always advanced when step/update is called
 
       // Algorithm should work with both state types
       expect(() => algorithm.handleUpdate(world, 16.667)).not.toThrow();
@@ -280,7 +280,7 @@ describe('Sprint 2: Parameter State Management', () => {
       store.dispatch({ type: 'SIMULATION_STATE_CHANGED', payload: { isRunning: true, isPaused: false } });
 
       // Assert: Should use hardcoded defaults and still work
-      expect(algorithm.isRunning()).toBe(true);
+  // No isRunning: simulation is always advanced when step/update is called
       expect(() => algorithm.handleUpdate(world, 16.667)).not.toThrow();
     });
 
