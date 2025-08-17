@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module Import Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #222;
+            color: white;
+        }
+
+        #info {
+            background: #333;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .error {
+            color: #ff6b6b;
+        }
+
+        .success {
+            color: #51cf66;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Module Import Test</h1>
+    <div id="info">Testing imports...</div>
+
+    <script type="module">
+        const info = document.getElementById('info');
+
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+            info.appendChild(div);
+            console.log(message);
+        }
+
+        async function testImports() {
+            try {
+                log('🔍 Starting individual import tests...');
+
+                // Test 1: World import
+                try {
+                    log('📦 Testing World import...');
+                    const worldModule = await import('./build/src/core/ecs/World.js');
+                    log('✅ World imported successfully', 'success');
+                    console.log('World module:', worldModule);
+                } catch (error) {
+                    log(`❌ World import failed: ${error.message}`, 'error');
+                    throw error;
+                }
+
+                // Test 2: PluginManager import
+                try {
+                    log('📦 Testing PluginManager import...');
+                    const pluginModule = await import('./build/src/core/plugin/PluginManager.js');
+                    log('✅ PluginManager imported successfully', 'success');
+                } catch (error) {
+                    log(`❌ PluginManager import failed: ${error.message}`, 'error');
+                    throw error;
+                }
+
+                // Test 3: StateManager import
+                try {
+                    log('📦 Testing StateManager import...');
+                    const stateModule = await import('./build/src/studio/state/StateManager.js');
+                    log('✅ StateManager imported successfully', 'success');
+                } catch (error) {
+                    log(`❌ StateManager import failed: ${error.message}`, 'error');
+                    throw error;
+                }
+
+                // Test 4: Studio import
+                try {
+                    log('📦 Testing Studio import...');
+                    const studioModule = await import('./build/src/studio/Studio.js');
+                    log('✅ Studio imported successfully', 'success');
+                } catch (error) {
+                    log(`❌ Studio import failed: ${error.message}`, 'error');
+                    throw error;
+                }
+
+                // Test 5: ThreeGraphicsManager import
+                try {
+                    log('📦 Testing ThreeGraphicsManager import...');
+                    const graphicsModule = await import('./build/src/studio/graphics/ThreeGraphicsManager.js');
+                    log('✅ ThreeGraphicsManager imported successfully', 'success');
+                } catch (error) {
+                    log(`❌ ThreeGraphicsManager import failed: ${error.message}`, 'error');
+                    throw error;
+                }
+
+                log('🎉 All core imports successful!', 'success');
+
+            } catch (error) {
+                log(`💥 Import test failed: ${error.message}`, 'error');
+                log(`Stack: ${error.stack}`, 'error');
+            }
+        }
+
+        // Global error handlers
+        window.addEventListener('error', (event) => {
+            log(`🚨 Global error: ${event.message} at ${event.filename}:${event.lineno}`, 'error');
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+            log(`🚨 Unhandled promise rejection: ${event.reason}`, 'error');
+        });
+
+        // Start test
+        log('🚀 Starting module import test...');
+        testImports();
+
+    </script>
+</body>
+
+</html>

@@ -2,14 +2,14 @@ import { IWorld } from "../../core/ecs/IWorld";
 import { World } from "../../core/ecs/World";
 import { IPluginManager } from "../../core/plugin/IPluginManager";
 import { Logger } from "../../core/utils/Logger";
-import { SimplifiedRenderSystem } from "../rendering/simplified/SimplifiedRenderSystem";
+// Adapter-only: accept any render system that provides update() and dispose()
 import { SelectedSimulationStateManager } from "./SelectedSimulationState";
 import { IStudio } from "../IStudio";
 
 export class SimulationOrchestrator {
   private world: IWorld;
   private pluginManager: IPluginManager;
-  private renderSystem?: SimplifiedRenderSystem;
+  private renderSystem?: any;
   private selectedSimulation: SelectedSimulationStateManager;
   private studio: IStudio;
 
@@ -25,7 +25,7 @@ export class SimulationOrchestrator {
     this.selectedSimulation = selectedSimulation;
   }
 
-  public setRenderSystem(renderSystem: SimplifiedRenderSystem): void {
+  public setRenderSystem(renderSystem: any): void {
     this.renderSystem = renderSystem;
   }
 

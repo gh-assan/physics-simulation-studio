@@ -5,11 +5,11 @@
  */
 
 import { World } from '../../src/core/ecs/World';
-import { Studio } from '../../src/studio/Studio';
-import { StateManager } from '../../src/studio/state/StateManager';
 import { PluginManager } from '../../src/core/plugin/PluginManager';
-import { SimplifiedRenderSystem } from '../../src/studio/rendering/simplified/SimplifiedRenderSystem';
 import { FlagSimulationPlugin } from '../../src/plugins/flag-simulation/FlagSimulationPlugin';
+import { Studio } from '../../src/studio/Studio';
+import { createAdapterRenderSystem } from '../../src/studio/rendering/createAdapterRenderSystem';
+import { StateManager } from '../../src/studio/state/StateManager';
 
 // Mock ThreeGraphicsManager to avoid Three.js issues in tests
 const createMockGraphicsManager = () => ({
@@ -28,7 +28,7 @@ describe('🎬 Animation Loop and Renderer Integration', () => {
   let pluginManager: PluginManager;
   let stateManager: StateManager;
   let studio: Studio;
-  let renderSystem: SimplifiedRenderSystem;
+  let renderSystem: any;
   let mockGraphicsManager: any;
 
   beforeEach(() => {
@@ -53,8 +53,8 @@ describe('🎬 Animation Loop and Renderer Integration', () => {
     pluginContext.studio = studio;
 
     // Set up mock graphics and render system
-    mockGraphicsManager = createMockGraphicsManager();
-    renderSystem = new SimplifiedRenderSystem(mockGraphicsManager);
+  mockGraphicsManager = createMockGraphicsManager();
+  renderSystem = createAdapterRenderSystem(mockGraphicsManager as any);
     studio.setRenderSystem(renderSystem);
     world.registerSystem(renderSystem);
   });
@@ -123,7 +123,12 @@ describe('🎬 Animation Loop and Renderer Integration', () => {
     if (typeof (renderSystem as any).getDebugInfo === 'function') {
       const debugInfo = (renderSystem as any).getDebugInfo();
       console.log('   2. ✅ RenderSystem debug info:', debugInfo);
-      expect(debugInfo.rendererCount).toBeGreaterThan(0);
+      if (debugInfo.adapter) {
+        const total = (debugInfo.adapter.legacyCount || 0) + (debugInfo.adapter.minimalCount || 0);
+        expect(total).toBeGreaterThan(0);
+      } else {
+        expect(debugInfo.rendererCount).toBeGreaterThan(0);
+      }
     }
 
     console.log('   ✅ RENDERER REGISTRATION WORKING');

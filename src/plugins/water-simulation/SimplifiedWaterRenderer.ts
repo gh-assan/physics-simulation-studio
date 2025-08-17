@@ -6,18 +6,22 @@
  */
 
 import * as THREE from "three";
-import { BaseRenderer, RenderContext } from "../../studio/rendering/simplified/SimplifiedInterfaces";
 import { IWorld } from "../../core/ecs/IWorld";
 import { WaterBodyComponent, WaterDropletComponent } from "./WaterComponents";
 import { PositionComponent } from "../../core/components/PositionComponent";
 
-export class SimplifiedWaterRenderer extends BaseRenderer {
+/**
+ * Adapter-compatible water renderer that no longer depends on legacy SimplifiedInterfaces.
+ * It exposes a legacy-style render(context) method consumed by RenderSystemAdapter.
+ */
+export class SimplifiedWaterRenderer {
   readonly name = "water-renderer";
   readonly priority = 5;
 
   private waterMesh?: THREE.Mesh;
   private rippleMeshes: THREE.Mesh[] = [];
   private dropletMeshes = new Map<number, THREE.Mesh>();
+  private _isDirty = true;
 
   /**
    * Check if we can render this entity
@@ -30,7 +34,7 @@ export class SimplifiedWaterRenderer extends BaseRenderer {
   /**
    * Main render method
    */
-  render(context: RenderContext): void {
+  render(context: any): void {
     const { scene, world } = context;
 
     // Render water bodies
@@ -40,8 +44,11 @@ export class SimplifiedWaterRenderer extends BaseRenderer {
     this.renderWaterDroplets(world, scene);
 
     // Mark as clean after rendering
-    this.markClean();
+    this._isDirty = false;
   }
+
+  needsRender(): boolean { return this._isDirty; }
+  markDirty(): void { this._isDirty = true; }
 
   /**
    * Render water bodies with ripples
@@ -187,7 +194,10 @@ export class SimplifiedWaterRenderer extends BaseRenderer {
 
     for (const [entityId, mesh] of this.dropletMeshes) {
       if (!activeSet.has(entityId)) {
-        this.disposeMesh(mesh, scene);
+        // Inline mesh disposal to avoid dependency on legacy base class
+        scene.remove(mesh);
+        if (mesh.geometry) mesh.geometry.dispose();
+        if (mesh.material) (mesh.material as THREE.Material).dispose();
         this.dropletMeshes.delete(entityId);
       }
     }
@@ -215,8 +225,7 @@ export class SimplifiedWaterRenderer extends BaseRenderer {
       if (mesh.material) (mesh.material as THREE.Material).dispose();
     }
 
-    this.dropletMeshes.clear();
-    this.rippleMeshes = [];
-    super.dispose();
+  this.dropletMeshes.clear();
+  this.rippleMeshes = [];
   }
 }

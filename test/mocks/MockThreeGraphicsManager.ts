@@ -5,7 +5,7 @@
  * the same interface as the real ThreeGraphicsManager.
  */
 
-import {IGraphicsManager} from '../../src/studio/graphics/IGraphicsManager';
+import { IGraphicsManager } from '../../src/studio/graphics/IGraphicsManager';
 
 export class MockThreeGraphicsManager implements IGraphicsManager {
   public scene = {
@@ -16,7 +16,7 @@ export class MockThreeGraphicsManager implements IGraphicsManager {
   };
 
   public camera = {
-    position: {x: 0, y: 0, z: 10},
+    position: { x: 0, y: 0, z: 10 },
     lookAt: jest.fn(),
     updateProjectionMatrix: jest.fn()
   };
@@ -30,7 +30,7 @@ export class MockThreeGraphicsManager implements IGraphicsManager {
       height: 600,
       style: {},
       getContext: jest.fn(() => ({
-        canvas: {width: 800, height: 600},
+        canvas: { width: 800, height: 600 },
         viewport: jest.fn(),
         clear: jest.fn()
       }))

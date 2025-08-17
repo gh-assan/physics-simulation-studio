@@ -25,7 +25,7 @@ import { IPluginContext } from "./IPluginContext";
 import { ThreeGraphicsManager } from "./graphics/ThreeGraphicsManager";
 import { VisibilityManager } from "./ui/VisibilityManager";
 import { SystemDiagnostics } from "./utils/SystemDiagnostics";
-import { SimplifiedRenderSystem } from "./rendering/simplified/SimplifiedRenderSystem";
+import { getSelectedRenderMode } from './rendering/getSelectedRenderMode';
 import { VisibilityOrchestrator } from "./orchestration/VisibilityOrchestrator";
 import { PluginDiscoveryService } from "./plugins/PluginDiscoveryService";
 import { AutoPluginRegistry } from "../core/plugin/AutoPluginRegistry";
@@ -203,19 +203,18 @@ function registerComponentsAndSystems(world: World, studio: Studio, pluginManage
     }
     graphicsManager.initialize(mainContent);
 
-    // Create the new SimplifiedRenderSystem - much cleaner!
-    const renderSystem = new SimplifiedRenderSystem(graphicsManager);
+  // Build adapter-backed system using the same graphics manager (adapter-only)
+  // Use require to avoid top-level await constraints in some build/test environments
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { buildRenderSystem } = require('./rendering/RenderSystemFactory');
+  const renderSystem = buildRenderSystem('adapter', graphicsManager as any);
+  studio.setRenderSystem(renderSystem as any);
 
-    // Set the RenderSystem in Studio BEFORE any plugin initialization
-    studio.setRenderSystem(renderSystem);
-
-    // No need for complex orchestrator setup - SimplifiedRenderSystem handles everything!
-
-    // Register only the SimplifiedRenderSystem (much simpler!)
-    world.registerSystem(renderSystem);
+  // Register the chosen render system
+  world.registerSystem(renderSystem);
 
     // Create visibility manager (simplified without orchestrator dependency)
-    const visibilityOrchestrator = new VisibilityOrchestrator(visibilityManager, renderSystem as any);
+  const visibilityOrchestrator = new VisibilityOrchestrator(visibilityManager, renderSystem as any);
     visibilityOrchestrator.initialize();
 
     const selectionSystem = new SelectionSystem(studio, world as World);

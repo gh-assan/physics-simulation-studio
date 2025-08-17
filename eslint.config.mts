@@ -4,7 +4,15 @@ import tseslint from "typescript-eslint";
 
 export default [
   {
-    ignores: ["REFACTORING_EXAMPLES.ts", "coverage/**/*", "scripts/**/*.js"],
+    ignores: [
+      "REFACTORING_EXAMPLES.ts",
+      "coverage/**/*",
+      "scripts/**/*.js",
+      "build/**/*",
+      "temp-build/**/*",
+      "debug-*.js",
+      "debug/**/*.js"
+    ],
   },
   { 
     files: ["**/*.{js,mjs,cjs,ts,mts,cts}"], 

@@ -1,7 +1,17 @@
 build/
+temp-build/
+coverage/
+debug-imports.js
+src/studio/rendering/IRenderer.js
+test-module.js
+src/examples/**
+test/e2e/**
+scripts/**
+build/
 dist/
 coverage/
 jest.config.js
 jest.setup.js
 REFACTORING_EXAMPLES.ts
 scripts/
+backup/

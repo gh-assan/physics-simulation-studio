@@ -2,13 +2,15 @@ import { IGraphicsManager } from "./IGraphicsManager";
 import { IWorld } from "../core/ecs/IWorld";
 import { IPluginContext } from "./IPluginContext";
 import { IPluginManager } from "../core/plugin/IPluginManager";
-import { SimplifiedRenderSystem } from "./rendering/simplified/SimplifiedRenderSystem";
+// Note: decoupled from legacy SimplifiedRenderSystem to support adapter-only mode
 
 export interface IStudio {
   getGraphicsManager(): IGraphicsManager;
   getWorld(): IWorld;
   getPluginManager(): IPluginManager;
-  setRenderSystem(renderSystem: SimplifiedRenderSystem): void;
+  setRenderSystem(renderSystem: any): void;
+  getRenderSystemDebugInfo(): any;
+  getSimulationDebugInfo(): any;
   clearRenderer(): void;
   play(): void;
   pause(): void;
