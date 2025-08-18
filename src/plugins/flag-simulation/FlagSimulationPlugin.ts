@@ -1,8 +1,9 @@
 import { PositionComponent } from '@core/components/PositionComponent';
 import { RenderableComponent } from '@core/components/RenderableComponent';
-import { ISystem } from '@core/ecs/ISystem';
-import { IWorld } from '@core/ecs/IWorld';
-import { ISimulationPlugin } from '@core/plugin/ISimulationPlugin';
+import { FlagSystem } from './FlagSystem';
+import { ISystem } from '../../core/ecs/ISystem';
+import { IWorld } from '../../core/ecs/IWorld';
+import { ISimulationPlugin } from '../../core/plugin/ISimulationPlugin';
 import { IEnhancedSimulationPlugin, ISimulationAlgorithm, ISimulationRenderer } from '../../core/plugin/EnhancedPluginInterfaces';
 import { IStudio } from '../../studio/IStudio';
 import { SimulationManager } from '../../studio/simulation/SimulationManager';
@@ -42,9 +43,7 @@ export class FlagSimulationPlugin implements ISimulationPlugin, IEnhancedSimulat
   }
 
   getSystems(studio: IStudio): ISystem[] {
-    // In the new architecture, we don't use traditional ECS systems
-    // The algorithm handles the cloth physics instead
-    return [];
+    return [new FlagSystem(this.algorithm)];
   }
 
   register(world: IWorld): void {

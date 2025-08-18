@@ -1,3 +1,4 @@
+import { FlagAlgorithm } from './FlagAlgorithm';
 import {
   ISimulationAlgorithm,
   ISimulationState,
@@ -17,7 +18,7 @@ export class FlagClothAlgorithm implements ISimulationAlgorithm {
   private world: any = null;
 
   constructor() {
-    this.flagSystem = new FlagSystem();
+    this.flagSystem = new FlagSystem(new FlagAlgorithm());
   }
 
   /**
@@ -93,8 +94,5 @@ export class FlagClothAlgorithm implements ISimulationAlgorithm {
    */
   setWorld(world: any): void {
     this.world = world;
-    if (this.flagSystem && 'init' in this.flagSystem) {
-      this.flagSystem.init();
-    }
   }
 }

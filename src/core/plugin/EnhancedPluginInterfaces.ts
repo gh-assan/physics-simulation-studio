@@ -13,6 +13,7 @@ export interface ISimulationAlgorithm {
    * Update the simulation state for one timestep
    */
   update(timestep: number): void;
+  step(state: ISimulationState, fixedDeltaTime: number): ISimulationState;
 
   /**
    * Reset the simulation to initial state

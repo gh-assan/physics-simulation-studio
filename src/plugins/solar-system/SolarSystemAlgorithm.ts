@@ -39,6 +39,11 @@ export class SolarSystemAlgorithm implements ISimulationAlgorithm {
     this.syncWithECS();
   }
 
+  step(state: ISimulationState, fixedDeltaTime: number): ISimulationState {
+    this.update(fixedDeltaTime);
+    return this.getState();
+  }
+
   reset(): void {
     // Reset to initial state
     this.initializeCelestialBodies();
