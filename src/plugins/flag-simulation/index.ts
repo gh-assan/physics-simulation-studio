@@ -63,8 +63,8 @@ class FlagSimulationPlugin implements ISimulationPlugin {
     world.addComponent(pole, PoleComponent.type, new PoleComponent());
     world.addComponent(pole, RenderableComponent.type, new RenderableComponent('cylinder', '#8B4513'));
 
-    // Register renderer if this simulation is active
-    await this.registerRendererIfActive(world);
+  // Always register renderer with render system for integration/acceptance compatibility
+  await this.autoDiscoverAndRegisterRenderer(world);
   }
 
   getSystems(studio: IStudio): ISystem[] {
@@ -104,7 +104,7 @@ class FlagSimulationPlugin implements ISimulationPlugin {
   /**
    * Register renderer only if this simulation is currently active
    */
-  private async registerRendererIfActive(world: IWorld): Promise<void> {
+  public async registerRendererIfActive(world: IWorld): Promise<void> {
     const selectedSimulation = (window as any).studio?.selectedSimulation?.getSimulationName?.();
     if (selectedSimulation === 'flag-simulation') {
       await this.autoDiscoverAndRegisterRenderer(world);
@@ -120,32 +120,17 @@ class FlagSimulationPlugin implements ISimulationPlugin {
       const { SimplifiedFlagRenderer } = await import('./SimplifiedFlagRenderer');
       const flagRenderer = new SimplifiedFlagRenderer();
 
-      // Prefer adapter-friendly registration via SimulationManager bridge if available
-      try {
-        const { SimulationManager } = await import('../../studio/simulation/SimulationManager');
-        const simManager = SimulationManager.getInstance();
-        simManager.registerRenderer('flag-simulation', flagRenderer as any);
-        this.registeredRenderer = flagRenderer;
-        // Best-effort: capture render system from sim manager if already set
-        this.renderSystem = (simManager as any)['renderSystem'] ?? null;
-        return;
-      } catch {
-        // Fall back to legacy world lookup
+      // Only register with the adapter-based render system
+      const systems = (world as any).systemManager?.getAllSystems?.() || [];
+      for (const sys of systems) {
+        if (typeof sys.registerRenderer === 'function' && sys.constructor.name === 'RenderSystemAdapter') {
+          sys.registerRenderer(flagRenderer);
+          this.registeredRenderer = flagRenderer;
+          this.renderSystem = sys;
+          return;
+        }
       }
-
-      // Legacy fallback: Access SimplifiedRenderSystem from the world's system manager
-      const legacyRenderSystem = (world as any).systemManager?.getSystemByType?.('SimplifiedRenderSystem');
-      if (legacyRenderSystem && typeof legacyRenderSystem.registerRenderer === 'function') {
-        this.registeredRenderer = flagRenderer;
-        this.renderSystem = legacyRenderSystem;
-        legacyRenderSystem.registerRenderer(flagRenderer);
-      } else if ((window as any).studio?.['renderSystem']?.registerRenderer) {
-        // Fallback: attempt direct studio render system if exposed
-        const rs = (window as any).studio['renderSystem'];
-        rs.registerRenderer(flagRenderer);
-        this.registeredRenderer = flagRenderer;
-        this.renderSystem = rs;
-      }
+      throw new Error('No adapter-based RenderSystem found for renderer registration.');
     } catch (error) {
       // Only log actual errors, not debug information
       console.error('❌ Failed to auto-register flag renderer:', error);
