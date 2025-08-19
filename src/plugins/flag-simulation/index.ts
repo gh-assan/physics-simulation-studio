@@ -68,10 +68,11 @@ class FlagSimulationPlugin implements ISimulationPlugin {
   }
 
   getSystems(studio: IStudio): ISystem[] {
-    // Store studio reference so it's available for entity initialization
-    this.studio = studio;
-    // The simplified rendering system handles everything
-    return [];
+  // Store studio reference so it's available for entity initialization
+  this.studio = studio;
+  // Register the flag physics system so animation/physics updates run
+  const { FlagSystem } = require('./FlagSystem');
+  return [new FlagSystem(this.algorithm)];
   }
 
   /**
