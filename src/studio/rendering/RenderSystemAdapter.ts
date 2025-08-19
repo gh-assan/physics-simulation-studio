@@ -99,8 +99,30 @@ export class RenderSystemAdapter {
     // Tick minimal renderers via inner system
     this.inner.update();
 
-    // If any minimal renderers are registered, trigger graphics render (for test compatibility)
+    // Construct context for renderers
+    const scene = this.graphicsManager.getScene();
+    const camera = this.graphicsManager.getCamera();
+    this.frameNumber++;
+    const context = {
+      scene,
+      camera,
+      world,
+      deltaTime,
+      frameNumber: this.frameNumber
+    };
+
+    // Call render(context) on all minimal renderers if present
     if (this.minimalRenderersByName.size > 0) {
+      for (const renderer of this.minimalRenderersByName.values()) {
+        // Our minimal renderer implementation provides render(context), but the type does not declare it
+        if (typeof (renderer as any).render === 'function') {
+          try {
+            (renderer as any).render(context);
+          } catch (e) {
+            Logger.getInstance().warn('RenderSystemAdapter: error in minimal renderer render()', e);
+          }
+        }
+      }
       try {
         this.graphicsManager.render();
       } catch (_e) {
@@ -110,16 +132,6 @@ export class RenderSystemAdapter {
 
     // Then tick legacy-style renderers with a constructed context
     if (this.legacyRenderersByName.size > 0) {
-      const scene = this.graphicsManager.getScene();
-      const camera = this.graphicsManager.getCamera();
-      this.frameNumber++;
-      const context = {
-        scene,
-        camera,
-        world,
-        deltaTime,
-        frameNumber: this.frameNumber
-      };
       let didRender = false;
       for (const renderer of this.legacyRenderersByName.values()) {
         try {
