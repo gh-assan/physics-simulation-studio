@@ -50,6 +50,11 @@ export class WaterAlgorithm implements ISimulationAlgorithm {
     this.handleBoundaryConditions();
   }
 
+  step(state: ISimulationState, fixedDeltaTime: number): ISimulationState {
+    this.update(fixedDeltaTime);
+    return this.getState();
+  }
+
   reset(): void {
     this.initializeParticles();
     console.log('🔄 Water simulation reset to initial state');

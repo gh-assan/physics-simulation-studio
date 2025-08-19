@@ -209,6 +209,26 @@ async function registerComponentsAndSystems(world: World, studio: Studio, plugin
   const renderSystem = buildRenderSystem('adapter', graphicsManager as any);
   studio.setRenderSystem(renderSystem as any);
 
+
+  // Explicitly register the flag renderer for acceptance/integration test compatibility
+  try {
+    const { SimplifiedFlagRenderer } = await import('../plugins/flag-simulation/SimplifiedFlagRenderer');
+    const flagRenderer = new SimplifiedFlagRenderer();
+    console.log('[main.ts] Registering flagRenderer:', {
+      name: flagRenderer.name,
+      update: typeof flagRenderer.update,
+      dispose: typeof flagRenderer.dispose,
+      priority: flagRenderer.priority,
+      priorityType: typeof flagRenderer.priority
+    });
+    if (typeof renderSystem.registerRenderer === 'function') {
+      renderSystem.registerRenderer(flagRenderer);
+      console.log('[main.ts] Registered flagRenderer.');
+    }
+  } catch (e) {
+    console.warn('Could not register SimplifiedFlagRenderer:', e);
+  }
+
   // Register the chosen render system (cast to ISystem to handle interface compatibility)
   world.registerSystem(renderSystem as any);
 

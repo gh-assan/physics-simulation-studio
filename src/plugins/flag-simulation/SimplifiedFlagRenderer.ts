@@ -1,3 +1,4 @@
+// Minimal renderer API: update() is required for adapter compatibility
 /**
  * SimplifiedFlagRenderer - Clean flag rendering that works with both systems
  */
@@ -7,21 +8,42 @@ import { PositionComponent } from "../../core/components/PositionComponent";
 import { IWorld } from "../../core/ecs/IWorld";
 // Legacy-style renderer consumed by RenderSystemAdapter via render(context)
 import { ISimulationRenderer, ISimulationState } from "../../core/plugin/EnhancedPluginInterfaces";
+
+// Adapter expects this shape for minimal renderer
+type MinimalRenderer = {
+  name: string;
+  priority: number;
+  update: (world?: import("../../core/ecs/IWorld").IWorld, scene?: import("three").Scene, deltaTime?: number) => void;
+  dispose: () => void;
+};
 import { SimulationManager } from "../../studio/simulation/SimulationManager";
 import { FlagComponent } from "./FlagComponent";
 
 /**
  * Flag renderer that implements both old and new interfaces for compatibility
  */
-export class SimplifiedFlagRenderer implements ISimulationRenderer {
+export class SimplifiedFlagRenderer implements ISimulationRenderer, MinimalRenderer {
+  update(world?: import("../../core/ecs/IWorld").IWorld, scene?: import("three").Scene, deltaTime?: number): void {
+    // No-op for minimal renderer compatibility
+  }
   readonly name = "simplified-flag-renderer";
   readonly priority = 10;
+  algorithmName: string;
+  rendererType: string;
 
   private flagMeshes = new Map<number, THREE.Mesh>();
   private flagMaterial: THREE.MeshPhongMaterial | null = null;
   private simulationManager: SimulationManager | null = null;
 
-  constructor() { }
+  constructor() {
+  this.algorithmName = "flag-simulation";
+  this.rendererType = "minimal";
+  // Runtime assertion for minimal renderer interface
+  if (typeof this.name !== 'string') throw new Error('MinimalRenderer: name must be a string');
+  if (typeof this.update !== 'function') throw new Error('MinimalRenderer: update must be a function');
+  if (typeof this.dispose !== 'function') throw new Error('MinimalRenderer: dispose must be a function');
+  if (typeof this.priority !== 'number') throw new Error('MinimalRenderer: priority must be a number');
+  }
 
   // New minimal renderer API compatibility gate used by adapter legacy bridge
   canRender(entityId: number, world: IWorld): boolean {
@@ -214,31 +236,23 @@ export class SimplifiedFlagRenderer implements ISimulationRenderer {
   }
 
   /**
-   * Dispose of all resources
+   * Dispose of all resources (minimal renderer interface: no arguments)
    */
-  dispose(): void;
-  dispose(scene?: THREE.Scene): void;
-  dispose(scene?: THREE.Scene): void {
+  dispose(): void {
     console.log('🗑️ Disposing SimplifiedFlagRenderer');
-
     // Dispose of all meshes
     for (const [entityId, mesh] of this.flagMeshes) {
-      if (scene) {
-        scene.remove(mesh);
-      }
       mesh.geometry.dispose();
       if (mesh.material instanceof THREE.Material) {
         mesh.material.dispose();
       }
     }
     this.flagMeshes.clear();
-
     // Dispose of shared material
     if (this.flagMaterial) {
       this.flagMaterial.dispose();
       this.flagMaterial = null;
     }
-
     console.log('✅ SimplifiedFlagRenderer disposed');
   }
 

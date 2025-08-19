@@ -95,6 +95,11 @@ export class SimplePhysicsAlgorithm implements ISimulationAlgorithm {
     }
   }
 
+  step(state: ISimulationState, fixedDeltaTime: number): ISimulationState {
+    this.update(fixedDeltaTime);
+    return this.getState();
+  }
+
   reset(): void {
     this.time = 0;
     this.initializeParticles();

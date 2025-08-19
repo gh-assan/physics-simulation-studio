@@ -57,26 +57,12 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
   }
 
   /**
-   * Legacy compatibility: allow update(deltaTime) for tests
+   * @deprecated The update method is deprecated and will be removed in a future version. Use step() instead.
    */
   update(deltaTime: number): void {
-    // Legacy compatibility: perform a single simulation step directly
-    // Do not call step() to avoid recursion
-    this.updateParametersFromPreferences();
-    // 1. Apply forces (gravity, wind, etc.)
-    this.applyForces();
-    // 2. Integrate positions using Verlet integration
-    this.integrate(deltaTime);
-    // 3. Satisfy constraints (springs)
-    this.satisfyConstraints();
-    // Update spring stiffness dynamically
-    if (this.springs && typeof this.stiffness === 'number') {
-      this.springs.forEach(spring => {
-        spring.stiffness = this.stiffness;
-      });
-    }
-    // No return value (void)
+    this.step(this.getState(), deltaTime);
   }
+
   readonly name = 'flag-simulation';
   readonly version = '1.0.0';
 
@@ -1266,8 +1252,12 @@ export class FlagAlgorithm implements ISimulationAlgorithm {
       spring.stiffness = this.stiffness;
     });
 
-    // Call original update method
-    this.update(fixedDeltaTime);
+    // 1. Apply forces (gravity, wind, etc.)
+    this.applyForces();
+    // 2. Integrate positions using Verlet integration
+    this.integrate(fixedDeltaTime);
+    // 3. Satisfy constraints (springs)
+    this.satisfyConstraints();
 
     // Return updated state
     return this.getState();
